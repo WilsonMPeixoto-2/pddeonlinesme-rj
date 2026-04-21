@@ -1,25 +1,21 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { mockEscolas } from "@/lib/mockEscolas";
-import { Download, FileSpreadsheet, LogOut, Pencil, Search } from "lucide-react";
+import { Download, FileSpreadsheet, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
 
 const fmt = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-const Escolas = () => {
+export default function Escolas() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
 
@@ -34,22 +30,15 @@ const Escolas = () => {
   );
 
   return (
-    <div className="min-h-screen bg-muted/20">
-      <header className="border-b bg-background">
-        <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
-          <div>
-            <h1 className="text-lg font-semibold">PDDE Online — CRE</h1>
-            <p className="text-xs text-muted-foreground">
-              cre@seduc.rj.gov.br · 163 escolas
-            </p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-            <LogOut className="mr-2 h-4 w-4" /> Sair
-          </Button>
+    <AppLayout>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Escolas</h1>
+          <p className="text-sm text-muted-foreground">
+            163 unidades · edite a BASE e gere demonstrativos individuais ou em lote.
+          </p>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-7xl space-y-4 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -96,11 +85,7 @@ const Escolas = () => {
                   <TableCell className="text-right">{fmt(e.gasto)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/escolas/${e.id}`)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => navigate(`/escolas/${e.id}`)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
@@ -126,14 +111,10 @@ const Escolas = () => {
         </Card>
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            Exibindo {lista.length} de {mockEscolas.length} (mock)
-          </span>
+          <span>Exibindo {lista.length} de {mockEscolas.length} (mock)</span>
           <Badge variant="secondary">Protótipo · sem backend</Badge>
         </div>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
-};
-
-export default Escolas;
+}
