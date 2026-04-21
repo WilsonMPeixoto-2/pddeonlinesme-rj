@@ -8,6 +8,7 @@ const tabs = [
   { to: "/escolas", label: "Unidades Escolares" },
   { to: "/base", label: "Importar/Exportar" },
   { to: "/configuracoes", label: "Configurações" },
+  { to: "/manual", label: "Manual" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
