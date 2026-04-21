@@ -102,7 +102,7 @@ export default function Escolas() {
               {lista.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                    Nenhuma escola encontrada.
+                    Nenhuma unidade escolar encontrada.
                   </TableCell>
                 </TableRow>
               )}
