@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,22 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { mockEscolas } from "@/lib/mockEscolas";
 import { Download, FileSpreadsheet, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+type Unidade = {
+  id: string;
+  designacao: string;
+  inep: string | null;
+  cnpj: string | null;
+  diretor: string | null;
+  email: string | null;
+  alunos: number;
+  saldo_anterior: number;
+  recebido: number;
+  gasto: number;
+};
 
 const fmt = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -18,15 +31,29 @@ const fmt = (n: number) =>
 export default function Escolas() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const [unidades, setUnidades] = useState<Unidade[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from("unidades_escolares")
+        .select("*")
+        .order("designacao");
+      if (error) toast.error(error.message);
+      else setUnidades((data ?? []) as Unidade[]);
+      setLoading(false);
+    })();
+  }, []);
 
   const lista = useMemo(
     () =>
-      mockEscolas.filter((e) =>
+      unidades.filter((e) =>
         e.designacao.toLowerCase().includes(q.toLowerCase()) ||
-        e.inep.includes(q) ||
-        e.diretor.toLowerCase().includes(q.toLowerCase())
+        (e.inep ?? "").includes(q) ||
+        (e.diretor ?? "").toLowerCase().includes(q.toLowerCase())
       ),
-    [q]
+    [q, unidades]
   );
 
   return (
@@ -35,7 +62,7 @@ export default function Escolas() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Unidades Escolares</h1>
           <p className="text-sm text-muted-foreground">
-            163 unidades escolares · edite a BASE e gere demonstrativos individuais ou em lote.
+            {unidades.length} unidades escolares · edite a BASE e gere demonstrativos individuais ou em lote.
           </p>
         </div>
 
@@ -50,10 +77,10 @@ export default function Escolas() {
             />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => toast.info("Protótipo: exportaria a BASE em .xlsx")}>
+            <Button variant="outline" onClick={() => toast.info("Em breve: exportar BASE em .xlsx")}>
               <Download className="mr-2 h-4 w-4" /> Exportar BASE
             </Button>
-            <Button onClick={() => toast.success("Protótipo: geraria .zip com os 163 demonstrativos")}>
+            <Button onClick={() => toast.info("Em breve: gerar lote (.zip)")}>
               <FileSpreadsheet className="mr-2 h-4 w-4" /> Gerar lote (.zip)
             </Button>
           </div>
@@ -74,45 +101,52 @@ export default function Escolas() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {lista.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell className="font-medium">{e.designacao}</TableCell>
-                  <TableCell className="text-muted-foreground">{e.inep}</TableCell>
-                  <TableCell>{e.diretor}</TableCell>
-                  <TableCell className="text-right">{e.alunos}</TableCell>
-                  <TableCell className="text-right">{fmt(e.saldoAnterior)}</TableCell>
-                  <TableCell className="text-right">{fmt(e.recebido)}</TableCell>
-                  <TableCell className="text-right">{fmt(e.gasto)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => navigate(`/escolas/${e.id}`)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toast.success(`Protótipo: geraria DEMONSTRATIVO BÁSICO - ${e.designacao}.xlsx`)}
-                      >
-                        <FileSpreadsheet className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    Carregando…
                   </TableCell>
                 </TableRow>
-              ))}
-              {lista.length === 0 && (
+              ) : lista.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                     Nenhuma unidade escolar encontrada.
                   </TableCell>
                 </TableRow>
+              ) : (
+                lista.map((e) => (
+                  <TableRow key={e.id}>
+                    <TableCell className="font-medium">{e.designacao}</TableCell>
+                    <TableCell className="text-muted-foreground">{e.inep}</TableCell>
+                    <TableCell>{e.diretor}</TableCell>
+                    <TableCell className="text-right">{e.alunos}</TableCell>
+                    <TableCell className="text-right">{fmt(Number(e.saldo_anterior))}</TableCell>
+                    <TableCell className="text-right">{fmt(Number(e.recebido))}</TableCell>
+                    <TableCell className="text-right">{fmt(Number(e.gasto))}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => navigate(`/escolas/${e.id}`)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toast.info(`Em breve: gerar DEMONSTRATIVO BÁSICO - ${e.designacao}.xlsx`)}
+                        >
+                          <FileSpreadsheet className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
         </Card>
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Exibindo {lista.length} de {mockEscolas.length} (mock)</span>
-          <Badge variant="secondary">Protótipo · sem backend</Badge>
+          <span>Exibindo {lista.length} de {unidades.length}</span>
+          <Badge variant="secondary">Conectado · Lovable Cloud</Badge>
         </div>
       </div>
     </AppLayout>

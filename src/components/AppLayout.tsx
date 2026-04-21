@@ -2,6 +2,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const tabs = [
   { to: "/dashboard", label: "Dashboard" },
@@ -13,6 +15,12 @@ const tabs = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Sessão encerrada");
+    navigate("/");
+  };
   return (
     <div className="min-h-screen bg-muted/20">
       <header className="border-b bg-background">
@@ -22,17 +30,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <div className="h-7 w-7 rounded-md bg-primary" />
               <div className="leading-tight">
                 <p className="text-sm font-semibold">PDDE Online</p>
-                <p className="text-[11px] text-muted-foreground">4ª CRE · SME-RJ</p>
+                <p className="text-[11px] text-muted-foreground">
+                  4ª CRE · SME-RJ{user?.email ? ` · ${user.email}` : ""}
+                </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                toast.success("Sessão encerrada");
-                navigate("/");
-              }}
-            >
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" /> Sair
             </Button>
           </div>

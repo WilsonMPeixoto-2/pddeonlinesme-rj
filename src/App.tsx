@@ -11,6 +11,7 @@ import EscolaEditar from "./pages/EscolaEditar.tsx";
 import Base from "./pages/Base.tsx";
 import Configuracoes from "./pages/Configuracoes.tsx";
 import Manual from "./pages/Manual.tsx";
+import ProtectedRoute from "./components/ProtectedRoute.tsx";
 
 const queryClient = new QueryClient();
 
@@ -22,12 +23,12 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/escolas" element={<Escolas />} />
-          <Route path="/escolas/:id" element={<EscolaEditar />} />
-          <Route path="/base" element={<Base />} />
-          <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/manual" element={<Manual />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/escolas" element={<ProtectedRoute><Escolas /></ProtectedRoute>} />
+          <Route path="/escolas/:id" element={<ProtectedRoute><EscolaEditar /></ProtectedRoute>} />
+          <Route path="/base" element={<ProtectedRoute><Base /></ProtectedRoute>} />
+          <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
+          <Route path="/manual" element={<ProtectedRoute><Manual /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
