@@ -10,6 +10,7 @@ import Escolas from "./pages/Escolas.tsx";
 import EscolaEditar from "./pages/EscolaEditar.tsx";
 import Base from "./pages/Base.tsx";
 import Configuracoes from "./pages/Configuracoes.tsx";
+import Manual from "./pages/Manual.tsx";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/escolas/:id" element={<EscolaEditar />} />
           <Route path="/base" element={<Base />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/manual" element={<Manual />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
