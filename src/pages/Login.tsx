@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("cre@sme.rio");
+  const [email, setEmail] = useState("4cre@sme.rio");
   const [senha, setSenha] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -26,7 +26,7 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">PDDE Online — SME-RJ</CardTitle>
-          <CardDescription>Acesso restrito à equipe da CRE</CardDescription>
+          <CardDescription>Acesso restrito à equipe da 4ª CRE</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
