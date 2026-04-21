@@ -1,26 +1,40 @@
+import { useEffect, useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockEscolas } from "@/lib/mockEscolas";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, FileSpreadsheet, School, AlertTriangle, CheckCircle2 } from "lucide-react";
-
-const stats = [
-  { label: "Unidades escolares", value: "163", icon: School, hint: "4ª CRE" },
-  { label: "Demonstrativos gerados", value: "148", icon: CheckCircle2, hint: "Ciclo 2025" },
-  { label: "Pendências", value: "15", icon: AlertTriangle, hint: "BASE incompleta" },
-  { label: "Última geração em lote", value: "há 3 dias", icon: FileSpreadsheet, hint: "por 4cre@sme.rio" },
-];
-
-const recentes = [
-  { quando: "21/04/2026 14:32", usuario: "ana.coord", qtd: 1, escola: "EM EMA NEGRÃO DE LIMA" },
-  { quando: "18/04/2026 09:10", usuario: "4cre@sme.rio", qtd: 163, escola: "Lote completo" },
-  { quando: "15/04/2026 16:45", usuario: "ana.coord", qtd: 3, escola: "EM JOÃO BARBALHO + 2" },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [total, setTotal] = useState<number | null>(null);
+  const [recentes, setRecentes] = useState<{ id: string; designacao: string }[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { count } = await supabase
+        .from("unidades_escolares")
+        .select("*", { count: "exact", head: true });
+      setTotal(count ?? 0);
+
+      const { data } = await supabase
+        .from("unidades_escolares")
+        .select("id, designacao")
+        .order("updated_at", { ascending: false })
+        .limit(4);
+      setRecentes(data ?? []);
+    })();
+  }, []);
+
+  const stats = [
+    { label: "Unidades escolares", value: total ?? "…", icon: School, hint: "4ª CRE" },
+    { label: "Demonstrativos gerados", value: "—", icon: CheckCircle2, hint: "em breve" },
+    { label: "Pendências", value: "—", icon: AlertTriangle, hint: "em breve" },
+    { label: "Última geração em lote", value: "—", icon: FileSpreadsheet, hint: "em breve" },
+  ];
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -51,40 +65,24 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-base">Gerações recentes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {recentes.map((r, i) => (
-                <div key={i} className="flex items-center justify-between border-b last:border-0 pb-3 last:pb-0">
-                  <div>
-                    <p className="text-sm font-medium">{r.escola}</p>
-                    <p className="text-xs text-muted-foreground">{r.quando} · {r.usuario}</p>
-                  </div>
-                  <Badge variant="secondary">{r.qtd} arq.</Badge>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Unidades escolares com pendência</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {mockEscolas.slice(0, 4).map((e) => (
-                <div key={e.id} className="flex items-center justify-between text-sm">
-                  <span className="truncate pr-2">{e.designacao}</span>
-                  <Badge variant="outline" className="text-warning border-warning/40">
-                    revisar
-                  </Badge>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Atualizadas recentemente</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {recentes.length === 0 && (
+              <p className="text-sm text-muted-foreground">Nenhuma unidade ainda.</p>
+            )}
+            {recentes.map((r) => (
+              <div key={r.id} className="flex items-center justify-between text-sm border-b last:border-0 pb-2 last:pb-0">
+                <span>{r.designacao}</span>
+                <Badge variant="secondary" className="cursor-pointer" onClick={() => navigate(`/escolas/${r.id}`)}>
+                  abrir
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );
