@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("cre@seduc.rj.gov.br");
+  const [email, setEmail] = useState("cre@sme.rio");
   const [senha, setSenha] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {

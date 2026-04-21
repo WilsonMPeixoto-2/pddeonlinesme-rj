@@ -57,7 +57,7 @@ export default function Base() {
                 </div>
                 <div className="flex justify-between mt-1">
                   <span className="text-muted-foreground">Atualizada por</span>
-                  <span className="font-medium">cre@seduc.rj.gov.br</span>
+                  <span className="font-medium">cre@sme.rio</span>
                 </div>
               </div>
               <Button className="w-full" onClick={() => toast.success("Protótipo: BASE.xlsx baixado")}>

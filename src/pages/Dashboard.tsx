@@ -10,12 +10,12 @@ const stats = [
   { label: "Escolas cadastradas", value: "163", icon: School, hint: "Rede municipal" },
   { label: "Demonstrativos gerados", value: "148", icon: CheckCircle2, hint: "Ciclo 2025" },
   { label: "Pendências", value: "15", icon: AlertTriangle, hint: "BASE incompleta" },
-  { label: "Última geração em lote", value: "há 3 dias", icon: FileSpreadsheet, hint: "por cre@seduc.rj.gov.br" },
+  { label: "Última geração em lote", value: "há 3 dias", icon: FileSpreadsheet, hint: "por cre@sme.rio" },
 ];
 
 const recentes = [
   { quando: "21/04/2026 14:32", usuario: "ana.coord", qtd: 1, escola: "EM EMA NEGRÃO DE LIMA" },
-  { quando: "18/04/2026 09:10", usuario: "cre@seduc.rj.gov.br", qtd: 163, escola: "Lote completo" },
+  { quando: "18/04/2026 09:10", usuario: "cre@sme.rio", qtd: 163, escola: "Lote completo" },
   { quando: "15/04/2026 16:45", usuario: "ana.coord", qtd: 3, escola: "EM JOÃO BARBALHO + 2" },
 ];
 
