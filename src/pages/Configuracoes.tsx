@@ -70,7 +70,7 @@ export default function Configuracoes() {
                       </TableCell>
                       <TableCell>
                         {u.ativo ? (
-                          <Badge variant="outline" className="border-emerald-300 text-emerald-700">ativo</Badge>
+                          <Badge variant="outline" className="border-success/40 text-success">ativo</Badge>
                         ) : (
                           <Badge variant="outline" className="text-muted-foreground">inativo</Badge>
                         )}

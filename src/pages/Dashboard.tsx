@@ -77,7 +77,7 @@ export default function Dashboard() {
               {mockEscolas.slice(0, 4).map((e) => (
                 <div key={e.id} className="flex items-center justify-between text-sm">
                   <span className="truncate pr-2">{e.designacao}</span>
-                  <Badge variant="outline" className="text-amber-700 border-amber-300">
+                  <Badge variant="outline" className="text-warning border-warning/40">
                     revisar
                   </Badge>
                 </div>
