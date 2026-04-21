@@ -7,15 +7,15 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, FileSpreadsheet, School, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const stats = [
-  { label: "Escolas cadastradas", value: "163", icon: School, hint: "Rede municipal" },
+  { label: "Unidades escolares", value: "163", icon: School, hint: "4ª CRE" },
   { label: "Demonstrativos gerados", value: "148", icon: CheckCircle2, hint: "Ciclo 2025" },
   { label: "Pendências", value: "15", icon: AlertTriangle, hint: "BASE incompleta" },
-  { label: "Última geração em lote", value: "há 3 dias", icon: FileSpreadsheet, hint: "por cre@sme.rio" },
+  { label: "Última geração em lote", value: "há 3 dias", icon: FileSpreadsheet, hint: "por 4cre@sme.rio" },
 ];
 
 const recentes = [
   { quando: "21/04/2026 14:32", usuario: "ana.coord", qtd: 1, escola: "EM EMA NEGRÃO DE LIMA" },
-  { quando: "18/04/2026 09:10", usuario: "cre@sme.rio", qtd: 163, escola: "Lote completo" },
+  { quando: "18/04/2026 09:10", usuario: "4cre@sme.rio", qtd: 163, escola: "Lote completo" },
   { quando: "15/04/2026 16:45", usuario: "ana.coord", qtd: 3, escola: "EM JOÃO BARBALHO + 2" },
 ];
 
@@ -28,11 +28,11 @@ export default function Dashboard() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Visão geral</h1>
             <p className="text-sm text-muted-foreground">
-              Acompanhe o estado da prestação de contas das escolas.
+              Acompanhe o estado da prestação de contas das unidades escolares.
             </p>
           </div>
           <Button onClick={() => navigate("/escolas")}>
-            Ir para escolas <ArrowRight className="ml-2 h-4 w-4" />
+            Ir para unidades escolares <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
 
