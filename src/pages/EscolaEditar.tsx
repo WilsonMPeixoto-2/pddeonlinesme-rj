@@ -16,7 +16,7 @@ export default function EscolaEditar() {
   if (!escola) {
     return (
       <AppLayout>
-        <p className="text-sm">Escola não encontrada.</p>
+        <p className="text-sm">Unidade escolar não encontrada.</p>
         <Button variant="link" onClick={() => navigate("/escolas")}>Voltar</Button>
       </AppLayout>
     );

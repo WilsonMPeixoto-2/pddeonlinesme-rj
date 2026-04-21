@@ -11,7 +11,7 @@ export default function Base() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Importar / Exportar BASE</h1>
           <p className="text-sm text-muted-foreground">
-            Sincronize a base central com o arquivo .xlsx mestre da CRE.
+            Sincronize a base central com o arquivo .xlsx mestre da 4ª CRE.
           </p>
         </div>
 
@@ -22,7 +22,7 @@ export default function Base() {
                 <Upload className="h-4 w-4 text-primary" /> Importar BASE.xlsx
               </CardTitle>
               <CardDescription>
-                Substitui os dados das 163 escolas pela versão enviada.
+                Substitui os dados das 163 unidades escolares pela versão enviada.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -57,7 +57,7 @@ export default function Base() {
                 </div>
                 <div className="flex justify-between mt-1">
                   <span className="text-muted-foreground">Atualizada por</span>
-                  <span className="font-medium">cre@seduc.rj.gov.br</span>
+                  <span className="font-medium">4cre@sme.rio</span>
                 </div>
               </div>
               <Button className="w-full" onClick={() => toast.success("Protótipo: BASE.xlsx baixado")}>

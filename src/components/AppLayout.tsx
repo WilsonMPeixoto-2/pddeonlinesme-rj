@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 const tabs = [
   { to: "/dashboard", label: "Dashboard" },
-  { to: "/escolas", label: "Escolas" },
+  { to: "/escolas", label: "Unidades Escolares" },
   { to: "/base", label: "Importar/Exportar" },
   { to: "/configuracoes", label: "Configurações" },
 ];
@@ -21,7 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <div className="h-7 w-7 rounded-md bg-primary" />
               <div className="leading-tight">
                 <p className="text-sm font-semibold">PDDE Online</p>
-                <p className="text-[11px] text-muted-foreground">CRE · SME-RJ</p>
+                <p className="text-[11px] text-muted-foreground">4ª CRE · SME-RJ</p>
               </div>
             </div>
             <Button

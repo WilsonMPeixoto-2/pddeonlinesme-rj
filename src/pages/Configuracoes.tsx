@@ -11,9 +11,9 @@ import { UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const usuarios = [
-  { email: "cre@seduc.rj.gov.br", nome: "CRE Coordenação", papel: "admin", ativo: true },
-  { email: "ana.coord@seduc.rj.gov.br", nome: "Ana Coord", papel: "operador", ativo: true },
-  { email: "bruno.tec@seduc.rj.gov.br", nome: "Bruno Técnico", papel: "operador", ativo: false },
+  { email: "4cre@sme.rio", nome: "4ª CRE Coordenação", papel: "admin", ativo: true },
+  { email: "ana.coord@sme.rio", nome: "Ana Coord", papel: "operador", ativo: true },
+  { email: "bruno.tec@sme.rio", nome: "Bruno Técnico", papel: "operador", ativo: false },
 ];
 
 export default function Configuracoes() {
@@ -23,13 +23,13 @@ export default function Configuracoes() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Configurações</h1>
           <p className="text-sm text-muted-foreground">
-            Equipe da CRE e parâmetros gerais do sistema.
+            Equipe da 4ª CRE e parâmetros gerais do sistema.
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Equipe da CRE</CardTitle>
+            <CardTitle className="text-base">Equipe da 4ª CRE</CardTitle>
             <CardDescription>Quem tem acesso ao sistema.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -41,7 +41,7 @@ export default function Configuracoes() {
               }}
             >
               <Input placeholder="Nome" />
-              <Input placeholder="email@seduc.rj.gov.br" type="email" />
+              <Input placeholder="email@sme.rio" type="email" />
               <Button type="submit">
                 <UserPlus className="mr-2 h-4 w-4" /> Convidar
               </Button>
