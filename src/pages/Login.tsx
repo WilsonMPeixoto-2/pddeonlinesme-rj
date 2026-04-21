@@ -18,7 +18,7 @@ const Login = () => {
       return;
     }
     toast.success("Login simulado (protótipo)");
-    navigate("/escolas");
+    navigate("/dashboard");
   };
 
   return (
