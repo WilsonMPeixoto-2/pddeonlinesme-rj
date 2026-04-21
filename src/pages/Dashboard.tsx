@@ -71,7 +71,7 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Escolas com pendência</CardTitle>
+              <CardTitle className="text-base">Unidades escolares com pendência</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {mockEscolas.slice(0, 4).map((e) => (
