@@ -33,9 +33,9 @@ export default function Escolas() {
     <AppLayout>
       <div className="space-y-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Escolas</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Unidades Escolares</h1>
           <p className="text-sm text-muted-foreground">
-            163 unidades · edite a BASE e gere demonstrativos individuais ou em lote.
+            163 unidades escolares · edite a BASE e gere demonstrativos individuais ou em lote.
           </p>
         </div>
 
