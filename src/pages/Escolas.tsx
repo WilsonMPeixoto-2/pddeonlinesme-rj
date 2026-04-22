@@ -119,7 +119,8 @@ export default function Escolas() {
               <Button
                 size="sm"
                 className="h-10"
-                onClick={() => toast.info("Em breve: gerar lote (.zip)")}
+                onClick={() => setConfirmLote(true)}
+                disabled={unidades.length === 0}
               >
                 <FileSpreadsheet className="mr-2 h-4 w-4" /> Gerar lote (.zip)
               </Button>
