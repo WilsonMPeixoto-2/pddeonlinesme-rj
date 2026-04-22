@@ -41,6 +41,7 @@ export default function Escolas() {
   const [q, setQ] = useState("");
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmLote, setConfirmLote] = useState(false);
 
   useEffect(() => {
     (async () => {
