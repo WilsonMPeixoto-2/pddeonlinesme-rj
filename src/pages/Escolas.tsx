@@ -262,6 +262,25 @@ export default function Escolas() {
             </Badge>
           </div>
         </div>
+
+        <ConfirmDialog
+          open={confirmLote}
+          onOpenChange={setConfirmLote}
+          tone="primary"
+          title="Gerar demonstrativos em lote"
+          description={
+            <>
+              Será gerado um arquivo <strong>.zip</strong> contendo o demonstrativo individual
+              de cada unidade escolar listada. O processo pode levar alguns minutos.
+            </>
+          }
+          highlight={`${unidades.length} unidades serão processadas`}
+          confirmLabel="Gerar lote"
+          onConfirm={() => {
+            setConfirmLote(false);
+            toast.info("Em breve: geração de lote (.zip)");
+          }}
+        />
       </TooltipProvider>
     </AppLayout>
   );
