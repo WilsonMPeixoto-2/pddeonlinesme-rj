@@ -13,8 +13,10 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X,
+  Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
 } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
