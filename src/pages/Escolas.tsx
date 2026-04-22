@@ -13,8 +13,10 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X,
+  Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
 } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -39,6 +41,7 @@ export default function Escolas() {
   const [q, setQ] = useState("");
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmLote, setConfirmLote] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -116,7 +119,8 @@ export default function Escolas() {
               <Button
                 size="sm"
                 className="h-10"
-                onClick={() => toast.info("Em breve: gerar lote (.zip)")}
+                onClick={() => setConfirmLote(true)}
+                disabled={unidades.length === 0}
               >
                 <FileSpreadsheet className="mr-2 h-4 w-4" /> Gerar lote (.zip)
               </Button>
@@ -167,27 +171,28 @@ export default function Escolas() {
                   ))
                 ) : lista.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="py-14">
-                      <div className="flex flex-col items-center justify-center gap-2 text-center">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                          <SchoolIcon className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <p className="text-sm font-medium">
-                          {isSearching
+                    <TableCell colSpan={8} className="p-0">
+                      <EmptyState
+                        variant="inline"
+                        icon={isSearching ? SearchX : SchoolIcon}
+                        title={
+                          isSearching
                             ? "Nenhum resultado para a busca"
-                            : "Nenhuma unidade cadastrada ainda"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {isSearching
+                            : "Nenhuma unidade cadastrada ainda"
+                        }
+                        description={
+                          isSearching
                             ? "Verifique o termo digitado ou limpe os filtros."
-                            : "Importe a BASE ou cadastre uma unidade para começar."}
-                        </p>
-                        {isSearching && (
-                          <Button variant="outline" size="sm" className="mt-1" onClick={() => setQ("")}>
-                            Limpar busca
-                          </Button>
-                        )}
-                      </div>
+                            : "Importe a BASE ou cadastre uma unidade para começar."
+                        }
+                        action={
+                          isSearching ? (
+                            <Button variant="outline" size="sm" onClick={() => setQ("")}>
+                              Limpar busca
+                            </Button>
+                          ) : null
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -257,6 +262,25 @@ export default function Escolas() {
             </Badge>
           </div>
         </div>
+
+        <ConfirmDialog
+          open={confirmLote}
+          onOpenChange={setConfirmLote}
+          tone="primary"
+          title="Gerar demonstrativos em lote"
+          description={
+            <>
+              Será gerado um arquivo <strong>.zip</strong> contendo o demonstrativo individual
+              de cada unidade escolar listada. O processo pode levar alguns minutos.
+            </>
+          }
+          highlight={`${unidades.length} unidades serão processadas`}
+          confirmLabel="Gerar lote"
+          onConfirm={() => {
+            setConfirmLote(false);
+            toast.info("Em breve: geração de lote (.zip)");
+          }}
+        />
       </TooltipProvider>
     </AppLayout>
   );
