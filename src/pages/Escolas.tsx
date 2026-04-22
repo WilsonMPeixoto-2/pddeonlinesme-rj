@@ -169,27 +169,28 @@ export default function Escolas() {
                   ))
                 ) : lista.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="py-14">
-                      <div className="flex flex-col items-center justify-center gap-2 text-center">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                          <SchoolIcon className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <p className="text-sm font-medium">
-                          {isSearching
+                    <TableCell colSpan={8} className="p-0">
+                      <EmptyState
+                        variant="inline"
+                        icon={isSearching ? SearchX : SchoolIcon}
+                        title={
+                          isSearching
                             ? "Nenhum resultado para a busca"
-                            : "Nenhuma unidade cadastrada ainda"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {isSearching
+                            : "Nenhuma unidade cadastrada ainda"
+                        }
+                        description={
+                          isSearching
                             ? "Verifique o termo digitado ou limpe os filtros."
-                            : "Importe a BASE ou cadastre uma unidade para começar."}
-                        </p>
-                        {isSearching && (
-                          <Button variant="outline" size="sm" className="mt-1" onClick={() => setQ("")}>
-                            Limpar busca
-                          </Button>
-                        )}
-                      </div>
+                            : "Importe a BASE ou cadastre uma unidade para começar."
+                        }
+                        action={
+                          isSearching ? (
+                            <Button variant="outline" size="sm" onClick={() => setQ("")}>
+                              Limpar busca
+                            </Button>
+                          ) : null
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (
