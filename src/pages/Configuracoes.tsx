@@ -1,3 +1,4 @@
+import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { UserPlus, Trash2, ShieldCheck, Settings2, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const usuarios = [
   { email: "4cre@sme.rio", nome: "4ª CRE Coordenação", papel: "admin", ativo: true },
