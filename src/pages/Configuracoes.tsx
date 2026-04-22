@@ -22,6 +22,8 @@ const usuarios = [
 ];
 
 export default function Configuracoes() {
+  const [pendingRemove, setPendingRemove] = useState<{ email: string; nome: string } | null>(null);
+
   return (
     <AppLayout>
       <TooltipProvider delayDuration={200}>
@@ -146,8 +148,8 @@ export default function Configuracoes() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                onClick={() => toast.info("Protótipo: removeria o usuário")}
+                                className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => setPendingRemove({ email: u.email, nome: u.nome })}
                                 aria-label="Remover usuário"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -221,6 +223,25 @@ export default function Configuracoes() {
             </CardContent>
           </Card>
         </div>
+
+        <ConfirmDialog
+          open={Boolean(pendingRemove)}
+          onOpenChange={(o) => !o && setPendingRemove(null)}
+          tone="destructive"
+          title="Remover acesso ao sistema?"
+          description={
+            <>
+              Esta pessoa perderá imediatamente o acesso ao PDDE Online da 4ª CRE.
+              Você poderá convidá-la novamente a qualquer momento.
+            </>
+          }
+          highlight={pendingRemove ? `${pendingRemove.nome} · ${pendingRemove.email}` : undefined}
+          confirmLabel="Remover acesso"
+          onConfirm={() => {
+            toast.success("Protótipo: acesso removido");
+            setPendingRemove(null);
+          }}
+        />
       </TooltipProvider>
     </AppLayout>
   );
