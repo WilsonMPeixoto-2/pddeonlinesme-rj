@@ -48,18 +48,15 @@ export default function Base() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <label className="flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border/70 py-10 transition hover:bg-muted/40">
-                <FileSpreadsheet className="mb-2 h-8 w-8 text-muted-foreground" />
-                <p className="text-sm font-medium">Clique para selecionar</p>
-                <p className="text-xs text-muted-foreground">ou arraste o arquivo .xlsx aqui</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx"
-                  className="hidden"
-                  onChange={handleFileSelected}
-                />
-              </label>
+              <BaseUploadZone
+                state={uploadState}
+                selectedFile={pendingFile}
+                onFileAccepted={handleFileAccepted}
+                onClear={() => {
+                  setPendingFile(null);
+                  setUploadState("idle");
+                }}
+              />
             </CardContent>
           </Card>
 
