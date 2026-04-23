@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldCheck, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import BrandMark from "@/components/BrandMark";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -45,30 +46,30 @@ const Login = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-muted/40 via-background to-muted/30 p-4">
-      {/* Subtle institutional backdrop */}
+    <div className="relative flex min-h-screen items-center justify-center bg-background p-4">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_hsl(var(--primary)/0.08),_transparent_55%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_-5%,_hsl(var(--primary)/0.18),_transparent_60%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_40%_30%_at_80%_100%,_hsl(var(--primary)/0.06),_transparent_60%)]"
       />
 
       <div className="relative w-full max-w-md">
-        {/* Institutional header above the card */}
-        <div className="mb-6 flex flex-col items-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20">
-            <ShieldCheck className="h-6 w-6" aria-hidden />
-          </div>
-          <p className="mt-3 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <BrandMark size={56} glow className="ring-2" />
+          <p className="mt-4 text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
             SME-RJ · 4ª CRE
           </p>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
             PDDE Online
           </h1>
         </div>
 
-        <Card className="border-border/70 shadow-lg shadow-primary/5">
+        <Card className="border-border/60 bg-card/80 shadow-2xl shadow-primary/10 backdrop-blur-md">
           <CardHeader className="space-y-1.5 pb-4 text-center">
-            <CardTitle className="text-lg font-semibold">Acesso ao sistema</CardTitle>
+            <CardTitle className="text-2xl font-semibold tracking-tight">Acesso ao sistema</CardTitle>
             <CardDescription className="text-sm">
               Ambiente restrito à equipe da 4ª Coordenadoria Regional de Educação.
             </CardDescription>
