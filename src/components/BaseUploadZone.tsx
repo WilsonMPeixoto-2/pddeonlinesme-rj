@@ -149,7 +149,7 @@ export function BaseUploadZone({
       case "validating":
         return "border-primary/60 bg-primary/[0.03]";
       default:
-        return "border-border/70 hover:border-primary/50 hover:bg-muted/30";
+        return "border-border/70 hover:border-primary/50 hover:bg-primary/5 hover:shadow-[inset_0_0_20px_hsl(var(--primary)/0.05)]";
     }
   })();
 

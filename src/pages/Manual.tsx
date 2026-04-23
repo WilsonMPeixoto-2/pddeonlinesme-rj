@@ -155,9 +155,9 @@ export default function Manual() {
               dos Demonstrativos Básicos no formato oficial.
             </p>
             <div className="flex flex-wrap gap-2 pt-2">
-              <Badge variant="secondary">React + Tailwind</Badge>
-              <Badge variant="secondary">Lovable Cloud</Badge>
-              <Badge variant="secondary">Geração XLSX server-side</Badge>
+              <Badge variant="outline" className="bg-background/40 backdrop-blur-sm border-border/50 text-muted-foreground hover:text-foreground transition-colors">React + Tailwind</Badge>
+              <Badge variant="outline" className="bg-background/40 backdrop-blur-sm border-border/50 text-muted-foreground hover:text-foreground transition-colors">Lovable Cloud</Badge>
+              <Badge variant="outline" className="bg-background/40 backdrop-blur-sm border-border/50 text-muted-foreground hover:text-foreground transition-colors">Geração XLSX server-side</Badge>
             </div>
           </CardContent>
         </Card>

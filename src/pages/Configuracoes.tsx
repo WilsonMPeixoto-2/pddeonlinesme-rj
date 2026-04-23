@@ -107,7 +107,7 @@ export default function Configuracoes() {
                       <TableRow key={u.email} className="group">
                         <TableCell className="py-3">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-xs font-semibold uppercase text-muted-foreground">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-muted/80 to-muted/30 shadow-inner text-xs font-semibold uppercase text-foreground/90">
                               {u.nome
                                 .split(" ")
                                 .map((n) => n[0])
@@ -131,12 +131,12 @@ export default function Configuracoes() {
                         </TableCell>
                         <TableCell>
                           {u.ativo ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-success/10 border border-success/20 text-xs font-medium text-success">
                               <span className="h-1.5 w-1.5 rounded-full bg-success" />
                               Ativo
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-muted/40 border border-border/50 text-xs font-medium text-muted-foreground">
                               <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
                               Inativo
                             </span>
