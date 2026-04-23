@@ -1,21 +1,27 @@
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, FileSpreadsheet, History, ShieldAlert } from "lucide-react";
+import { Download, Upload, History } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { BaseUploadZone, type UploadState } from "@/components/BaseUploadZone";
 
 export default function Base() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [uploadState, setUploadState] = useState<UploadState>("idle");
 
-  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (f) setPendingFile(f);
-    // permite re-selecionar o mesmo arquivo depois
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  // Reset to idle if user dismisses confirm without confirming
+  useEffect(() => {
+    if (!pendingFile && uploadState === "selected") {
+      setUploadState("idle");
+    }
+  }, [pendingFile, uploadState]);
+
+  const handleFileAccepted = (f: File) => {
+    setPendingFile(f);
+    setUploadState("selected");
   };
 
   return (
