@@ -87,7 +87,7 @@ export default function Dashboard() {
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
               Painel operacional
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight">Visão geral</h1>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Visão geral</h1>
             <p className="text-sm text-muted-foreground">
               Acompanhe o estado da prestação de contas das unidades escolares da 4ª CRE.
             </p>
