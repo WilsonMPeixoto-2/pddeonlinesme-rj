@@ -1,101 +1,91 @@
 
 
-# Divisão realista do projeto: o que faço aqui vs. o que é melhor fora
+# Reestilização Global — Dark Mode Atmosférico Institucional
 
-## ✅ O que eu faço bem dentro do Lovable
+Aplicação de uma nova identidade visual em todo o sistema, mantendo arquitetura, dados, autenticação e estrutura de navegação atuais. Apenas tokens de design, tipografia, hierarquia e detalhes de layout serão alterados.
 
-### 1. Frontend web (React + Tailwind)
-- Tela de login único da CRE
-- Listagem/busca/edição das 163 escolas (CRUD da BASE)
-- Formulário para adicionar/editar campos da BASE
-- Botões "gerar 1 demonstrativo" e "gerar lote (.zip)"
-- Histórico de gerações (data, usuário, qtd de arquivos)
-- Validações de input (CNPJ, INEP, valores numéricos)
+## 1. Paleta — Dark mode profundo como padrão
 
-### 2. Backend leve (Lovable Cloud / Supabase)
-- Tabela `escolas` (espelho da aba BASE)
-- Tabela `geracoes` (auditoria de cada lote gerado)
-- Autenticação por e-mail/senha para a equipe da CRE
-- Importação inicial das 163 linhas a partir do seu .xlsx
-- Exportar a BASE de volta para .xlsx quando precisar
+Reescrita de `src/index.css` para que o app inicie em modo escuro grafite por padrão (sem botão de toggle nesta etapa), com o azul institucional da SME-RJ como cor tática de destaque.
 
-### 3. Geração de XLSX server-side via Edge Function
-- Abre o **seu template original** como base (preserva layout, fórmulas, formatação)
-- Substitui apenas as células de dados vindas da BASE
-- Aplica `sheet.protection` com senha **ANA** nas áreas amarelas mapeadas
-- Nomeia `DEMONSTRATIVO BÁSICO - <designação>.xlsx`
-- Empacota em `.zip` quando for lote
+Tokens principais (HSL, conforme exigido pelo sistema):
 
-### 4. Análise e prototipação one-shot
-- Já fiz: mapeamento das abas, células amarelas, lógica do template
-- Posso gerar amostras (.xlsx reais) para você validar antes de subir tudo
+- `--background`: `220 13% 8%` (grafite profundo, próximo a #121214)
+- `--card`: `220 13% 11%` (elevação sutil sobre o fundo)
+- `--popover`: `220 13% 10%`
+- `--foreground`: `210 20% 96%` (texto principal quase branco, sem brilho excessivo)
+- `--muted`: `220 10% 15%`
+- `--muted-foreground`: `215 14% 62%` (textos secundários/Visual Law finos)
+- `--border`: `220 10% 18%` (bordas quase invisíveis, separação por contraste)
+- `--input`: `220 10% 14%`
+- `--primary`: `212 95% 56%` (azul SME-RJ tático, vibrante sobre grafite — derivado do logo da 4ª CRE)
+- `--primary-foreground`: `0 0% 100%`
+- `--ring`: `212 95% 56%` (anel de foco azul institucional)
+- `--accent`: `212 95% 56%`
+- `--success`: `152 65% 45%`
+- `--warning`: `38 92% 55%`
+- `--destructive`: `0 75% 55%`
+- Sidebar/header: tom levemente acima do background (`220 13% 10%`)
 
----
+Adicionalmente, no `body`:
+- Fundo com gradiente atmosférico sutil (radial azul a 6% no canto superior, fade para grafite).
+- `font-feature-settings` ativando `cv11`, `ss01` para tipografia moderna.
+- Suavização `-webkit-font-smoothing: antialiased`.
 
-## ⚠️ O que é melhor fazer fora ou com cautela
+## 2. Tipografia — Inter com hierarquia ousada
 
-| Tarefa | Por quê não aqui | Onde fazer |
-|---|---|---|
-| **Validação visual fiel ao layout oficial FNDE** | Eu não consigo abrir o .xlsx no Excel real para conferir bit-a-bit. Renderizadores web/LibreOffice podem divergir sutilmente do Excel. | Você abre os arquivos gerados no Excel e valida. Eu entrego amostras pequenas primeiro. |
-| **Fórmulas complexas tipo XLOOKUP encadeado** | LibreOffice (motor de recálculo no sandbox) tem suporte parcial a funções novas do Excel 365. Risco de divergência silenciosa. | Manter as fórmulas **dentro do template original** intactas — eu nunca reescrevo fórmula, só preencho células de entrada. |
-| **Assinatura digital / certificado ICP-Brasil nos arquivos** | Fora do escopo de qualquer ferramenta web genérica. | Fluxo manual com gov.br ou software específico, depois da geração. |
-| **Envio oficial ao SIGPC/FNDE** | Sistema federal fechado, sem API pública. | Upload manual pela equipe da CRE no portal do FNDE. |
-| **Edição do template oficial em si** | Mudanças de layout, adicionar/remover blocos do Demonstrativo. | Você (ou a equipe) edita no Excel e me reenvia o template novo. Eu só consumo. |
-| **Conciliação bancária real (importar OFX do banco)** | Cada banco tem formato/API próprio; vira um projeto à parte. | Continuar manual, ou projeto separado depois. |
-| **Portal multi-tenant com 163 logins de diretoras** | Possível tecnicamente, mas explode escopo, suporte e custo. Você mesmo cortou. | Fora do escopo desta entrega. |
-| **Backup/retenção legal de longo prazo** | Lovable Cloud guarda dados, mas prestação de contas pública costuma exigir arquivamento próprio. | Exportar .zip de todos os demonstrativos por exercício e guardar no drive institucional da SEDUC. |
+Adoção da fonte **Inter** (estável, gratuita, próxima visualmente da Geist) via Google Fonts no `index.html`:
 
----
-
-## 🧱 Divisão de responsabilidade clara
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│  VOCÊ / EQUIPE CRE                                      │
-│  • Mantém o TEMPLATE oficial (.xlsx) atualizado         │
-│  • Valida amostras geradas no Excel real                │
-│  • Faz upload manual no SIGPC/FNDE                      │
-│  • Decide quando regerar o lote                         │
-└────────────────────┬────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────┐
-│  SISTEMA LOVABLE (o que eu construo)                    │
-│  • BASE online (CRUD, busca, validação)                 │
-│  • Login único da CRE                                   │
-│  • Motor de geração XLSX (template + dados + senha ANA) │
-│  • Histórico/auditoria de gerações                      │
-│  • Export .zip do lote                                  │
-└─────────────────────────────────────────────────────────┘
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 ```
 
----
+No `tailwind.config.ts`, estender `fontFamily.sans` para `["Inter", ...]` com fallback ao stack do sistema.
 
-## 📦 Entrega proposta — fatias pequenas e verificáveis
+Hierarquia tipográfica padrão (classes utilitárias aplicadas nas páginas existentes, sem mudar estrutura):
 
-**Fatia 1 — Prova do motor (sem site, sem banco)**
-Eu rodo um script aqui mesmo que pega 3 escolas da sua BASE atual, gera 3 .xlsx reais com proteção amarela e senha ANA, e te entrego em `/mnt/documents/`. Você abre no Excel e valida fidelidade. **Se essa fatia falhar, todo o resto cai — então começamos por ela.**
+- **Display / herói de página**: `text-4xl md:text-5xl font-bold tracking-tight` (títulos de Dashboard, Login)
+- **Título de seção**: `text-2xl font-semibold tracking-tight`
+- **Label/eyebrow**: `text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground`
+- **Body**: `text-sm font-normal text-muted-foreground` (Visual Law — instruções finas)
+- **Números financeiros**: `tabular-nums font-semibold` (mantém alinhamento da tabela)
 
-**Fatia 2 — BASE online + login**
-Lovable Cloud ativado, tabela `escolas` populada com as 163 unidades, tela de listagem/edição com login único da CRE.
+Sem títulos de 72px reais — em produto administrativo isso prejudica densidade. Adotamos a *sensação* de hierarquia ousada via contraste forte entre `text-4xl/5xl bold` e `text-xs font-light text-muted-foreground`, que é o que dá o tom "Visual Law" sem comprometer usabilidade.
 
-**Fatia 3 — Geração on-demand pela web**
-Botão "gerar 1" e "gerar todos (.zip)" na tela, usando o motor da Fatia 1 dentro de uma Edge Function. Histórico de gerações registrado.
+## 3. Logo da 4ª CRE — uso discreto e institucional
 
-**Fatia 4 — Teste da Leitura A**
-Adicionamos uma coluna nova na BASE pela tela, regeramos o lote, validamos que a coluna nova aparece nos novos arquivos. Isso fecha o teste pedido pela sua chefe.
+A imagem enviada (`Screenshot_20260422_211556_Claude.jpg`) será copiada para `src/assets/logo-4cre.png` e usada em três pontos discretos:
 
----
+- **Login** — substitui o ícone `ShieldCheck` no cabeçalho do card. Tamanho 56×56, com leve `ring-1 ring-primary/30` e `drop-shadow`. Subtítulo "SME-RJ · 4ª CRE" mantido.
+- **AppLayout (header)** — substitui o quadrado azul atual (`h-7 w-7 rounded-md bg-primary`) por um círculo com a logo, 28×28. Texto "PDDE Online · 4ª CRE · SME-RJ" ao lado.
+- **Footer institucional** — uma linha discreta no fim do `AppLayout` (já que hoje não há footer), com a logo em opacidade 40%, à direita: "Sistema interno · 4ª Coordenadoria Regional de Educação · SME-RJ". Texto em `text-[11px] font-light tracking-wide text-muted-foreground/70`.
 
-## ❓ Limites honestos que você precisa saber
+Sem aplicar o logo em todas as páginas internas — apenas onde reforça identidade sem poluir.
 
-1. **Não posso garantir 100% de fidelidade visual** sem você abrir no Excel e conferir. Por isso a Fatia 1 vem antes de tudo.
-2. **A senha ANA protege a planilha contra edição casual**, não é criptografia forte. Quem tiver intenção e conhecimento abre. Isso é limitação do próprio Excel, não do nosso sistema.
-3. **Lovable Cloud tem custo de uso** (banco + edge functions). Para 163 escolas e geração mensal, tende a ficar dentro da faixa gratuita ou muito baixa, mas não é zero.
-4. **Se o template oficial mudar de layout**, o motor precisa ser reajustado. Não é automático.
+## 4. Refinamentos visuais por página (sem reestruturar)
 
----
+Aplicação automática do novo tema escuro em todas as páginas via tokens. Ajustes pontuais:
 
-## 🎯 Recomendação
+- **Login**: gradiente atmosférico mais profundo (radial azul superior + grafite), card com `bg-card/80 backdrop-blur` e `border-border/60`. Título do card sobe para `text-2xl font-semibold`.
+- **AppLayout**: header com `bg-card/60 backdrop-blur-md border-border/60`, indicador de aba ativa fica em azul tático (`after:bg-primary` com `shadow-[0_0_12px_hsl(var(--primary)/0.4)]`) — sutil glow institucional.
+- **Dashboard**: título principal sobe para `text-4xl font-bold tracking-tight`. Cards de resumo ganham `bg-card border border-border/60` com hover `border-primary/30`.
+- **Escolas / Configurações / Base / EscolaEditar / Manual**: herdam tokens automaticamente. Apenas ajuste de classes onde houver `bg-white`, `bg-gray-*` ou `text-gray-*` hardcoded (rodar busca e trocar por tokens semânticos).
 
-Começar pela **Fatia 1 agora**. É a única que valida a hipótese mais arriscada (geração fiel + proteção). Custa pouco tempo, não exige decisão sobre Cloud, e se o resultado te convencer aí seguimos para Fatias 2-4.
+## 5. Detalhes técnicos de implementação
+
+- `src/main.tsx` ou `src/App.tsx`: adicionar `document.documentElement.classList.add("dark")` no boot para forçar dark mode global (não há toggle ainda).
+- Manter os tokens `:root` (light) intactos como fallback futuro — apenas alteramos `.dark` e forçamos `.dark` no html.
+- *Alternativa preferida*: redefinir os tokens diretamente no `:root` para o novo grafite (mais simples, evita acoplar com `.dark` class) e remover o forçar-dark. **Vou seguir essa alternativa** para manter o sistema previsível.
+- Copiar `user-uploads://Screenshot_20260422_211556_Claude.jpg` para `src/assets/logo-4cre.png`.
+- Criar componente leve `src/components/BrandMark.tsx` que renderiza a logo + texto institucional, reutilizado em Login, header e footer.
+- Buscar e substituir cores hardcoded restantes (`bg-white`, `text-black`, `bg-gray-*`) por tokens semânticos.
+- Ajustar `tailwind.config.ts` com `fontFamily.sans = ["Inter", "ui-sans-serif", "system-ui", ...]`.
+
+## 6. Fora de escopo (preservado)
+
+- Nenhuma mudança em rotas, autenticação, schema, edge functions ou lógica de negócio.
+- Sem novos fluxos, sem novas páginas, sem toggle de tema (pode vir depois se desejado).
+- Conteúdo textual em PT-BR mantido; apenas microcopy de footer institucional adicionada.
 
