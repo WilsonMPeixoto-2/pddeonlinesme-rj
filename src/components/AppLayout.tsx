@@ -61,7 +61,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-7xl flex-1 p-4">{children}</main>
+      <main className="mx-auto w-full max-w-7xl flex-1 p-4">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </main>
       <footer className="border-t border-border/60 bg-card/30">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
           <p className="text-[11px] font-light tracking-wide text-muted-foreground/70">
