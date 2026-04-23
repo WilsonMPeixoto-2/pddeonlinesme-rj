@@ -17,6 +17,7 @@ const tabs = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const handleLogout = async () => {
     await supabase.auth.signOut();
