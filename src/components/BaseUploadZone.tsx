@@ -61,7 +61,6 @@ export function BaseUploadZone({
 }: BaseUploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [internalState, setInternalState] = useState<UploadState>("idle");
-  const [dragSupported, setDragSupported] = useState<boolean | null>(null);
   const dragCounter = useRef(0);
 
   const state: UploadState = controlledState ?? internalState;
@@ -98,7 +97,6 @@ export function BaseUploadZone({
         // Some browsers don't expose name on dragenter, fallback to true and re-check on drop
         return true;
       });
-    setDragSupported(supported);
     setInternalState(supported ? "supportedHover" : "unsupportedHover");
   };
 
@@ -113,7 +111,6 @@ export function BaseUploadZone({
     dragCounter.current -= 1;
     if (dragCounter.current <= 0) {
       dragCounter.current = 0;
-      setDragSupported(null);
       setInternalState("idle");
     }
   };
@@ -122,7 +119,6 @@ export function BaseUploadZone({
     e.preventDefault();
     e.stopPropagation();
     dragCounter.current = 0;
-    setDragSupported(null);
     handleFiles(e.dataTransfer.files);
   };
 
@@ -200,7 +196,7 @@ export function BaseUploadZone({
           state === "success" ||
           state === "error") && (
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-            {state !== "validating" && (
+            {(
               <Button
                 type="button"
                 variant="outline"
