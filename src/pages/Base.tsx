@@ -1,21 +1,27 @@
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, FileSpreadsheet, History, ShieldAlert } from "lucide-react";
+import { Download, Upload, History } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { BaseUploadZone, type UploadState } from "@/components/BaseUploadZone";
 
 export default function Base() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [uploadState, setUploadState] = useState<UploadState>("idle");
 
-  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (f) setPendingFile(f);
-    // permite re-selecionar o mesmo arquivo depois
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  // Reset to idle if user dismisses confirm without confirming
+  useEffect(() => {
+    if (!pendingFile && uploadState === "selected") {
+      setUploadState("idle");
+    }
+  }, [pendingFile, uploadState]);
+
+  const handleFileAccepted = (f: File) => {
+    setPendingFile(f);
+    setUploadState("selected");
   };
 
   return (
@@ -42,18 +48,15 @@ export default function Base() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <label className="flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border/70 py-10 transition hover:bg-muted/40">
-                <FileSpreadsheet className="mb-2 h-8 w-8 text-muted-foreground" />
-                <p className="text-sm font-medium">Clique para selecionar</p>
-                <p className="text-xs text-muted-foreground">ou arraste o arquivo .xlsx aqui</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx"
-                  className="hidden"
-                  onChange={handleFileSelected}
-                />
-              </label>
+              <BaseUploadZone
+                state={uploadState}
+                selectedFile={pendingFile}
+                onFileAccepted={handleFileAccepted}
+                onClear={() => {
+                  setPendingFile(null);
+                  setUploadState("idle");
+                }}
+              />
             </CardContent>
           </Card>
 
@@ -110,8 +113,13 @@ export default function Base() {
       </div>
 
       <ConfirmDialog
-        open={Boolean(pendingFile)}
-        onOpenChange={(o) => !o && setPendingFile(null)}
+        open={Boolean(pendingFile) && uploadState === "selected"}
+        onOpenChange={(o) => {
+          if (!o) {
+            setPendingFile(null);
+            setUploadState("idle");
+          }
+        }}
         tone="destructive"
         title="Sobrescrever a BASE atual?"
         description={
@@ -124,8 +132,12 @@ export default function Base() {
         highlight={pendingFile?.name}
         confirmLabel="Sobrescrever BASE"
         onConfirm={() => {
-          toast.success("Protótipo: arquivo seria validado e importado");
-          setPendingFile(null);
+          // Simulação visual do fluxo: validando → sucesso (sem lógica de backend)
+          setUploadState("validating");
+          setTimeout(() => {
+            setUploadState("success");
+            toast.success("Protótipo: arquivo validado e importado");
+          }, 1400);
         }}
       />
     </AppLayout>
