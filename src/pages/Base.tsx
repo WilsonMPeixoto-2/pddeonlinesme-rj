@@ -113,8 +113,13 @@ export default function Base() {
       </div>
 
       <ConfirmDialog
-        open={Boolean(pendingFile)}
-        onOpenChange={(o) => !o && setPendingFile(null)}
+        open={Boolean(pendingFile) && uploadState === "selected"}
+        onOpenChange={(o) => {
+          if (!o) {
+            setPendingFile(null);
+            setUploadState("idle");
+          }
+        }}
         tone="destructive"
         title="Sobrescrever a BASE atual?"
         description={
@@ -127,8 +132,12 @@ export default function Base() {
         highlight={pendingFile?.name}
         confirmLabel="Sobrescrever BASE"
         onConfirm={() => {
-          toast.success("Protótipo: arquivo seria validado e importado");
-          setPendingFile(null);
+          // Simulação visual do fluxo: validando → sucesso (sem lógica de backend)
+          setUploadState("validating");
+          setTimeout(() => {
+            setUploadState("success");
+            toast.success("Protótipo: arquivo validado e importado");
+          }, 1400);
         }}
       />
     </AppLayout>
