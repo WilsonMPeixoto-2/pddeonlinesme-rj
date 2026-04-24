@@ -397,13 +397,8 @@ export default function Escolas() {
                     return (
                       <TableRow
                         key={e.id}
-                        className="group relative border-b border-border/40 transition-colors hover:bg-primary/[0.03]"
+                        className="group relative border-b border-border/40 transition-colors hover:bg-primary/[0.03] before:pointer-events-none before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:origin-top before:scale-y-0 before:bg-gradient-to-b before:from-primary/0 before:via-primary before:to-primary/0 before:opacity-0 before:transition-all before:duration-200 hover:before:scale-y-100 hover:before:opacity-100"
                       >
-                        {/* Hover indicator: glow line on the left */}
-                        <td
-                          aria-hidden
-                          className="pointer-events-none absolute inset-y-0 left-0 w-[2px] origin-top scale-y-0 bg-gradient-to-b from-primary/0 via-primary to-primary/0 opacity-0 transition-all duration-200 group-hover:scale-y-100 group-hover:opacity-100"
-                        />
 
                         <TableCell className="py-3 font-medium">{e.designacao}</TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground tabular-nums">
