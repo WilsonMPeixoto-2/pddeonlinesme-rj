@@ -36,7 +36,7 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
 
     const parse = (raw: string): number => {
       // Aceita "1.234,56" ou "1234.56" ou "1234,56"
-      let s = raw.replace(/[^\d,.\-]/g, "");
+      let s = raw.replace(/[^\d,.-]/g, "");
       if (!allowNegative) s = s.replace(/-/g, "");
       // Se tiver vírgula, assume formato BR: remove pontos (milhar) e troca vírgula por ponto.
       if (s.includes(",")) {

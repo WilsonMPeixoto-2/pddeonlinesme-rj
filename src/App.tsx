@@ -19,7 +19,15 @@ import { TopLoadingBar } from "./components/TopLoadingBar.tsx";
 import { CommandPalette } from "./components/CommandPalette.tsx";
 import "nprogress/nprogress.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // Dados permanecem "frescos" por 5 minutos (evita requisições repetidas ao Supabase)
+      retry: 1, // Tenta apenas 1 vez em caso de falha (evita travar o navegador tentando buscar algo que não existe)
+      refetchOnWindowFocus: false, // Não recarrega os dados toda vez que o usuário troca de aba
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
