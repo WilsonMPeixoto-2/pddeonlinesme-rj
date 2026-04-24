@@ -335,8 +335,10 @@ export default function StyleGuide() {
             title="Excluir registro?"
             description="Esta ação é permanente e não poderá ser desfeita."
             confirmLabel="Excluir"
-            variant="destructive"
-            onConfirm={() => toast.success("Registro excluído (demo)")}
+            tone="destructive"
+            onConfirm={() => {
+              toast.success("Registro excluído (demo)");
+            }}
           />
         </Section>
 
