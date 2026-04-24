@@ -19,21 +19,20 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
-  MoreHorizontal, ClipboardList, FileSignature, Coins, ScrollText,
-  ShieldCheck, ArrowDownToLine,
+  MoreVertical, FileText, Eye, Trash2,
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { DocumentsPanel } from "@/components/DocumentsPanel";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 /* ─── Types ─── */
 
@@ -69,90 +68,87 @@ const statusConfig = {
   pronta: {
     label: "Pronta",
     dotClass: "bg-success",
-    badgeClass: "border-success/30 bg-success/8 text-success",
+    badgeClass: "border-success/30 bg-success/10 text-success",
   },
   incompleta: {
     label: "Incompleta",
     dotClass: "bg-warning",
-    badgeClass: "border-warning/30 bg-warning/8 text-warning",
+    badgeClass: "border-warning/30 bg-warning/10 text-warning",
   },
   pendente: {
     label: "Pendente",
     dotClass: "bg-destructive",
-    badgeClass: "border-destructive/30 bg-destructive/8 text-destructive",
+    badgeClass: "border-destructive/30 bg-destructive/10 text-destructive",
   },
 } as const;
 
-/* ─── Inline action menu for each row ─── */
+/* ─── Execution bar (saldo vs gasto) ─── */
 
-function RowActions({ escola, onEdit }: { escola: Unidade; onEdit: () => void }) {
-  const docToast = (doc: string) =>
-    toast.info(`Em breve: gerar ${doc} — ${escola.designacao}`);
+function ExecutionBar({ recebido, saldo, gasto }: { recebido: number; saldo: number; gasto: number }) {
+  const total = recebido + saldo;
+  const pct = total > 0 ? Math.min(100, (gasto / total) * 100) : 0;
+  const tone =
+    pct >= 90 ? "bg-warning" : pct >= 50 ? "bg-primary" : "bg-success";
+  return (
+    <div className="space-y-1">
+      <div className="flex items-baseline justify-between gap-2 text-[11px]">
+        <span className="font-medium tabular-nums">{fmt(gasto)}</span>
+        <span className="text-muted-foreground/70 tabular-nums">{pct.toFixed(0)}%</span>
+      </div>
+      <div className="h-1 overflow-hidden rounded-full bg-muted/40">
+        <div
+          className={cn("h-full rounded-full transition-all duration-500", tone)}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
+/* ─── Secondary actions menu (smaller, less prominent) ─── */
+
+function SecondaryActions({
+  escola,
+  onEdit,
+  onView,
+  onDelete,
+}: {
+  escola: Unidade;
+  onEdit: () => void;
+  onView: () => void;
+  onDelete: () => void;
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
-          aria-label="Ações"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          aria-label="Mais ações"
         >
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreVertical className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-[280px] bg-popover/95 backdrop-blur-md border-border/60 shadow-xl shadow-primary/5"
+        className="w-[200px] bg-popover/95 backdrop-blur-md border-border/60"
       >
-        <DropdownMenuItem onClick={onEdit} className="gap-3 cursor-pointer">
+        <DropdownMenuItem onClick={onEdit} className="gap-2.5 cursor-pointer">
           <Pencil className="h-3.5 w-3.5 text-primary" />
-          <span className="text-sm font-medium">Editar cadastro</span>
+          <span className="text-sm">Editar cadastro</span>
         </DropdownMenuItem>
-
+        <DropdownMenuItem onClick={onView} className="gap-2.5 cursor-pointer">
+          <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-sm">Ver detalhes</span>
+        </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-border/50" />
-
-        <DropdownMenuLabel className="pb-1">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Gerar documento
-          </p>
-        </DropdownMenuLabel>
-
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => docToast("Demonstrativo Básico")} className="gap-3 cursor-pointer">
-            <FileSpreadsheet className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-sm">Demonstrativo Básico</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => docToast("Relação de Bens")} className="gap-3 cursor-pointer">
-            <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-sm">Relação de Bens Adquiridos</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => docToast("Termo de Doação")} className="gap-3 cursor-pointer">
-            <FileSignature className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-sm">Termo de Doação</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => docToast("Consolidação de Preços")} className="gap-3 cursor-pointer">
-            <Coins className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-sm">Consolidação de Preços</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => docToast("Ata do Conselho")} className="gap-3 cursor-pointer">
-            <ScrollText className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-sm">Ata do Conselho Escolar</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => docToast("Parecer Fiscal")} className="gap-3 cursor-pointer">
-            <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-sm">Parecer do Conselho Fiscal</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-
-        <DropdownMenuSeparator className="bg-border/50" />
-
         <DropdownMenuItem
-          onClick={() => toast.info(`Em breve: gerar todos os documentos — ${escola.designacao}`)}
-          className="gap-3 cursor-pointer"
+          onClick={onDelete}
+          className="gap-2.5 cursor-pointer text-destructive focus:text-destructive"
         >
-          <ArrowDownToLine className="h-3.5 w-3.5 text-primary" />
-          <span className="text-sm font-medium">Gerar todos os documentos</span>
+          <Trash2 className="h-3.5 w-3.5" />
+          <span className="text-sm">Remover</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -170,6 +166,10 @@ export default function Escolas() {
   const [exercicio, setExercicio] = useState("2026");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
 
+  // Documents panel state
+  const [docsPanelOpen, setDocsPanelOpen] = useState(false);
+  const [selectedEscola, setSelectedEscola] = useState<Unidade | null>(null);
+
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
@@ -184,36 +184,37 @@ export default function Escolas() {
 
   const lista = useMemo(() => {
     let filtered = unidades;
-
-    // Text search
     if (q.trim()) {
       const lower = q.toLowerCase();
       filtered = filtered.filter(
         (e) =>
           e.designacao.toLowerCase().includes(lower) ||
           (e.inep ?? "").includes(q) ||
-          (e.diretor ?? "").toLowerCase().includes(lower)
+          (e.diretor ?? "").toLowerCase().includes(lower),
       );
     }
-
-    // Status filter
     if (statusFilter !== "todas") {
       filtered = filtered.filter((e) => getStatus(e) === statusFilter);
     }
-
     return filtered;
   }, [q, statusFilter, unidades]);
 
   const isSearching = q.trim().length > 0 || statusFilter !== "todas";
 
-  // Status counts
   const statusCounts = useMemo(() => {
     const counts = { pronta: 0, incompleta: 0, pendente: 0 };
-    unidades.forEach((e) => { counts[getStatus(e)]++; });
+    unidades.forEach((e) => {
+      counts[getStatus(e)]++;
+    });
     return counts;
   }, [unidades]);
 
-  const COLUMNS = 9; // updated column count
+  const COLUMNS = 8;
+
+  const openDocs = (e: Unidade) => {
+    setSelectedEscola(e);
+    setDocsPanelOpen(true);
+  };
 
   return (
     <AppLayout>
@@ -224,16 +225,15 @@ export default function Escolas() {
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
               Cadastro · 4ª CRE · Exercício {exercicio}
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight">Unidades Escolares</h1>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Unidades Escolares</h1>
             <p className="text-sm text-muted-foreground">
               {loading
                 ? "Carregando cadastro…"
-                : `${unidades.length} unidades · edite a BASE e gere demonstrativos individuais ou em lote.`}
+                : `${unidades.length} unidades · gere documentos individuais ou em lote.`}
             </p>
           </div>
-          {/* Status summary pills */}
           {!loading && unidades.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {(Object.keys(statusConfig) as (keyof typeof statusConfig)[]).map((key) => (
                 <span
                   key={key}
@@ -249,8 +249,7 @@ export default function Escolas() {
 
         {/* Toolbar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-1 items-center gap-2">
-            {/* Search */}
+          <div className="flex flex-1 flex-wrap items-center gap-2">
             <div className="relative w-full sm:max-w-md">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -271,7 +270,6 @@ export default function Escolas() {
               )}
             </div>
 
-            {/* Status filter */}
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
               <SelectTrigger className="h-10 w-[140px] shrink-0">
                 <SelectValue placeholder="Status" />
@@ -284,7 +282,6 @@ export default function Escolas() {
               </SelectContent>
             </Select>
 
-            {/* Exercise selector */}
             <Select value={exercicio} onValueChange={setExercicio}>
               <SelectTrigger className="h-10 w-[100px] shrink-0">
                 <SelectValue />
@@ -321,33 +318,34 @@ export default function Escolas() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/40 hover:bg-muted/40">
-                  <TableHead className="h-10 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <TableRow className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 backdrop-blur-md hover:bg-muted/50">
+                  <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Designação
                   </TableHead>
-                  <TableHead className="h-10 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     INEP
                   </TableHead>
-                  <TableHead className="h-10 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Diretor(a)
                   </TableHead>
-                  <TableHead className="h-10 w-[100px] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Status
                   </TableHead>
-                  <TableHead className="h-10 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-11 w-[60px] text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Alunos
                   </TableHead>
-                  <TableHead className="h-10 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Saldo ant.
+                  <TableHead className="h-11 w-[200px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Execução financeira
                   </TableHead>
-                  <TableHead className="h-10 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Recebido
+                  {/* Coluna dedicada — destaque para Documentos */}
+                  <TableHead className="h-11 w-[170px] border-l border-border/40 bg-primary/5 text-center text-[11px] font-semibold uppercase tracking-wide text-primary/80">
+                    <span className="inline-flex items-center gap-1.5">
+                      <FileText className="h-3 w-3" />
+                      Documentos
+                    </span>
                   </TableHead>
-                  <TableHead className="h-10 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Gasto
-                  </TableHead>
-                  <TableHead className="h-10 w-[60px] text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Ações
+                  <TableHead className="h-11 w-[50px] text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {""}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -397,31 +395,63 @@ export default function Escolas() {
                     const st = getStatus(e);
                     const cfg = statusConfig[st];
                     return (
-                      <TableRow key={e.id} className="group">
-                        <TableCell className="font-medium">{e.designacao}</TableCell>
+                      <TableRow
+                        key={e.id}
+                        className="group relative border-b border-border/40 transition-colors hover:bg-primary/[0.03]"
+                      >
+                        {/* Hover indicator: glow line on the left */}
+                        <td
+                          aria-hidden
+                          className="pointer-events-none absolute inset-y-0 left-0 w-[2px] origin-top scale-y-0 bg-gradient-to-b from-primary/0 via-primary to-primary/0 opacity-0 transition-all duration-200 group-hover:scale-y-100 group-hover:opacity-100"
+                        />
+
+                        <TableCell className="py-3 font-medium">{e.designacao}</TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground tabular-nums">
                           {e.inep ?? "—"}
                         </TableCell>
                         <TableCell className="text-sm">{e.diretor ?? "—"}</TableCell>
                         <TableCell>
                           <span
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.badgeClass}`}
+                            className={cn(
+                              "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                              cfg.badgeClass,
+                            )}
                           >
-                            <span className={`inline-block h-1.5 w-1.5 rounded-full ${cfg.dotClass}`} />
+                            <span className={cn("inline-block h-1.5 w-1.5 rounded-full", cfg.dotClass)} />
                             {cfg.label}
                           </span>
                         </TableCell>
                         <TableCell className="text-right tabular-nums">{e.alunos}</TableCell>
-                        <TableCell className="text-right tabular-nums">{fmt(Number(e.saldo_anterior))}</TableCell>
-                        <TableCell className="text-right tabular-nums">{fmt(Number(e.recebido))}</TableCell>
-                        <TableCell className="text-right tabular-nums">{fmt(Number(e.gasto))}</TableCell>
+                        <TableCell>
+                          <ExecutionBar
+                            recebido={Number(e.recebido)}
+                            saldo={Number(e.saldo_anterior)}
+                            gasto={Number(e.gasto)}
+                          />
+                        </TableCell>
+
+                        {/* PRIMARY ACTION — Documentos com destaque */}
+                        <TableCell className="border-l border-border/40 bg-primary/[0.025] p-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="h-9 w-full justify-center gap-2 text-xs shadow-[0_0_16px_hsl(var(--primary)/0.18)] transition-shadow hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]"
+                            onClick={() => openDocs(e)}
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            Gerar documentos
+                          </Button>
+                        </TableCell>
+
                         <TableCell className="text-right">
-                          <div className="flex justify-end opacity-80 transition-opacity group-hover:opacity-100">
-                            <RowActions
-                              escola={e}
-                              onEdit={() => navigate(`/escolas/${e.id}`)}
-                            />
-                          </div>
+                          <SecondaryActions
+                            escola={e}
+                            onEdit={() => navigate(`/escolas/${e.id}`)}
+                            onView={() => navigate(`/escolas/${e.id}`)}
+                            onDelete={() =>
+                              toast.info(`Em breve: remover ${e.designacao}`)
+                            }
+                          />
                         </TableCell>
                       </TableRow>
                     );
@@ -462,6 +492,13 @@ export default function Escolas() {
           setConfirmLote(false);
           toast.info("Em breve: geração de lote (.zip)");
         }}
+      />
+
+      <DocumentsPanel
+        open={docsPanelOpen}
+        onOpenChange={setDocsPanelOpen}
+        schoolName={selectedEscola?.designacao ?? ""}
+        exercicio={exercicio}
       />
     </AppLayout>
   );
