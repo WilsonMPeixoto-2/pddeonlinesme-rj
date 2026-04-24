@@ -18,6 +18,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { NumberTicker } from "@/components/NumberTicker";
 import { MiniSparkline } from "@/components/MiniSparkline";
+import { TiltCard } from "@/components/TiltCard";
 
 type Recente = { id: string; designacao: string; updated_at: string };
 
@@ -216,7 +217,8 @@ export default function Dashboard() {
             const isReady = s.value !== null && s.value !== undefined;
             return (
               <motion.div key={s.label} variants={item}>
-                <Card className="group relative h-full overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_24px_hsl(var(--primary)/0.08)]">
+                <TiltCard className="h-full">
+                  <Card className="group relative h-full overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_24px_hsl(var(--primary)/0.08)]">
                   <CardContent className="flex h-full flex-col gap-4 p-5">
                     <div className="flex items-start justify-between gap-3">
                       <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
@@ -252,6 +254,7 @@ export default function Dashboard() {
                     </div>
                   </CardContent>
                 </Card>
+                </TiltCard>
               </motion.div>
             );
           })}

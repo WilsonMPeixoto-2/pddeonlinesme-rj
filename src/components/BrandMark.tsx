@@ -16,7 +16,7 @@ export default function BrandMark({ size = 28, className, glow = false }: BrandM
       height={size}
       className={cn(
         "rounded-full object-cover ring-1 ring-primary/30",
-        glow && "drop-shadow-[0_0_12px_hsl(var(--primary)/0.35)]",
+        glow && "drop-shadow-[0_0_12px_hsl(var(--primary)/0.35)] animate-[glow-pulse_3s_ease-in-out_infinite]",
         className
       )}
     />

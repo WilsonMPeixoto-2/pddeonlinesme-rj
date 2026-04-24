@@ -153,3 +153,9 @@
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
 }
+
+/* ─── Glow pulse for BrandMark ─── */
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.25)); }
+  50% { filter: drop-shadow(0 0 16px hsl(var(--primary) / 0.5)); }
+}
