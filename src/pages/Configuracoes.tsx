@@ -11,7 +11,10 @@ import {
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { UserPlus, Trash2, ShieldCheck, Settings2, Lock } from "lucide-react";
+import {
+  UserPlus, Trash2, ShieldCheck, Settings2, Lock, FileStack,
+  FileSpreadsheet, ClipboardList, FileSignature, Coins, ScrollText, Upload,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
@@ -220,6 +223,52 @@ export default function Configuracoes() {
                   Salvar alterações
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Templates & Documents */}
+          <Card className="border-border/70">
+            <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <FileStack className="h-4 w-4" aria-hidden />
+                </div>
+                <div className="space-y-1">
+                  <CardTitle className="text-base font-semibold">Templates e Documentos</CardTitle>
+                  <CardDescription>
+                    Gerencie os modelos oficiais usados na geração automática de documentos.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-5 space-y-3">
+              {[
+                { icon: FileSpreadsheet, name: "Demonstrativo Básico", status: "ativo" as const },
+                { icon: ClipboardList, name: "Relação de Bens Adquiridos", status: "pendente" as const },
+                { icon: FileSignature, name: "Termo de Doação", status: "pendente" as const },
+                { icon: Coins, name: "Consolidação de Pesquisas de Preços", status: "pendente" as const },
+                { icon: ScrollText, name: "Ata do Conselho Escolar", status: "pendente" as const },
+                { icon: ShieldCheck, name: "Parecer do Conselho Fiscal", status: "pendente" as const },
+              ].map((doc) => (
+                <div key={doc.name} className="flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/10 px-4 py-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/8 text-primary">
+                      <doc.icon className="h-3.5 w-3.5" />
+                    </div>
+                    <p className="text-sm font-medium truncate">{doc.name}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {doc.status === "ativo" ? (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-success/30 bg-success/8 text-success">Ativo</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-border/50 bg-muted/40 text-muted-foreground">Não configurado</Badge>
+                    )}
+                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => toast.info(`Em breve: atualizar template — ${doc.name}`)}>
+                      <Upload className="mr-1.5 h-3 w-3" /> Atualizar
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>

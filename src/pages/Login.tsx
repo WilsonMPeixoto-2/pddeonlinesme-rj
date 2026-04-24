@@ -118,6 +118,15 @@ const Login = () => {
                       className="h-10"
                     />
                   </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:text-primary/80 transition-colors"
+                      onClick={() => toast.info("Em breve: recuperação de senha")}
+                    >
+                      Esqueci minha senha
+                    </button>
+                  </div>
                   <Button type="submit" className="h-10 w-full font-medium" disabled={busy}>
                     {busy ? (
                       <>
