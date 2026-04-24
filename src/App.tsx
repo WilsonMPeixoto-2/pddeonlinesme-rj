@@ -11,6 +11,7 @@ import EscolaEditar from "./pages/EscolaEditar.tsx";
 import Base from "./pages/Base.tsx";
 import Configuracoes from "./pages/Configuracoes.tsx";
 import Manual from "./pages/Manual.tsx";
+import StyleGuide from "./pages/StyleGuide.tsx";
 import AccessDenied from "./pages/AccessDenied.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/base" element={<ProtectedRoute><Base /></ProtectedRoute>} />
           <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
           <Route path="/manual" element={<ProtectedRoute><Manual /></ProtectedRoute>} />
+          <Route path="/style-guide" element={<ProtectedRoute><StyleGuide /></ProtectedRoute>} />
           <Route path="/acesso-negado" element={<AccessDenied />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
