@@ -15,6 +15,9 @@ import StyleGuide from "./pages/StyleGuide.tsx";
 import AccessDenied from "./pages/AccessDenied.tsx";
 import PortalDiretor from "./pages/PortalDiretor.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import { TopLoadingBar } from "./components/TopLoadingBar.tsx";
+import { CommandPalette } from "./components/CommandPalette.tsx";
+import "nprogress/nprogress.css";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +27,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <TopLoadingBar />
+        <CommandPalette />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

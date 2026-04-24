@@ -60,6 +60,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
+            <div className="flex items-center gap-2">
+              {/* ⌘K shortcut hint */}
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true }))}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/20 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+              >
+                <span>Buscar…</span>
+                <kbd className="pointer-events-none inline-flex h-4 select-none items-center rounded border border-border/40 bg-muted/30 px-1 text-[10px] font-mono">⌘K</kbd>
+              </button>
+
             {/* User avatar + dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -100,6 +111,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </div>
 
           <nav className="flex gap-1 overflow-x-auto">
