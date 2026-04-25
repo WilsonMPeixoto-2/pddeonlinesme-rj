@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   FileSearch,
-  Inbox,
 } from "lucide-react";
 
 /* ─── Tipos ─── */
