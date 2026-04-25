@@ -438,12 +438,11 @@ export default function Escolas() {
 
                         <TableCell className="text-right">
                           <SecondaryActions
-                            escola={e}
                             onEdit={() => navigate(`/escolas/${e.id}`)}
                             onView={() => navigate(`/escolas/${e.id}`)}
-                            onDelete={() =>
-                              toast.info(`Em breve: remover ${e.designacao}`)
-                            }
+                            onDelete={() => {
+                              toast.info(`Em breve: remover ${e.designacao}`);
+                            }}
                           />
                         </TableCell>
                       </TableRow>
