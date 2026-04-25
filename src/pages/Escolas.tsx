@@ -403,7 +403,7 @@ export default function Escolas() {
                             type="button"
                             onClick={() => navigate(`/escolas/${e.id}`)}
                             title="Abrir cadastro completo"
-                            className="group/link inline-flex items-center gap-1.5 text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none"
+                            className="group/link inline-flex items-center gap-1.5 rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                             aria-label={`Abrir cadastro de ${e.designacao}`}
                           >
                             <span>{e.designacao}</span>
