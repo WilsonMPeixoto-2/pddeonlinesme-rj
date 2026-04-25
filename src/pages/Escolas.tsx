@@ -395,7 +395,7 @@ export default function Escolas() {
                     return (
                       <TableRow
                         key={e.id}
-                        className="group relative border-b border-border/40 transition-colors hover:bg-primary/[0.03] before:pointer-events-none before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:origin-top before:scale-y-0 before:bg-gradient-to-b before:from-primary/0 before:via-primary before:to-primary/0 before:opacity-0 before:transition-all before:duration-200 hover:before:scale-y-100 hover:before:opacity-100"
+                        className="group border-b border-border/40 transition-colors hover:bg-primary/[0.03]"
                       >
 
                         <TableCell className="py-3 font-medium">
