@@ -108,12 +108,10 @@ function ExecutionBar({ recebido, saldo, gasto }: { recebido: number; saldo: num
 /* ─── Secondary actions menu (smaller, less prominent) ─── */
 
 function SecondaryActions({
-  escola,
   onEdit,
   onView,
   onDelete,
 }: {
-  escola: Unidade;
   onEdit: () => void;
   onView: () => void;
   onDelete: () => void;
