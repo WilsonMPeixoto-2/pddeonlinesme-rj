@@ -17,6 +17,8 @@ import PortalDiretor from "./pages/PortalDiretor.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { TopLoadingBar } from "./components/TopLoadingBar.tsx";
 import { CommandPalette } from "./components/CommandPalette.tsx";
+import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
+import { ExercicioProvider } from "./hooks/useExercicio.tsx";
 import "nprogress/nprogress.css";
 
 const queryClient = new QueryClient({
@@ -30,30 +32,35 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <TopLoadingBar />
-        <CommandPalette />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/escolas" element={<ProtectedRoute><Escolas /></ProtectedRoute>} />
-          <Route path="/escolas/:id" element={<ProtectedRoute><EscolaEditar /></ProtectedRoute>} />
-          <Route path="/base" element={<ProtectedRoute><Base /></ProtectedRoute>} />
-          <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
-          <Route path="/manual" element={<ProtectedRoute><Manual /></ProtectedRoute>} />
-          <Route path="/style-guide" element={<ProtectedRoute><StyleGuide /></ProtectedRoute>} />
-          <Route path="/acesso-negado" element={<AccessDenied />} />
-          <Route path="/diretor" element={<ProtectedRoute><PortalDiretor /></ProtectedRoute>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ExercicioProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <TopLoadingBar />
+          <CommandPalette />
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/escolas" element={<ProtectedRoute><Escolas /></ProtectedRoute>} />
+              <Route path="/escolas/:id" element={<ProtectedRoute><EscolaEditar /></ProtectedRoute>} />
+              <Route path="/base" element={<ProtectedRoute><Base /></ProtectedRoute>} />
+              <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
+              <Route path="/manual" element={<ProtectedRoute><Manual /></ProtectedRoute>} />
+              <Route path="/style-guide" element={<ProtectedRoute><StyleGuide /></ProtectedRoute>} />
+              <Route path="/acesso-negado" element={<AccessDenied />} />
+              <Route path="/diretor" element={<ProtectedRoute><PortalDiretor /></ProtectedRoute>} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ExercicioProvider>
+
 );
 
 export default App;

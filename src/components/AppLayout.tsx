@@ -8,12 +8,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, UserCircle, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useExercicio } from "@/hooks/useExercicio";
 import BrandMark from "@/components/BrandMark";
 
 const tabs = [
@@ -36,6 +44,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { exercicio, setExercicio } = useExercicio();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -71,6 +80,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <kbd className="pointer-events-none inline-flex h-4 select-none items-center rounded border border-border/40 bg-muted/30 px-1 text-[10px] font-mono">⌘K</kbd>
               </button>
 
+              {/* Exercício global (O6) */}
+              <Select value={exercicio} onValueChange={setExercicio}>
+                <SelectTrigger className="h-8 w-[105px] text-xs border-border/50 bg-muted/20">
+                  <CalendarDays className="mr-1.5 h-3 w-3 text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2025">2025</SelectItem>
+                  <SelectItem value="2026">2026</SelectItem>
+                </SelectContent>
+              </Select>
+
             {/* User avatar + dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -103,6 +124,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem onClick={() => navigate("/configuracoes")} className="gap-2 cursor-pointer">
                   <User className="h-3.5 w-3.5" />
                   <span className="text-sm">Configurações</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/diretor")} className="gap-2 cursor-pointer">
+                  <UserCircle className="h-3.5 w-3.5" />
+                  <span className="text-sm">Portal do Diretor</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-border/50" />
                 <DropdownMenuItem onClick={handleLogout} className="gap-2 cursor-pointer text-destructive focus:text-destructive">

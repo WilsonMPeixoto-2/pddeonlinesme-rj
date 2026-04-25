@@ -4,18 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Download, Upload, History, CalendarDays } from "lucide-react";
+import { Download, Upload, History } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useExercicio } from "@/hooks/useExercicio";
 import { BaseUploadZone, type UploadState } from "@/components/BaseUploadZone";
 import { ImportResultsPanel, type ImportResultState } from "@/components/ImportResultsPanel";
 
@@ -54,7 +48,7 @@ export default function Base() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [importResultState, setImportResultState] = useState<ImportResultState>("idle");
-  const [exercicio, setExercicio] = useState("2026");
+  const { exercicio } = useExercicio();
 
   // Reset to idle if user dismisses confirm without confirming
   useEffect(() => {
@@ -82,16 +76,7 @@ export default function Base() {
               Sincronize a base central com o arquivo .xlsx mestre da 4ª CRE.
             </p>
           </div>
-          <Select value={exercicio} onValueChange={setExercicio}>
-            <SelectTrigger className="h-9 w-[100px]">
-              <CalendarDays className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2026">2026</SelectItem>
-            </SelectContent>
-          </Select>
+
         </div>
 
         {/* Import / Export grid */}

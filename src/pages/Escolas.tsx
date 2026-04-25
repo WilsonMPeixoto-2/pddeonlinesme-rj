@@ -32,6 +32,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
 
 /* ─── Types ─── */
@@ -62,6 +63,19 @@ function getStatus(e: Unidade) {
   if (hasIdentity && hasFinancial) return "pronta" as const;
   if (hasIdentity || hasFinancial) return "incompleta" as const;
   return "pendente" as const;
+}
+
+/** Mock de contagem de documentos por escola (O3 + O5) */
+function getDocMeta(e: Unidade) {
+  const st = getStatus(e);
+  if (st === "pronta") {
+    const seed = e.id.charCodeAt(0) % 3;
+    const counts = [1, 2, 3];
+    const times = ["Há 2 dias", "Há 5 dias", "Há 1 semana"];
+    return { generated: counts[seed], total: 6, lastGen: times[seed] };
+  }
+  if (st === "incompleta") return { generated: 0, total: 6, lastGen: null };
+  return { generated: 0, total: 6, lastGen: null };
 }
 
 const statusConfig = {
@@ -161,7 +175,7 @@ export default function Escolas() {
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmLote, setConfirmLote] = useState(false);
-  const [exercicio, setExercicio] = useState("2026");
+  const { exercicio } = useExercicio();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
 
   // Documents panel state
@@ -280,15 +294,7 @@ export default function Escolas() {
               </SelectContent>
             </Select>
 
-            <Select value={exercicio} onValueChange={setExercicio}>
-              <SelectTrigger className="h-10 w-[100px] shrink-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2025">2025</SelectItem>
-                <SelectItem value="2026">2026</SelectItem>
-              </SelectContent>
-            </Select>
+
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -437,17 +443,38 @@ export default function Escolas() {
                           />
                         </TableCell>
 
-                        {/* PRIMARY ACTION — Documentos com destaque */}
+                        {/* PRIMARY ACTION — Documentos com destaque (O3 + O5) */}
                         <TableCell className="border-l border-border/40 bg-primary/[0.025] p-2">
-                          <Button
-                            size="sm"
-                            variant="default"
-                            className="h-9 w-full justify-center gap-2 text-xs shadow-[0_0_16px_hsl(var(--primary)/0.18)] transition-shadow hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]"
-                            onClick={() => openDocs(e)}
-                          >
-                            <FileText className="h-3.5 w-3.5" />
-                            Gerar documentos
-                          </Button>
+                          <div className="space-y-1.5">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="h-9 w-full justify-center gap-2 text-xs shadow-[0_0_16px_hsl(var(--primary)/0.18)] transition-shadow hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]"
+                              onClick={() => openDocs(e)}
+                            >
+                              <FileText className="h-3.5 w-3.5" />
+                              Gerar documentos
+                            </Button>
+                            {(() => {
+                              const dm = getDocMeta(e);
+                              return (
+                                <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+                                  <span className={cn(
+                                    "font-semibold tabular-nums",
+                                    dm.generated > 0 ? "text-success" : "text-muted-foreground/60"
+                                  )}>
+                                    {dm.generated}/{dm.total}
+                                  </span>
+                                  {dm.lastGen && (
+                                    <>
+                                      <span className="text-border">·</span>
+                                      <span>{dm.lastGen}</span>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </TableCell>
 
                         <TableCell className="text-right">

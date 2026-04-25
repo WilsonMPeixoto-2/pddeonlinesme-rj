@@ -1,18 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { CurrencyInput } from "@/components/inputs/CurrencyInput";
 import { NumberInput } from "@/components/inputs/NumberInput";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
@@ -32,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
 
 /* ─── Types ─── */
@@ -173,7 +167,7 @@ export default function EscolaEditar() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState<Set<keyof Unidade>>(new Set());
-  const [exercicio, setExercicio] = useState("2026");
+  const { exercicio } = useExercicio();
   const [activeSection, setActiveSection] = useState<string>("identificacao");
   const [docsOpen, setDocsOpen] = useState(false);
 
@@ -323,11 +317,21 @@ export default function EscolaEditar() {
   return (
     <AppLayout>
       <div className="space-y-5">
-        {/* TOP BAR */}
+        {/* TOP BAR — Breadcrumb (O1) */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/escolas")}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-          </Button>
+          <nav className="flex items-center gap-1.5 text-sm">
+            <Link
+              to="/escolas"
+              className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Unidades Escolares
+            </Link>
+            <span className="text-muted-foreground/40">/</span>
+            <span className="max-w-[300px] truncate font-medium text-foreground">
+              {u.designacao}
+            </span>
+          </nav>
 
           <div className="flex flex-wrap items-center gap-2">
             {dirty && (
@@ -336,15 +340,6 @@ export default function EscolaEditar() {
                 Alterações não salvas
               </span>
             )}
-            <Select value={exercicio} onValueChange={setExercicio}>
-              <SelectTrigger className="h-9 w-[100px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2025">2025</SelectItem>
-                <SelectItem value="2026">2026</SelectItem>
-              </SelectContent>
-            </Select>
             <Button size="sm" onClick={() => setDocsOpen(true)}>
               <FileText className="mr-2 h-4 w-4" /> Gerar documentos
             </Button>
