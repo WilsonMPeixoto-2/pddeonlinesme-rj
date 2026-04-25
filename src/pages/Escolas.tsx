@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
-  MoreVertical, FileText, Eye, Trash2,
+  MoreVertical, FileText, Eye, Trash2, ArrowUpRight,
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -402,12 +402,15 @@ export default function Escolas() {
                           <button
                             type="button"
                             onClick={() => navigate(`/escolas/${e.id}`)}
-                            className="group/link inline-flex items-center gap-1.5 text-left font-medium text-foreground transition-colors hover:text-primary focus-visible:text-primary focus-visible:outline-none"
+                            title="Abrir cadastro completo"
+                            className="group/link inline-flex items-center gap-1.5 text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none"
                             aria-label={`Abrir cadastro de ${e.designacao}`}
                           >
-                            <span className="border-b border-transparent group-hover/link:border-primary/40">
-                              {e.designacao}
-                            </span>
+                            <span>{e.designacao}</span>
+                            <ArrowUpRight
+                              className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
+                              aria-hidden="true"
+                            />
                           </button>
                         </TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground tabular-nums">
