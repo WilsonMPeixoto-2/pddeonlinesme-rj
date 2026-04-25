@@ -398,7 +398,18 @@ export default function Escolas() {
                         className="group relative border-b border-border/40 transition-colors hover:bg-primary/[0.03] before:pointer-events-none before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:origin-top before:scale-y-0 before:bg-gradient-to-b before:from-primary/0 before:via-primary before:to-primary/0 before:opacity-0 before:transition-all before:duration-200 hover:before:scale-y-100 hover:before:opacity-100"
                       >
 
-                        <TableCell className="py-3 font-medium">{e.designacao}</TableCell>
+                        <TableCell className="py-3 font-medium">
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/escolas/${e.id}`)}
+                            className="group/link inline-flex items-center gap-1.5 text-left font-medium text-foreground transition-colors hover:text-primary focus-visible:text-primary focus-visible:outline-none"
+                            aria-label={`Abrir cadastro de ${e.designacao}`}
+                          >
+                            <span className="border-b border-transparent group-hover/link:border-primary/40">
+                              {e.designacao}
+                            </span>
+                          </button>
+                        </TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground tabular-nums">
                           {e.inep ?? "—"}
                         </TableCell>
