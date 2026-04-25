@@ -317,13 +317,13 @@ export default function Escolas() {
             <Table>
               <TableHeader>
                 <TableRow className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 backdrop-blur-md hover:bg-muted/50">
-                  <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-11 min-w-[260px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Designação
                   </TableHead>
-                  <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     INEP
                   </TableHead>
-                  <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-11 min-w-[180px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Diretor(a)
                   </TableHead>
                   <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
