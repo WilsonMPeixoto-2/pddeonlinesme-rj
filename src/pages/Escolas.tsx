@@ -296,19 +296,85 @@ export default function Escolas() {
             </p>
           </div>
           {!loading && unidades.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {(Object.keys(statusConfig) as (keyof typeof statusConfig)[]).map((key) => (
-                <span
-                  key={key}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-muted/20 px-2.5 py-1 text-xs text-muted-foreground"
-                >
-                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${statusConfig[key].dotClass}`} />
-                  {statusCounts[key]} {statusConfig[key].label.toLowerCase()}
-                </span>
-              ))}
+            <div className="flex flex-wrap gap-1.5">
+              {(Object.keys(statusConfig) as (keyof typeof statusConfig)[]).map((key) => {
+                const active = statusFilter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setStatusFilter(active ? "todas" : key)}
+                    aria-pressed={active}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                      active
+                        ? cn(statusConfig[key].badgeClass, "shadow-[0_0_12px_hsl(var(--primary)/0.15)]")
+                        : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                    )}
+                  >
+                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${statusConfig[key].dotClass}`} />
+                    <span className="font-semibold tabular-nums">{statusCounts[key]}</span>
+                    <span>{statusConfig[key].label.toLowerCase()}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
+
+        {/* Programa filter pills (PDDE Básico / Qualidade / Equidade) */}
+        {!loading && unidades.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              Programa
+            </span>
+            <button
+              type="button"
+              onClick={() => setProgramaFilter("todos")}
+              aria-pressed={programaFilter === "todos"}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                programaFilter === "todos"
+                  ? "border-foreground/30 bg-foreground/5 text-foreground"
+                  : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+              )}
+            >
+              Todos
+              <span className="font-semibold tabular-nums">{unidades.length}</span>
+            </button>
+            {(Object.keys(programaConfig) as Programa[]).map((key) => {
+              const active = programaFilter === key;
+              const cfg = programaConfig[key];
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setProgramaFilter(active ? "todos" : key)}
+                  aria-pressed={active}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    active
+                      ? cfg.className
+                      : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                  )}
+                >
+                  {cfg.short}
+                  <span className="font-semibold tabular-nums">{programaCounts[key]}</span>
+                </button>
+              );
+            })}
+            {isSearching && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="ml-auto inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+              >
+                <X className="h-3 w-3" />
+                Limpar filtros
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Toolbar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
