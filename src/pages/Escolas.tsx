@@ -51,6 +51,8 @@ type Unidade = {
 };
 
 type StatusFilter = "todas" | "pronta" | "incompleta" | "pendente";
+type Programa = "basico" | "qualidade" | "equidade";
+type ProgramaFilter = "todos" | Programa;
 
 /* ─── Helpers ─── */
 
@@ -95,6 +97,36 @@ const statusConfig = {
     badgeClass: "border-destructive/30 bg-destructive/10 text-destructive",
   },
 } as const;
+
+/**
+ * Programa PDDE — placeholder visual.
+ * O campo `programa` ainda não existe em `unidades_escolares`.
+ * Derivamos deterministicamente do id para que o filtro funcione no protótipo.
+ * Substituir por `e.programa` quando a coluna for adicionada ao schema.
+ */
+function getPrograma(e: Unidade): Programa {
+  const code = e.id.charCodeAt(0) + e.id.charCodeAt(e.id.length - 1);
+  const opts: Programa[] = ["basico", "qualidade", "equidade"];
+  return opts[code % 3];
+}
+
+const programaConfig: Record<Programa, { label: string; short: string; className: string }> = {
+  basico: {
+    label: "PDDE Básico",
+    short: "Básico",
+    className: "border-primary/30 bg-primary/10 text-primary",
+  },
+  qualidade: {
+    label: "PDDE Qualidade",
+    short: "Qualidade",
+    className: "border-success/30 bg-success/10 text-success",
+  },
+  equidade: {
+    label: "PDDE Equidade",
+    short: "Equidade",
+    className: "border-warning/40 bg-warning/10 text-warning",
+  },
+};
 
 /* ─── Execution bar (saldo vs gasto) ─── */
 
