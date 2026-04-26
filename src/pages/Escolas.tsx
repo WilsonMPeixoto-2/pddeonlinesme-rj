@@ -272,7 +272,7 @@ export default function Escolas() {
     return counts;
   }, [unidades]);
 
-  const COLUMNS = 8;
+  const COLUMNS = 7;
 
   const openDocs = (e: Unidade) => {
     setSelectedEscola(e);
