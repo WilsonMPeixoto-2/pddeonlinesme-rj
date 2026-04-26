@@ -209,6 +209,7 @@ export default function Escolas() {
   const [confirmLote, setConfirmLote] = useState(false);
   const { exercicio } = useExercicio();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
+  const [programaFilter, setProgramaFilter] = useState<ProgramaFilter>("todos");
 
   // Documents panel state
   const [docsPanelOpen, setDocsPanelOpen] = useState(false);
@@ -240,15 +241,33 @@ export default function Escolas() {
     if (statusFilter !== "todas") {
       filtered = filtered.filter((e) => getStatus(e) === statusFilter);
     }
+    if (programaFilter !== "todos") {
+      filtered = filtered.filter((e) => getPrograma(e) === programaFilter);
+    }
     return filtered;
-  }, [q, statusFilter, unidades]);
+  }, [q, statusFilter, programaFilter, unidades]);
 
-  const isSearching = q.trim().length > 0 || statusFilter !== "todas";
+  const isSearching =
+    q.trim().length > 0 || statusFilter !== "todas" || programaFilter !== "todos";
+
+  const clearFilters = () => {
+    setQ("");
+    setStatusFilter("todas");
+    setProgramaFilter("todos");
+  };
 
   const statusCounts = useMemo(() => {
     const counts = { pronta: 0, incompleta: 0, pendente: 0 };
     unidades.forEach((e) => {
       counts[getStatus(e)]++;
+    });
+    return counts;
+  }, [unidades]);
+
+  const programaCounts = useMemo(() => {
+    const counts: Record<Programa, number> = { basico: 0, qualidade: 0, equidade: 0 };
+    unidades.forEach((e) => {
+      counts[getPrograma(e)]++;
     });
     return counts;
   }, [unidades]);
