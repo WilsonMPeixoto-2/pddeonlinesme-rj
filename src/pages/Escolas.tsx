@@ -404,14 +404,24 @@ export default function Escolas() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="todas">Todas</SelectItem>
+                <SelectItem value="todas">Todos status</SelectItem>
                 <SelectItem value="pronta">Prontas</SelectItem>
                 <SelectItem value="incompleta">Incompletas</SelectItem>
                 <SelectItem value="pendente">Pendentes</SelectItem>
               </SelectContent>
             </Select>
 
-
+            <Select value={programaFilter} onValueChange={(v) => setProgramaFilter(v as ProgramaFilter)}>
+              <SelectTrigger className="h-10 w-[170px] shrink-0">
+                <SelectValue placeholder="Programa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos programas</SelectItem>
+                <SelectItem value="basico">PDDE Básico</SelectItem>
+                <SelectItem value="qualidade">PDDE Qualidade</SelectItem>
+                <SelectItem value="equidade">PDDE Equidade</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -440,11 +450,8 @@ export default function Escolas() {
             <Table>
               <TableHeader>
                 <TableRow className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 backdrop-blur-md hover:bg-muted/50">
-                  <TableHead className="h-11 min-w-[260px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Designação
-                  </TableHead>
-                  <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    INEP
+                  <TableHead className="h-11 min-w-[300px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Unidade escolar
                   </TableHead>
                   <TableHead className="h-11 min-w-[180px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Diretor(a)
@@ -502,7 +509,7 @@ export default function Escolas() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => { setQ(""); setStatusFilter("todas"); }}
+                              onClick={clearFilters}
                             >
                               Limpar filtros
                             </Button>
@@ -515,29 +522,43 @@ export default function Escolas() {
                   lista.map((e) => {
                     const st = getStatus(e);
                     const cfg = statusConfig[st];
+                    const prog = getPrograma(e);
+                    const progCfg = programaConfig[prog];
                     return (
                       <TableRow
                         key={e.id}
                         className="group border-b border-border/40 transition-colors hover:bg-primary/[0.03]"
                       >
-
-                        <TableCell className="py-3 font-medium">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/escolas/${e.id}`)}
-                            title="Abrir cadastro completo"
-                            className="group/link inline-flex items-center gap-1.5 rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                            aria-label={`Abrir cadastro de ${e.designacao}`}
-                          >
-                            <span>{e.designacao}</span>
-                            <ArrowUpRight
-                              className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
-                              aria-hidden="true"
-                            />
-                          </button>
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground tabular-nums">
-                          {e.inep ?? "—"}
+                        <TableCell className="py-3">
+                          <div className="flex flex-col gap-1">
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/escolas/${e.id}`)}
+                              title="Abrir cadastro completo"
+                              className="group/link inline-flex items-center gap-1.5 self-start rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                              aria-label={`Abrir cadastro de ${e.designacao}`}
+                            >
+                              <span>{e.designacao}</span>
+                              <ArrowUpRight
+                                className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
+                                aria-hidden="true"
+                              />
+                            </button>
+                            <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                              <span className="font-mono tabular-nums">
+                                INEP {e.inep ?? "—"}
+                              </span>
+                              <span className="text-border">·</span>
+                              <span
+                                className={cn(
+                                  "inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium",
+                                  progCfg.className,
+                                )}
+                              >
+                                {progCfg.short}
+                              </span>
+                            </div>
+                          </div>
                         </TableCell>
                         <TableCell className="text-sm">{e.diretor ?? "—"}</TableCell>
                         <TableCell>
