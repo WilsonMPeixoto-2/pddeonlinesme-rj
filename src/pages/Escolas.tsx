@@ -51,6 +51,8 @@ type Unidade = {
 };
 
 type StatusFilter = "todas" | "pronta" | "incompleta" | "pendente";
+type Programa = "basico" | "qualidade" | "equidade";
+type ProgramaFilter = "todos" | Programa;
 
 /* ─── Helpers ─── */
 
@@ -95,6 +97,36 @@ const statusConfig = {
     badgeClass: "border-destructive/30 bg-destructive/10 text-destructive",
   },
 } as const;
+
+/**
+ * Programa PDDE — placeholder visual.
+ * O campo `programa` ainda não existe em `unidades_escolares`.
+ * Derivamos deterministicamente do id para que o filtro funcione no protótipo.
+ * Substituir por `e.programa` quando a coluna for adicionada ao schema.
+ */
+function getPrograma(e: Unidade): Programa {
+  const code = e.id.charCodeAt(0) + e.id.charCodeAt(e.id.length - 1);
+  const opts: Programa[] = ["basico", "qualidade", "equidade"];
+  return opts[code % 3];
+}
+
+const programaConfig: Record<Programa, { label: string; short: string; className: string }> = {
+  basico: {
+    label: "PDDE Básico",
+    short: "Básico",
+    className: "border-primary/30 bg-primary/10 text-primary",
+  },
+  qualidade: {
+    label: "PDDE Qualidade",
+    short: "Qualidade",
+    className: "border-success/30 bg-success/10 text-success",
+  },
+  equidade: {
+    label: "PDDE Equidade",
+    short: "Equidade",
+    className: "border-warning/40 bg-warning/10 text-warning",
+  },
+};
 
 /* ─── Execution bar (saldo vs gasto) ─── */
 
@@ -177,6 +209,7 @@ export default function Escolas() {
   const [confirmLote, setConfirmLote] = useState(false);
   const { exercicio } = useExercicio();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
+  const [programaFilter, setProgramaFilter] = useState<ProgramaFilter>("todos");
 
   // Documents panel state
   const [docsPanelOpen, setDocsPanelOpen] = useState(false);
@@ -208,10 +241,20 @@ export default function Escolas() {
     if (statusFilter !== "todas") {
       filtered = filtered.filter((e) => getStatus(e) === statusFilter);
     }
+    if (programaFilter !== "todos") {
+      filtered = filtered.filter((e) => getPrograma(e) === programaFilter);
+    }
     return filtered;
-  }, [q, statusFilter, unidades]);
+  }, [q, statusFilter, programaFilter, unidades]);
 
-  const isSearching = q.trim().length > 0 || statusFilter !== "todas";
+  const isSearching =
+    q.trim().length > 0 || statusFilter !== "todas" || programaFilter !== "todos";
+
+  const clearFilters = () => {
+    setQ("");
+    setStatusFilter("todas");
+    setProgramaFilter("todos");
+  };
 
   const statusCounts = useMemo(() => {
     const counts = { pronta: 0, incompleta: 0, pendente: 0 };
@@ -221,7 +264,15 @@ export default function Escolas() {
     return counts;
   }, [unidades]);
 
-  const COLUMNS = 8;
+  const programaCounts = useMemo(() => {
+    const counts: Record<Programa, number> = { basico: 0, qualidade: 0, equidade: 0 };
+    unidades.forEach((e) => {
+      counts[getPrograma(e)]++;
+    });
+    return counts;
+  }, [unidades]);
+
+  const COLUMNS = 7;
 
   const openDocs = (e: Unidade) => {
     setSelectedEscola(e);
@@ -245,19 +296,85 @@ export default function Escolas() {
             </p>
           </div>
           {!loading && unidades.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {(Object.keys(statusConfig) as (keyof typeof statusConfig)[]).map((key) => (
-                <span
-                  key={key}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-muted/20 px-2.5 py-1 text-xs text-muted-foreground"
-                >
-                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${statusConfig[key].dotClass}`} />
-                  {statusCounts[key]} {statusConfig[key].label.toLowerCase()}
-                </span>
-              ))}
+            <div className="flex flex-wrap gap-1.5">
+              {(Object.keys(statusConfig) as (keyof typeof statusConfig)[]).map((key) => {
+                const active = statusFilter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setStatusFilter(active ? "todas" : key)}
+                    aria-pressed={active}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                      active
+                        ? cn(statusConfig[key].badgeClass, "shadow-[0_0_12px_hsl(var(--primary)/0.15)]")
+                        : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                    )}
+                  >
+                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${statusConfig[key].dotClass}`} />
+                    <span className="font-semibold tabular-nums">{statusCounts[key]}</span>
+                    <span>{statusConfig[key].label.toLowerCase()}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
+
+        {/* Programa filter pills (PDDE Básico / Qualidade / Equidade) */}
+        {!loading && unidades.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              Programa
+            </span>
+            <button
+              type="button"
+              onClick={() => setProgramaFilter("todos")}
+              aria-pressed={programaFilter === "todos"}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                programaFilter === "todos"
+                  ? "border-foreground/30 bg-foreground/5 text-foreground"
+                  : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+              )}
+            >
+              Todos
+              <span className="font-semibold tabular-nums">{unidades.length}</span>
+            </button>
+            {(Object.keys(programaConfig) as Programa[]).map((key) => {
+              const active = programaFilter === key;
+              const cfg = programaConfig[key];
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setProgramaFilter(active ? "todos" : key)}
+                  aria-pressed={active}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    active
+                      ? cfg.className
+                      : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                  )}
+                >
+                  {cfg.short}
+                  <span className="font-semibold tabular-nums">{programaCounts[key]}</span>
+                </button>
+              );
+            })}
+            {isSearching && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="ml-auto inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+              >
+                <X className="h-3 w-3" />
+                Limpar filtros
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Toolbar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -287,14 +404,24 @@ export default function Escolas() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="todas">Todas</SelectItem>
+                <SelectItem value="todas">Todos status</SelectItem>
                 <SelectItem value="pronta">Prontas</SelectItem>
                 <SelectItem value="incompleta">Incompletas</SelectItem>
                 <SelectItem value="pendente">Pendentes</SelectItem>
               </SelectContent>
             </Select>
 
-
+            <Select value={programaFilter} onValueChange={(v) => setProgramaFilter(v as ProgramaFilter)}>
+              <SelectTrigger className="h-10 w-[170px] shrink-0">
+                <SelectValue placeholder="Programa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos programas</SelectItem>
+                <SelectItem value="basico">PDDE Básico</SelectItem>
+                <SelectItem value="qualidade">PDDE Qualidade</SelectItem>
+                <SelectItem value="equidade">PDDE Equidade</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -323,11 +450,8 @@ export default function Escolas() {
             <Table>
               <TableHeader>
                 <TableRow className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 backdrop-blur-md hover:bg-muted/50">
-                  <TableHead className="h-11 min-w-[260px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Designação
-                  </TableHead>
-                  <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    INEP
+                  <TableHead className="h-11 min-w-[300px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Unidade escolar
                   </TableHead>
                   <TableHead className="h-11 min-w-[180px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Diretor(a)
@@ -385,7 +509,7 @@ export default function Escolas() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => { setQ(""); setStatusFilter("todas"); }}
+                              onClick={clearFilters}
                             >
                               Limpar filtros
                             </Button>
@@ -398,29 +522,43 @@ export default function Escolas() {
                   lista.map((e) => {
                     const st = getStatus(e);
                     const cfg = statusConfig[st];
+                    const prog = getPrograma(e);
+                    const progCfg = programaConfig[prog];
                     return (
                       <TableRow
                         key={e.id}
                         className="group border-b border-border/40 transition-colors hover:bg-primary/[0.03]"
                       >
-
-                        <TableCell className="py-3 font-medium">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/escolas/${e.id}`)}
-                            title="Abrir cadastro completo"
-                            className="group/link inline-flex items-center gap-1.5 rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                            aria-label={`Abrir cadastro de ${e.designacao}`}
-                          >
-                            <span>{e.designacao}</span>
-                            <ArrowUpRight
-                              className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
-                              aria-hidden="true"
-                            />
-                          </button>
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground tabular-nums">
-                          {e.inep ?? "—"}
+                        <TableCell className="py-3">
+                          <div className="flex flex-col gap-1">
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/escolas/${e.id}`)}
+                              title="Abrir cadastro completo"
+                              className="group/link inline-flex items-center gap-1.5 self-start rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                              aria-label={`Abrir cadastro de ${e.designacao}`}
+                            >
+                              <span>{e.designacao}</span>
+                              <ArrowUpRight
+                                className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
+                                aria-hidden="true"
+                              />
+                            </button>
+                            <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                              <span className="font-mono tabular-nums">
+                                INEP {e.inep ?? "—"}
+                              </span>
+                              <span className="text-border">·</span>
+                              <span
+                                className={cn(
+                                  "inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium",
+                                  progCfg.className,
+                                )}
+                              >
+                                {progCfg.short}
+                              </span>
+                            </div>
+                          </div>
                         </TableCell>
                         <TableCell className="text-sm">{e.diretor ?? "—"}</TableCell>
                         <TableCell>
