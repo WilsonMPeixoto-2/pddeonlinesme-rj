@@ -4,7 +4,8 @@ Projeto: PDDE Online 2026
 Rode estas queries localmente para atestar a sanidade do banco após as migrations ou importações.
 
 ## Bootstrap do primeiro Admin
-A chave `SUPABASE_SERVICE_KEY` é de uso estrito para scripts de importação e administração local. **Nunca exponha no frontend (VITE_) nem envie para o repositório.**
+A chave `SUPABASE_SERVICE_KEY`, se usada em tarefas administrativas fora deste script, é de uso estrito local/servidor. **Nunca exponha no frontend (VITE_) nem envie para o repositório.**
+O importador oficial deste PR usa `DATABASE_URL` no modo `--apply`, com transação única no Postgres, para evitar carga parcial entre `unidades_escolares` e `execucao_financeira`.
 Como o RLS está trancado para inserções no `user_roles`, use o seguinte passo para criar seu primeiro administrador:
 1. Crie o seu usuário via painel do Supabase Auth.
 2. Copie o `id` (UUID) gerado.
@@ -17,8 +18,20 @@ INSERT INTO public.user_roles (user_id, role) VALUES ('<seu-uuid>', 'admin');
 ```sql
 -- Validação Direta:
 SELECT * FROM public.user_roles WHERE user_id = '<seu-uuid>' AND role = 'admin';
--- Validação Autenticada (App/API):
+
+-- Validação autenticada via app/API, com JWT do usuário criado:
 SELECT public.has_role('admin');
+```
+
+Observação: no SQL Editor comum, `auth.uid()` pode não representar o usuário autenticado do app. Use a validação direta acima como conferência administrativa e valide `has_role('admin')` também por sessão real do app/API.
+
+## Gate do importador
+O modo `--apply` do `scripts/import_base_xlsx.py` só deve ser usado após dry-run sem erros de validação. A carga final exige 163 unidades válidas. Se a BASE oficial vier com total diferente, mas ainda dentro da faixa segura de 150 a 200, registre aprovação humana e rode com `--approve-divergent-count`.
+
+Dependências operacionais do script:
+
+```bash
+pip install openpyxl "psycopg[binary]"
 ```
 
 ## Validações de Banco
@@ -44,6 +57,12 @@ SELECT COUNT(*) FROM public.unidades_escolares WHERE designacao LIKE '%—%';
 -- 5. Unidades com nome nulo ou vazio (DEVE RETORNAR ZERO)
 SELECT COUNT(*) FROM public.unidades_escolares WHERE nome IS NULL OR trim(nome) = '';
 
+-- 5.1. Duplicidade de designacao (DEVE RETORNAR ZERO)
+SELECT designacao, COUNT(*)
+FROM public.unidades_escolares
+GROUP BY designacao
+HAVING COUNT(*) > 1;
+
 -- 6. CNPJs com tamanho diferente de 14, quando não nulos (DEVE RETORNAR ZERO)
 SELECT designacao, cnpj FROM public.unidades_escolares WHERE cnpj IS NOT NULL AND length(cnpj) != 14;
 
@@ -57,10 +76,14 @@ SELECT COUNT(*) FROM public.document_types;
 SELECT exercicio, status, COUNT(*) FROM public.documentos_gerados GROUP BY exercicio, status;
 
 -- 10. Validação de Views Retornando Quantidade Esperada
--- A View deve retornar o mesmo número de linhas da tabela de execucao_financeira (assumindo 1 escola = 1 execução base)
+-- A View deve retornar o mesmo número de linhas da tabela de execucao_financeira para o exercício/programa base.
 SELECT 
-  (SELECT count(*) FROM public.vw_unidades_escolares_frontend) AS total_na_view,
+  (SELECT count(*) FROM public.vw_unidades_escolares_frontend WHERE exercicio = 2026 AND programa = 'basico') AS total_na_view,
   (SELECT count(*) FROM public.execucao_financeira WHERE exercicio = 2026 AND programa = 'basico') AS total_execucao;
+
+-- 10.1. Campos normalizados sem caracteres indevidos
+SELECT designacao, cnpj FROM public.unidades_escolares WHERE cnpj IS NOT NULL AND cnpj !~ '^[0-9]{14}$';
+SELECT designacao, inep FROM public.unidades_escolares WHERE inep IS NOT NULL AND inep !~ '^[0-9]{8}$';
 
 -- 11. Tentativa de delete físico com histórico (Teste Transacional Controlado)
 -- Não execute exclusões sem transação. Este bloco assegura que o ON DELETE RESTRICT barra exclusões indevidas.

@@ -36,7 +36,6 @@ $$;
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS trigger
 LANGUAGE plpgsql
-SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
@@ -58,13 +57,19 @@ CREATE POLICY "Usuário pode ler seu próprio profile"
   ON public.profiles FOR SELECT
   TO authenticated USING (auth.uid() = id);
 
+CREATE POLICY "Admin pode ler todos os profiles"
+  ON public.profiles FOR SELECT
+  TO authenticated USING (public.has_role('admin'::public.app_role));
+
 CREATE POLICY "Admin pode inserir profiles"
   ON public.profiles FOR INSERT
   TO authenticated WITH CHECK (public.has_role('admin'::public.app_role));
 
 CREATE POLICY "Admin pode atualizar profiles"
   ON public.profiles FOR UPDATE
-  TO authenticated USING (public.has_role('admin'::public.app_role));
+  TO authenticated
+  USING (public.has_role('admin'::public.app_role))
+  WITH CHECK (public.has_role('admin'::public.app_role));
 
 CREATE POLICY "Admin pode deletar profiles"
   ON public.profiles FOR DELETE
@@ -75,13 +80,19 @@ CREATE POLICY "Usuário pode ler seus próprios roles"
   ON public.user_roles FOR SELECT
   TO authenticated USING (auth.uid() = user_id);
 
+CREATE POLICY "Admin pode ler todos os roles"
+  ON public.user_roles FOR SELECT
+  TO authenticated USING (public.has_role('admin'::public.app_role));
+
 CREATE POLICY "Admin pode inserir user_roles"
   ON public.user_roles FOR INSERT
   TO authenticated WITH CHECK (public.has_role('admin'::public.app_role));
 
 CREATE POLICY "Admin pode atualizar user_roles"
   ON public.user_roles FOR UPDATE
-  TO authenticated USING (public.has_role('admin'::public.app_role));
+  TO authenticated
+  USING (public.has_role('admin'::public.app_role))
+  WITH CHECK (public.has_role('admin'::public.app_role));
 
 CREATE POLICY "Admin pode deletar user_roles"
   ON public.user_roles FOR DELETE
