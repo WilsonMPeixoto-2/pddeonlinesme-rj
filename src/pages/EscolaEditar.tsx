@@ -255,10 +255,19 @@ export default function EscolaEditar() {
         cnpj: u.cnpj,
         diretor: u.diretor,
         email: u.email,
+        endereco: u.endereco,
+        agencia: u.agencia,
+        conta_corrente: u.conta_corrente,
         alunos: Number(u.alunos),
         saldo_anterior: Number(u.saldo_anterior),
         recebido: Number(u.recebido),
         gasto: Number(u.gasto),
+        reprogramado_custeio: Number(u.reprogramado_custeio),
+        reprogramado_capital: Number(u.reprogramado_capital),
+        parcela_1_custeio: Number(u.parcela_1_custeio),
+        parcela_1_capital: Number(u.parcela_1_capital),
+        parcela_2_custeio: Number(u.parcela_2_custeio),
+        parcela_2_capital: Number(u.parcela_2_capital),
       })
       .eq("id", u.id);
     setSaving(false);
