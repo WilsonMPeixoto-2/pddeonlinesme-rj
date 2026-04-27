@@ -415,11 +415,13 @@ export default function EscolaEditar() {
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-muted/40">
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70 shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
+                className="relative h-full rounded-full bg-gradient-to-r from-primary to-primary/70 shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
                 initial={{ width: 0 }}
                 animate={{ width: `${overallPct}%` }}
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              />
+              >
+                <span className="sheen-overlay" aria-hidden />
+              </motion.div>
             </div>
           </div>
         </motion.div>

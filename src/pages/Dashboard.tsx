@@ -195,7 +195,9 @@ export default function Dashboard() {
                   initial={{ width: 0 }}
                   animate={{ width: `${executionRate}%` }}
                   transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-                />
+                >
+                  <span className="sheen-overlay" aria-hidden />
+                </motion.div>
               </div>
               <div className="flex justify-between text-[11px] text-muted-foreground">
                 <span>Executado: {fmtBRL(totalGasto)}</span>

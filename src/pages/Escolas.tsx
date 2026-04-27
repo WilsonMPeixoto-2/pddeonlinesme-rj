@@ -549,7 +549,7 @@ export default function Escolas() {
                     return (
                       <TableRow
                         key={e.id}
-                        className="group border-b border-border/40 transition-colors hover:bg-primary/[0.03]"
+                        className="group row-accent border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
                       >
                         <TableCell className="py-3">
                           <div className="flex flex-col gap-1">
@@ -673,7 +673,7 @@ export default function Escolas() {
             de <span className="font-medium text-foreground tabular-nums">{unidades.length}</span>
           </span>
           <Badge variant="outline" className="border-success/40 bg-success/5 text-success">
-            <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-success" />
+            <span className="pulse-dot-success mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-success" />
             Conectado · Supabase
           </Badge>
         </div>
