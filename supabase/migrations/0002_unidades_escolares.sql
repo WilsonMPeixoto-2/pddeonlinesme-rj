@@ -56,8 +56,8 @@ CREATE POLICY "Admin e Operador podem atualizar unidades"
   );
 
 -- O DELETE físico está operacionalmente proibido (Emenda E3). 
--- Caso seja estritamente necessário via interface administrativa (ex: erro crasso), restrito apenas ao Admin.
-CREATE POLICY "Somente Admin pode deletar unidades"
-  ON public.unidades_escolares FOR DELETE
-  TO authenticated
-  USING (public.has_role('admin'::public.app_role));
+-- O delete físico não possui policy de API nesta fase para garantir rastreabilidade. A exclusão/desativação deve ser feita atualizando ativo=false.
+
+CREATE TRIGGER trg_unidades_updated_at
+BEFORE UPDATE ON public.unidades_escolares
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

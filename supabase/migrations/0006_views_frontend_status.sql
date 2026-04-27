@@ -35,8 +35,9 @@ FROM public.unidades_escolares ue
 JOIN public.execucao_financeira ef ON ef.unidade_id = ue.id
 WHERE ue.ativo = true;
 
--- OBS: Usamos JOIN (Inner Join) em vez de LEFT JOIN para forçar a integridade de que uma unidade válida
--- no frontend DEVE ter uma linha de execucao_financeira para o ano. Isso mitiga o risco de Falso Negativo.
+-- OBS: O JOIN (Inner Join) não "mitiga" falso negativo sozinho; ele EXIGE que o importador 
+-- inicialize execucao_financeira para todas as unidades ativas. 
+-- Validar que não existe unidade ativa sem execucao_financeira é um GATE OBRIGATÓRIO antes do cutover.
 
 CREATE VIEW public.vw_unidades_status 
 WITH (security_invoker = true) AS

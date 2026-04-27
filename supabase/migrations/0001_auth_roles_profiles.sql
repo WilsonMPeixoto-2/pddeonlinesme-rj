@@ -61,3 +61,17 @@ CREATE POLICY "Admin pode ler todos os roles"
 CREATE POLICY "Admin pode gerenciar user_roles"
   ON public.user_roles FOR ALL
   TO authenticated USING (public.has_role('admin'::public.app_role));
+
+
+-- Função genérica para auto-atualizar updated_at
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER AS `$$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+`$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE TRIGGER trg_profiles_updated_at
+BEFORE UPDATE ON public.profiles
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

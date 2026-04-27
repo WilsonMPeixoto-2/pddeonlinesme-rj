@@ -48,3 +48,7 @@ CREATE POLICY "Admin e Operador podem atualizar execução"
     public.has_role('admin'::public.app_role) OR 
     public.has_role('operador'::public.app_role)
   );
+
+CREATE TRIGGER trg_exec_fin_updated_at
+BEFORE UPDATE ON public.execucao_financeira
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

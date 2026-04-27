@@ -53,3 +53,7 @@ CREATE POLICY "Admin e Operador podem ler documentos_gerados"
 CREATE POLICY "Admin e Operador podem gerenciar documentos_gerados"
   ON public.documentos_gerados FOR ALL TO authenticated
   USING (public.has_role('admin'::public.app_role) OR public.has_role('operador'::public.app_role));
+
+CREATE TRIGGER trg_doc_gerados_updated_at
+BEFORE UPDATE ON public.documentos_gerados
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
