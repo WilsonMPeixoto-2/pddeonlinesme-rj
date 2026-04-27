@@ -44,10 +44,19 @@ type Unidade = {
   cnpj: string | null;
   diretor: string | null;
   email: string | null;
+  endereco: string | null;
+  agencia: string | null;
+  conta_corrente: string | null;
   alunos: number;
   saldo_anterior: number;
   recebido: number;
   gasto: number;
+  reprogramado_custeio: number;
+  reprogramado_capital: number;
+  parcela_1_custeio: number;
+  parcela_1_capital: number;
+  parcela_2_custeio: number;
+  parcela_2_capital: number;
 };
 
 type StatusFilter = "todas" | "pronta" | "incompleta" | "pendente";
