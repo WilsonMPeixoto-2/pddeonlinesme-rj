@@ -8,8 +8,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-__pycache__/
-*.py[cod]
 dist
 dist-ssr
 *.local
@@ -25,5 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
-
-.env

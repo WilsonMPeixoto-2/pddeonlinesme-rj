@@ -1,17 +1,4 @@
 /**
- * @deprecated Importador prototípico do fluxo Lovable.
- * Substituído pelo importador oficial em scripts/import_base_xlsx.py,
- * que usa validação robusta, Decimal para valores financeiros, separação
- * semântica entre designacao e nome, e aplicação transacional via DATABASE_URL.
- *
- * Será removido ou substituído no PR 3B durante o refactor das telas que
- * adaptam o frontend ao schema semântico v2.2.
- *
- * NÃO USE este arquivo como referência de importador oficial.
- * Consulte docs/MIGRATION_PLAN_FINAL.md, docs/SCHEMA_MAPPING.md
- * e scripts/import_base_xlsx.py.
- */
-/**
  * Importador da planilha oficial BASE.xlsx (4ª CRE / SME-RJ).
  *
  * Responsabilidades:

@@ -7,262 +7,59 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
-      document_types: {
-        Row: {
-          code: string
-          created_at: string
-          description: string | null
-          format: string | null
-          id: string
-          is_active: boolean
-          name: string
-          sort_order: number
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          description?: string | null
-          format?: string | null
-          id?: string
-          is_active?: boolean
-          name: string
-          sort_order?: number
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          description?: string | null
-          format?: string | null
-          id?: string
-          is_active?: boolean
-          name?: string
-          sort_order?: number
-        }
-        Relationships: []
-      }
-      documentos_gerados: {
-        Row: {
-          created_at: string
-          document_type_id: string
-          exercicio: number
-          file_path: string | null
-          generated_at: string | null
-          generated_by: string | null
-          id: string
-          metadata: Json
-          programa: string
-          status: string
-          unidade_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          document_type_id: string
-          exercicio: number
-          file_path?: string | null
-          generated_at?: string | null
-          generated_by?: string | null
-          id?: string
-          metadata?: Json
-          programa?: string
-          status?: string
-          unidade_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          document_type_id?: string
-          exercicio?: number
-          file_path?: string | null
-          generated_at?: string | null
-          generated_by?: string | null
-          id?: string
-          metadata?: Json
-          programa?: string
-          status?: string
-          unidade_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "documentos_gerados_document_type_id_fkey"
-            columns: ["document_type_id"]
-            isOneToOne: false
-            referencedRelation: "document_types"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documentos_gerados_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "unidades_escolares"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documentos_gerados_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "vw_unidades_escolares_frontend"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documentos_gerados_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "vw_unidades_status"
-            referencedColumns: ["unidade_id"]
-          },
-        ]
-      }
-      execucao_financeira: {
-        Row: {
-          created_at: string
-          exercicio: number
-          gasto: number
-          id: string
-          parcela_1_capital: number
-          parcela_1_custeio: number
-          parcela_2_capital: number
-          parcela_2_custeio: number
-          programa: string
-          reprogramado_capital: number
-          reprogramado_custeio: number
-          unidade_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          exercicio: number
-          gasto?: number
-          id?: string
-          parcela_1_capital?: number
-          parcela_1_custeio?: number
-          parcela_2_capital?: number
-          parcela_2_custeio?: number
-          programa?: string
-          reprogramado_capital?: number
-          reprogramado_custeio?: number
-          unidade_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          exercicio?: number
-          gasto?: number
-          id?: string
-          parcela_1_capital?: number
-          parcela_1_custeio?: number
-          parcela_2_capital?: number
-          parcela_2_custeio?: number
-          programa?: string
-          reprogramado_capital?: number
-          reprogramado_custeio?: number
-          unidade_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "execucao_financeira_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "unidades_escolares"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "execucao_financeira_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "vw_unidades_escolares_frontend"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "execucao_financeira_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "vw_unidades_status"
-            referencedColumns: ["unidade_id"]
-          },
-        ]
-      }
       import_logs: {
         Row: {
           created_at: string
           errors: Json
-          exercicio: number | null
           filename: string | null
           id: string
           inserted_rows: number
-          programa: string | null
           skipped_rows: number
           source: string
           status: string
           total_rows: number
           updated_rows: number
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string
           errors?: Json
-          exercicio?: number | null
           filename?: string | null
           id?: string
           inserted_rows?: number
-          programa?: string | null
-          skipped_rows?: number
-          source?: string
-          status: string
-          total_rows?: number
-          updated_rows?: number
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          errors?: Json
-          exercicio?: number | null
-          filename?: string | null
-          id?: string
-          inserted_rows?: number
-          programa?: string | null
           skipped_rows?: number
           source?: string
           status?: string
           total_rows?: number
           updated_rows?: number
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          email: string | null
-          id: string
-          nome: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email?: string | null
-          id: string
-          nome?: string | null
-          updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
-          email?: string | null
+          errors?: Json
+          filename?: string | null
           id?: string
-          nome?: string | null
-          updated_at?: string
+          inserted_rows?: number
+          skipped_rows?: number
+          source?: string
+          status?: string
+          total_rows?: number
+          updated_rows?: number
+          user_id?: string
         }
         Relationships: []
       }
       unidades_escolares: {
         Row: {
           agencia: string | null
-          alunos: number | null
-          ativo: boolean
+          alunos: number
           cnpj: string | null
           conta_corrente: string | null
           created_at: string
@@ -270,16 +67,22 @@ export type Database = {
           diretor: string | null
           email: string | null
           endereco: string | null
+          gasto: number
           id: string
           inep: string | null
-          nome: string
-          source_payload: Json | null
+          parcela_1_capital: number
+          parcela_1_custeio: number
+          parcela_2_capital: number
+          parcela_2_custeio: number
+          recebido: number
+          reprogramado_capital: number
+          reprogramado_custeio: number
+          saldo_anterior: number
           updated_at: string
         }
         Insert: {
           agencia?: string | null
-          alunos?: number | null
-          ativo?: boolean
+          alunos?: number
           cnpj?: string | null
           conta_corrente?: string | null
           created_at?: string
@@ -287,16 +90,22 @@ export type Database = {
           diretor?: string | null
           email?: string | null
           endereco?: string | null
+          gasto?: number
           id?: string
           inep?: string | null
-          nome: string
-          source_payload?: Json | null
+          parcela_1_capital?: number
+          parcela_1_custeio?: number
+          parcela_2_capital?: number
+          parcela_2_custeio?: number
+          recebido?: number
+          reprogramado_capital?: number
+          reprogramado_custeio?: number
+          saldo_anterior?: number
           updated_at?: string
         }
         Update: {
           agencia?: string | null
-          alunos?: number | null
-          ativo?: boolean
+          alunos?: number
           cnpj?: string | null
           conta_corrente?: string | null
           created_at?: string
@@ -304,10 +113,17 @@ export type Database = {
           diretor?: string | null
           email?: string | null
           endereco?: string | null
+          gasto?: number
           id?: string
           inep?: string | null
-          nome?: string
-          source_payload?: Json | null
+          parcela_1_capital?: number
+          parcela_1_custeio?: number
+          parcela_2_capital?: number
+          parcela_2_custeio?: number
+          recebido?: number
+          reprogramado_capital?: number
+          reprogramado_custeio?: number
+          saldo_anterior?: number
           updated_at?: string
         }
         Relationships: []
@@ -335,61 +151,19 @@ export type Database = {
       }
     }
     Views: {
-      vw_unidades_escolares_frontend: {
-        Row: {
-          agencia: string | null
-          alunos: number | null
-          ativo: boolean | null
-          cnpj: string | null
-          conta_corrente: string | null
-          created_at: string | null
-          designacao: string | null
-          diretor: string | null
-          email: string | null
-          endereco: string | null
-          exercicio: number | null
-          gasto: number | null
-          id: string | null
-          inep: string | null
-          nome: string | null
-          parcela_1_capital: number | null
-          parcela_1_custeio: number | null
-          parcela_2_capital: number | null
-          parcela_2_custeio: number | null
-          programa: string | null
-          recebido: number | null
-          reprogramado_capital: number | null
-          reprogramado_custeio: number | null
-          saldo_anterior: number | null
-          saldo_estimado: number | null
-          unidade_label: string | null
-          updated_at: string | null
-        }
-        Relationships: []
-      }
-      vw_unidades_status: {
-        Row: {
-          exercicio: number | null
-          programa: string | null
-          status: string | null
-          unidade_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
-          _user_id?: string
+          _user_id: string
         }
         Returns: boolean
       }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
-      app_role: "admin" | "operador" | "diretor"
+      app_role: "admin" | "operador"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -517,7 +291,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "operador", "diretor"],
+      app_role: ["admin", "operador"],
     },
   },
 } as const
