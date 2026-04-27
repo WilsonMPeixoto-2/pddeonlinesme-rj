@@ -579,6 +579,17 @@ export default function Escolas() {
                               >
                                 {progCfg.short}
                               </span>
+                              {(e.agencia || e.conta_corrente) && (
+                                <>
+                                  <span className="text-border">·</span>
+                                  <span
+                                    className="font-mono tabular-nums"
+                                    title="Agência / Conta corrente"
+                                  >
+                                    Ag {e.agencia ?? "—"} · CC {e.conta_corrente ?? "—"}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </TableCell>
