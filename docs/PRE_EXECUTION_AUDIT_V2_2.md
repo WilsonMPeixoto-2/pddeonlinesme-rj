@@ -1,49 +1,31 @@
-# Auditoria Técnica Pré-Execução (G0)
+# Auditoria Técnica Pré-Execução (G0) - Revisão Expandida
 Projeto: PDDE Online 2026
-Alvo: Plano de Migração Supabase Próprio v2.2
+Alvo: Plano de Migração Supabase Próprio v2.2.1
 
 ## 1. Achados Confirmados no Repositório (Dívida Técnica Atual)
-A análise dos arquivos do repositório em `v0.1.1-lovable-expanded-prototype` confirma os seguintes passivos estruturais:
 
 | Achado | Evidência no Repositório | Consequência |
 | :--- | :--- | :--- |
-| `useExercicio` é apenas `useState("2026")` | `src/hooks/useExercicio.tsx` | Precisa persistir em `localStorage` e orientar todas as *queries*. |
-| `Escolas.tsx` busca direto na tabela | `src/pages/Escolas.tsx` | PR 3 deve migrar para `vw_unidades_escolares_frontend` e filtrar por exercício. |
-| `Dashboard.tsx` soma campos legados direto | `src/pages/Dashboard.tsx` | PR 3 deve usar a *View* com agregados processados pelo Postgres. |
-| `baseImporter.ts` ignora a coluna NOME | `src/lib/baseImporter.ts` | Reforça a urgência da correção semântica proposta no V2.2. |
-| `import_logs` lido por qualquer autenticado | `20260427004801_...sql` | Exige política (RLS) mais restritiva no novo Supabase. |
-| Migration antiga permite DELETE por admin | Migrations iniciais | Risco crítico. O novo schema deve usar `ativo=false` (Soft Delete) e FK `ON DELETE RESTRICT`. |
-| `QueryClient` globalmente configurado | `src/App.tsx` | As *Query Keys* do React Query precisarão incluir a variável `exercicio`. |
+| `useExercicio` é apenas visual (`useState`) | `src/hooks/useExercicio.tsx` | Precisa persistir em `localStorage` e orientar todas as queries reais. |
+| Falso Negativo na View | Modelo separado sem sincronia | A view pode ocultar escolas se a execução financeira for nula no ano. |
+| ON DELETE CASCADE perigoso | Migrations antigas | Risco de apagar histórico financeiro ao apagar uma escola. |
+| `baseImporter.ts` obsoleto | `src/lib/baseImporter.ts` | Concatena Designação e Nome. Não serve para a carga oficial. |
+| O campo `nome` não existe no frontend | `Escolas.tsx`, `Dashboard.tsx` | Refatoração estrutural necessária nas telas para trocar `designacao` por `nome`. |
+| Autorização frágil | `ProtectedRoute.tsx`, `migrations` | `useAuth` checa sessão mas não checa *roles* para rotas restritas. |
+| `import_logs` público | Migration 20260427004801 | Qualquer autenticado lê logs. Precisamos restringir via RLS. |
+| `documentos_gerados` ausente | Frontend (mockado por ID) | Reforça a necessidade de criar a tabela na migration inicial. |
+| Frontend fazendo ETL real | `Base.tsx` | Carga massiva sendo feita pelo browser usando chaves públicas. Inadmissível. |
 
-## 2. Riscos Mapeados e Mitigações
+## 2. Emendas Técnicas Obrigatórias (E1 a E10)
+O plano original evolui para **v2.2.1** com as seguintes garantias blindadas:
 
-### A. Risco de Falso Negativo (View vs LEFT JOIN)
-A *view* `vw_unidades_escolares_frontend` pode ocultar escolas se o frontend filtrar por `.eq('exercicio', 2026)` e a escola não tiver registro financeiro criado.
-**Mitigação:** O script de ETL (Python/Node) deverá obrigatoriamente criar uma linha inicializada para cada escola na tabela `execucao_financeira` do ano base, mesmo com R$ 0,00.
-
-### B. Risco de Perda Histórica (ON DELETE CASCADE)
-**Mitigação:** Fica expressamente proibido o uso de `ON DELETE CASCADE` na FK da tabela `execucao_financeira`, `documentos_gerados` ou logs. O projeto adotará o uso da flag booleana `ativo` para Soft Delete.
-
-### C. Risco de Cache Misturado (React Query)
-O uso do TanStack Query exige governança sobre a revalidação.
-**Mitigação:** O PR 3 deve assegurar que toda consulta de dados adicione a variável `exercicio` à sua *Query Key* (ex: `['escolas', exercicio]`).
-
-## 3. Emendas ao Plano v2.2 (Decisões G0)
-*   **E1 — Inicialização obrigatória:** Todo import de escola inicializa o ano financeiro vigente zerado.
-*   **E2 — Proibição de CASCADE:** Proteção do histórico via `ON DELETE RESTRICT`.
-*   **E3 — Query Keys Reativas:** O frontend invalidará cache ao trocar o exercício.
-*   **E4 — View Segura:** Teste de integridade contra desaparecimento de escolas.
-*   **E5 — Testes de Integridade no PR 2:** O relatório final do PR 2 deve provar que não há entidades órfãs.
-
-## 4. Checklist Obrigatório para PR 2
-- [ ] Schema `unidades_escolares` com `nome` e `designacao` separados.
-- [ ] Schema `execucao_financeira` com `unidade_id` -> `ON DELETE RESTRICT`.
-- [ ] Script Python garante injeção de linha em `execucao_financeira` para cada inserção no cadastro.
-- [ ] Supabase CLI gera tipos limpos e sem conflito de CASCADE.
-- [ ] Gerar arquivo `import_report.md` atestando integridade (zero escolas ausentes do ano base).
-
-## 5. Checklist Obrigatório para PR 3
-- [ ] Hook `useExercicio` lê e grava em `localStorage`.
-- [ ] React Query usa `exercicio` nas chaves (`['escolas', exercicio]`).
-- [ ] `Dashboard.tsx` refatorado para consumir dados agregados da *View*.
-- [ ] O rótulo da UI de escolas prioriza `nome` sobre `designacao`.
+*   **E1 — Inicialização obrigatória:** Toda unidade importada gera linha zerada em `execucao_financeira`.
+*   **E2 — View protegida:** `vw_unidades_escolares_frontend` não ocultará unidades ativas por falha de JOIN.
+*   **E3 — Proibição de CASCADE:** A exclusão será via `ativo=false`. FKs usam `ON DELETE RESTRICT`.
+*   **E4 — `useExercicio` persistente:** Persistir no `localStorage` e incluir nas *Query Keys*.
+*   **E5 — Refatoração de Identidade:** Trocar uso visual de `designacao` por `nome` nas telas.
+*   **E6 — Importador Oficial Novo:** O `baseImporter.ts` do frontend é descartado em prol do script Python.
+*   **E7 — RLS / Roles Estritos:** Políticas de banco e rotas React protegidas por privilégio mínimo.
+*   **E8 — `import_logs` restrito:** Apenas `admin` e `operador` podem ler histórico de importações.
+*   **E9 — Documentos mínimos:** Estrutura de `document_types` e `documentos_gerados` inserida no schema inicial.
+*   **E10 — Testes de Aceite:** O PR 2 atestará o total de unidades e bloqueio de exclusões físicas.
