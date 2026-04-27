@@ -93,10 +93,17 @@ function sectionProgress(u: Unidade, section: "id" | "bank" | "fin"): { done: nu
     return { done: fields.filter(Boolean).length, total: fields.length };
   }
   if (section === "bank") {
-    return { done: 0, total: 4 }; // placeholder schema
+    const fields = [u.agencia, u.conta_corrente, u.endereco];
+    return { done: fields.filter((v) => Boolean(v && String(v).trim())).length, total: fields.length };
   }
   // fin
-  const filled = [u.alunos > 0, Number(u.saldo_anterior) > 0, Number(u.recebido) > 0, Number(u.gasto) > 0];
+  const filled = [
+    u.alunos > 0,
+    Number(u.reprogramado_custeio) + Number(u.reprogramado_capital) > 0,
+    Number(u.parcela_1_custeio) + Number(u.parcela_1_capital) > 0,
+    Number(u.parcela_2_custeio) + Number(u.parcela_2_capital) > 0,
+    Number(u.gasto) > 0,
+  ];
   return { done: filled.filter(Boolean).length, total: filled.length };
 }
 
