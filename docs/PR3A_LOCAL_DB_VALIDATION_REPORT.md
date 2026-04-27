@@ -22,17 +22,31 @@ supabase --version
 supabase db reset --local
 ```
 
+Retomada após instalação do Docker Desktop:
+
+```bash
+docker --version
+docker info --format '{{.ServerVersion}}'
+supabase start
+supabase db reset --local
+supabase gen types --local --schema public > src/integrations/supabase/types.ts
+supabase db query "<schema verification queries>" --local -o table
+supabase migration list --local
+npx tsc --noEmit
+npm run build
+```
+
 ## Resultados
 
 ### Docker
 
-Falhou. O comando `docker --version` não encontrou o executável `docker` no ambiente atual.
+Resolvido na retomada. O Docker Desktop foi instalado e iniciado no Windows.
 
-Erro:
+Validação:
 
 ```txt
-The term 'docker' is not recognized as a name of a cmdlet, function, script file, or executable program.
-Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+Docker version 29.4.0, build 9d7ad9f
+ServerVersion: 29.4.0
 ```
 
 ### Supabase CLI
@@ -45,33 +59,88 @@ Disponível.
 
 ### Supabase db reset
 
-Falhou por indisponibilidade do Docker/daemon local.
-
-Erro:
+Executado com sucesso após `supabase start`.
 
 ```txt
-failed to inspect service: error during connect: in the default daemon configuration on Windows, the docker client must be run with elevated privileges to connect: Get "http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.51/containers/supabase_db_hhzenztvelxjnrzoseaa/json": open //./pipe/docker_engine: The system cannot find the file specified.
-Docker Desktop is a prerequisite for local development. Follow the official docs to install: https://docs.docker.com/desktop
+Resetting local database...
+Applying migration 20260427000100_auth_roles_profiles.sql...
+Applying migration 20260427000200_unidades_escolares.sql...
+Applying migration 20260427000300_execucao_financeira.sql...
+Applying migration 20260427000400_import_logs.sql...
+Applying migration 20260427000500_document_types_documentos_gerados.sql...
+Applying migration 20260427000600_views_frontend_status.sql...
+Finished supabase db reset on branch feature/pr3a-supabase-types-local-validation.
 ```
 
 ## Types Supabase
 
-`src/integrations/supabase/types.ts` não foi regenerado.
+`src/integrations/supabase/types.ts` foi regenerado a partir do banco local.
 
-Motivo: o banco local não foi recriado, portanto ainda não há schema local validado para introspecção.
+Objetos confirmados no typegen:
+
+- Tabelas: `profiles`, `user_roles`, `unidades_escolares`, `execucao_financeira`, `import_logs`, `document_types`, `documentos_gerados`.
+- Views: `vw_unidades_escolares_frontend`, `vw_unidades_status`.
+- Enum: `app_role = admin | operador | diretor`.
+
+## Validação Local
+
+Consultas diretas ao banco local confirmaram os objetos públicos esperados:
+
+```txt
+document_types                 BASE TABLE
+documentos_gerados             BASE TABLE
+execucao_financeira            BASE TABLE
+import_logs                    BASE TABLE
+profiles                       BASE TABLE
+unidades_escolares             BASE TABLE
+user_roles                     BASE TABLE
+vw_unidades_escolares_frontend VIEW
+vw_unidades_status             VIEW
+```
+
+Enum validado:
+
+```txt
+app_role: admin
+app_role: operador
+app_role: diretor
+```
+
+Migrations locais aplicadas:
+
+```txt
+20260427000100
+20260427000200
+20260427000300
+20260427000400
+20260427000500
+20260427000600
+```
+
+Gates executados:
+
+```txt
+npx tsc --noEmit: passou
+npm run build: passou
+```
+
+Observação: o build Vite manteve o aviso existente de chunk acima de 500 kB.
 
 ## Arquivos Alterados
 
 ```txt
 docs/PR3A_LOCAL_DB_VALIDATION_REPORT.md
+src/integrations/supabase/types.ts
 ```
 
 ## Status
 
 ```txt
-PR 3A: BLOQUEADO PELO AMBIENTE LOCAL
-supabase db reset: não executado com sucesso
-types.ts: não regenerado
+PR 3A: VALIDADO LOCALMENTE
+Docker Desktop: instalado e iniciado
+supabase start: executado com sucesso
+supabase db reset --local: executado com sucesso
+types.ts: regenerado a partir do schema local
 frontend: não alterado
 Vercel: não alterado
 Supabase remoto/db push: não executado
@@ -79,10 +148,6 @@ Supabase remoto/db push: não executado
 
 ## Próximos Passos
 
-1. Instalar e iniciar Docker Desktop no Windows.
-2. Confirmar que `docker --version` funciona no mesmo terminal usado pelo Codex/CLI.
-3. Reexecutar `supabase db reset --local`.
-4. Se o reset passar, gerar `src/integrations/supabase/types.ts` a partir do schema local.
-5. Validar se os tipos gerados incluem as tabelas, views e enum do PR 2.
-6. Rodar `npx tsc --noEmit` e `npm run build`.
-7. Só depois iniciar o PR 3B de adaptação das telas.
+1. Revisar o diff de `src/integrations/supabase/types.ts`.
+2. Validar se o aviso de chunk do Vite deve virar backlog de performance ou permanecer aceito para este PR.
+3. Só depois iniciar o PR 3B de adaptação das telas.

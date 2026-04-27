@@ -38,10 +38,15 @@ A governança de dados foi consolidada sem tocar no frontend, na Vercel ou no Su
 * `npm test`: **Sucesso** (1 teste).
 * `npm run lint`: **Sucesso com 1 warning preexistente** em `src/hooks/useExercicio.tsx` (`react-refresh/only-export-components`).
 
-* `supabase db reset --local`: **não executado** porque Docker não está instalado/disponível neste Windows (`docker` não encontrado). Deve permanecer como gate antes de qualquer `db push`.
+* `supabase db reset --local`: **executado com sucesso na retomada PR 3A**, após instalação e inicialização do Docker Desktop no Windows. As migrations `20260427000100` a `20260427000600` foram aplicadas no banco local.
+* Verificação direta do schema local: **sucesso**. Confirmadas 7 tabelas públicas (`profiles`, `user_roles`, `unidades_escolares`, `execucao_financeira`, `import_logs`, `document_types`, `documentos_gerados`), 2 views (`vw_unidades_escolares_frontend`, `vw_unidades_status`) e enum `app_role` com `admin`, `operador`, `diretor`.
+* `src/integrations/supabase/types.ts`: **regenerado no PR 3A** a partir do banco local validado.
 
 ## 4. Confirmações Expressas
 * [x] **NÃO houve db push remoto.**
 * [x] **NÃO houve alteração na Vercel / Produção.**
 * [x] **NÃO houve merge.**
-* [x] O `types.ts` aguarda o PR 3 para ser regenerado de um db local válido.
+* [x] O `types.ts` foi regenerado somente após validação local do schema.
+
+## 5. Registro de Retomada
+Em 27 de abril de 2026, o bloqueio ambiental do PR 2 foi removido com a instalação do Docker Desktop. A validação local foi concluída na branch `feature/pr3a-supabase-types-local-validation`, preservando a regra de não aplicar migrations em Supabase remoto sem revisão humana.

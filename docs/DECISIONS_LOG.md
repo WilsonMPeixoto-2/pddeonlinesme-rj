@@ -7,3 +7,4 @@
 | **D3** — Supabase próprio com schema semântico | Não replicar schema "protótipo" em produção. | Necessidade de controle estrito via Migrations (IaC) e RLS. | Abril 2026 |
 | **D4** — Produção *read-mostly* na v2.2 | Inibição de botões destrutivos até estabilização. | Evitar danos enquanto as migrações e auditorias ocorrem. | Abril 2026 |
 | **D5** — ETL Centralizado em Script Local | Criação de script Python/Node local para importação. | Evitar sobrecarga do browser e exposição de lógica no client. | Abril 2026 |
+| **D6** — Validação local antes de remoto | `supabase db reset --local`, typegen e gates de build são obrigatórios antes de qualquer `db push`. | Reduzir risco de aplicar migrations quebradas ou tipos inconsistentes em ambiente remoto. | Abril 2026 |
