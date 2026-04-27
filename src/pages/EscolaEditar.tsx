@@ -603,41 +603,49 @@ export default function EscolaEditar() {
                   icon={Landmark}
                   title="Dados Bancários e Localização"
                   subtitle="Agência, conta corrente e endereço"
-                  done={0}
-                  total={4}
+                  done={sectionProgress(u, "bank").done}
+                  total={sectionProgress(u, "bank").total}
                 />
-                <div className="rounded-lg border border-dashed border-border/50 bg-muted/5 p-5">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-muted-foreground">Agência</Label>
-                      <div className="flex h-10 items-center rounded-md border border-border/30 bg-muted/10 px-3">
-                        <span className="font-mono text-sm text-muted-foreground/60">0000-0</span>
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-muted-foreground">Conta corrente</Label>
-                      <div className="flex h-10 items-center rounded-md border border-border/30 bg-muted/10 px-3">
-                        <span className="font-mono text-sm text-muted-foreground/60">00000000-0</span>
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-muted-foreground">Banco</Label>
-                      <div className="flex h-10 items-center rounded-md border border-border/30 bg-muted/10 px-3">
-                        <span className="text-sm text-muted-foreground/60">Banco do Brasil</span>
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="agencia" className="flex items-center gap-2">
+                      Agência
+                      {isDirty("agencia") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
+                    </Label>
+                    <Input
+                      id="agencia"
+                      value={u.agencia ?? ""}
+                      placeholder="0000"
+                      onChange={(e) => setField("agencia", e.target.value)}
+                      className={cn("font-mono tabular-nums", isDirty("agencia") && "border-primary/40")}
+                    />
                   </div>
-                  <div className="mt-4 space-y-1.5">
-                    <Label className="text-muted-foreground">Endereço</Label>
-                    <div className="flex h-10 items-center rounded-md border border-border/30 bg-muted/10 px-3">
-                      <span className="text-sm text-muted-foreground/60">
-                        Endereço completo da unidade escolar
-                      </span>
-                    </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="conta_corrente" className="flex items-center gap-2">
+                      Conta corrente
+                      {isDirty("conta_corrente") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
+                    </Label>
+                    <Input
+                      id="conta_corrente"
+                      value={u.conta_corrente ?? ""}
+                      placeholder="000000"
+                      onChange={(e) => setField("conta_corrente", e.target.value)}
+                      className={cn("font-mono tabular-nums", isDirty("conta_corrente") && "border-primary/40")}
+                    />
                   </div>
-                  <p className="mt-4 text-xs italic text-muted-foreground/70">
-                    Disponível na próxima versão — após migração do schema de dados.
-                  </p>
+                  <div className="space-y-1.5 sm:col-span-3">
+                    <Label htmlFor="endereco" className="flex items-center gap-2">
+                      Endereço
+                      {isDirty("endereco") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
+                    </Label>
+                    <Input
+                      id="endereco"
+                      value={u.endereco ?? ""}
+                      placeholder="Rua, número, bairro — CEP"
+                      onChange={(e) => setField("endereco", e.target.value)}
+                      className={cn(isDirty("endereco") && "border-primary/40")}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
