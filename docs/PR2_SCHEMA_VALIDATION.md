@@ -4,15 +4,22 @@ Projeto: PDDE Online 2026
 Rode estas queries localmente para atestar a sanidade do banco após as migrations ou importações.
 
 ## Bootstrap do primeiro Admin
-Como o RLS está trancado para inserções no `user_roles`, siga estes passos para criar o primeiro administrador:
+A chave `SUPABASE_SERVICE_KEY` é de uso estrito para scripts de importação e administração local. **Nunca exponha no frontend (VITE_) nem envie para o repositório.**
+Como o RLS está trancado para inserções no `user_roles`, use o seguinte passo para criar seu primeiro administrador:
 1. Crie o seu usuário via painel do Supabase Auth.
 2. Copie o `id` (UUID) gerado.
-3. No SQL Editor ou CLI (como Postgres Superuser), insira os privilégios básicos:
+3. No SQL Editor do Supabase, insira os privilégios básicos:
 ```sql
 INSERT INTO public.profiles (id, email) VALUES ('<seu-uuid>', 'admin@teste.com');
 INSERT INTO public.user_roles (user_id, role) VALUES ('<seu-uuid>', 'admin');
 ```
-4. Verifique se tem acesso rodando `SELECT public.has_role('admin');` autenticado com seu UUID.
+4. Para garantir (validação direta e autenticada):
+```sql
+-- Validação Direta:
+SELECT * FROM public.user_roles WHERE user_id = '<seu-uuid>' AND role = 'admin';
+-- Validação Autenticada (App/API):
+SELECT public.has_role('admin');
+```
 
 ## Validações de Banco
 
@@ -58,8 +65,11 @@ SELECT
 -- 11. Tentativa de delete físico com histórico (Teste Transacional Controlado)
 -- Não execute exclusões sem transação. Este bloco assegura que o ON DELETE RESTRICT barra exclusões indevidas.
 BEGIN;
-SELECT id INTO TEMP my_target FROM public.unidades_escolares WHERE ativo = true LIMIT 1;
--- Se rodar o DELETE abaixo, ele deve falhar com um erro de restrição de Foreign Key:
+SELECT ue.id INTO TEMP my_target 
+FROM public.unidades_escolares ue
+JOIN public.execucao_financeira ef ON ef.unidade_id = ue.id
+WHERE ue.ativo = true LIMIT 1;
+-- O DELETE abaixo DEVE FALHAR com erro de foreign_key_violation:
 -- DELETE FROM public.unidades_escolares WHERE id = (SELECT id FROM my_target);
 ROLLBACK;
 ```

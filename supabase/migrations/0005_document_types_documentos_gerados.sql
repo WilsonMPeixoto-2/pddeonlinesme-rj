@@ -50,8 +50,19 @@ CREATE POLICY "Admin e Operador podem ler documentos_gerados"
   ON public.documentos_gerados FOR SELECT TO authenticated
   USING (public.has_role('admin'::public.app_role) OR public.has_role('operador'::public.app_role));
 
-CREATE POLICY "Admin e Operador podem gerenciar documentos_gerados"
-  ON public.documentos_gerados FOR ALL TO authenticated
+-- Obs: A tabela document_types é tratada como estática nesta fase, controlada 
+-- estritamente por migrations. Por isso, não possui policy de insert/update/delete.
+
+CREATE POLICY "Admin e Operador podem inserir documentos_gerados"
+  ON public.documentos_gerados FOR INSERT TO authenticated
+  WITH CHECK (public.has_role('admin'::public.app_role) OR public.has_role('operador'::public.app_role));
+
+CREATE POLICY "Admin e Operador podem atualizar documentos_gerados"
+  ON public.documentos_gerados FOR UPDATE TO authenticated
+  USING (public.has_role('admin'::public.app_role) OR public.has_role('operador'::public.app_role));
+
+CREATE POLICY "Admin e Operador podem deletar documentos_gerados"
+  ON public.documentos_gerados FOR DELETE TO authenticated
   USING (public.has_role('admin'::public.app_role) OR public.has_role('operador'::public.app_role));
 
 CREATE TRIGGER trg_doc_gerados_updated_at

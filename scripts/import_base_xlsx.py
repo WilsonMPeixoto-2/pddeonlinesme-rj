@@ -10,10 +10,13 @@ import openpyxl
 try:
     from supabase import create_client, Client
 except ImportError:
-    pass # Supabase lib might not be installed, we handle gracefully below
+    pass
 
 def normalize_digits(value):
-    if not value: return ""
+    if value is None:
+        return ""
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
     return re.sub(r'\D', '', str(value))
 
 def normalize_cnpj(cnpj_val):
@@ -53,7 +56,10 @@ def parse_money_ptbr(value):
     try:
         return Decimal(val_str)
     except InvalidOperation:
-        return Decimal("0.00")
+        raise ValueError(f"Valor financeiro inválido: {value}")
+
+def decimal_to_str(d):
+    return str(d.quantize(Decimal("0.01")))
 
 def get_col_index(header_map, possible_names):
     for name in possible_names:
@@ -80,7 +86,6 @@ def process_file(filepath, exercicio=2026, programa='basico', apply=False):
         if cell.value:
             header[cell.value.strip().upper()] = idx
             
-    # Aliases
     col_designacao = get_col_index(header, ['DESIGNAÇÃO', 'DESIGNACAO'])
     col_nome = get_col_index(header, ['NOME'])
     col_cnpj = get_col_index(header, ['CNPJ'])
@@ -102,7 +107,7 @@ def process_file(filepath, exercicio=2026, programa='basico', apply=False):
 
     parsed_data = []
     skipped = 0
-    errors = 0
+    errors_list = []
     
     for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
         try:
@@ -120,6 +125,9 @@ def process_file(filepath, exercicio=2026, programa='basico', apply=False):
             agencia_val = str(row[col_agencia]).strip() if col_agencia is not None and row[col_agencia] else None
             conta_val = str(row[col_conta]).strip() if col_conta is not None and row[col_conta] else None
 
+            # Construir source_payload detalhado para auditoria
+            source_payload = {k: str(row[v]) if row[v] is not None else None for k, v in header.items()}
+
             payload = {
                 'unidade': {
                     'designacao': designacao,
@@ -130,27 +138,24 @@ def process_file(filepath, exercicio=2026, programa='basico', apply=False):
                     'endereco': endereco_val,
                     'agencia': agencia_val,
                     'conta_corrente': conta_val,
-                    'source_payload': {
-                        'raw_designacao': row[col_designacao],
-                        'raw_nome': row[col_nome],
-                        'raw_cnpj': row[col_cnpj] if col_cnpj is not None else None
-                    }
+                    'source_payload': source_payload
                 },
                 'financeiro': {
                     'exercicio': exercicio,
                     'programa': programa,
-                    'reprogramado_custeio': float(parse_money_ptbr(row[col_rep_cust] if col_rep_cust is not None else 0)),
-                    'reprogramado_capital': float(parse_money_ptbr(row[col_rep_cap] if col_rep_cap is not None else 0)),
-                    'parcela_1_custeio': float(parse_money_ptbr(row[col_p1_cust] if col_p1_cust is not None else 0)),
-                    'parcela_1_capital': float(parse_money_ptbr(row[col_p1_cap] if col_p1_cap is not None else 0)),
-                    'parcela_2_custeio': float(parse_money_ptbr(row[col_p2_cust] if col_p2_cust is not None else 0)),
-                    'parcela_2_capital': float(parse_money_ptbr(row[col_p2_cap] if col_p2_cap is not None else 0))
+                    'reprogramado_custeio': decimal_to_str(parse_money_ptbr(row[col_rep_cust] if col_rep_cust is not None else 0)),
+                    'reprogramado_capital': decimal_to_str(parse_money_ptbr(row[col_rep_cap] if col_rep_cap is not None else 0)),
+                    'parcela_1_custeio': decimal_to_str(parse_money_ptbr(row[col_p1_cust] if col_p1_cust is not None else 0)),
+                    'parcela_1_capital': decimal_to_str(parse_money_ptbr(row[col_p1_cap] if col_p1_cap is not None else 0)),
+                    'parcela_2_custeio': decimal_to_str(parse_money_ptbr(row[col_p2_cust] if col_p2_cust is not None else 0)),
+                    'parcela_2_capital': decimal_to_str(parse_money_ptbr(row[col_p2_cap] if col_p2_cap is not None else 0))
                 }
             }
             parsed_data.append(payload)
         except Exception as e:
-            print(f"Erro na linha {row_idx}: {str(e)}")
-            errors += 1
+            err_msg = f"Linha {row_idx}: {str(e)}"
+            print(f"Erro na validação - {err_msg}")
+            errors_list.append({'linha': row_idx, 'erro': str(e)})
 
     total_valid = len(parsed_data)
     if apply and not (150 <= total_valid <= 200):
@@ -168,7 +173,7 @@ Arquivo: {filepath}
 Exercício: {exercicio} / {programa}
 Válidas: {total_valid}
 Puladas: {skipped}
-Erros: {errors}
+Erros de Validação: {len(errors_list)}
 Modo: PREVIEW ONLY (Nenhuma alteração no banco)"""
         with open('data/output/import_report.md', 'w', encoding='utf-8') as f:
             f.write(report)
@@ -186,54 +191,54 @@ Modo: PREVIEW ONLY (Nenhuma alteração no banco)"""
     print("Conectando ao banco de dados via Supabase API...")
     sb: Client = create_client(db_url, db_key)
 
-    inserted = 0
-    updated = 0
+    processed = 0
+    db_errors = []
     
     for item in parsed_data:
         try:
-            # 1. Upsert em unidades_escolares usando a constraint unique 'designacao'
-            # Na REST API do Supabase, upsert requer que designacao seja on_conflict
             res_ue = sb.table('unidades_escolares').upsert(
                 item['unidade'], on_conflict='designacao'
             ).execute()
             
             unidade_id = res_ue.data[0]['id']
             
-            # 2. Upsert em execucao_financeira
             fin = item['financeiro']
             fin['unidade_id'] = unidade_id
             sb.table('execucao_financeira').upsert(
                 fin, on_conflict='unidade_id,exercicio,programa'
             ).execute()
             
-            inserted += 1
+            processed += 1
         except Exception as e:
-            print(f"Erro ao salvar unidade {item['unidade']['designacao']}: {str(e)}")
-            errors += 1
+            print(f"Erro DB na unidade {item['unidade']['designacao']}: {str(e)}")
+            db_errors.append({'designacao': item['unidade']['designacao'], 'erro': str(e)})
 
-    # 3. Gravar log
+    # Concatenar todos os erros para log
+    all_errors = errors_list + db_errors
+
     try:
         sb.table('import_logs').insert({
             'source': 'Script python --apply',
             'filename': filepath,
             'exercicio': exercicio,
             'programa': programa,
-            'total_rows': total_valid + skipped + errors,
-            'inserted_rows': inserted,
-            'updated_rows': updated,
+            'total_rows': total_valid + skipped + len(errors_list),
+            'inserted_rows': processed,  # Usado aqui como "processed_rows" no sentido de sucesso no DB
+            'updated_rows': 0, # Como o upsert não expõe nativamente se foi insert/update pela rest api Python, mantemos 0 e documentamos.
             'skipped_rows': skipped,
-            'status': 'sucesso' if errors == 0 else 'com_erros'
+            'errors': all_errors,
+            'status': 'sucesso' if len(all_errors) == 0 else 'com_erros'
         }).execute()
-    except:
-        pass
+    except Exception as e:
+        print(f"Erro ao gravar import_logs: {str(e)}")
 
     report = f"""# Relatório de Importação (Modo APPLY)
 Data: {datetime.now().isoformat()}
 Arquivo: {filepath}
 Exercício: {exercicio} / {programa}
-Processadas/Salvas: {inserted}
-Puladas: {skipped}
-Erros Reais: {errors}
+Processadas/Salvas no DB: {processed}
+Puladas vazias: {skipped}
+Erros Totais (Validação + DB): {len(all_errors)}
 Modo: GRAVADO NO BANCO DE DADOS."""
     with open('data/output/import_report.md', 'w', encoding='utf-8') as f:
         f.write(report)
