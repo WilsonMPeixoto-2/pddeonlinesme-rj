@@ -15,3 +15,12 @@ A migraÃ§Ã£o para o Supabase prÃ³prio nÃ£o replicarÃ¡ a confusÃ£o semÃ¢ntica pro
 * **G4 â€” ImportaÃ§Ã£o**: BASE importada; designacao e nome preservados; relatÃ³rio gerado.
 * **G5 â€” Preview**: Vercel Preview validado no Dashboard, Escolas, Base.
 * **G6 â€” ProduÃ§Ã£o**: Deploy da ProduÃ§Ã£o Vercel.
+
+
+## Emendas Obrigatórias de Integridade (Pós-Auditoria G0)
+
+* **E1 — Inicialização obrigatória de execucao_financeira:** Para toda unidade importada, criar/atualizar linha em execucao_financeira para o exercício/programa correspondente, ainda que os valores sejam zero.
+* **E2 — Proibição de cascade histórico:** Não usar ON DELETE CASCADE em execucao_financeira, documentos_gerados ou logs. A exclusão será por ativo=false e a FK usará ON DELETE RESTRICT.
+* **E3 — Query keys sensíveis ao exercício:** Toda query baseada em exercício deve incluir exercicio na query key quando usar React Query.
+* **E4 — View segura contra falso negativo:** A view deve ser testada para não ocultar escolas acidentalmente.
+* **E5 — Testes mínimos de integridade:** O PR 2 deve atestar no relatório a inexistência de exclusões órfãs ou cascateamento.
