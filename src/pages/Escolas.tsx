@@ -44,10 +44,19 @@ type Unidade = {
   cnpj: string | null;
   diretor: string | null;
   email: string | null;
+  endereco: string | null;
+  agencia: string | null;
+  conta_corrente: string | null;
   alunos: number;
   saldo_anterior: number;
   recebido: number;
   gasto: number;
+  reprogramado_custeio: number;
+  reprogramado_capital: number;
+  parcela_1_custeio: number;
+  parcela_1_capital: number;
+  parcela_2_custeio: number;
+  parcela_2_capital: number;
 };
 
 type StatusFilter = "todas" | "pronta" | "incompleta" | "pendente";
@@ -60,10 +69,23 @@ const fmt = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function getStatus(e: Unidade) {
-  const hasFinancial = Number(e.saldo_anterior) + Number(e.recebido) + Number(e.gasto) > 0;
-  const hasIdentity = Boolean(e.designacao?.trim()) && Boolean(e.inep);
+  const hasFinancial =
+    Number(e.saldo_anterior) +
+      Number(e.recebido) +
+      Number(e.gasto) +
+      Number(e.parcela_1_custeio ?? 0) +
+      Number(e.parcela_1_capital ?? 0) +
+      Number(e.parcela_2_custeio ?? 0) +
+      Number(e.parcela_2_capital ?? 0) >
+    0;
+  const hasIdentity =
+    Boolean(e.designacao?.trim()) &&
+    Boolean(e.inep) &&
+    Boolean(e.cnpj) &&
+    Boolean(e.agencia) &&
+    Boolean(e.conta_corrente);
   if (hasIdentity && hasFinancial) return "pronta" as const;
-  if (hasIdentity || hasFinancial) return "incompleta" as const;
+  if (e.designacao?.trim() || hasFinancial) return "incompleta" as const;
   return "pendente" as const;
 }
 
@@ -557,6 +579,17 @@ export default function Escolas() {
                               >
                                 {progCfg.short}
                               </span>
+                              {(e.agencia || e.conta_corrente) && (
+                                <>
+                                  <span className="text-border">·</span>
+                                  <span
+                                    className="font-mono tabular-nums"
+                                    title="Agência / Conta corrente"
+                                  >
+                                    Ag {e.agencia ?? "—"} · CC {e.conta_corrente ?? "—"}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </TableCell>

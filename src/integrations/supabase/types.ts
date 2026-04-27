@@ -14,46 +14,115 @@ export type Database = {
   }
   public: {
     Tables: {
+      import_logs: {
+        Row: {
+          created_at: string
+          errors: Json
+          filename: string | null
+          id: string
+          inserted_rows: number
+          skipped_rows: number
+          source: string
+          status: string
+          total_rows: number
+          updated_rows: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          errors?: Json
+          filename?: string | null
+          id?: string
+          inserted_rows?: number
+          skipped_rows?: number
+          source?: string
+          status?: string
+          total_rows?: number
+          updated_rows?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          errors?: Json
+          filename?: string | null
+          id?: string
+          inserted_rows?: number
+          skipped_rows?: number
+          source?: string
+          status?: string
+          total_rows?: number
+          updated_rows?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       unidades_escolares: {
         Row: {
+          agencia: string | null
           alunos: number
           cnpj: string | null
+          conta_corrente: string | null
           created_at: string
           designacao: string
           diretor: string | null
           email: string | null
+          endereco: string | null
           gasto: number
           id: string
           inep: string | null
+          parcela_1_capital: number
+          parcela_1_custeio: number
+          parcela_2_capital: number
+          parcela_2_custeio: number
           recebido: number
+          reprogramado_capital: number
+          reprogramado_custeio: number
           saldo_anterior: number
           updated_at: string
         }
         Insert: {
+          agencia?: string | null
           alunos?: number
           cnpj?: string | null
+          conta_corrente?: string | null
           created_at?: string
           designacao: string
           diretor?: string | null
           email?: string | null
+          endereco?: string | null
           gasto?: number
           id?: string
           inep?: string | null
+          parcela_1_capital?: number
+          parcela_1_custeio?: number
+          parcela_2_capital?: number
+          parcela_2_custeio?: number
           recebido?: number
+          reprogramado_capital?: number
+          reprogramado_custeio?: number
           saldo_anterior?: number
           updated_at?: string
         }
         Update: {
+          agencia?: string | null
           alunos?: number
           cnpj?: string | null
+          conta_corrente?: string | null
           created_at?: string
           designacao?: string
           diretor?: string | null
           email?: string | null
+          endereco?: string | null
           gasto?: number
           id?: string
           inep?: string | null
+          parcela_1_capital?: number
+          parcela_1_custeio?: number
+          parcela_2_capital?: number
+          parcela_2_custeio?: number
           recebido?: number
+          reprogramado_capital?: number
+          reprogramado_custeio?: number
           saldo_anterior?: number
           updated_at?: string
         }

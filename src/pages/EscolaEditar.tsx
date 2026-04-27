@@ -37,10 +37,19 @@ type Unidade = {
   cnpj: string | null;
   diretor: string | null;
   email: string | null;
+  endereco: string | null;
+  agencia: string | null;
+  conta_corrente: string | null;
   alunos: number;
   saldo_anterior: number;
   recebido: number;
   gasto: number;
+  reprogramado_custeio: number;
+  reprogramado_capital: number;
+  parcela_1_custeio: number;
+  parcela_1_capital: number;
+  parcela_2_custeio: number;
+  parcela_2_capital: number;
 };
 
 type Errors = Partial<Record<keyof Unidade, string>>;
@@ -84,10 +93,17 @@ function sectionProgress(u: Unidade, section: "id" | "bank" | "fin"): { done: nu
     return { done: fields.filter(Boolean).length, total: fields.length };
   }
   if (section === "bank") {
-    return { done: 0, total: 4 }; // placeholder schema
+    const fields = [u.agencia, u.conta_corrente, u.endereco];
+    return { done: fields.filter((v) => Boolean(v && String(v).trim())).length, total: fields.length };
   }
   // fin
-  const filled = [u.alunos > 0, Number(u.saldo_anterior) > 0, Number(u.recebido) > 0, Number(u.gasto) > 0];
+  const filled = [
+    u.alunos > 0,
+    Number(u.reprogramado_custeio) + Number(u.reprogramado_capital) > 0,
+    Number(u.parcela_1_custeio) + Number(u.parcela_1_capital) > 0,
+    Number(u.parcela_2_custeio) + Number(u.parcela_2_capital) > 0,
+    Number(u.gasto) > 0,
+  ];
   return { done: filled.filter(Boolean).length, total: filled.length };
 }
 
@@ -239,10 +255,19 @@ export default function EscolaEditar() {
         cnpj: u.cnpj,
         diretor: u.diretor,
         email: u.email,
+        endereco: u.endereco,
+        agencia: u.agencia,
+        conta_corrente: u.conta_corrente,
         alunos: Number(u.alunos),
         saldo_anterior: Number(u.saldo_anterior),
         recebido: Number(u.recebido),
         gasto: Number(u.gasto),
+        reprogramado_custeio: Number(u.reprogramado_custeio),
+        reprogramado_capital: Number(u.reprogramado_capital),
+        parcela_1_custeio: Number(u.parcela_1_custeio),
+        parcela_1_capital: Number(u.parcela_1_capital),
+        parcela_2_custeio: Number(u.parcela_2_custeio),
+        parcela_2_capital: Number(u.parcela_2_capital),
       })
       .eq("id", u.id);
     setSaving(false);
@@ -578,41 +603,49 @@ export default function EscolaEditar() {
                   icon={Landmark}
                   title="Dados Bancários e Localização"
                   subtitle="Agência, conta corrente e endereço"
-                  done={0}
-                  total={4}
+                  done={sectionProgress(u, "bank").done}
+                  total={sectionProgress(u, "bank").total}
                 />
-                <div className="rounded-lg border border-dashed border-border/50 bg-muted/5 p-5">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-muted-foreground">Agência</Label>
-                      <div className="flex h-10 items-center rounded-md border border-border/30 bg-muted/10 px-3">
-                        <span className="font-mono text-sm text-muted-foreground/60">0000-0</span>
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-muted-foreground">Conta corrente</Label>
-                      <div className="flex h-10 items-center rounded-md border border-border/30 bg-muted/10 px-3">
-                        <span className="font-mono text-sm text-muted-foreground/60">00000000-0</span>
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-muted-foreground">Banco</Label>
-                      <div className="flex h-10 items-center rounded-md border border-border/30 bg-muted/10 px-3">
-                        <span className="text-sm text-muted-foreground/60">Banco do Brasil</span>
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="agencia" className="flex items-center gap-2">
+                      Agência
+                      {isDirty("agencia") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
+                    </Label>
+                    <Input
+                      id="agencia"
+                      value={u.agencia ?? ""}
+                      placeholder="0000"
+                      onChange={(e) => setField("agencia", e.target.value)}
+                      className={cn("font-mono tabular-nums", isDirty("agencia") && "border-primary/40")}
+                    />
                   </div>
-                  <div className="mt-4 space-y-1.5">
-                    <Label className="text-muted-foreground">Endereço</Label>
-                    <div className="flex h-10 items-center rounded-md border border-border/30 bg-muted/10 px-3">
-                      <span className="text-sm text-muted-foreground/60">
-                        Endereço completo da unidade escolar
-                      </span>
-                    </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="conta_corrente" className="flex items-center gap-2">
+                      Conta corrente
+                      {isDirty("conta_corrente") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
+                    </Label>
+                    <Input
+                      id="conta_corrente"
+                      value={u.conta_corrente ?? ""}
+                      placeholder="000000"
+                      onChange={(e) => setField("conta_corrente", e.target.value)}
+                      className={cn("font-mono tabular-nums", isDirty("conta_corrente") && "border-primary/40")}
+                    />
                   </div>
-                  <p className="mt-4 text-xs italic text-muted-foreground/70">
-                    Disponível na próxima versão — após migração do schema de dados.
-                  </p>
+                  <div className="space-y-1.5 sm:col-span-3">
+                    <Label htmlFor="endereco" className="flex items-center gap-2">
+                      Endereço
+                      {isDirty("endereco") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
+                    </Label>
+                    <Input
+                      id="endereco"
+                      value={u.endereco ?? ""}
+                      placeholder="Rua, número, bairro — CEP"
+                      onChange={(e) => setField("endereco", e.target.value)}
+                      className={cn(isDirty("endereco") && "border-primary/40")}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>

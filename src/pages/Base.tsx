@@ -1,46 +1,58 @@
 import { useEffect, useState } from "react";
 import AppLayout from "@/components/AppLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { Download, Upload, History } from "lucide-react";
+import { Download, Upload, History, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useExercicio } from "@/hooks/useExercicio";
 import { BaseUploadZone, type UploadState } from "@/components/BaseUploadZone";
 import { ImportResultsPanel, type ImportResultState } from "@/components/ImportResultsPanel";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  parseBaseXlsx,
+  importParsedRows,
+  type ParseResult,
+  type ImportResult,
+} from "@/lib/baseImporter";
 
-/* ─── Dados mockados de histórico ─── */
+/* ─── Tipos ─── */
 
-const MOCK_HISTORY = [
-  {
-    data: "21/04/2026 09:14",
-    arquivo: "BASE_4CRE_2025.xlsx",
-    linhas: 163,
-    importadas: 161,
-    erros: 2,
-    usuario: "4cre@sme.rio",
-  },
-  {
-    data: "15/03/2026 14:30",
-    arquivo: "BASE_4CRE_2025_v2.xlsx",
-    linhas: 163,
-    importadas: 163,
-    erros: 0,
-    usuario: "ana.coord@sme.rio",
-  },
-  {
-    data: "28/02/2026 11:05",
-    arquivo: "BASE_4CRE_2025_inicial.xlsx",
-    linhas: 160,
-    importadas: 160,
-    erros: 0,
-    usuario: "4cre@sme.rio",
-  },
-];
+type LogRow = {
+  id: string;
+  filename: string | null;
+  total_rows: number;
+  inserted_rows: number;
+  updated_rows: number;
+  skipped_rows: number;
+  status: string;
+  created_at: string;
+};
+
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 /* ─── Main component ─── */
 
@@ -48,18 +60,81 @@ export default function Base() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [importResultState, setImportResultState] = useState<ImportResultState>("idle");
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [history, setHistory] = useState<LogRow[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const { exercicio } = useExercicio();
+  const { user } = useAuth();
 
-  // Reset to idle if user dismisses confirm without confirming
   useEffect(() => {
-    if (!pendingFile && uploadState === "selected") {
-      setUploadState("idle");
-    }
+    if (!pendingFile && uploadState === "selected") setUploadState("idle");
   }, [pendingFile, uploadState]);
+
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    const { data, error } = await supabase
+      .from("import_logs")
+      .select("id, filename, total_rows, inserted_rows, updated_rows, skipped_rows, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (error) toast.error(error.message);
+    setHistory((data ?? []) as LogRow[]);
+    setHistoryLoading(false);
+  };
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
 
   const handleFileAccepted = (f: File) => {
     setPendingFile(f);
     setUploadState("selected");
+  };
+
+  const runImport = async () => {
+    if (!pendingFile || !user) {
+      toast.error("Sessão expirada. Faça login novamente.");
+      return;
+    }
+    setUploadState("validating");
+    try {
+      const parsed: ParseResult = await parseBaseXlsx(pendingFile);
+      if (parsed.rows.length === 0) {
+        setUploadState("error");
+        setImportResultState("error");
+        setImportResult({
+          totalRows: 0,
+          insertedRows: 0,
+          updatedRows: 0,
+          skippedRows: 0,
+          errors: parsed.errors,
+          status: "failed",
+        });
+        toast.error("Nenhuma linha válida encontrada na BASE.");
+        return;
+      }
+      const result = await importParsedRows(parsed, user.id);
+      setImportResult(result);
+      setImportResultState(result.status === "failed" ? "error" : "success");
+      setUploadState("success");
+      if (result.status === "success") {
+        toast.success(
+          `${result.insertedRows} novas e ${result.updatedRows} atualizadas.`,
+        );
+      } else if (result.status === "partial") {
+        toast.warning(
+          `Importado com ${result.errors.length} advertência(s).`,
+        );
+      } else {
+        toast.error("Falha ao importar a BASE.");
+      }
+      loadHistory();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      setUploadState("error");
+      setImportResultState("error");
+      toast.error(`Falha ao processar planilha: ${msg}`);
+    }
   };
 
   return (
@@ -76,7 +151,6 @@ export default function Base() {
               Sincronize a base central com o arquivo .xlsx mestre da 4ª CRE.
             </p>
           </div>
-
         </div>
 
         {/* Import / Export grid */}
@@ -87,7 +161,7 @@ export default function Base() {
                 <Upload className="h-4 w-4 text-primary" /> Importar BASE.xlsx
               </CardTitle>
               <CardDescription>
-                Substitui os dados das 163 unidades escolares pela versão enviada.
+                Lê a aba <span className="font-mono text-xs">BASE</span> e atualiza/insere as 163 unidades.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -99,6 +173,7 @@ export default function Base() {
                   setPendingFile(null);
                   setUploadState("idle");
                   setImportResultState("idle");
+                  setImportResult(null);
                 }}
               />
             </CardContent>
@@ -116,19 +191,26 @@ export default function Base() {
             <CardContent className="space-y-3">
               <div className="rounded-md border bg-muted/30 p-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Última atualização</span>
-                  <span className="font-medium">21/04/2026 09:14</span>
+                  <span className="text-muted-foreground">Última importação</span>
+                  <span className="font-medium">
+                    {history[0] ? fmtDate(history[0].created_at) : "—"}
+                  </span>
                 </div>
                 <div className="mt-1 flex justify-between">
-                  <span className="text-muted-foreground">Atualizada por</span>
-                  <span className="font-medium">4cre@sme.rio</span>
+                  <span className="text-muted-foreground">Registros atuais</span>
+                  <span className="font-medium tabular-nums">
+                    {history[0]?.total_rows ?? "—"}
+                  </span>
                 </div>
                 <div className="mt-1 flex justify-between">
                   <span className="text-muted-foreground">Exercício</span>
                   <span className="font-medium">{exercicio}</span>
                 </div>
               </div>
-              <Button className="w-full" onClick={() => toast.success("Protótipo: BASE.xlsx baixado")}>
+              <Button
+                className="w-full"
+                onClick={() => toast.info("Em breve: exportar BASE atual em .xlsx")}
+              >
                 <Download className="mr-2 h-4 w-4" /> Baixar BASE.xlsx
               </Button>
             </CardContent>
@@ -136,7 +218,25 @@ export default function Base() {
         </div>
 
         {/* Import Results Panel */}
-        <ImportResultsPanel state={importResultState} />
+        {importResult ? (
+          <ImportResultsPanel
+            state={importResultState}
+            summary={{
+              totalLidas: importResult.totalRows,
+              importadas: importResult.insertedRows + importResult.updatedRows,
+              erros: importResult.errors.length,
+              duplicatas: 0,
+              arquivo: pendingFile?.name,
+            }}
+            errors={importResult.errors.map((e) => ({
+              linha: e.rowIndex,
+              coluna: e.field,
+              mensagem: e.message,
+            }))}
+          />
+        ) : (
+          <ImportResultsPanel state="idle" />
+        )}
 
         {/* Import History */}
         <Card className="border-border/70">
@@ -149,15 +249,16 @@ export default function Base() {
                 <div>
                   <CardTitle className="text-base font-semibold">Histórico de importações</CardTitle>
                   <CardDescription>
-                    Registros das importações anteriores da BASE.
+                    Registros reais salvos no Supabase ({history.length}).
                   </CardDescription>
                 </div>
               </div>
               <Badge
                 variant="outline"
-                className="text-[10px] bg-background/40 backdrop-blur-sm border-border/50 text-muted-foreground shrink-0"
+                className="text-[10px] border-success/40 bg-success/5 text-success shrink-0"
               >
-                Dados de demonstração
+                <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-success" />
+                Conectado
               </Badge>
             </div>
           </CardHeader>
@@ -173,46 +274,71 @@ export default function Base() {
                       Arquivo
                     </TableHead>
                     <TableHead className="h-9 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Linhas
+                      Total
                     </TableHead>
                     <TableHead className="h-9 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Importadas
+                      Inseridas
                     </TableHead>
                     <TableHead className="h-9 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Erros
+                      Atualizadas
                     </TableHead>
                     <TableHead className="h-9 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Usuário
+                      Status
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {MOCK_HISTORY.map((h, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="text-xs tabular-nums text-muted-foreground whitespace-nowrap">
-                        {h.data}
-                      </TableCell>
-                      <TableCell className="text-xs font-mono text-foreground">
-                        {h.arquivo}
-                      </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums">
-                        {h.linhas}
-                      </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums text-success">
-                        {h.importadas}
-                      </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums">
-                        {h.erros > 0 ? (
-                          <span className="text-warning">{h.erros}</span>
-                        ) : (
-                          <span className="text-muted-foreground">0</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {h.usuario}
+                  {historyLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-8 text-center text-xs text-muted-foreground">
+                        Carregando…
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : history.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-10 text-center text-xs text-muted-foreground">
+                        Nenhuma importação ainda. Envie a BASE.xlsx acima para começar.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    history.map((h) => (
+                      <TableRow key={h.id}>
+                        <TableCell className="text-xs tabular-nums text-muted-foreground whitespace-nowrap">
+                          {fmtDate(h.created_at)}
+                        </TableCell>
+                        <TableCell className="text-xs font-mono text-foreground">
+                          {h.filename ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-right text-xs tabular-nums">
+                          {h.total_rows}
+                        </TableCell>
+                        <TableCell className="text-right text-xs tabular-nums text-success">
+                          {h.inserted_rows}
+                        </TableCell>
+                        <TableCell className="text-right text-xs tabular-nums text-primary">
+                          {h.updated_rows}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {h.status === "success" ? (
+                            <span className="inline-flex items-center gap-1 text-success">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Sucesso
+                            </span>
+                          ) : h.status === "partial" ? (
+                            <span className="inline-flex items-center gap-1 text-warning">
+                              <AlertTriangle className="h-3 w-3" />
+                              Parcial
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-destructive">
+                              <AlertTriangle className="h-3 w-3" />
+                              Falha
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
@@ -229,25 +355,17 @@ export default function Base() {
           }
         }}
         tone="destructive"
-        title="Sobrescrever a BASE atual?"
+        title="Importar e atualizar a BASE?"
         description={
           <>
-            Esta ação <strong>substitui integralmente</strong> os dados das 163 unidades
-            escolares pela versão contida no arquivo enviado. Os dados atuais não poderão ser
-            recuperados automaticamente.
+            Esta ação irá <strong>inserir as escolas novas e atualizar as existentes</strong> com base
+            no conteúdo da aba <span className="font-mono">BASE</span> da planilha enviada.
+            O histórico fica registrado para auditoria.
           </>
         }
         highlight={pendingFile?.name}
-        confirmLabel="Sobrescrever BASE"
-        onConfirm={() => {
-          // Simulação visual do fluxo: validando → sucesso
-          setUploadState("validating");
-          setTimeout(() => {
-            setUploadState("success");
-            setImportResultState("error"); // show result panel with mock errors
-            toast.success("Protótipo: arquivo validado e importado");
-          }, 1400);
-        }}
+        confirmLabel="Importar BASE"
+        onConfirm={runImport}
       />
     </AppLayout>
   );
