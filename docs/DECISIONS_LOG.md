@@ -1,13 +1,9 @@
-# Histórico de Decisões Arquiteturais e Estratégicas (ADR) — PDDE Online 2026
+# Registro de Decisões de Arquitetura (DECISIONS_LOG)
 
-## Decisão — TypeScript Strict como requisito permanente
-**Data:** Abril de 2026
-**Contexto:** Preparação para criação do motor documental que lidará com planilhas de prestação de contas, valores monetários e regras rigorosas. Tipagem frouxa apresenta risco alto de bugs silenciosos.
-**Decisão:** O projeto passa a exigir TypeScript Strict Mode como requisito permanente antes da importação real da BASE e antes do motor documental. Qualquer agente que introduzir código incompatível com `strict`, `noImplicitAny` ou `strictNullChecks` deverá corrigir a alteração antes de prosseguir.
-**Consequências:** Aumenta a rigidez na criação de componentes, mas blinda o repositório contra nulos não checados e acesso a propriedades indefinidas.
-
-## Decisão — Separação de Experiência GAD vs Diretor
-**Data:** Abril de 2026
-**Contexto:** A GAD lida com 160+ escolas, enquanto o Diretor lida apenas com a sua unidade.
-**Decisão:** O Portal do Diretor será uma interface completamente separada e isolada, contendo apenas o que diz respeito à unidade logada.
-**Consequências:** O design atual concentra-se na GAD. O Portal do Diretor necessitará de rotas específicas blindadas por Auth/RLS.
+| Decisão | Resultado Prático | Motivação | Data |
+| :--- | :--- | :--- | :--- |
+| **D1** — Lovable não será referência de banco | Apenas referência visual e laboratório de UX. | Falhas semânticas no schema gerado na expansão inicial. | Abril 2026 |
+| **D2** — DESIGNAÇÃO e NOME distintos | `designacao` (código), `nome` (rótulo). | Adesão total à semântica da BASE governamental SME-RJ. | Abril 2026 |
+| **D3** — Supabase próprio com schema semântico | Não replicar schema "protótipo" em produção. | Necessidade de controle estrito via Migrations (IaC) e RLS. | Abril 2026 |
+| **D4** — Produção *read-mostly* na v2.2 | Inibição de botões destrutivos até estabilização. | Evitar danos enquanto as migrações e auditorias ocorrem. | Abril 2026 |
+| **D5** — ETL Centralizado em Script Local | Criação de script Python/Node local para importação. | Evitar sobrecarga do browser e exposição de lógica no client. | Abril 2026 |
