@@ -69,10 +69,23 @@ const fmt = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function getStatus(e: Unidade) {
-  const hasFinancial = Number(e.saldo_anterior) + Number(e.recebido) + Number(e.gasto) > 0;
-  const hasIdentity = Boolean(e.designacao?.trim()) && Boolean(e.inep);
+  const hasFinancial =
+    Number(e.saldo_anterior) +
+      Number(e.recebido) +
+      Number(e.gasto) +
+      Number(e.parcela_1_custeio ?? 0) +
+      Number(e.parcela_1_capital ?? 0) +
+      Number(e.parcela_2_custeio ?? 0) +
+      Number(e.parcela_2_capital ?? 0) >
+    0;
+  const hasIdentity =
+    Boolean(e.designacao?.trim()) &&
+    Boolean(e.inep) &&
+    Boolean(e.cnpj) &&
+    Boolean(e.agencia) &&
+    Boolean(e.conta_corrente);
   if (hasIdentity && hasFinancial) return "pronta" as const;
-  if (hasIdentity || hasFinancial) return "incompleta" as const;
+  if (e.designacao?.trim() || hasFinancial) return "incompleta" as const;
   return "pendente" as const;
 }
 
