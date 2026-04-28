@@ -34,12 +34,19 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
+import { fmtBRL } from "@/lib/formatters";
 
 /* ─── Types ─── */
+
+type Status = "pronta" | "incompleta" | "pendente";
+type StatusFilter = "todas" | Status;
+type Programa = "basico" | "qualidade" | "equidade";
+type ProgramaFilter = "todos" | Programa;
 
 type Unidade = {
   id: string;
   designacao: string;
+  nome: string;
   inep: string | null;
   cnpj: string | null;
   diretor: string | null;
@@ -47,60 +54,26 @@ type Unidade = {
   endereco: string | null;
   agencia: string | null;
   conta_corrente: string | null;
-  alunos: number;
-  saldo_anterior: number;
-  recebido: number;
-  gasto: number;
+  alunos: number | null;
+  ativo: boolean | null;
+  exercicio: number;
+  programa: string;
   reprogramado_custeio: number;
   reprogramado_capital: number;
   parcela_1_custeio: number;
   parcela_1_capital: number;
   parcela_2_custeio: number;
   parcela_2_capital: number;
+  saldo_anterior: number;
+  recebido: number;
+  gasto: number;
+  saldo_estimado: number;
+  updated_at: string | null;
 };
 
-type StatusFilter = "todas" | "pronta" | "incompleta" | "pendente";
-type Programa = "basico" | "qualidade" | "equidade";
-type ProgramaFilter = "todos" | Programa;
-
-/* ─── Helpers ─── */
-
-const fmt = (n: number) =>
-  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-function getStatus(e: Unidade) {
-  const hasFinancial =
-    Number(e.saldo_anterior) +
-      Number(e.recebido) +
-      Number(e.gasto) +
-      Number(e.parcela_1_custeio ?? 0) +
-      Number(e.parcela_1_capital ?? 0) +
-      Number(e.parcela_2_custeio ?? 0) +
-      Number(e.parcela_2_capital ?? 0) >
-    0;
-  const hasIdentity =
-    Boolean(e.designacao?.trim()) &&
-    Boolean(e.inep) &&
-    Boolean(e.cnpj) &&
-    Boolean(e.agencia) &&
-    Boolean(e.conta_corrente);
-  if (hasIdentity && hasFinancial) return "pronta" as const;
-  if (e.designacao?.trim() || hasFinancial) return "incompleta" as const;
-  return "pendente" as const;
-}
-
-/** Mock de contagem de documentos por escola (O3 + O5) */
-function getDocMeta(e: Unidade) {
-  const st = getStatus(e);
-  if (st === "pronta") {
-    const seed = e.id.charCodeAt(0) % 3;
-    const counts = [1, 2, 3];
-    const times = ["Há 2 dias", "Há 5 dias", "Há 1 semana"];
-    return { generated: counts[seed], total: 6, lastGen: times[seed] };
-  }
-  if (st === "incompleta") return { generated: 0, total: 6, lastGen: null };
-  return { generated: 0, total: 6, lastGen: null };
-}
+const PROGRAMAS_CONHECIDOS = new Set<Programa>(["basico", "qualidade", "equidade"]);
+const STATUS_CONHECIDOS = new Set<Status>(["pronta", "incompleta", "pendente"]);
+const DEFAULT_DOC_TOTAL = 6;
 
 const statusConfig = {
   pronta: {
@@ -120,18 +93,6 @@ const statusConfig = {
   },
 } as const;
 
-/**
- * Programa PDDE — placeholder visual.
- * O campo `programa` ainda não existe em `unidades_escolares`.
- * Derivamos deterministicamente do id para que o filtro funcione no protótipo.
- * Substituir por `e.programa` quando a coluna for adicionada ao schema.
- */
-function getPrograma(e: Unidade): Programa {
-  const code = e.id.charCodeAt(0) + e.id.charCodeAt(e.id.length - 1);
-  const opts: Programa[] = ["basico", "qualidade", "equidade"];
-  return opts[code % 3];
-}
-
 const programaConfig: Record<Programa, { label: string; short: string; className: string }> = {
   basico: {
     label: "PDDE Básico",
@@ -150,6 +111,17 @@ const programaConfig: Record<Programa, { label: string; short: string; className
   },
 };
 
+function resolveProgramaConfig(programa: string) {
+  if (PROGRAMAS_CONHECIDOS.has(programa as Programa)) {
+    return programaConfig[programa as Programa];
+  }
+  return {
+    label: programa || "Programa indefinido",
+    short: programa || "—",
+    className: "border-border/50 bg-muted/30 text-muted-foreground",
+  };
+}
+
 /* ─── Execution bar (saldo vs gasto) ─── */
 
 function ExecutionBar({ recebido, saldo, gasto }: { recebido: number; saldo: number; gasto: number }) {
@@ -160,7 +132,7 @@ function ExecutionBar({ recebido, saldo, gasto }: { recebido: number; saldo: num
   return (
     <div className="space-y-1">
       <div className="flex items-baseline justify-between gap-2 text-[11px]">
-        <span className="font-medium tabular-nums">{fmt(gasto)}</span>
+        <span className="font-medium tabular-nums">{fmtBRL(gasto)}</span>
         <span className="text-muted-foreground/70 tabular-nums">{pct.toFixed(0)}%</span>
       </div>
       <div className="h-1 overflow-hidden rounded-full bg-muted/40">
@@ -225,11 +197,14 @@ function SecondaryActions({
 
 export default function Escolas() {
   const navigate = useNavigate();
+  const { exercicio } = useExercicio();
   const [q, setQ] = useState("");
   const [unidades, setUnidades] = useState<Unidade[]>([]);
+  const [statusByKey, setStatusByKey] = useState<Record<string, Status>>({});
+  const [docCountByKey, setDocCountByKey] = useState<Record<string, number>>({});
+  const [docTotal, setDocTotal] = useState(DEFAULT_DOC_TOTAL);
   const [loading, setLoading] = useState(true);
   const [confirmLote, setConfirmLote] = useState(false);
-  const { exercicio } = useExercicio();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
   const [programaFilter, setProgramaFilter] = useState<ProgramaFilter>("todos");
 
@@ -238,36 +213,132 @@ export default function Escolas() {
   const [selectedEscola, setSelectedEscola] = useState<Unidade | null>(null);
 
   useEffect(() => {
+    setLoading(true);
+    const exercicioNum = Number(exercicio);
     (async () => {
-      const { data, error } = await supabase
-        .from("unidades_escolares")
-        .select("*")
-        .order("designacao");
-      if (error) toast.error(error.message);
-      else setUnidades((data ?? []) as Unidade[]);
+      const [unidadesResp, statusResp, docsResp, typesResp] = await Promise.all([
+        supabase
+          .from("vw_unidades_escolares_frontend")
+          .select(
+            "id, designacao, nome, inep, cnpj, diretor, email, endereco, agencia, conta_corrente, alunos, ativo, exercicio, programa, reprogramado_custeio, reprogramado_capital, parcela_1_custeio, parcela_1_capital, parcela_2_custeio, parcela_2_capital, saldo_anterior, recebido, gasto, saldo_estimado, updated_at",
+          )
+          .eq("exercicio", exercicioNum)
+          .order("designacao", { ascending: true })
+          .order("programa", { ascending: true }),
+        supabase
+          .from("vw_unidades_status")
+          .select("unidade_id, programa, status, exercicio")
+          .eq("exercicio", exercicioNum),
+        supabase
+          .from("documentos_gerados")
+          .select("unidade_id, programa, status")
+          .eq("exercicio", exercicioNum)
+          .eq("status", "gerado"),
+        supabase
+          .from("document_types")
+          .select("id", { count: "exact", head: true })
+          .eq("is_active", true),
+      ]);
+
+      if (unidadesResp.error) toast.error(unidadesResp.error.message);
+      if (statusResp.error) toast.error(statusResp.error.message);
+      if (docsResp.error) toast.error(docsResp.error.message);
+
+      const normalized: Unidade[] = (unidadesResp.data ?? [])
+        .filter(
+          (
+            r,
+          ): r is typeof r & {
+            id: string;
+            designacao: string;
+            nome: string;
+            exercicio: number;
+            programa: string;
+          } =>
+            typeof r.id === "string" &&
+            typeof r.designacao === "string" &&
+            typeof r.nome === "string" &&
+            typeof r.exercicio === "number" &&
+            typeof r.programa === "string",
+        )
+        .map((r) => ({
+          id: r.id,
+          designacao: r.designacao,
+          nome: r.nome,
+          inep: r.inep,
+          cnpj: r.cnpj,
+          diretor: r.diretor,
+          email: r.email,
+          endereco: r.endereco,
+          agencia: r.agencia,
+          conta_corrente: r.conta_corrente,
+          alunos: r.alunos,
+          ativo: r.ativo,
+          exercicio: r.exercicio,
+          programa: r.programa,
+          reprogramado_custeio: Number(r.reprogramado_custeio ?? 0),
+          reprogramado_capital: Number(r.reprogramado_capital ?? 0),
+          parcela_1_custeio: Number(r.parcela_1_custeio ?? 0),
+          parcela_1_capital: Number(r.parcela_1_capital ?? 0),
+          parcela_2_custeio: Number(r.parcela_2_custeio ?? 0),
+          parcela_2_capital: Number(r.parcela_2_capital ?? 0),
+          saldo_anterior: Number(r.saldo_anterior ?? 0),
+          recebido: Number(r.recebido ?? 0),
+          gasto: Number(r.gasto ?? 0),
+          saldo_estimado: Number(r.saldo_estimado ?? 0),
+          updated_at: r.updated_at,
+        }));
+      setUnidades(normalized);
+
+      const newStatusByKey: Record<string, Status> = {};
+      (statusResp.data ?? []).forEach((s) => {
+        if (!s.unidade_id || !s.programa || !s.status) return;
+        if (STATUS_CONHECIDOS.has(s.status as Status)) {
+          newStatusByKey[`${s.unidade_id}:${s.programa}`] = s.status as Status;
+        }
+      });
+      setStatusByKey(newStatusByKey);
+
+      const newDocCount: Record<string, number> = {};
+      (docsResp.data ?? []).forEach((d) => {
+        if (!d.unidade_id || !d.programa) return;
+        const key = `${d.unidade_id}:${d.programa}`;
+        newDocCount[key] = (newDocCount[key] ?? 0) + 1;
+      });
+      setDocCountByKey(newDocCount);
+
+      setDocTotal(typesResp.count ?? DEFAULT_DOC_TOTAL);
       setLoading(false);
     })();
-  }, []);
+  }, [exercicio]);
 
   const lista = useMemo(() => {
     let filtered = unidades;
     if (q.trim()) {
       const lower = q.toLowerCase();
+      const raw = q.trim();
       filtered = filtered.filter(
         (e) =>
+          e.nome.toLowerCase().includes(lower) ||
           e.designacao.toLowerCase().includes(lower) ||
-          (e.inep ?? "").includes(q) ||
-          (e.diretor ?? "").toLowerCase().includes(lower),
+          (e.diretor ?? "").toLowerCase().includes(lower) ||
+          (e.email ?? "").toLowerCase().includes(lower) ||
+          (e.inep ?? "").includes(raw) ||
+          (e.cnpj ?? "").includes(raw) ||
+          (e.agencia ?? "").toLowerCase().includes(lower) ||
+          (e.conta_corrente ?? "").toLowerCase().includes(lower),
       );
     }
     if (statusFilter !== "todas") {
-      filtered = filtered.filter((e) => getStatus(e) === statusFilter);
+      filtered = filtered.filter(
+        (e) => (statusByKey[`${e.id}:${e.programa}`] ?? "pendente") === statusFilter,
+      );
     }
     if (programaFilter !== "todos") {
-      filtered = filtered.filter((e) => getPrograma(e) === programaFilter);
+      filtered = filtered.filter((e) => e.programa === programaFilter);
     }
     return filtered;
-  }, [q, statusFilter, programaFilter, unidades]);
+  }, [q, statusFilter, programaFilter, unidades, statusByKey]);
 
   const isSearching =
     q.trim().length > 0 || statusFilter !== "todas" || programaFilter !== "todos";
@@ -279,17 +350,20 @@ export default function Escolas() {
   };
 
   const statusCounts = useMemo(() => {
-    const counts = { pronta: 0, incompleta: 0, pendente: 0 };
+    const counts: Record<Status, number> = { pronta: 0, incompleta: 0, pendente: 0 };
     unidades.forEach((e) => {
-      counts[getStatus(e)]++;
+      const st = statusByKey[`${e.id}:${e.programa}`] ?? "pendente";
+      counts[st]++;
     });
     return counts;
-  }, [unidades]);
+  }, [unidades, statusByKey]);
 
   const programaCounts = useMemo(() => {
     const counts: Record<Programa, number> = { basico: 0, qualidade: 0, equidade: 0 };
     unidades.forEach((e) => {
-      counts[getPrograma(e)]++;
+      if (PROGRAMAS_CONHECIDOS.has(e.programa as Programa)) {
+        counts[e.programa as Programa]++;
+      }
     });
     return counts;
   }, [unidades]);
@@ -404,7 +478,7 @@ export default function Escolas() {
             <div className="relative w-full sm:max-w-md">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nome, INEP ou diretor(a)…"
+                placeholder="Buscar por nome, designação, INEP, CNPJ, diretor(a)…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 className="h-10 pl-9 pr-9"
@@ -542,13 +616,14 @@ export default function Escolas() {
                   </TableRow>
                 ) : (
                   lista.map((e) => {
-                    const st = getStatus(e);
+                    const st = statusByKey[`${e.id}:${e.programa}`] ?? "pendente";
                     const cfg = statusConfig[st];
-                    const prog = getPrograma(e);
-                    const progCfg = programaConfig[prog];
+                    const progCfg = resolveProgramaConfig(e.programa);
+                    const generated = docCountByKey[`${e.id}:${e.programa}`] ?? 0;
+                    const rowKey = `${e.id}:${e.programa}`;
                     return (
                       <TableRow
-                        key={e.id}
+                        key={rowKey}
                         className="group row-accent border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
                       >
                         <TableCell className="py-3">
@@ -557,14 +632,19 @@ export default function Escolas() {
                               type="button"
                               onClick={() => navigate(`/escolas/${e.id}`)}
                               title="Abrir cadastro completo"
-                              className="group/link inline-flex items-center gap-1.5 self-start rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                              aria-label={`Abrir cadastro de ${e.designacao}`}
+                              className="group/link inline-flex flex-col items-start gap-0.5 self-start rounded-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                              aria-label={`Abrir cadastro de ${e.nome}`}
                             >
-                              <span>{e.designacao}</span>
-                              <ArrowUpRight
-                                className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
-                                aria-hidden="true"
-                              />
+                              <span className="inline-flex items-center gap-1.5 font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors group-hover/link:decoration-primary group-hover/link:decoration-solid group-focus-visible/link:decoration-solid">
+                                <span>{e.nome}</span>
+                                <ArrowUpRight
+                                  className="h-3.5 w-3.5 -translate-x-0.5 opacity-0 transition-all group-hover/link:translate-x-0 group-hover/link:opacity-100"
+                                  aria-hidden="true"
+                                />
+                              </span>
+                              <span className="font-mono text-[11px] text-muted-foreground">
+                                {e.designacao}
+                              </span>
                             </button>
                             <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                               <span className="font-mono tabular-nums">
@@ -605,7 +685,7 @@ export default function Escolas() {
                             {cfg.label}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">{e.alunos}</TableCell>
+                        <TableCell className="text-right tabular-nums">{e.alunos ?? "—"}</TableCell>
                         <TableCell>
                           <ExecutionBar
                             recebido={Number(e.recebido)}
@@ -626,25 +706,16 @@ export default function Escolas() {
                               <FileText className="h-3.5 w-3.5" />
                               Gerar documentos
                             </Button>
-                            {(() => {
-                              const dm = getDocMeta(e);
-                              return (
-                                <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
-                                  <span className={cn(
-                                    "font-semibold tabular-nums",
-                                    dm.generated > 0 ? "text-success" : "text-muted-foreground/60"
-                                  )}>
-                                    {dm.generated}/{dm.total}
-                                  </span>
-                                  {dm.lastGen && (
-                                    <>
-                                      <span className="text-border">·</span>
-                                      <span>{dm.lastGen}</span>
-                                    </>
-                                  )}
-                                </div>
-                              );
-                            })()}
+                            <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+                              <span
+                                className={cn(
+                                  "font-semibold tabular-nums",
+                                  generated > 0 ? "text-success" : "text-muted-foreground/60",
+                                )}
+                              >
+                                {generated}/{docTotal}
+                              </span>
+                            </div>
                           </div>
                         </TableCell>
 
@@ -653,7 +724,7 @@ export default function Escolas() {
                             onEdit={() => navigate(`/escolas/${e.id}`)}
                             onView={() => navigate(`/escolas/${e.id}`)}
                             onDelete={() => {
-                              toast.info(`Em breve: remover ${e.designacao}`);
+                              toast.info(`Em breve: remover ${e.nome}`);
                             }}
                           />
                         </TableCell>
@@ -701,7 +772,7 @@ export default function Escolas() {
       <DocumentsPanel
         open={docsPanelOpen}
         onOpenChange={setDocsPanelOpen}
-        schoolName={selectedEscola?.designacao ?? ""}
+        schoolName={selectedEscola?.nome ?? ""}
         exercicio={exercicio}
       />
     </AppLayout>
