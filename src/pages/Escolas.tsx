@@ -14,22 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
-  MoreVertical, FileText, Eye, Trash2, ArrowUpRight,
+  Download, FileSpreadsheet, Search, SchoolIcon, X, SearchX,
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
+import VirtualizedSchoolsTable from "@/components/escolas/VirtualizedSchoolsTable";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useExercicio } from "@/hooks/useExercicio";
