@@ -24,7 +24,7 @@ Nenhuma ferramenta deve presumir contexto apenas por relatórios externos ou por
 
 ## Gate técnico antecipado — TypeScript Strict Mode
 
-Foi antecipado o gate de endurecimento do TypeScript previsto antes do motor documental. Os arquivos `tsconfig.json` e `tsconfig.app.json` foram atualizados com `strict: true`, `noImplicitAny: true` e `strictNullChecks: true`.
+Foi antecipado o gate de endurecimento do TypeScript previsto antes do motor documental. O `tsconfig.json` referencia os tsconfigs específicos do projeto, e o modo estrito está habilitado nos arquivos referenciados (`tsconfig.app.json` e `tsconfig.node.json`) com `strict: true`; verificações como `noImplicitAny` e `strictNullChecks` passam a valer por derivação desse modo estrito.
 
 A validação `npx tsc --noEmit` foi executada sem erros. Essa condição passa a ser requisito permanente do projeto: novas alterações não devem ser aceitas se quebrarem o modo estrito.
 
