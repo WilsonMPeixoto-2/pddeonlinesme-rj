@@ -17,22 +17,14 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { NumberTicker } from "@/components/NumberTicker";
-import { MiniSparkline } from "@/components/MiniSparkline";
 import { TiltCard } from "@/components/TiltCard";
+import { fmtBRL } from "@/lib/formatters";
+import { useExercicio } from "@/hooks/useExercicio";
 
-type Recente = { id: string; designacao: string; updated_at: string };
+type Recente = { id: string; nome: string; designacao: string; updated_at: string };
 
-const fmtBRL = (n: number) =>
-  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-
-const fmtBRLDecimal = (n: number) =>
-  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-// Mock sparkline series — replace with real per-month aggregates later
-const SPARK_RECEBIDO = [12, 18, 22, 19, 27, 35, 41, 38, 46, 52, 58, 63];
-const SPARK_GASTO = [4, 9, 14, 11, 19, 22, 31, 29, 38, 41, 47, 51];
-const SPARK_UNIDADES = [40, 41, 42, 42, 43, 44, 44, 45, 46, 46, 47, 47];
-const SPARK_DOCS = [0, 2, 4, 6, 8, 12, 16, 22, 28, 35, 41, 48];
+const fmtBRLCompact = (n: number) =>
+  fmtBRL(n, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
 
 type Tone = "primary" | "success" | "warning" | "muted";
 const toneRing: Record<Tone, string> = {
@@ -44,31 +36,53 @@ const toneRing: Record<Tone, string> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { exercicio } = useExercicio();
   const [total, setTotal] = useState<number | null>(null);
   const [totalRecebido, setTotalRecebido] = useState(0);
   const [totalGasto, setTotalGasto] = useState(0);
+  const [totalDocs, setTotalDocs] = useState(0);
   const [recentes, setRecentes] = useState<Recente[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
+    const exercicioNum = Number(exercicio);
     (async () => {
-      const { data, count } = await supabase
-        .from("unidades_escolares")
-        .select("id, designacao, updated_at, recebido, gasto, saldo_anterior", {
-          count: "exact",
-        })
-        .order("updated_at", { ascending: false });
+      const [unidadesResp, docsResp] = await Promise.all([
+        supabase
+          .from("vw_unidades_escolares_frontend")
+          .select("id, designacao, nome, updated_at, recebido, gasto, saldo_anterior", {
+            count: "exact",
+          })
+          .eq("exercicio", exercicioNum)
+          .eq("programa", "basico")
+          .order("updated_at", { ascending: false }),
+        supabase
+          .from("documentos_gerados")
+          .select("id", { count: "exact", head: true })
+          .eq("exercicio", exercicioNum)
+          .eq("programa", "basico")
+          .eq("status", "gerado"),
+      ]);
 
-      const lista = data ?? [];
-      setTotal(count ?? lista.length);
+      const lista = unidadesResp.data ?? [];
+      setTotal(unidadesResp.count ?? lista.length);
       setTotalRecebido(
         lista.reduce((s, r) => s + Number(r.recebido ?? 0) + Number(r.saldo_anterior ?? 0), 0),
       );
       setTotalGasto(lista.reduce((s, r) => s + Number(r.gasto ?? 0), 0));
-      setRecentes(lista.slice(0, 5).map((r) => ({ id: r.id, designacao: r.designacao, updated_at: r.updated_at })));
+      setRecentes(
+        lista.slice(0, 5).map((r) => ({
+          id: r.id ?? "",
+          nome: r.nome ?? "",
+          designacao: r.designacao ?? "",
+          updated_at: r.updated_at ?? "",
+        })),
+      );
+      setTotalDocs(docsResp.count ?? 0);
       setLoading(false);
     })();
-  }, []);
+  }, [exercicio]);
 
   const executionRate = totalRecebido > 0 ? Math.min(100, (totalGasto / totalRecebido) * 100) : 0;
 
@@ -78,7 +92,6 @@ export default function Dashboard() {
     icon: typeof School;
     hint: string;
     tone: Tone;
-    spark: number[];
     format?: (n: number) => string;
   }[] = [
     {
@@ -87,7 +100,6 @@ export default function Dashboard() {
       icon: School,
       hint: "Cadastradas na 4ª CRE",
       tone: "primary",
-      spark: SPARK_UNIDADES,
     },
     {
       label: "Recebido + saldo",
@@ -95,8 +107,7 @@ export default function Dashboard() {
       icon: TrendingUp,
       hint: "Recursos disponíveis no exercício",
       tone: "success",
-      spark: SPARK_RECEBIDO,
-      format: fmtBRL,
+      format: fmtBRLCompact,
     },
     {
       label: "Total executado",
@@ -104,16 +115,14 @@ export default function Dashboard() {
       icon: CheckCircle2,
       hint: `${executionRate.toFixed(1)}% do disponível`,
       tone: "warning",
-      spark: SPARK_GASTO,
-      format: fmtBRL,
+      format: fmtBRLCompact,
     },
     {
       label: "Demonstrativos gerados",
-      value: 0,
+      value: totalDocs,
       icon: FileSpreadsheet,
-      hint: "Disponível em breve",
+      hint: totalDocs === 0 ? "Aguardando primeira geração" : "Demonstrativos emitidos no exercício",
       tone: "muted",
-      spark: SPARK_DOCS,
     },
   ];
 
@@ -145,7 +154,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2">
                 <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
                 <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-                  Painel operacional · Exercício 2026
+                  Painel operacional · Exercício {exercicio}
                 </p>
               </div>
 
@@ -156,7 +165,7 @@ export default function Dashboard() {
                   ) : (
                     <NumberTicker
                       value={totalRecebido}
-                      format={fmtBRLDecimal}
+                      format={(n) => fmtBRL(n)}
                       className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
                     />
                   )}
@@ -200,8 +209,8 @@ export default function Dashboard() {
                 </motion.div>
               </div>
               <div className="flex justify-between text-[11px] text-muted-foreground">
-                <span>Executado: {fmtBRL(totalGasto)}</span>
-                <span>Disponível: {fmtBRL(totalRecebido)}</span>
+                <span>Executado: {fmtBRLCompact(totalGasto)}</span>
+                <span>Disponível: {fmtBRLCompact(totalRecebido)}</span>
               </div>
             </div>
           </div>
@@ -248,11 +257,12 @@ export default function Dashboard() {
                     </div>
 
                     <div className="-mx-1 mt-auto">
-                      <MiniSparkline
-                        data={s.spark}
-                        tone={s.tone === "muted" ? "primary" : s.tone}
-                        height={32}
-                      />
+                      <div
+                        className="flex h-8 items-center justify-center rounded-md border border-dashed border-border/40 px-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70"
+                        aria-hidden
+                      >
+                        Série indisponível
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -313,7 +323,12 @@ export default function Dashboard() {
                     >
                       <div className="flex min-w-0 items-center gap-3">
                         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 transition-all group-hover:bg-primary group-hover:shadow-[0_0_8px_hsl(var(--primary)/0.7)]" />
-                        <span className="truncate text-sm font-medium">{r.designacao}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{r.nome}</p>
+                          <p className="truncate font-mono text-[11px] text-muted-foreground">
+                            {r.designacao}
+                          </p>
+                        </div>
                       </div>
                       <Button
                         variant="ghost"
