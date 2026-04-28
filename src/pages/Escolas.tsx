@@ -348,21 +348,34 @@ export default function Escolas() {
             <div className="relative w-full sm:max-w-md">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nome, INEP ou diretor(a)…"
+                ref={searchRef}
+                placeholder="Buscar por nome, INEP, CNPJ, agência, conta, diretor(a)…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="h-10 pl-9 pr-9"
+                className="h-10 pl-9 pr-24"
+                aria-label="Buscar unidades escolares"
               />
-              {q.trim() && (
-                <button
-                  type="button"
-                  aria-label="Limpar busca"
-                  onClick={() => setQ("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
+              <div className="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+                {q.trim() ? (
+                  <>
+                    <span className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-muted-foreground">
+                      {lista.length}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label="Limpar busca"
+                      onClick={() => setQ("")}
+                      className="pointer-events-auto rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <kbd className="hidden rounded-md border border-border/60 bg-muted/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
+                    /
+                  </kbd>
+                )}
+              </div>
             </div>
 
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
