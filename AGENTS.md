@@ -22,11 +22,53 @@ Sempre explicitar antes de iniciar uma tarefa:
 
 Se a tarefa estiver atribuida a ferramenta errada, isso deve ser apontado explicitamente antes da execucao.
 
+## Fonte de verdade e compatibilizacao com o Plano v4
+
+O Plano Global v4 continua sendo o eixo diretor do projeto. A migracao para Supabase proprio e o parenteses tecnico atualmente aberto dentro dele.
+
+Antes de iniciar qualquer tarefa, a ferramenta executora deve ler, quando existirem:
+
+- `AGENTS.md`
+- `docs/PROJECT_STATE.md`
+- `docs/DECISIONS_LOG.md`
+- `docs/UI_CHANGELOG.md`
+- `docs/PLAN_V4_REALITY_ALIGNMENT.md`
+- `docs/SUPABASE_MIGRATION_CURRENT_SCOPE.md`
+- `docs/FRONTEND_DATA_CONTRACT.md`
+
+Nenhuma ferramenta deve presumir contexto apenas pelo prompt ou por relatorios externos. O GitHub e a documentacao versionada sao a fonte oficial.
+
+Todo prompt deve classificar a tarefa como uma das seguintes categorias:
+
+1. Parenteses Supabase: tarefas ligadas a contrato de dados, Supabase proprio, migrations, RLS, roles, importacao da BASE, Preview ou producao da migracao.
+2. Plano Global v4: tarefas de monorepo, Fastify, motor documental, Portal do Diretor funcional, hardening amplo, geracao individual real ou ZIP/lote futuro.
+3. Adendo de compatibilizacao: tarefas documentais de estado, decisao, alinhamento, handoff ou instrucao para ferramentas.
+
+A classificacao deve aparecer no handoff final.
+
+## Regras quota-resilientes e anti-colcha de retalhos
+
+Como o projeto pode alternar entre Codex, Claude, Antigravity e outras ferramentas por restricoes de cota, toda tarefa deve ser pequena, autocontida, retomavel e auditavel.
+
+Todo prompt tecnico deve declarar:
+
+- arquivos que devem ser lidos;
+- arquivos que podem ser alterados;
+- arquivos que nao podem ser alterados;
+- escopo proibido;
+- criterios de aceite;
+- comandos de validacao;
+- ponto de parada;
+- handoff final obrigatorio.
+
+A ferramenta deve parar e devolver para revisao humana/Cursor se descobrir necessidade de alterar schema, auth, RLS, regra financeira, regra documental, contrato de API, arquitetura ou producao fora do escopo aprovado.
+
 ## Papeis oficiais
 
 - Cursor e o arquiteto-integrador.
 - Codex e o executor tecnico de blocos delimitados.
 - Lovable e Antigravity atuam na camada visual e de prototipacao.
+- Claude pode apoiar revisao, troubleshooting, logs, CI e analise cruzada.
 - Humano e revisor obrigatorio nas areas criticas.
 
 ## Quando Cursor lidera
@@ -65,12 +107,6 @@ Se a tarefa estiver atribuida a ferramenta errada, isso deve ser apontado explic
 - correcoes mecanicas em massa
 - diagnostico inicial terminal-first
 
-## Regra pratica de decisao
-
-- Se a tarefa exigir decisao de contrato, arquitetura ou coerencia entre multiplas camadas, Cursor lidera.
-- Se a tarefa tiver entrada clara, saida clara e teste claro, Codex lidera.
-- Se a tarefa cruzar varias camadas, mas o contrato ja estiver fechado e a execucao for principalmente mecanica, Codex pode liderar.
-
 ## Casos hibridos obrigatorios
 
 ### Migracao Supabase
@@ -78,6 +114,7 @@ Se a tarefa estiver atribuida a ferramenta errada, isso deve ser apontado explic
 - Cursor lidera schema alvo, roles, RLS e storage policies.
 - Codex executa migracoes mecanicas, scripts, dump/restore e verificacao local.
 - Revisao final e humana + Cursor.
+- O escopo vigente deve seguir `docs/SUPABASE_MIGRATION_CURRENT_SCOPE.md`.
 
 ### Monorepo
 
@@ -112,16 +149,19 @@ Se a tarefa estiver atribuida a ferramenta errada, isso deve ser apontado explic
 - regras financeiras
 - regras que alterem geracao documental oficial
 - regras que impactem prestacao de contas ou acesso a dados sensiveis
+- promocao de producao
+- uso de dados reais
 
 ## Regra de bloqueio e retorno de contrato
 
-Se Codex descobrir que a implementacao exige mudar contrato, arquitetura, boundary ou decisao de seguranca, ele nao deve improvisar.
+Se Codex ou outra ferramenta descobrir que a implementacao exige mudar contrato, arquitetura, boundary ou decisao de seguranca, nao deve improvisar.
 
 Nesse caso:
 
-- Codex para
-- registra o bloqueio
-- devolve a decisao para Cursor ou para revisao humana
+- parar;
+- registrar o bloqueio;
+- explicar por que a decisao excede o escopo;
+- devolver a decisao para Cursor ou revisao humana.
 
 ## Fluxo padrao de execucao
 
@@ -134,34 +174,36 @@ Nesse caso:
 
 Todo prompt operacional deve declarar:
 
-- ferramenta lider
-- objetivo da tarefa
-- arquivos que deve ler
-- arquivos que pode alterar
-- arquivos que nao deve alterar
-- criterio de aceite
-- momento de handoff
+- classificacao da tarefa;
+- ferramenta lider;
+- objetivo da tarefa;
+- arquivos que deve ler;
+- arquivos que pode alterar;
+- arquivos que nao deve alterar;
+- escopo proibido;
+- criterio de aceite;
+- comandos de validacao;
+- momento de handoff.
 
-## Exemplo de prompt Codex-first
+## Handoff obrigatorio
 
-- Ferramenta lider: Codex
-- Tarefa: implementar parser isolado da BASE.xlsx
-- Nao mexer: frontend, auth, RLS, layout
-- Entregar: parser testado, validacao, relatorio de campos reconhecidos
-- Handoff: depois disso, Cursor integra com Fastify e UI
+Ao final, informar:
 
-## Exemplo de prompt Cursor-first
-
-- Ferramenta lider: Cursor
-- Tarefa: integrar o parser da BASE ao backend e a tela de importacao
-- Nao mexer: nucleo tecnico do parser, salvo correcao delimitada
-- Entregar: contrato da API, tratamento de erro, permissoes, feedback visual
-- Handoff: se houver necessidade de ajuste tecnico no parser, devolver tarefa delimitada ao Codex
+- classificacao da tarefa;
+- arquivos lidos;
+- arquivos alterados;
+- comandos executados;
+- validacoes realizadas;
+- concluido;
+- pendente;
+- bloqueado;
+- riscos;
+- proximo passo recomendado.
 
 ## Regra adicional desta fase do projeto
 
 Enquanto o projeto estiver em fase de prototipacao e refinamento visual, Lovable e Antigravity podem se revezar por questoes de credito, cota ou conveniencia operacional.
-Essa flexibilidade visual nao altera a divisao estrutural principal entre Cursor e Codex.
+Essa flexibilidade visual nao altera a divisao estrutural principal entre Cursor e Codex e nao autoriza alteracao de schema, auth, RLS, producao, regras financeiras ou regras documentais.
 
 ## Camada Codex - ferramentas padrao
 
