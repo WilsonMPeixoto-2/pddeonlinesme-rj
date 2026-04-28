@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -157,6 +157,22 @@ export default function Escolas() {
   // Documents panel state
   const [docsPanelOpen, setDocsPanelOpen] = useState(false);
   const [selectedEscola, setSelectedEscola] = useState<Unidade | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Atalho "/" para focar a busca (ignorado dentro de inputs/áreas editáveis)
+  useEffect(() => {
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key !== "/") return;
+      const t = ev.target as HTMLElement | null;
+      const tag = t?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || (t && (t as HTMLElement).isContentEditable)) return;
+      ev.preventDefault();
+      searchRef.current?.focus();
+      searchRef.current?.select();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     (async () => {
