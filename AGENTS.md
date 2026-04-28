@@ -32,6 +32,7 @@ Antes de iniciar qualquer tarefa, a ferramenta executora deve ler, quando existi
 - `docs/PROJECT_STATE.md`
 - `docs/DECISIONS_LOG.md`
 - `docs/UI_CHANGELOG.md`
+- `docs/PLAN_GLOBAL_V4_CONSOLIDATED.md`
 - `docs/PLAN_V4_REALITY_ALIGNMENT.md`
 - `docs/SUPABASE_MIGRATION_CURRENT_SCOPE.md`
 - `docs/FRONTEND_DATA_CONTRACT.md`
