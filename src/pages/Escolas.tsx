@@ -146,7 +146,6 @@ const programaConfig: Record<Programa, { label: string; short: string; className
 /* ─── Main component ─── */
 
 export default function Escolas() {
-  const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [loading, setLoading] = useState(true);
