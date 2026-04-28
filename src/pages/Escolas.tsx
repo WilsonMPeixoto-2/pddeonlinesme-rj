@@ -388,204 +388,54 @@ export default function Escolas() {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table — virtualizada com agrupamento por prefixo */}
         <Card className="overflow-hidden border-border/70">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 backdrop-blur-md hover:bg-muted/50">
-                  <TableHead className="h-11 min-w-[300px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Unidade escolar
-                  </TableHead>
-                  <TableHead className="h-11 min-w-[180px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Diretor(a)
-                  </TableHead>
-                  <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Status
-                  </TableHead>
-                  <TableHead className="h-11 w-[60px] text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Alunos
-                  </TableHead>
-                  <TableHead className="h-11 w-[200px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Execução financeira
-                  </TableHead>
-                  {/* Coluna dedicada — destaque para Documentos */}
-                  <TableHead className="h-11 w-[170px] border-l border-border/40 bg-primary/5 text-center text-[11px] font-semibold uppercase tracking-wide text-primary/80">
-                    <span className="inline-flex items-center gap-1.5">
-                      <FileText className="h-3 w-3" />
-                      Documentos
-                    </span>
-                  </TableHead>
-                  <TableHead className="h-11 w-[50px] text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    {""}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {Array.from({ length: COLUMNS }).map((__, j) => (
-                        <TableCell key={j} className="py-3">
-                          <Skeleton className={`h-4 ${j === 0 ? "w-3/4" : "w-16 ml-auto"}`} />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : lista.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={COLUMNS} className="p-0">
-                      <EmptyState
-                        variant="inline"
-                        icon={isSearching ? SearchX : SchoolIcon}
-                        title={
-                          isSearching
-                            ? "Nenhum resultado para os filtros aplicados"
-                            : "Nenhuma unidade cadastrada ainda"
-                        }
-                        description={
-                          isSearching
-                            ? "Verifique o termo digitado ou altere os filtros."
-                            : "Importe a BASE ou cadastre uma unidade para começar."
-                        }
-                        action={
-                          isSearching ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={clearFilters}
-                            >
-                              Limpar filtros
-                            </Button>
-                          ) : null
-                        }
-                      />
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  lista.map((e) => {
-                    const st = getStatus(e);
-                    const cfg = statusConfig[st];
-                    const prog = getPrograma(e);
-                    const progCfg = programaConfig[prog];
-                    return (
-                      <TableRow
-                        key={e.id}
-                        className="group row-accent border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
-                      >
-                        <TableCell className="py-3">
-                          <div className="flex flex-col gap-1">
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/escolas/${e.id}`)}
-                              title="Abrir cadastro completo"
-                              className="group/link inline-flex items-center gap-1.5 self-start rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                              aria-label={`Abrir cadastro de ${e.designacao}`}
-                            >
-                              <span>{e.designacao}</span>
-                              <ArrowUpRight
-                                className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
-                                aria-hidden="true"
-                              />
-                            </button>
-                            <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                              <span className="font-mono tabular-nums">
-                                INEP {e.inep ?? "—"}
-                              </span>
-                              <span className="text-border">·</span>
-                              <span
-                                className={cn(
-                                  "inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium",
-                                  progCfg.className,
-                                )}
-                              >
-                                {progCfg.short}
-                              </span>
-                              {(e.agencia || e.conta_corrente) && (
-                                <>
-                                  <span className="text-border">·</span>
-                                  <span
-                                    className="font-mono tabular-nums"
-                                    title="Agência / Conta corrente"
-                                  >
-                                    Ag {e.agencia ?? "—"} · CC {e.conta_corrente ?? "—"}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm">{e.diretor ?? "—"}</TableCell>
-                        <TableCell>
-                          <span
-                            className={cn(
-                              "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium",
-                              cfg.badgeClass,
-                            )}
-                          >
-                            <span className={cn("inline-block h-1.5 w-1.5 rounded-full", cfg.dotClass)} />
-                            {cfg.label}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">{e.alunos}</TableCell>
-                        <TableCell>
-                          <ExecutionBar
-                            recebido={Number(e.recebido)}
-                            saldo={Number(e.saldo_anterior)}
-                            gasto={Number(e.gasto)}
-                          />
-                        </TableCell>
-
-                        {/* PRIMARY ACTION — Documentos com destaque (O3 + O5) */}
-                        <TableCell className="border-l border-border/40 bg-primary/[0.025] p-2">
-                          <div className="space-y-1.5">
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="h-9 w-full justify-center gap-2 text-xs shadow-[0_0_16px_hsl(var(--primary)/0.18)] transition-shadow hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]"
-                              onClick={() => openDocs(e)}
-                            >
-                              <FileText className="h-3.5 w-3.5" />
-                              Gerar documentos
-                            </Button>
-                            {(() => {
-                              const dm = getDocMeta(e);
-                              return (
-                                <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
-                                  <span className={cn(
-                                    "font-semibold tabular-nums",
-                                    dm.generated > 0 ? "text-success" : "text-muted-foreground/60"
-                                  )}>
-                                    {dm.generated}/{dm.total}
-                                  </span>
-                                  {dm.lastGen && (
-                                    <>
-                                      <span className="text-border">·</span>
-                                      <span>{dm.lastGen}</span>
-                                    </>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="text-right">
-                          <SecondaryActions
-                            onEdit={() => navigate(`/escolas/${e.id}`)}
-                            onView={() => navigate(`/escolas/${e.id}`)}
-                            onDelete={() => {
-                              toast.info(`Em breve: remover ${e.designacao}`);
-                            }}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          {loading ? (
+            <div className="space-y-2 p-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="ml-auto h-4 w-20" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              ))}
+            </div>
+          ) : lista.length === 0 ? (
+            <div className="p-2">
+              <EmptyState
+                variant="inline"
+                icon={isSearching ? SearchX : SchoolIcon}
+                title={
+                  isSearching
+                    ? "Nenhum resultado para os filtros aplicados"
+                    : "Nenhuma unidade cadastrada ainda"
+                }
+                description={
+                  isSearching
+                    ? "Verifique o termo digitado ou altere os filtros."
+                    : "Importe a BASE ou cadastre uma unidade para começar."
+                }
+                action={
+                  isSearching ? (
+                    <Button variant="outline" size="sm" onClick={clearFilters}>
+                      Limpar filtros
+                    </Button>
+                  ) : null
+                }
+              />
+            </div>
+          ) : (
+            <VirtualizedSchoolsTable
+              unidades={lista}
+              getStatus={getStatus}
+              getPrograma={getPrograma}
+              getDocMeta={getDocMeta}
+              statusConfig={statusConfig}
+              programaConfig={programaConfig}
+              fmt={fmt}
+              onOpenDocs={openDocs}
+            />
+          )}
         </Card>
 
         {/* Footer */}
