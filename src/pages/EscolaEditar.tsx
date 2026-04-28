@@ -27,12 +27,14 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
+import { fmtBRL } from "@/lib/formatters";
 
 /* ─── Types ─── */
 
 type Unidade = {
   id: string;
   designacao: string;
+  nome: string;
   inep: string | null;
   cnpj: string | null;
   diretor: string | null;
@@ -40,16 +42,21 @@ type Unidade = {
   endereco: string | null;
   agencia: string | null;
   conta_corrente: string | null;
-  alunos: number;
-  saldo_anterior: number;
-  recebido: number;
-  gasto: number;
+  alunos: number | null;
+  ativo: boolean | null;
+  exercicio: number;
+  programa: string;
   reprogramado_custeio: number;
   reprogramado_capital: number;
   parcela_1_custeio: number;
   parcela_1_capital: number;
   parcela_2_custeio: number;
   parcela_2_capital: number;
+  saldo_anterior: number;
+  recebido: number;
+  gasto: number;
+  saldo_estimado: number;
+  updated_at: string | null;
 };
 
 type Errors = Partial<Record<keyof Unidade, string>>;
@@ -59,26 +66,58 @@ type Errors = Partial<Record<keyof Unidade, string>>;
 const onlyDigits = (s: string) => s.replace(/\D/g, "");
 const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 
+// Derivados locais a partir dos campos fonte editáveis (espelham o que a view calcula no banco).
+const computeRecebido = (u: Unidade) =>
+  Number(u.parcela_1_custeio || 0) +
+  Number(u.parcela_1_capital || 0) +
+  Number(u.parcela_2_custeio || 0) +
+  Number(u.parcela_2_capital || 0);
+
+const computeSaldoAnterior = (u: Unidade) =>
+  Number(u.reprogramado_custeio || 0) + Number(u.reprogramado_capital || 0);
+
 function validate(u: Unidade): Errors {
   const errs: Errors = {};
-  if (!u.designacao?.trim()) errs.designacao = "Informe a designação da unidade.";
+  if (!u.nome?.trim()) {
+    errs.nome = "Informe o nome da unidade escolar.";
+  } else if (u.nome.trim().length < 3) {
+    errs.nome = "O nome deve ter pelo menos 3 caracteres.";
+  }
+  if (!u.designacao?.trim()) errs.designacao = "Informe o código administrativo (designação).";
   if (u.inep && onlyDigits(u.inep).length !== 8) errs.inep = "INEP deve ter 8 dígitos.";
   if (u.cnpj && onlyDigits(u.cnpj).length !== 14) errs.cnpj = "CNPJ deve ter 14 dígitos.";
   if (u.email && !isValidEmail(u.email)) errs.email = "E-mail inválido.";
-  if (!Number.isFinite(Number(u.alunos)) || Number(u.alunos) < 0)
-    errs.alunos = "Informe um número inteiro ≥ 0.";
-  if (Number(u.saldo_anterior) < 0) errs.saldo_anterior = "Saldo não pode ser negativo.";
-  if (Number(u.recebido) < 0) errs.recebido = "Valor recebido não pode ser negativo.";
-  if (Number(u.gasto) < 0) errs.gasto = "Valor gasto não pode ser negativo.";
-  if (Number(u.gasto) > Number(u.saldo_anterior) + Number(u.recebido))
+  if (u.alunos !== null) {
+    if (!Number.isFinite(Number(u.alunos)) || Number(u.alunos) < 0) {
+      errs.alunos = "Informe um número inteiro ≥ 0.";
+    }
+  }
+  const finFonte: (keyof Unidade)[] = [
+    "reprogramado_custeio",
+    "reprogramado_capital",
+    "parcela_1_custeio",
+    "parcela_1_capital",
+    "parcela_2_custeio",
+    "parcela_2_capital",
+    "gasto",
+  ];
+  for (const f of finFonte) {
+    if (Number(u[f] ?? 0) < 0) {
+      errs[f] = "Valor não pode ser negativo.";
+    }
+  }
+  if (Number(u.gasto || 0) > computeRecebido(u) + computeSaldoAnterior(u)) {
     errs.gasto = "Gasto excede saldo anterior + recebido.";
+  }
   return errs;
 }
 
 function getStatusInfo(u: Unidade, hasErrors: boolean) {
   if (hasErrors) return { label: "Dados com erro", tone: "destructive" as const, icon: AlertTriangle };
-  const hasFinancial = Number(u.saldo_anterior) + Number(u.recebido) + Number(u.gasto) > 0;
-  const hasIdentity = u.designacao?.trim() && u.inep;
+  const hasFinancial =
+    computeSaldoAnterior(u) + computeRecebido(u) + Number(u.gasto || 0) > 0;
+  const hasIdentity =
+    Boolean(u.nome?.trim()) && Boolean(u.designacao?.trim()) && Boolean(u.inep);
   if (hasIdentity && hasFinancial)
     return { label: "Cadastro completo", tone: "success" as const, icon: CheckCircle2 };
   if (hasIdentity || hasFinancial)
@@ -89,20 +128,19 @@ function getStatusInfo(u: Unidade, hasErrors: boolean) {
 /** Conta quantos campos importantes da seção estão preenchidos. */
 function sectionProgress(u: Unidade, section: "id" | "bank" | "fin"): { done: number; total: number } {
   if (section === "id") {
-    const fields = [u.designacao?.trim(), u.inep, u.cnpj, u.diretor, u.email];
+    const fields = [u.nome?.trim(), u.designacao?.trim(), u.inep, u.cnpj, u.diretor, u.email];
     return { done: fields.filter(Boolean).length, total: fields.length };
   }
   if (section === "bank") {
     const fields = [u.agencia, u.conta_corrente, u.endereco];
     return { done: fields.filter((v) => Boolean(v && String(v).trim())).length, total: fields.length };
   }
-  // fin
   const filled = [
-    u.alunos > 0,
-    Number(u.reprogramado_custeio) + Number(u.reprogramado_capital) > 0,
-    Number(u.parcela_1_custeio) + Number(u.parcela_1_capital) > 0,
-    Number(u.parcela_2_custeio) + Number(u.parcela_2_capital) > 0,
-    Number(u.gasto) > 0,
+    Number(u.alunos ?? 0) > 0,
+    Number(u.reprogramado_custeio || 0) + Number(u.reprogramado_capital || 0) > 0,
+    Number(u.parcela_1_custeio || 0) + Number(u.parcela_1_capital || 0) > 0,
+    Number(u.parcela_2_custeio || 0) + Number(u.parcela_2_capital || 0) > 0,
+    Number(u.gasto || 0) > 0,
   ];
   return { done: filled.filter(Boolean).length, total: filled.length };
 }
@@ -178,30 +216,79 @@ function SectionHeader({
 export default function EscolaEditar() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { exercicio } = useExercicio();
   const [u, setU] = useState<Unidade | null>(null);
   const [original, setOriginal] = useState<Unidade | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState<Set<keyof Unidade>>(new Set());
-  const { exercicio } = useExercicio();
   const [activeSection, setActiveSection] = useState<string>("identificacao");
   const [docsOpen, setDocsOpen] = useState(false);
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    const exercicioNum = Number(exercicio);
     (async () => {
       const { data, error } = await supabase
-        .from("unidades_escolares")
-        .select("*")
-        .eq("id", id!)
+        .from("vw_unidades_escolares_frontend")
+        .select(
+          "id, designacao, nome, inep, cnpj, diretor, email, endereco, agencia, conta_corrente, alunos, ativo, exercicio, programa, reprogramado_custeio, reprogramado_capital, parcela_1_custeio, parcela_1_capital, parcela_2_custeio, parcela_2_capital, saldo_anterior, recebido, gasto, saldo_estimado, updated_at",
+        )
+        .eq("id", id)
+        .eq("exercicio", exercicioNum)
+        .eq("programa", "basico")
         .maybeSingle();
-      if (error) toast.error(error.message);
-      setU(data as Unidade | null);
-      setOriginal(data as Unidade | null);
+
+      if (error) {
+        toast.error(error.message);
+        setU(null);
+        setOriginal(null);
+        setLoading(false);
+        return;
+      }
+
+      if (!data) {
+        setU(null);
+        setOriginal(null);
+        setLoading(false);
+        return;
+      }
+
+      const normalized: Unidade = {
+        id: data.id ?? "",
+        designacao: data.designacao ?? "",
+        nome: data.nome ?? "",
+        inep: data.inep ?? null,
+        cnpj: data.cnpj ?? null,
+        diretor: data.diretor ?? null,
+        email: data.email ?? null,
+        endereco: data.endereco ?? null,
+        agencia: data.agencia ?? null,
+        conta_corrente: data.conta_corrente ?? null,
+        alunos: data.alunos ?? null,
+        ativo: data.ativo ?? null,
+        exercicio: data.exercicio ?? exercicioNum,
+        programa: data.programa ?? "basico",
+        reprogramado_custeio: Number(data.reprogramado_custeio ?? 0),
+        reprogramado_capital: Number(data.reprogramado_capital ?? 0),
+        parcela_1_custeio: Number(data.parcela_1_custeio ?? 0),
+        parcela_1_capital: Number(data.parcela_1_capital ?? 0),
+        parcela_2_custeio: Number(data.parcela_2_custeio ?? 0),
+        parcela_2_capital: Number(data.parcela_2_capital ?? 0),
+        saldo_anterior: Number(data.saldo_anterior ?? 0),
+        recebido: Number(data.recebido ?? 0),
+        gasto: Number(data.gasto ?? 0),
+        saldo_estimado: Number(data.saldo_estimado ?? 0),
+        updated_at: data.updated_at ?? null,
+      };
+      setU(normalized);
+      setOriginal(normalized);
       setLoading(false);
     })();
-  }, [id]);
+  }, [id, exercicio]);
 
   // Scroll-spy: observe sections
   useEffect(() => {
@@ -240,17 +327,21 @@ export default function EscolaEditar() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!u) return;
+    if (!u || !original) return;
     setTouched(new Set(Object.keys(u) as (keyof Unidade)[]));
     if (hasErrors) {
       toast.error("Corrija os campos destacados antes de salvar.");
       return;
     }
     setSaving(true);
-    const { error } = await supabase
+    const exercicioNum = Number(exercicio);
+
+    // Operação A — dados cadastrais em unidades_escolares.
+    const { error: errA } = await supabase
       .from("unidades_escolares")
       .update({
         designacao: u.designacao,
+        nome: u.nome,
         inep: u.inep,
         cnpj: u.cnpj,
         diretor: u.diretor,
@@ -258,22 +349,68 @@ export default function EscolaEditar() {
         endereco: u.endereco,
         agencia: u.agencia,
         conta_corrente: u.conta_corrente,
-        alunos: Number(u.alunos),
-        saldo_anterior: Number(u.saldo_anterior),
-        recebido: Number(u.recebido),
-        gasto: Number(u.gasto),
+        alunos: u.alunos === null ? null : Number(u.alunos),
+      })
+      .eq("id", u.id);
+
+    if (errA) {
+      setSaving(false);
+      toast.error(`Falha ao salvar dados cadastrais: ${errA.message}`);
+      return;
+    }
+
+    // Operação B — dados financeiros em execucao_financeira (filtrada por unidade/exercicio/programa).
+    const { data: dataB, error: errB } = await supabase
+      .from("execucao_financeira")
+      .update({
         reprogramado_custeio: Number(u.reprogramado_custeio),
         reprogramado_capital: Number(u.reprogramado_capital),
         parcela_1_custeio: Number(u.parcela_1_custeio),
         parcela_1_capital: Number(u.parcela_1_capital),
         parcela_2_custeio: Number(u.parcela_2_custeio),
         parcela_2_capital: Number(u.parcela_2_capital),
+        gasto: Number(u.gasto),
       })
-      .eq("id", u.id);
+      .eq("unidade_id", u.id)
+      .eq("exercicio", exercicioNum)
+      .eq("programa", "basico")
+      .select("id");
+
     setSaving(false);
-    if (error) return toast.error(error.message);
+
+    // Snapshot pós-A: cadastrais salvos, financeiros mantidos como original (B ainda não confirmou).
+    const partialOriginal: Unidade = {
+      ...original,
+      designacao: u.designacao,
+      nome: u.nome,
+      inep: u.inep,
+      cnpj: u.cnpj,
+      diretor: u.diretor,
+      email: u.email,
+      endereco: u.endereco,
+      agencia: u.agencia,
+      conta_corrente: u.conta_corrente,
+      alunos: u.alunos,
+    };
+
+    if (errB) {
+      setOriginal(partialOriginal);
+      toast.error(
+        `Dados cadastrais salvos. Falha ao salvar dados financeiros: ${errB.message}`,
+      );
+      return;
+    }
+
+    if (!dataB || dataB.length === 0) {
+      setOriginal(partialOriginal);
+      toast.error(
+        "Dados cadastrais salvos. Linha de execução financeira não encontrada para unidade/exercicio/programa.",
+      );
+      return;
+    }
+
     setOriginal(u);
-    toast.success("Cadastro salvo na BASE central");
+    toast.success("Cadastro e execução financeira salvos.");
   };
 
   const scrollTo = (sectionId: string) => {
@@ -310,7 +447,9 @@ export default function EscolaEditar() {
     return (
       <AppLayout>
         <div className="rounded-md border border-dashed border-border/70 bg-muted/20 p-10 text-center">
-          <p className="text-sm font-medium">Unidade escolar não encontrada.</p>
+          <p className="text-sm font-medium">
+            Unidade escolar não encontrada para o exercício {exercicio}.
+          </p>
           <Button variant="link" onClick={() => navigate("/escolas")}>
             Voltar para o cadastro
           </Button>
@@ -321,6 +460,8 @@ export default function EscolaEditar() {
 
   const status = getStatusInfo(u, hasErrors);
   const StatusIcon = status.icon;
+  const recebidoLocal = computeRecebido(u);
+  const saldoLocal = computeSaldoAnterior(u);
 
   const statusColors: Record<string, string> = {
     success: "border-success/30 bg-success/10 text-success",
@@ -354,7 +495,7 @@ export default function EscolaEditar() {
             </Link>
             <span className="text-muted-foreground/40">/</span>
             <span className="max-w-[300px] truncate font-medium text-foreground">
-              {u.designacao}
+              {u.nome || u.designacao}
             </span>
           </nav>
 
@@ -385,11 +526,12 @@ export default function EscolaEditar() {
                 Cadastro · 4ª CRE · Exercício {exercicio}
               </p>
               <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                {u.designacao || "Unidade sem designação"}
+                {u.nome || "Unidade sem nome"}
               </h1>
-              {u.inep && (
-                <p className="font-mono text-xs text-muted-foreground">INEP {u.inep}</p>
-              )}
+              <p className="font-mono text-xs text-muted-foreground">
+                Código {u.designacao || "—"}
+                {u.inep && <span> · INEP {u.inep}</span>}
+              </p>
             </div>
 
             <span
@@ -491,8 +633,28 @@ export default function EscolaEditar() {
                 />
                 <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                   <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="nome" className="flex items-center gap-2">
+                      Nome da unidade
+                      {isDirty("nome") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
+                    </Label>
+                    <Input
+                      id="nome"
+                      value={u.nome}
+                      onChange={(e) => setField("nome", e.target.value)}
+                      onBlur={() => setTouched((p) => new Set(p).add("nome"))}
+                      placeholder="EM EMA NEGRÃO DE LIMA"
+                      className={cn(
+                        errOf("nome") && "border-destructive focus-visible:ring-destructive",
+                        isDirty("nome") && !errOf("nome") && "border-primary/40",
+                      )}
+                      aria-invalid={Boolean(errOf("nome"))}
+                    />
+                    <FieldError message={errOf("nome")} />
+                  </div>
+
+                  <div className="space-y-1.5 sm:col-span-2">
                     <Label htmlFor="designacao" className="flex items-center gap-2">
-                      Designação
+                      Código administrativo (designação)
                       {isDirty("designacao") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
                     </Label>
                     <Input
@@ -500,7 +662,9 @@ export default function EscolaEditar() {
                       value={u.designacao}
                       onChange={(e) => setField("designacao", e.target.value)}
                       onBlur={() => setTouched((p) => new Set(p).add("designacao"))}
+                      placeholder="04.10.001"
                       className={cn(
+                        "font-mono tabular-nums",
                         errOf("designacao") && "border-destructive focus-visible:ring-destructive",
                         isDirty("designacao") && !errOf("designacao") && "border-primary/40",
                       )}
@@ -676,7 +840,7 @@ export default function EscolaEditar() {
                     </Label>
                     <NumberInput
                       id="alunos"
-                      value={u.alunos}
+                      value={u.alunos ?? 0}
                       onChange={(v) => setField("alunos", v)}
                       min={0}
                       error={errOf("alunos")}
@@ -684,34 +848,8 @@ export default function EscolaEditar() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="saldo_anterior" className="flex items-center gap-2">
-                      Saldo anterior
-                      {isDirty("saldo_anterior") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
-                    </Label>
-                    <CurrencyInput
-                      id="saldo_anterior"
-                      value={u.saldo_anterior}
-                      onChange={(v) => setField("saldo_anterior", v)}
-                      error={errOf("saldo_anterior")}
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="recebido" className="flex items-center gap-2">
-                      Recebido
-                      {isDirty("recebido") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
-                    </Label>
-                    <CurrencyInput
-                      id="recebido"
-                      value={u.recebido}
-                      onChange={(v) => setField("recebido", v)}
-                      error={errOf("recebido")}
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
                     <Label htmlFor="gasto" className="flex items-center gap-2">
-                      Gasto
+                      Gasto executado
                       {isDirty("gasto") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
                     </Label>
                     <CurrencyInput
@@ -721,9 +859,47 @@ export default function EscolaEditar() {
                       error={errOf("gasto")}
                     />
                   </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-2 text-muted-foreground">
+                      Saldo anterior
+                      <span className="rounded-sm bg-muted/40 px-1 py-0.5 text-[9px] uppercase tracking-wide text-muted-foreground/80">
+                        derivado
+                      </span>
+                    </Label>
+                    <div
+                      className="flex h-10 items-center justify-end rounded-md border border-border/40 bg-muted/10 px-3 font-mono tabular-nums text-sm text-muted-foreground"
+                      aria-readonly="true"
+                      title="Calculado a partir das parcelas reprogramadas (custeio + capital)."
+                    >
+                      {fmtBRL(saldoLocal)}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground/70">
+                      Soma de Reprogramado custeio + capital.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-2 text-muted-foreground">
+                      Recebido no exercício
+                      <span className="rounded-sm bg-muted/40 px-1 py-0.5 text-[9px] uppercase tracking-wide text-muted-foreground/80">
+                        derivado
+                      </span>
+                    </Label>
+                    <div
+                      className="flex h-10 items-center justify-end rounded-md border border-border/40 bg-muted/10 px-3 font-mono tabular-nums text-sm text-muted-foreground"
+                      aria-readonly="true"
+                      title="Calculado a partir das parcelas 1 e 2 (custeio + capital)."
+                    >
+                      {fmtBRL(recebidoLocal)}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground/70">
+                      Soma das parcelas 1 e 2 (custeio + capital).
+                    </p>
+                  </div>
                 </div>
 
-                {/* Editorial preview */}
+                {/* Detalhamento Custeio × Capital — fontes editáveis */}
                 <div className="mt-5 rounded-lg border border-dashed border-border/50 bg-muted/5 p-5">
                   <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Detalhamento Custeio × Capital
@@ -744,18 +920,86 @@ export default function EscolaEditar() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/30">
-                        {["Saldo Reprogramado", "1ª Parcela", "2ª Parcela"].map((row) => (
-                          <tr key={row}>
-                            <td className="px-3 py-2.5 text-sm text-muted-foreground/80">{row}</td>
-                            <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground/40">—</td>
-                            <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground/40">—</td>
-                          </tr>
-                        ))}
+                        <tr>
+                          <td className="px-3 py-2.5 text-sm text-muted-foreground/80">Saldo Reprogramado</td>
+                          <td className="px-3 py-2.5">
+                            <CurrencyInput
+                              id="reprogramado_custeio"
+                              value={u.reprogramado_custeio}
+                              onChange={(v) => setField("reprogramado_custeio", v)}
+                              error={errOf("reprogramado_custeio")}
+                              className={cn(
+                                isDirty("reprogramado_custeio") && !errOf("reprogramado_custeio") && "border-primary/40",
+                              )}
+                            />
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <CurrencyInput
+                              id="reprogramado_capital"
+                              value={u.reprogramado_capital}
+                              onChange={(v) => setField("reprogramado_capital", v)}
+                              error={errOf("reprogramado_capital")}
+                              className={cn(
+                                isDirty("reprogramado_capital") && !errOf("reprogramado_capital") && "border-primary/40",
+                              )}
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-3 py-2.5 text-sm text-muted-foreground/80">1ª Parcela</td>
+                          <td className="px-3 py-2.5">
+                            <CurrencyInput
+                              id="parcela_1_custeio"
+                              value={u.parcela_1_custeio}
+                              onChange={(v) => setField("parcela_1_custeio", v)}
+                              error={errOf("parcela_1_custeio")}
+                              className={cn(
+                                isDirty("parcela_1_custeio") && !errOf("parcela_1_custeio") && "border-primary/40",
+                              )}
+                            />
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <CurrencyInput
+                              id="parcela_1_capital"
+                              value={u.parcela_1_capital}
+                              onChange={(v) => setField("parcela_1_capital", v)}
+                              error={errOf("parcela_1_capital")}
+                              className={cn(
+                                isDirty("parcela_1_capital") && !errOf("parcela_1_capital") && "border-primary/40",
+                              )}
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-3 py-2.5 text-sm text-muted-foreground/80">2ª Parcela</td>
+                          <td className="px-3 py-2.5">
+                            <CurrencyInput
+                              id="parcela_2_custeio"
+                              value={u.parcela_2_custeio}
+                              onChange={(v) => setField("parcela_2_custeio", v)}
+                              error={errOf("parcela_2_custeio")}
+                              className={cn(
+                                isDirty("parcela_2_custeio") && !errOf("parcela_2_custeio") && "border-primary/40",
+                              )}
+                            />
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <CurrencyInput
+                              id="parcela_2_capital"
+                              value={u.parcela_2_capital}
+                              onChange={(v) => setField("parcela_2_capital", v)}
+                              error={errOf("parcela_2_capital")}
+                              className={cn(
+                                isDirty("parcela_2_capital") && !errOf("parcela_2_capital") && "border-primary/40",
+                              )}
+                            />
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
                   <p className="mt-3 text-xs italic text-muted-foreground/70">
-                    Detalhamento financeiro disponível após migração da BASE.
+                    Fontes editáveis. Saldo anterior e Recebido são calculados automaticamente a partir destes valores.
                   </p>
                 </div>
               </CardContent>
@@ -786,7 +1030,7 @@ export default function EscolaEditar() {
       <DocumentsPanel
         open={docsOpen}
         onOpenChange={setDocsOpen}
-        schoolName={u.designacao}
+        schoolName={u.nome}
         exercicio={exercicio}
       />
     </AppLayout>
