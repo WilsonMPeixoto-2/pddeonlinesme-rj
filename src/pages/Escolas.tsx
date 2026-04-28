@@ -174,12 +174,19 @@ export default function Escolas() {
     let filtered = unidades;
     if (q.trim()) {
       const lower = q.toLowerCase();
-      filtered = filtered.filter(
-        (e) =>
-          e.designacao.toLowerCase().includes(lower) ||
-          (e.inep ?? "").includes(q) ||
-          (e.diretor ?? "").toLowerCase().includes(lower),
-      );
+      const digits = q.replace(/\D/g, "");
+      filtered = filtered.filter((e) => {
+        if (e.designacao.toLowerCase().includes(lower)) return true;
+        if ((e.diretor ?? "").toLowerCase().includes(lower)) return true;
+        if ((e.email ?? "").toLowerCase().includes(lower)) return true;
+        if (digits.length >= 2) {
+          if ((e.inep ?? "").includes(digits)) return true;
+          if ((e.cnpj ?? "").replace(/\D/g, "").includes(digits)) return true;
+          if ((e.agencia ?? "").replace(/\D/g, "").includes(digits)) return true;
+          if ((e.conta_corrente ?? "").replace(/\D/g, "").includes(digits)) return true;
+        }
+        return false;
+      });
     }
     if (statusFilter !== "todas") {
       filtered = filtered.filter((e) => getStatus(e) === statusFilter);
