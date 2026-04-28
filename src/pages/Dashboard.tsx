@@ -315,15 +315,23 @@ export default function Dashboard() {
                         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 transition-all group-hover:bg-primary group-hover:shadow-[0_0_8px_hsl(var(--primary)/0.7)]" />
                         <span className="truncate text-sm font-medium">{r.designacao}</span>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-                        onClick={() => navigate(`/escolas/${r.id}`)}
-                      >
-                        Abrir
-                        <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="hidden text-[11px] tabular-nums text-muted-foreground/70 xl:inline">
+                          {new Date(r.updated_at).toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "short",
+                          })}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                          onClick={() => navigate(`/escolas/${r.id}`)}
+                        >
+                          Abrir
+                          <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </motion.li>
                   ))}
                 </motion.ul>
