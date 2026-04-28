@@ -140,76 +140,8 @@ const programaConfig: Record<Programa, { label: string; short: string; className
   },
 };
 
-/* ─── Execution bar (saldo vs gasto) ─── */
+/* ExecutionBar e SecondaryActions foram movidos para VirtualizedSchoolsTable. */
 
-function ExecutionBar({ recebido, saldo, gasto }: { recebido: number; saldo: number; gasto: number }) {
-  const total = recebido + saldo;
-  const pct = total > 0 ? Math.min(100, (gasto / total) * 100) : 0;
-  const tone =
-    pct >= 90 ? "bg-warning" : pct >= 50 ? "bg-primary" : "bg-success";
-  return (
-    <div className="space-y-1">
-      <div className="flex items-baseline justify-between gap-2 text-[11px]">
-        <span className="font-medium tabular-nums">{fmt(gasto)}</span>
-        <span className="text-muted-foreground/70 tabular-nums">{pct.toFixed(0)}%</span>
-      </div>
-      <div className="h-1 overflow-hidden rounded-full bg-muted/40">
-        <div
-          className={cn("h-full rounded-full transition-all duration-500", tone)}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-/* ─── Secondary actions menu (smaller, less prominent) ─── */
-
-function SecondaryActions({
-  onEdit,
-  onView,
-  onDelete,
-}: {
-  onEdit: () => void;
-  onView: () => void;
-  onDelete: () => void;
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          aria-label="Mais ações"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        className="w-[200px] bg-popover/95 backdrop-blur-md border-border/60"
-      >
-        <DropdownMenuItem onClick={onEdit} className="gap-2.5 cursor-pointer">
-          <Pencil className="h-3.5 w-3.5 text-primary" />
-          <span className="text-sm">Editar cadastro</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onView} className="gap-2.5 cursor-pointer">
-          <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-sm">Ver detalhes</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-border/50" />
-        <DropdownMenuItem
-          onClick={onDelete}
-          className="gap-2.5 cursor-pointer text-destructive focus:text-destructive"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          <span className="text-sm">Remover</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 /* ─── Main component ─── */
 
