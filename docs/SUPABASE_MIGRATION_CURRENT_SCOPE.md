@@ -126,6 +126,7 @@ Também deve exigir leitura prévia de:
 - `docs/DECISIONS_LOG.md`;
 - `docs/UI_CHANGELOG.md`;
 - `docs/PLAN_V4_REALITY_ALIGNMENT.md`;
+- `docs/FRONTEND_DATA_CONTRACT.md` (quando existir);
 - `docs/SUPABASE_MIGRATION_CURRENT_SCOPE.md`.
 
 ## 9. Handoff obrigatório
