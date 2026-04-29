@@ -28,6 +28,12 @@ import { useAuth } from "@/hooks/useAuth";
 
 /* ─── Tipos ─── */
 
+interface LogError {
+  rowIndex?: number;
+  field?: string;
+  message?: string;
+}
+
 type LogRow = {
   id: string;
   filename: string | null;
@@ -39,7 +45,7 @@ type LogRow = {
   exercicio: number | null;
   programa: string | null;
   created_at: string;
-  errors?: any[] | null;
+  errors?: LogError[] | null;
 };
 
 const fmtDate = (iso: string) =>
@@ -185,10 +191,10 @@ export default function Base() {
               duplicatas: history[0].skipped_rows,
               arquivo: history[0].filename || "Arquivo desconhecido",
             }}
-            errors={history[0].errors?.map((e: any) => ({
-              linha: e.rowIndex,
-              coluna: e.field,
-              mensagem: e.message,
+            errors={history[0].errors?.map((e: LogError) => ({
+              linha: e.rowIndex ?? 0,
+              coluna: e.field ?? "N/A",
+              mensagem: e.message ?? "Erro desconhecido",
             })) || []}
           />
         ) : (
