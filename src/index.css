@@ -316,3 +316,172 @@
   opacity: 1;
   transform: scaleY(1);
 }
+
+/* ─── DS Utility Layer ─────────────────────────────────────────── */
+
+@layer components {
+  /* Cards institucionais */
+  .ds-card {
+    @apply rounded-lg border border-border/70 bg-card text-card-foreground;
+    box-shadow: var(--shadow-sm);
+  }
+  .ds-card-elevated {
+    @apply rounded-lg border border-border/60 text-card-foreground;
+    background: hsl(var(--card-elevated));
+    box-shadow: var(--shadow-md), var(--shadow-inset);
+  }
+  .ds-card-interactive {
+    @apply rounded-lg border border-border/70 bg-card text-card-foreground transition-all;
+    box-shadow: var(--shadow-sm);
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-out);
+  }
+  .ds-card-interactive:hover {
+    background: hsl(var(--card-hover));
+    border-color: hsl(var(--border-strong));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  /* Badges institucionais — discretos, consistentes */
+  .ds-badge {
+    @apply inline-flex items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-[10.5px] font-medium leading-none;
+  }
+  .ds-badge-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium leading-none;
+  }
+  .ds-badge-success {
+    @apply border-success/30 bg-success/10 text-success;
+  }
+  .ds-badge-warning {
+    @apply border-warning/30 bg-warning/10 text-warning;
+  }
+  .ds-badge-danger {
+    @apply border-destructive/30 bg-destructive/10 text-destructive;
+  }
+  .ds-badge-info {
+    @apply border-primary/30 bg-primary/10 text-primary;
+  }
+  .ds-badge-neutral {
+    @apply border-border/60 bg-muted/30 text-muted-foreground;
+  }
+
+  /* Dot de status */
+  .ds-dot { @apply inline-block h-1.5 w-1.5 rounded-full; }
+  .ds-dot-success { background: hsl(var(--success)); }
+  .ds-dot-warning { background: hsl(var(--warning)); }
+  .ds-dot-danger { background: hsl(var(--destructive)); }
+  .ds-dot-info { background: hsl(var(--primary)); }
+  .ds-dot-neutral { background: hsl(var(--neutral)); }
+
+  /* Tipografia institucional */
+  .ds-h1 { @apply text-3xl font-semibold tracking-tight sm:text-4xl; }
+  .ds-h2 { @apply text-2xl font-semibold tracking-tight; }
+  .ds-h3 { @apply text-lg font-semibold tracking-tight; }
+  .ds-eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground;
+  }
+  .ds-label {
+    @apply text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground;
+  }
+  /* Tabelas: cabeçalho e células */
+  .ds-th {
+    @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+  }
+  .ds-td { @apply text-sm text-foreground/90; }
+  /* Números — sempre tabular */
+  .ds-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+  .ds-num-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Surfaces utilitárias */
+  .ds-surface-muted { background: hsl(var(--muted) / 0.4); }
+  .ds-surface-subtle { background: hsl(var(--card) / 0.6); }
+
+  /* Botão sutil de toolbar */
+  .ds-toolbar-toggle {
+    @apply inline-flex h-9 items-center gap-1.5 rounded-[5px] px-2.5 text-xs font-medium transition-colors;
+    transition-duration: var(--duration-fast);
+  }
+
+  /* Foco institucional — acessível e consistente */
+  .ds-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+@layer utilities {
+  /* Sombras mapeadas a tokens (para uso fora de classes ds-*) */
+  .shadow-ds-xs { box-shadow: var(--shadow-xs); }
+  .shadow-ds-sm { box-shadow: var(--shadow-sm); }
+  .shadow-ds-md { box-shadow: var(--shadow-md); }
+  .shadow-ds-lg { box-shadow: var(--shadow-lg); }
+  .shadow-ds-xl { box-shadow: var(--shadow-xl); }
+  .shadow-ds-glow { box-shadow: var(--shadow-glow); }
+  .shadow-ds-inset { box-shadow: var(--shadow-inset); }
+
+  /* Microinterações */
+  .ds-press {
+    transition: transform var(--duration-fast) var(--ease-spring);
+  }
+  .ds-press:active { transform: scale(0.97); }
+
+  .ds-lift {
+    transition: transform var(--duration-base) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out);
+  }
+  .ds-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Gradiente de execução financeira (utilitário) */
+  .ds-bar-track {
+    background: hsl(var(--muted) / 0.3);
+    box-shadow: inset 0 0 0 1px hsl(var(--border) / 0.4);
+  }
+
+  /* Estado vazio / erro / sucesso — tints consistentes */
+  .ds-state-empty   { background: hsl(var(--muted) / 0.18); border-color: hsl(var(--border) / 0.6); }
+  .ds-state-error   { background: hsl(var(--destructive) / 0.06); border-color: hsl(var(--destructive) / 0.35); }
+  .ds-state-success { background: hsl(var(--success) / 0.06); border-color: hsl(var(--success) / 0.35); }
+  .ds-state-warning { background: hsl(var(--warning) / 0.06); border-color: hsl(var(--warning) / 0.35); }
+
+  /* Animações já utilizadas no projeto reexpostas como utilitários DS */
+  .animate-ds-fade-in   { animation: fade-in var(--duration-base) var(--ease-out); }
+  .animate-ds-scale-in  { animation: scale-in var(--duration-base) var(--ease-out); }
+  .animate-ds-slide-up  { animation: slide-up var(--duration-base) var(--ease-out); }
+}
+
+/* Slide-up suave para entradas de cards/painéis */
+@keyframes slide-up {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Caret de digitação para "loading…" textual */
+@keyframes ds-caret {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.ds-caret::after {
+  content: "▍";
+  margin-left: 2px;
+  animation: ds-caret 1s steps(1, end) infinite;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Reduce motion — respeito a usuários com preferências de acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  .ds-press, .ds-lift, .animate-ds-fade-in, .animate-ds-scale-in, .animate-ds-slide-up,
+  .pulse-dot-success, .shimmer-wave, .sheen-overlay::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
