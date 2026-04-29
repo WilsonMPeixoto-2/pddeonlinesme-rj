@@ -153,6 +153,11 @@ export default function Escolas() {
   const { exercicio } = useExercicio();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
   const [programaFilter, setProgramaFilter] = useState<ProgramaFilter>("todos");
+  const [density, setDensity] = useState<"comfortable" | "compact">(() => {
+    if (typeof window === "undefined") return "comfortable";
+    const v = window.localStorage.getItem("escolas:density");
+    return v === "compact" ? "compact" : "comfortable";
+  });
 
   // Documents panel state
   const [docsPanelOpen, setDocsPanelOpen] = useState(false);
