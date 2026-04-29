@@ -33,6 +33,15 @@ Registro de decisões e entregas visuais/transversais já presentes no app antes
 * O app usa `Analytics` de `@vercel/analytics/react`, adequado para Vite + React.
 * O componente `<Analytics />` foi adicionado à raiz do app para coleta em produção na Vercel.
 
+## 2026-04-29 — Conclusão PR 3B (Frontend Semântico)
+
+### Adaptação de Telas Principais
+* **Dashboard:** Consome view semântica (`vw_unidades_escolares_frontend`), separa `nome` e `designacao`, e exibe contagem real de documentos da `vw_unidades_status`.
+* **Escolas:** Consome view semântica, exibe status real de importação e documentos reais, removendo dependência de mocks e virtualização redundante.
+* **EscolaEditar:** Refatorada para leitura global via view e gravação particionada (cadastral x financeira) no Supabase.
+* **Base:** Transformada em vitrine de status e histórico de importações. O upload via browser foi desativado operacionalmente, passando a ser apenas referência visual, sem gravação no banco.
+* **PortalDiretor:** Mantido como wireframe explícito. Nome configurado como rótulo principal e designação como secundário. Adicionado aviso de "etapa futura" e status de documentos travados em "pendente/em breve".
+
 ## Observações para o Marco 2
 * Não reabrir O6 como pendência funcional; tratar como item entregue e passível apenas de refinamento.
 * O próximo trabalho de acesso deve integrar os papéis reais do banco ao frontend, sem redefinir a base RBAC já criada em migrations.

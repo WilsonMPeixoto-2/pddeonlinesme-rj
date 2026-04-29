@@ -16,7 +16,8 @@ import BrandMark from "@/components/BrandMark";
 /* ─── Mock data for the wireframe ─── */
 
 const ESCOLA = {
-  designacao: "EM ALBINO SOUZA CRUZ",
+  nome: "EM ALBINO SOUZA CRUZ",
+  designacao: "04.10.002",
   inep: "33023456",
   cnpj: "33.456.789/0001-01",
   diretor: "João Carlos Pereira",
@@ -37,7 +38,7 @@ const AVISOS = [
 ];
 
 const DOCUMENTOS = [
-  { icon: FileSpreadsheet, nome: "Demonstrativo Básico", status: "gerado" as const, formato: ".xlsx" },
+  { icon: FileSpreadsheet, nome: "Demonstrativo Básico", status: "pendente" as const, formato: ".xlsx" },
   { icon: ClipboardList, nome: "Relação de Bens", status: "pendente" as const, formato: ".xlsx" },
   { icon: FileSignature, nome: "Termo de Doação", status: "pendente" as const, formato: ".docx" },
   { icon: Coins, nome: "Consolidação de Preços", status: "pendente" as const, formato: ".xlsx" },
@@ -132,9 +133,9 @@ export default function PortalDiretor() {
                     <School className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-xl font-semibold tracking-tight">{ESCOLA.designacao}</h1>
+                    <h1 className="text-xl font-semibold tracking-tight">{ESCOLA.nome}</h1>
                     <p className="text-sm text-muted-foreground">
-                      INEP {ESCOLA.inep} · {ESCOLA.alunos} alunos · Exercício {ESCOLA.exercicio}
+                      <span className="font-mono text-xs">{ESCOLA.designacao}</span> · INEP {ESCOLA.inep} · {ESCOLA.alunos} alunos · Exercício {ESCOLA.exercicio}
                     </p>
                   </div>
                 </div>
@@ -155,9 +156,14 @@ export default function PortalDiretor() {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="lg:col-span-2">
             <Card className="border-border/70 h-full">
               <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-primary" /> Resumo Financeiro
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-primary" /> Resumo Financeiro
+                  </CardTitle>
+                  <p className="text-[10px] text-muted-foreground max-w-[250px] text-right">
+                    Os dados deste portal são exemplos conceituais. O vínculo diretor-escola será implementado em etapa futura.
+                  </p>
+                </div>
               </CardHeader>
               <CardContent className="pt-5">
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -219,7 +225,13 @@ export default function PortalDiretor() {
                   <Download className="mr-2 h-3.5 w-3.5" /> Gerar pacote
                 </Button>
               </div>
-              <CardDescription>Gere ou baixe os documentos necessários para sua escola.</CardDescription>
+              <CardDescription>
+                Gere ou baixe os documentos necessários para sua escola.
+                <br />
+                <span className="text-xs text-muted-foreground">
+                  A geração de documentos será habilitada no motor documental.
+                </span>
+              </CardDescription>
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
               {DOCUMENTOS.map((doc) => (

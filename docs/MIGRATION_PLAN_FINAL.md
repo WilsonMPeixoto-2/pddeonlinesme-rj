@@ -26,3 +26,9 @@ A migração para o Supabase próprio não replicará a confusão semântica pro
 * **G4 — Importação**: Carga oficial via script respeitando E1 e E6.
 * **G5 — Preview**: Vercel Preview validado no Dashboard, Escolas, Base.
 * **G6 — Produção**: Deploy da Produção Vercel.
+
+## Histórico de Execução
+*   **PR 3B Concluído**: Frontend totalmente adaptado ao schema semântico v2.2.1.
+*   **Importação Oficial**: O fluxo de importação pelo browser foi desativado operacionalmente; a importação oficial da BASE ocorre via `scripts/import_base_xlsx.py`.
+*   **Limpeza de Resíduos**: Arquivos `baseImporter.ts` e `mockEscolas.ts` foram removidos em prol da arquitetura oficial.
+*   **Próximo Macro Passo (PR 4)**: Configuração do Supabase remoto, db push, carga oficial, validação final e setup do Vercel Preview.
