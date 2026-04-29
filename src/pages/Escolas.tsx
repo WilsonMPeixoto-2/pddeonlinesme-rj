@@ -243,7 +243,7 @@ export default function Escolas() {
       if (event.key !== "/") return;
 
       const target = event.target as HTMLElement | null;
-      const tagName = target?.tagName.toLowerCase();
+      const tagName = target?.tagName?.toLowerCase();
       if (tagName === "input" || tagName === "textarea" || target?.isContentEditable) return;
 
       event.preventDefault();
@@ -508,8 +508,7 @@ export default function Escolas() {
 
         {/* Table */}
         <Card className="overflow-hidden border-border/70">
-          <div className="overflow-x-auto">
-            <Table>
+          <Table>
               <TableHeader>
                 <TableRow className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 backdrop-blur-md hover:bg-muted/50">
                   <TableHead className="h-11 min-w-[300px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -698,8 +697,7 @@ export default function Escolas() {
                   })
                 )}
               </TableBody>
-            </Table>
-          </div>
+          </Table>
         </Card>
 
         {/* Footer */}
