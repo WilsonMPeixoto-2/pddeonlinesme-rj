@@ -408,7 +408,49 @@ export default function Escolas() {
             </Select>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div
+              role="group"
+              aria-label="Densidade da tabela"
+              className="inline-flex h-10 items-center rounded-md border border-border/60 bg-muted/20 p-0.5"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setDensity("comfortable");
+                  try { window.localStorage.setItem("escolas:density", "comfortable"); } catch {}
+                }}
+                aria-pressed={density === "comfortable"}
+                title="Confortável"
+                className={cn(
+                  "inline-flex h-9 items-center gap-1.5 rounded-[5px] px-2.5 text-xs font-medium transition-colors",
+                  density === "comfortable"
+                    ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Rows3 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Confortável</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDensity("compact");
+                  try { window.localStorage.setItem("escolas:density", "compact"); } catch {}
+                }}
+                aria-pressed={density === "compact"}
+                title="Compacto"
+                className={cn(
+                  "inline-flex h-9 items-center gap-1.5 rounded-[5px] px-2.5 text-xs font-medium transition-colors",
+                  density === "compact"
+                    ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Rows4 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Compacto</span>
+              </button>
+            </div>
             <Button
               variant="outline"
               size="sm"
