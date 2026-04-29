@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,22 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
-  MoreVertical, FileText, Eye, Trash2, ArrowUpRight,
+  Download, FileSpreadsheet, Search, SchoolIcon, X, SearchX, Rows3, Rows4,
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
+import VirtualizedSchoolsTable from "@/components/escolas/VirtualizedSchoolsTable";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useExercicio } from "@/hooks/useExercicio";
@@ -150,81 +140,12 @@ const programaConfig: Record<Programa, { label: string; short: string; className
   },
 };
 
-/* ─── Execution bar (saldo vs gasto) ─── */
+/* ExecutionBar e SecondaryActions foram movidos para VirtualizedSchoolsTable. */
 
-function ExecutionBar({ recebido, saldo, gasto }: { recebido: number; saldo: number; gasto: number }) {
-  const total = recebido + saldo;
-  const pct = total > 0 ? Math.min(100, (gasto / total) * 100) : 0;
-  const tone =
-    pct >= 90 ? "bg-warning" : pct >= 50 ? "bg-primary" : "bg-success";
-  return (
-    <div className="space-y-1">
-      <div className="flex items-baseline justify-between gap-2 text-[11px]">
-        <span className="font-medium tabular-nums">{fmt(gasto)}</span>
-        <span className="text-muted-foreground/70 tabular-nums">{pct.toFixed(0)}%</span>
-      </div>
-      <div className="h-1 overflow-hidden rounded-full bg-muted/40">
-        <div
-          className={cn("h-full rounded-full transition-all duration-500", tone)}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-/* ─── Secondary actions menu (smaller, less prominent) ─── */
-
-function SecondaryActions({
-  onEdit,
-  onView,
-  onDelete,
-}: {
-  onEdit: () => void;
-  onView: () => void;
-  onDelete: () => void;
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          aria-label="Mais ações"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        className="w-[200px] bg-popover/95 backdrop-blur-md border-border/60"
-      >
-        <DropdownMenuItem onClick={onEdit} className="gap-2.5 cursor-pointer">
-          <Pencil className="h-3.5 w-3.5 text-primary" />
-          <span className="text-sm">Editar cadastro</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onView} className="gap-2.5 cursor-pointer">
-          <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-sm">Ver detalhes</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-border/50" />
-        <DropdownMenuItem
-          onClick={onDelete}
-          className="gap-2.5 cursor-pointer text-destructive focus:text-destructive"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          <span className="text-sm">Remover</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 /* ─── Main component ─── */
 
 export default function Escolas() {
-  const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [loading, setLoading] = useState(true);
@@ -232,27 +153,30 @@ export default function Escolas() {
   const { exercicio } = useExercicio();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
   const [programaFilter, setProgramaFilter] = useState<ProgramaFilter>("todos");
+  const [density, setDensity] = useState<"comfortable" | "compact">(() => {
+    if (typeof window === "undefined") return "comfortable";
+    const v = window.localStorage.getItem("escolas:density");
+    return v === "compact" ? "compact" : "comfortable";
+  });
 
   // Documents panel state
   const [docsPanelOpen, setDocsPanelOpen] = useState(false);
   const [selectedEscola, setSelectedEscola] = useState<Unidade | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
+  // Atalho "/" para focar a busca (ignorado dentro de inputs/áreas editáveis)
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "/") return;
-
-      const target = event.target as HTMLElement | null;
-      const tagName = target?.tagName.toLowerCase();
-      if (tagName === "input" || tagName === "textarea" || target?.isContentEditable) return;
-
-      event.preventDefault();
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key !== "/") return;
+      const t = ev.target as HTMLElement | null;
+      const tag = t?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || (t && (t as HTMLElement).isContentEditable)) return;
+      ev.preventDefault();
       searchRef.current?.focus();
       searchRef.current?.select();
     };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   useEffect(() => {
@@ -276,14 +200,12 @@ export default function Escolas() {
         if (e.designacao.toLowerCase().includes(lower)) return true;
         if ((e.diretor ?? "").toLowerCase().includes(lower)) return true;
         if ((e.email ?? "").toLowerCase().includes(lower)) return true;
-
         if (digits.length >= 2) {
           if ((e.inep ?? "").includes(digits)) return true;
           if ((e.cnpj ?? "").replace(/\D/g, "").includes(digits)) return true;
           if ((e.agencia ?? "").replace(/\D/g, "").includes(digits)) return true;
           if ((e.conta_corrente ?? "").replace(/\D/g, "").includes(digits)) return true;
         }
-
         return false;
       });
     }
@@ -321,7 +243,7 @@ export default function Escolas() {
     return counts;
   }, [unidades]);
 
-  const COLUMNS = 7;
+  
 
   const openDocs = (e: Unidade) => {
     setSelectedEscola(e);
@@ -486,7 +408,49 @@ export default function Escolas() {
             </Select>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div
+              role="group"
+              aria-label="Densidade da tabela"
+              className="inline-flex h-10 items-center rounded-md border border-border/60 bg-muted/20 p-0.5"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setDensity("comfortable");
+                  try { window.localStorage.setItem("escolas:density", "comfortable"); } catch {}
+                }}
+                aria-pressed={density === "comfortable"}
+                title="Confortável"
+                className={cn(
+                  "inline-flex h-9 items-center gap-1.5 rounded-[5px] px-2.5 text-xs font-medium transition-colors",
+                  density === "comfortable"
+                    ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Rows3 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Confortável</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDensity("compact");
+                  try { window.localStorage.setItem("escolas:density", "compact"); } catch {}
+                }}
+                aria-pressed={density === "compact"}
+                title="Compacto"
+                className={cn(
+                  "inline-flex h-9 items-center gap-1.5 rounded-[5px] px-2.5 text-xs font-medium transition-colors",
+                  density === "compact"
+                    ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Rows4 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Compacto</span>
+              </button>
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -506,204 +470,77 @@ export default function Escolas() {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table — virtualizada com agrupamento por prefixo */}
         <Card className="overflow-hidden border-border/70">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 backdrop-blur-md hover:bg-muted/50">
-                  <TableHead className="h-11 min-w-[300px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Unidade escolar
-                  </TableHead>
-                  <TableHead className="h-11 min-w-[180px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Diretor(a)
-                  </TableHead>
-                  <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Status
-                  </TableHead>
-                  <TableHead className="h-11 w-[60px] text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Alunos
-                  </TableHead>
-                  <TableHead className="h-11 w-[200px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Execução financeira
-                  </TableHead>
-                  {/* Coluna dedicada — destaque para Documentos */}
-                  <TableHead className="h-11 w-[170px] border-l border-border/40 bg-primary/5 text-center text-[11px] font-semibold uppercase tracking-wide text-primary/80">
-                    <span className="inline-flex items-center gap-1.5">
-                      <FileText className="h-3 w-3" />
-                      Documentos
-                    </span>
-                  </TableHead>
-                  <TableHead className="h-11 w-[50px] text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    {""}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {Array.from({ length: COLUMNS }).map((__, j) => (
-                        <TableCell key={j} className="py-3">
-                          <Skeleton className={`h-4 ${j === 0 ? "w-3/4" : "w-16 ml-auto"}`} />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : lista.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={COLUMNS} className="p-0">
-                      <EmptyState
-                        variant="inline"
-                        icon={isSearching ? SearchX : SchoolIcon}
-                        title={
-                          isSearching
-                            ? "Nenhum resultado para os filtros aplicados"
-                            : "Nenhuma unidade cadastrada ainda"
-                        }
-                        description={
-                          isSearching
-                            ? "Verifique o termo digitado ou altere os filtros."
-                            : "Importe a BASE ou cadastre uma unidade para começar."
-                        }
-                        action={
-                          isSearching ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={clearFilters}
-                            >
-                              Limpar filtros
-                            </Button>
-                          ) : null
-                        }
-                      />
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  lista.map((e) => {
-                    const st = getStatus(e);
-                    const cfg = statusConfig[st];
-                    const prog = getPrograma(e);
-                    const progCfg = programaConfig[prog];
-                    return (
-                      <TableRow
-                        key={e.id}
-                        className="group row-accent border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
-                      >
-                        <TableCell className="py-3">
-                          <div className="flex flex-col gap-1">
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/escolas/${e.id}`)}
-                              title="Abrir cadastro completo"
-                              className="group/link inline-flex items-center gap-1.5 self-start rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                              aria-label={`Abrir cadastro de ${e.designacao}`}
-                            >
-                              <span>{e.designacao}</span>
-                              <ArrowUpRight
-                                className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
-                                aria-hidden="true"
-                              />
-                            </button>
-                            <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                              <span className="font-mono tabular-nums">
-                                INEP {e.inep ?? "—"}
-                              </span>
-                              <span className="text-border">·</span>
-                              <span
-                                className={cn(
-                                  "inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium",
-                                  progCfg.className,
-                                )}
-                              >
-                                {progCfg.short}
-                              </span>
-                              {(e.agencia || e.conta_corrente) && (
-                                <>
-                                  <span className="text-border">·</span>
-                                  <span
-                                    className="font-mono tabular-nums"
-                                    title="Agência / Conta corrente"
-                                  >
-                                    Ag {e.agencia ?? "—"} · CC {e.conta_corrente ?? "—"}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm">{e.diretor ?? "—"}</TableCell>
-                        <TableCell>
-                          <span
-                            className={cn(
-                              "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium",
-                              cfg.badgeClass,
-                            )}
-                          >
-                            <span className={cn("inline-block h-1.5 w-1.5 rounded-full", cfg.dotClass)} />
-                            {cfg.label}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">{e.alunos}</TableCell>
-                        <TableCell>
-                          <ExecutionBar
-                            recebido={Number(e.recebido)}
-                            saldo={Number(e.saldo_anterior)}
-                            gasto={Number(e.gasto)}
-                          />
-                        </TableCell>
-
-                        {/* PRIMARY ACTION — Documentos com destaque (O3 + O5) */}
-                        <TableCell className="border-l border-border/40 bg-primary/[0.025] p-2">
-                          <div className="space-y-1.5">
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="h-9 w-full justify-center gap-2 text-xs shadow-[0_0_16px_hsl(var(--primary)/0.18)] transition-shadow hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]"
-                              onClick={() => openDocs(e)}
-                            >
-                              <FileText className="h-3.5 w-3.5" />
-                              Gerar documentos
-                            </Button>
-                            {(() => {
-                              const dm = getDocMeta(e);
-                              return (
-                                <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
-                                  <span className={cn(
-                                    "font-semibold tabular-nums",
-                                    dm.generated > 0 ? "text-success" : "text-muted-foreground/60"
-                                  )}>
-                                    {dm.generated}/{dm.total}
-                                  </span>
-                                  {dm.lastGen && (
-                                    <>
-                                      <span className="text-border">·</span>
-                                      <span>{dm.lastGen}</span>
-                                    </>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="text-right">
-                          <SecondaryActions
-                            onEdit={() => navigate(`/escolas/${e.id}`)}
-                            onView={() => navigate(`/escolas/${e.id}`)}
-                            onDelete={() => {
-                              toast.info(`Em breve: remover ${e.designacao}`);
-                            }}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          {loading ? (
+            <div>
+              {/* skeleton header alinhado à grid real */}
+              <div className="grid grid-cols-[2.4fr_1.2fr_110px_80px_1fr_200px_50px] items-center gap-3 border-b border-border/60 bg-muted/60 px-4 py-3">
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <Skeleton key={i} className="h-3 w-2/3" />
+                ))}
+              </div>
+              <div className="divide-y divide-border/40">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-[2.4fr_1.2fr_110px_80px_1fr_200px_50px] items-center gap-3 px-4 py-4"
+                  >
+                    <div className="space-y-2">
+                      <Skeleton className="h-3.5 w-4/5" />
+                      <Skeleton className="h-2.5 w-1/2" />
+                    </div>
+                    <Skeleton className="h-3.5 w-3/4" />
+                    <Skeleton className="h-5 w-16 rounded-md" />
+                    <Skeleton className="ml-auto h-3.5 w-10" />
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-2.5 w-full" />
+                      <Skeleton className="h-1.5 w-full rounded-full" />
+                    </div>
+                    <Skeleton className="h-8 w-full rounded-md" />
+                    <Skeleton className="ml-auto h-6 w-6 rounded-md" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : lista.length === 0 ? (
+            <div className="p-6">
+              <EmptyState
+                variant="card"
+                icon={isSearching ? SearchX : SchoolIcon}
+                title={
+                  isSearching
+                    ? "Nenhum resultado para os filtros aplicados"
+                    : "Nenhuma unidade cadastrada ainda"
+                }
+                description={
+                  isSearching
+                    ? `Tentamos encontrar resultados${q.trim() ? ` para “${q.trim()}”` : ""} sem sucesso. Ajuste o termo ou limpe os filtros para ver todas as unidades.`
+                    : "Importe a BASE ou cadastre uma unidade para começar."
+                }
+                action={
+                  isSearching ? (
+                    <Button variant="outline" size="sm" onClick={clearFilters}>
+                      <X className="mr-1.5 h-3.5 w-3.5" />
+                      Limpar filtros
+                    </Button>
+                  ) : null
+                }
+              />
+            </div>
+          ) : (
+            <VirtualizedSchoolsTable
+              unidades={lista}
+              getStatus={getStatus}
+              getPrograma={getPrograma}
+              getDocMeta={getDocMeta}
+              statusConfig={statusConfig}
+              programaConfig={programaConfig}
+              fmt={fmt}
+              onOpenDocs={openDocs}
+              density={density}
+            />
+          )}
         </Card>
 
         {/* Footer */}
