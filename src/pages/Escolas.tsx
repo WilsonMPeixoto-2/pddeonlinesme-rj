@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Download, FileSpreadsheet, Search, SchoolIcon, X, SearchX,
+  Download, FileSpreadsheet, Search, SchoolIcon, X, SearchX, Rows3, Rows4,
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
