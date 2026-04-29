@@ -25,12 +25,6 @@ import { BaseUploadZone, type UploadState } from "@/components/BaseUploadZone";
 import { ImportResultsPanel, type ImportResultState } from "@/components/ImportResultsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  parseBaseXlsx,
-  importParsedRows,
-  type ParseResult,
-  type ImportResult,
-} from "@/lib/baseImporter";
 
 /* ─── Tipos ─── */
 
@@ -42,7 +36,10 @@ type LogRow = {
   updated_rows: number;
   skipped_rows: number;
   status: string;
+  exercicio: number | null;
+  programa: string | null;
   created_at: string;
+  errors?: any[] | null;
 };
 
 const fmtDate = (iso: string) =>
@@ -59,8 +56,6 @@ const fmtDate = (iso: string) =>
 export default function Base() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
-  const [importResultState, setImportResultState] = useState<ImportResultState>("idle");
-  const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [history, setHistory] = useState<LogRow[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const { exercicio } = useExercicio();
@@ -74,7 +69,7 @@ export default function Base() {
     setHistoryLoading(true);
     const { data, error } = await supabase
       .from("import_logs")
-      .select("id, filename, total_rows, inserted_rows, updated_rows, skipped_rows, status, created_at")
+      .select("id, filename, total_rows, inserted_rows, updated_rows, skipped_rows, status, exercicio, programa, created_at, errors")
       .order("created_at", { ascending: false })
       .limit(20);
     if (error) toast.error(error.message);
@@ -92,49 +87,9 @@ export default function Base() {
   };
 
   const runImport = async () => {
-    if (!pendingFile || !user) {
-      toast.error("Sessão expirada. Faça login novamente.");
-      return;
-    }
-    setUploadState("validating");
-    try {
-      const parsed: ParseResult = await parseBaseXlsx(pendingFile);
-      if (parsed.rows.length === 0) {
-        setUploadState("error");
-        setImportResultState("error");
-        setImportResult({
-          totalRows: 0,
-          insertedRows: 0,
-          updatedRows: 0,
-          skippedRows: 0,
-          errors: parsed.errors,
-          status: "failed",
-        });
-        toast.error("Nenhuma linha válida encontrada na BASE.");
-        return;
-      }
-      const result = await importParsedRows(parsed, user.id);
-      setImportResult(result);
-      setImportResultState(result.status === "failed" ? "error" : "success");
-      setUploadState("success");
-      if (result.status === "success") {
-        toast.success(
-          `${result.insertedRows} novas e ${result.updatedRows} atualizadas.`,
-        );
-      } else if (result.status === "partial") {
-        toast.warning(
-          `Importado com ${result.errors.length} advertência(s).`,
-        );
-      } else {
-        toast.error("Falha ao importar a BASE.");
-      }
-      loadHistory();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erro desconhecido";
-      setUploadState("error");
-      setImportResultState("error");
-      toast.error(`Falha ao processar planilha: ${msg}`);
-    }
+    toast.info("Importação oficial via script auditado. Veja docs/PR3B_LOCAL_TESTING.md.");
+    setPendingFile(null);
+    setUploadState("idle");
   };
 
   return (
@@ -172,10 +127,12 @@ export default function Base() {
                 onClear={() => {
                   setPendingFile(null);
                   setUploadState("idle");
-                  setImportResultState("idle");
-                  setImportResult(null);
                 }}
               />
+              <p className="mt-3 text-xs text-muted-foreground bg-muted/30 p-2 rounded-md border">
+                <strong>Aviso:</strong> Importação oficial executada via script auditado pelo time da CRE.
+                Esta área permanece apenas como referência visual/preview, sem gravação no banco.
+              </p>
             </CardContent>
           </Card>
 
@@ -218,21 +175,21 @@ export default function Base() {
         </div>
 
         {/* Import Results Panel */}
-        {importResult ? (
+        {history.length > 0 ? (
           <ImportResultsPanel
-            state={importResultState}
+            state={history[0].status === "failed" ? "error" : "success"}
             summary={{
-              totalLidas: importResult.totalRows,
-              importadas: importResult.insertedRows + importResult.updatedRows,
-              erros: importResult.errors.length,
-              duplicatas: 0,
-              arquivo: pendingFile?.name,
+              totalLidas: history[0].total_rows,
+              importadas: history[0].inserted_rows + history[0].updated_rows,
+              erros: history[0].errors?.length || 0,
+              duplicatas: history[0].skipped_rows,
+              arquivo: history[0].filename || "Arquivo desconhecido",
             }}
-            errors={importResult.errors.map((e) => ({
+            errors={history[0].errors?.map((e: any) => ({
               linha: e.rowIndex,
               coluna: e.field,
               mensagem: e.message,
-            }))}
+            })) || []}
           />
         ) : (
           <ImportResultsPanel state="idle" />
@@ -273,6 +230,9 @@ export default function Base() {
                     <TableHead className="h-9 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Arquivo
                     </TableHead>
+                    <TableHead className="h-9 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Exercício
+                    </TableHead>
                     <TableHead className="h-9 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Total
                     </TableHead>
@@ -308,6 +268,9 @@ export default function Base() {
                         </TableCell>
                         <TableCell className="text-xs font-mono text-foreground">
                           {h.filename ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {h.exercicio ?? "—"}
                         </TableCell>
                         <TableCell className="text-right text-xs tabular-nums">
                           {h.total_rows}

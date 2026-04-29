@@ -38,21 +38,6 @@ interface ImportResultsProps {
   errors?: ImportError[];
 }
 
-/* ─── Dados mockados para demonstração ─── */
-
-const MOCK_SUMMARY = {
-  totalLidas: 163,
-  importadas: 161,
-  erros: 2,
-  duplicatas: 0,
-  arquivo: "BASE_4CRE_2025.xlsx",
-};
-
-const MOCK_ERRORS: ImportError[] = [
-  { linha: 47, coluna: "INEP", mensagem: "Código INEP com 6 dígitos (esperado: 8)" },
-  { linha: 103, coluna: "CNPJ", mensagem: "CNPJ inválido — dígito verificador não confere" },
-];
-
 /* ─── Componente ─── */
 
 export function ImportResultsPanel({
@@ -60,7 +45,7 @@ export function ImportResultsPanel({
   summary,
   errors,
 }: ImportResultsProps) {
-  if (state === "idle") {
+  if (state === "idle" || !summary) {
     return (
       <Card className="border-dashed border-border/50 bg-muted/5">
         <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
@@ -69,11 +54,10 @@ export function ImportResultsPanel({
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground/80">
-              Resultado da importação
+              Nenhuma importação para exibir
             </p>
             <p className="max-w-sm text-xs text-muted-foreground">
-              Após importar uma BASE, o resumo de validação aparecerá aqui —
-              com contagem de linhas, erros encontrados e detalhamento por registro.
+              Use o script oficial para importar a BASE.
             </p>
           </div>
         </CardContent>
@@ -81,9 +65,8 @@ export function ImportResultsPanel({
     );
   }
 
-  const data = summary ?? MOCK_SUMMARY;
-  const errs = errors ?? (state === "error" ? MOCK_ERRORS : []);
-  const isError = state === "error" || data.erros > 0;
+  const errs = errors ?? [];
+  const isError = state === "error" || summary.erros > 0;
 
   return (
     <Card className="border-border/70 overflow-hidden">
@@ -107,37 +90,31 @@ export function ImportResultsPanel({
               <CardTitle className="text-base font-semibold">
                 {isError ? "Importação com advertências" : "Importação concluída"}
               </CardTitle>
-              {data.arquivo && (
+              {summary.arquivo && (
                 <p className="mt-0.5 text-xs text-muted-foreground font-mono">
-                  {data.arquivo}
+                  {summary.arquivo}
                 </p>
               )}
             </div>
           </div>
-          <Badge
-            variant="outline"
-            className="text-[10px] bg-background/40 backdrop-blur-sm border-border/50 text-muted-foreground"
-          >
-            Dados de demonstração
-          </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="pt-5 space-y-5">
         {/* Summary grid */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <SummaryCell label="Total lidas" value={data.totalLidas} />
+          <SummaryCell label="Total lidas" value={summary.totalLidas} />
           <SummaryCell
             label="Importadas"
-            value={data.importadas}
+            value={summary.importadas}
             tone="success"
           />
           <SummaryCell
             label="Com erro"
-            value={data.erros}
-            tone={data.erros > 0 ? "warning" : undefined}
+            value={summary.erros}
+            tone={summary.erros > 0 ? "warning" : undefined}
           />
-          <SummaryCell label="Duplicatas" value={data.duplicatas} />
+          <SummaryCell label="Duplicatas" value={summary.duplicatas} />
         </div>
 
         {/* Error table */}
@@ -165,13 +142,13 @@ export function ImportResultsPanel({
                   {errs.map((err, i) => (
                     <TableRow key={i}>
                       <TableCell className="font-mono text-xs tabular-nums text-warning">
-                        {err.linha}
+                        {err.linha ?? "—"}
                       </TableCell>
                       <TableCell className="text-xs font-medium">
-                        {err.coluna}
+                        {err.coluna ?? "—"}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {err.mensagem}
+                        {err.mensagem ?? "—"}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -214,3 +191,4 @@ function SummaryCell({
     </div>
   );
 }
+
