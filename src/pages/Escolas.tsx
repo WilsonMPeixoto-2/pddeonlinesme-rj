@@ -473,19 +473,40 @@ export default function Escolas() {
         {/* Table — virtualizada com agrupamento por prefixo */}
         <Card className="overflow-hidden border-border/70">
           {loading ? (
-            <div className="space-y-2 p-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <Skeleton className="h-4 w-1/3" />
-                  <Skeleton className="ml-auto h-4 w-20" />
-                  <Skeleton className="h-4 w-16" />
-                </div>
-              ))}
+            <div>
+              {/* skeleton header alinhado à grid real */}
+              <div className="grid grid-cols-[2.4fr_1.2fr_110px_80px_1fr_200px_50px] items-center gap-3 border-b border-border/60 bg-muted/60 px-4 py-3">
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <Skeleton key={i} className="h-3 w-2/3" />
+                ))}
+              </div>
+              <div className="divide-y divide-border/40">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-[2.4fr_1.2fr_110px_80px_1fr_200px_50px] items-center gap-3 px-4 py-4"
+                  >
+                    <div className="space-y-2">
+                      <Skeleton className="h-3.5 w-4/5" />
+                      <Skeleton className="h-2.5 w-1/2" />
+                    </div>
+                    <Skeleton className="h-3.5 w-3/4" />
+                    <Skeleton className="h-5 w-16 rounded-md" />
+                    <Skeleton className="ml-auto h-3.5 w-10" />
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-2.5 w-full" />
+                      <Skeleton className="h-1.5 w-full rounded-full" />
+                    </div>
+                    <Skeleton className="h-8 w-full rounded-md" />
+                    <Skeleton className="ml-auto h-6 w-6 rounded-md" />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : lista.length === 0 ? (
-            <div className="p-2">
+            <div className="p-6">
               <EmptyState
-                variant="inline"
+                variant="card"
                 icon={isSearching ? SearchX : SchoolIcon}
                 title={
                   isSearching
@@ -494,12 +515,13 @@ export default function Escolas() {
                 }
                 description={
                   isSearching
-                    ? "Verifique o termo digitado ou altere os filtros."
+                    ? `Tentamos encontrar resultados${q.trim() ? ` para “${q.trim()}”` : ""} sem sucesso. Ajuste o termo ou limpe os filtros para ver todas as unidades.`
                     : "Importe a BASE ou cadastre uma unidade para começar."
                 }
                 action={
                   isSearching ? (
                     <Button variant="outline" size="sm" onClick={clearFilters}>
+                      <X className="mr-1.5 h-3.5 w-3.5" />
                       Limpar filtros
                     </Button>
                   ) : null
@@ -516,6 +538,7 @@ export default function Escolas() {
               programaConfig={programaConfig}
               fmt={fmt}
               onOpenDocs={openDocs}
+              density={density}
             />
           )}
         </Card>
