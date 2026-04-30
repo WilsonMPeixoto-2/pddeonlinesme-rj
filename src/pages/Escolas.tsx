@@ -587,7 +587,7 @@ export default function Escolas() {
                     return (
                       <TableRow
                         key={e.id}
-                        className="group row-accent border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
+                        className="group border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
                       >
                         <TableCell className="py-3">
                           <div className="flex flex-col gap-1">
