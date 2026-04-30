@@ -24,15 +24,14 @@ import { useExercicio } from "@/hooks/useExercicio";
 import { BaseUploadZone, type UploadState } from "@/components/BaseUploadZone";
 import { ImportResultsPanel, type ImportResultState } from "@/components/ImportResultsPanel";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import {
-  parseBaseXlsx,
-  importParsedRows,
-  type ParseResult,
-  type ImportResult,
-} from "@/lib/baseImporter";
 
 /* ─── Tipos ─── */
+
+interface LogError {
+  rowIndex?: number;
+  field?: string;
+  message?: string;
+}
 
 type LogRow = {
   id: string;
@@ -43,6 +42,7 @@ type LogRow = {
   skipped_rows: number;
   status: string;
   created_at: string;
+  errors: LogError[];
 };
 
 const fmtDate = (iso: string) =>
@@ -54,17 +54,31 @@ const fmtDate = (iso: string) =>
     minute: "2-digit",
   });
 
+function normalizeLogErrors(value: unknown): LogError[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.map((entry) => {
+    if (!entry || typeof entry !== "object") {
+      return { message: String(entry ?? "Erro desconhecido") };
+    }
+
+    const record = entry as Record<string, unknown>;
+    return {
+      rowIndex: typeof record.rowIndex === "number" ? record.rowIndex : undefined,
+      field: typeof record.field === "string" ? record.field : undefined,
+      message: typeof record.message === "string" ? record.message : undefined,
+    };
+  });
+}
+
 /* ─── Main component ─── */
 
 export default function Base() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
-  const [importResultState, setImportResultState] = useState<ImportResultState>("idle");
-  const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [history, setHistory] = useState<LogRow[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const { exercicio } = useExercicio();
-  const { user } = useAuth();
 
   useEffect(() => {
     if (!pendingFile && uploadState === "selected") setUploadState("idle");
@@ -74,11 +88,16 @@ export default function Base() {
     setHistoryLoading(true);
     const { data, error } = await supabase
       .from("import_logs")
-      .select("id, filename, total_rows, inserted_rows, updated_rows, skipped_rows, status, created_at")
+      .select("id, filename, total_rows, inserted_rows, updated_rows, skipped_rows, status, created_at, errors")
       .order("created_at", { ascending: false })
       .limit(20);
     if (error) toast.error(error.message);
-    setHistory((data ?? []) as LogRow[]);
+    setHistory(
+      (data ?? []).map((row) => ({
+        ...row,
+        errors: normalizeLogErrors(row.errors),
+      })),
+    );
     setHistoryLoading(false);
   };
 
@@ -92,50 +111,15 @@ export default function Base() {
   };
 
   const runImport = async () => {
-    if (!pendingFile || !user) {
-      toast.error("Sessão expirada. Faça login novamente.");
-      return;
-    }
-    setUploadState("validating");
-    try {
-      const parsed: ParseResult = await parseBaseXlsx(pendingFile);
-      if (parsed.rows.length === 0) {
-        setUploadState("error");
-        setImportResultState("error");
-        setImportResult({
-          totalRows: 0,
-          insertedRows: 0,
-          updatedRows: 0,
-          skippedRows: 0,
-          errors: parsed.errors,
-          status: "failed",
-        });
-        toast.error("Nenhuma linha válida encontrada na BASE.");
-        return;
-      }
-      const result = await importParsedRows(parsed, user.id);
-      setImportResult(result);
-      setImportResultState(result.status === "failed" ? "error" : "success");
-      setUploadState("success");
-      if (result.status === "success") {
-        toast.success(
-          `${result.insertedRows} novas e ${result.updatedRows} atualizadas.`,
-        );
-      } else if (result.status === "partial") {
-        toast.warning(
-          `Importado com ${result.errors.length} advertência(s).`,
-        );
-      } else {
-        toast.error("Falha ao importar a BASE.");
-      }
-      loadHistory();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erro desconhecido";
-      setUploadState("error");
-      setImportResultState("error");
-      toast.error(`Falha ao processar planilha: ${msg}`);
-    }
+    toast.info("Importação oficial via script auditado. Veja docs/PR3B_CLEAN_REBUILD_PLAN_2026-04-29.md.");
+    setPendingFile(null);
+    setUploadState("idle");
   };
+
+  const latestLog = history[0] ?? null;
+  const latestErrors = latestLog?.errors ?? [];
+  const latestState: ImportResultState =
+    latestLog?.status === "failed" ? "error" : "success";
 
   return (
     <AppLayout>
@@ -172,10 +156,13 @@ export default function Base() {
                 onClear={() => {
                   setPendingFile(null);
                   setUploadState("idle");
-                  setImportResultState("idle");
-                  setImportResult(null);
                 }}
               />
+              <p className="mt-3 rounded-md border bg-muted/30 p-2 text-xs text-muted-foreground">
+                <strong>Aviso:</strong> a importação oficial é executada via script auditado,
+                fora do navegador. Esta área permanece como referência operacional sem
+                gravação direta no banco.
+              </p>
             </CardContent>
           </Card>
 
@@ -218,20 +205,20 @@ export default function Base() {
         </div>
 
         {/* Import Results Panel */}
-        {importResult ? (
+        {latestLog ? (
           <ImportResultsPanel
-            state={importResultState}
+            state={latestState}
             summary={{
-              totalLidas: importResult.totalRows,
-              importadas: importResult.insertedRows + importResult.updatedRows,
-              erros: importResult.errors.length,
-              duplicatas: 0,
-              arquivo: pendingFile?.name,
+              totalLidas: latestLog.total_rows,
+              importadas: latestLog.inserted_rows + latestLog.updated_rows,
+              erros: latestErrors.length,
+              duplicatas: latestLog.skipped_rows,
+              arquivo: latestLog.filename || "Arquivo desconhecido",
             }}
-            errors={importResult.errors.map((e) => ({
-              linha: e.rowIndex,
-              coluna: e.field,
-              mensagem: e.message,
+            errors={latestErrors.map((e) => ({
+              linha: e.rowIndex ?? 0,
+              coluna: e.field ?? "N/A",
+              mensagem: e.message ?? "Erro desconhecido",
             }))}
           />
         ) : (
@@ -297,7 +284,7 @@ export default function Base() {
                   ) : history.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="py-10 text-center text-xs text-muted-foreground">
-                        Nenhuma importação ainda. Envie a BASE.xlsx acima para começar.
+                        Nenhuma importação registrada. A carga oficial da BASE deve ser feita via script auditado.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -354,17 +341,16 @@ export default function Base() {
             setUploadState("idle");
           }
         }}
-        tone="destructive"
-        title="Importar e atualizar a BASE?"
+        tone="primary"
+        title="Registrar arquivo para conferência?"
         description={
           <>
-            Esta ação irá <strong>inserir as escolas novas e atualizar as existentes</strong> com base
-            no conteúdo da aba <span className="font-mono">BASE</span> da planilha enviada.
-            O histórico fica registrado para auditoria.
+            A carga oficial da <span className="font-mono">BASE.xlsx</span> não é executada no frontend.
+            Use o script auditado para importar dados e consulte o histórico registrado no Supabase.
           </>
         }
         highlight={pendingFile?.name}
-        confirmLabel="Importar BASE"
+        confirmLabel="Entendi"
         onConfirm={runImport}
       />
     </AppLayout>
