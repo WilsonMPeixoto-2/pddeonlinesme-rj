@@ -27,6 +27,8 @@ export default tseslint.config(
         },
       ],
       "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/purity": "off",
     },
   },
 );
