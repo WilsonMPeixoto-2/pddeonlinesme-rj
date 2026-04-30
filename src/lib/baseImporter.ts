@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type ParsedRow = {
   rowIndex: number; // linha real na planilha (1-based, contando header)
   designacao: string;
+  nome: string | null;
   inep: string | null;
   cnpj: string | null;
   diretor: string | null;
@@ -29,6 +30,11 @@ export type ParsedRow = {
   parcela_1_capital: number;
   parcela_2_custeio: number;
   parcela_2_capital: number;
+};
+
+export type ImportOptions = {
+  exercicio?: number; // default: ano corrente
+  programa?: string; // default: 'basico'
 };
 
 export type ParseError = {
@@ -59,7 +65,7 @@ export type ImportResult = {
 const HEADER_MAP: Record<string, keyof ParsedRow | "ignore"> = {
   DESIGNAÇÃO: "designacao",
   DESIGNACAO: "designacao",
-  NOME: "ignore", // Mantemos `designacao` como chave principal (código 04.10.xxx)
+  NOME: "nome",
   INEP: "inep",
   CNPJ: "cnpj",
   "REPROGRAMADO CUSTEIO": "reprogramado_custeio",
@@ -193,6 +199,7 @@ export async function parseBaseXlsx(file: File): Promise<ParseResult> {
     rows.push({
       rowIndex,
       designacao,
+      nome: nome || null,
       inep: inepRaw && inepRaw.length === 8 ? inepRaw : null,
       cnpj: cnpjRaw && cnpjRaw.length === 14 ? cnpjRaw : null,
       diretor: toText(get("diretor")),
@@ -216,13 +223,19 @@ export async function parseBaseXlsx(file: File): Promise<ParseResult> {
 export async function importParsedRows(
   parsed: ParseResult,
   userId: string,
+  options: ImportOptions = {},
 ): Promise<ImportResult> {
+  const exercicio = options.exercicio ?? new Date().getFullYear();
+  const programa = options.programa ?? "basico";
+
   if (parsed.rows.length === 0) {
     await logImport(userId, parsed, {
       insertedRows: 0,
       updatedRows: 0,
       skippedRows: 0,
       status: "failed",
+      exercicio,
+      programa,
     });
     return {
       totalRows: 0,
@@ -238,6 +251,7 @@ export async function importParsedRows(
   // sob valores derivados das parcelas e reprogramado para que a UI atual continue funcionando.
   const payload = parsed.rows.map((r) => ({
     designacao: r.designacao,
+    nome: r.nome,
     inep: r.inep,
     cnpj: r.cnpj,
     diretor: r.diretor,
@@ -291,18 +305,30 @@ export async function importParsedRows(
       updatedRows: 0,
       skippedRows: parsed.totalRows,
       status: "failed",
+      exercicio,
+      programa,
     });
     return failResult;
   }
 
-  const status: ImportResult["status"] =
-    parsed.errors.length === 0 ? "success" : "partial";
+  // Dual-write em execucao_financeira (Foundation v1):
+  // mantém compatibilidade com a UI atual que lê de unidades_escolares,
+  // ao mesmo tempo em que popula a tabela semântica nova.
+  const execErrors = await upsertExecucaoFinanceira(parsed.rows, {
+    exercicio,
+    programa,
+  });
+
+  const collectedErrors = [...parsed.errors, ...execErrors];
+  const status: ImportResult["status"] = collectedErrors.length === 0 ? "success" : "partial";
 
   await logImport(userId, parsed, {
     insertedRows: inserted,
     updatedRows: updated,
     skippedRows: 0,
     status,
+    exercicio,
+    programa,
   });
 
   return {
@@ -310,9 +336,69 @@ export async function importParsedRows(
     insertedRows: inserted,
     updatedRows: updated,
     skippedRows: 0,
-    errors: parsed.errors,
+    errors: collectedErrors,
     status,
   };
+}
+
+async function upsertExecucaoFinanceira(
+  rows: ParsedRow[],
+  ctx: { exercicio: number; programa: string },
+): Promise<ParseError[]> {
+  if (rows.length === 0) return [];
+
+  const designacoes = rows.map((r) => r.designacao);
+  const { data: ids, error: selectError } = await supabase
+    .from("unidades_escolares")
+    .select("id, designacao")
+    .in("designacao", designacoes);
+
+  if (selectError) {
+    return [
+      {
+        rowIndex: 0,
+        field: "execucao_financeira",
+        message: `Falha ao recuperar IDs das unidades: ${selectError.message}`,
+      },
+    ];
+  }
+
+  const idByDesignacao = new Map((ids ?? []).map((u) => [u.designacao, u.id]));
+  const execPayload = rows
+    .map((r) => {
+      const unidade_id = idByDesignacao.get(r.designacao);
+      if (!unidade_id) return null;
+      return {
+        unidade_id,
+        exercicio: ctx.exercicio,
+        programa: ctx.programa,
+        reprogramado_custeio: r.reprogramado_custeio,
+        reprogramado_capital: r.reprogramado_capital,
+        parcela_1_custeio: r.parcela_1_custeio,
+        parcela_1_capital: r.parcela_1_capital,
+        parcela_2_custeio: r.parcela_2_custeio,
+        parcela_2_capital: r.parcela_2_capital,
+      };
+    })
+    .filter((p): p is NonNullable<typeof p> => p !== null);
+
+  if (execPayload.length === 0) return [];
+
+  const { error: upsertError } = await supabase
+    .from("execucao_financeira")
+    .upsert(execPayload, { onConflict: "unidade_id,exercicio,programa" });
+
+  if (upsertError) {
+    return [
+      {
+        rowIndex: 0,
+        field: "execucao_financeira",
+        message: `Falha ao gravar execução financeira: ${upsertError.message}`,
+      },
+    ];
+  }
+
+  return [];
 }
 
 async function logImport(
@@ -323,12 +409,16 @@ async function logImport(
     updatedRows: number;
     skippedRows: number;
     status: ImportResult["status"];
+    exercicio: number;
+    programa: string;
   },
 ) {
   await supabase.from("import_logs").insert({
     user_id: userId,
     source: "BASE.xlsx",
     filename: parsed.filename,
+    exercicio: counts.exercicio,
+    programa: counts.programa,
     total_rows: parsed.totalRows,
     inserted_rows: counts.insertedRows,
     updated_rows: counts.updatedRows,
