@@ -7,52 +7,175 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
+      contas_bancarias: {
+        Row: {
+          agencia: string | null
+          banco: string | null
+          conta_corrente: string | null
+          created_at: string
+          id: string
+          principal: boolean
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          agencia?: string | null
+          banco?: string | null
+          conta_corrente?: string | null
+          created_at?: string
+          id?: string
+          principal?: boolean
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          agencia?: string | null
+          banco?: string | null
+          conta_corrente?: string | null
+          created_at?: string
+          id?: string
+          principal?: boolean
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contas_bancarias_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades_escolares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      execucao_financeira: {
+        Row: {
+          created_at: string
+          exercicio: number
+          gasto: number
+          id: string
+          parcela_1_capital: number
+          parcela_1_custeio: number
+          parcela_2_capital: number
+          parcela_2_custeio: number
+          programa: string
+          reprogramado_capital: number
+          reprogramado_custeio: number
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exercicio: number
+          gasto?: number
+          id?: string
+          parcela_1_capital?: number
+          parcela_1_custeio?: number
+          parcela_2_capital?: number
+          parcela_2_custeio?: number
+          programa?: string
+          reprogramado_capital?: number
+          reprogramado_custeio?: number
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exercicio?: number
+          gasto?: number
+          id?: string
+          parcela_1_capital?: number
+          parcela_1_custeio?: number
+          parcela_2_capital?: number
+          parcela_2_custeio?: number
+          programa?: string
+          reprogramado_capital?: number
+          reprogramado_custeio?: number
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "execucao_financeira_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades_escolares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_logs: {
         Row: {
           created_at: string
           errors: Json
+          exercicio: number | null
           filename: string | null
           id: string
           inserted_rows: number
+          programa: string | null
           skipped_rows: number
           source: string
           status: string
           total_rows: number
           updated_rows: number
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           errors?: Json
+          exercicio?: number | null
           filename?: string | null
           id?: string
           inserted_rows?: number
+          programa?: string | null
           skipped_rows?: number
           source?: string
           status?: string
           total_rows?: number
           updated_rows?: number
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           errors?: Json
+          exercicio?: number | null
           filename?: string | null
           id?: string
           inserted_rows?: number
+          programa?: string | null
           skipped_rows?: number
           source?: string
           status?: string
           total_rows?: number
           updated_rows?: number
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -70,6 +193,7 @@ export type Database = {
           gasto: number
           id: string
           inep: string | null
+          nome: string | null
           parcela_1_capital: number
           parcela_1_custeio: number
           parcela_2_capital: number
@@ -93,6 +217,7 @@ export type Database = {
           gasto?: number
           id?: string
           inep?: string | null
+          nome?: string | null
           parcela_1_capital?: number
           parcela_1_custeio?: number
           parcela_2_capital?: number
@@ -116,6 +241,7 @@ export type Database = {
           gasto?: number
           id?: string
           inep?: string | null
+          nome?: string | null
           parcela_1_capital?: number
           parcela_1_custeio?: number
           parcela_2_capital?: number
@@ -289,9 +415,13 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "operador"],
     },
   },
 } as const
+
