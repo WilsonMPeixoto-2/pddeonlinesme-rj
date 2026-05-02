@@ -15,7 +15,9 @@
     "supa:reset": "supabase db reset",
     "supa:types": "supabase gen types typescript --local > src/integrations/supabase/types.ts",
     "supa:link": "supabase link --project-ref",
-    "supa:push": "supabase db push"
+    "supa:push": "supabase db push",
+    "bootstrap:operator": "node scripts/bootstrap-operator.mjs",
+    "import:base:remote": "node scripts/import-base-remote.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
