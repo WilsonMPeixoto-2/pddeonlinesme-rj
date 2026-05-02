@@ -18,14 +18,16 @@ export type UnidadeLocalizador = Tables<"vw_unidades_localizador"> & {
  * via vw_unidade_detalhe.
  */
 export function useUnidadesLocalizador() {
-  return useQuery({
+  return useQuery<UnidadeLocalizador[], Error>({
     queryKey: ["unidades-localizador"],
     queryFn: async (): Promise<UnidadeLocalizador[]> => {
       const { data, error } = await supabase
         .from("vw_unidades_localizador")
-        .select("*")
+        .select("id, designacao, nome, inep, cnpj, diretor")
         .order("designacao");
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message);
+      }
       return (data ?? []).filter(
         (u): u is UnidadeLocalizador =>
           u.id !== null && u.designacao !== null,

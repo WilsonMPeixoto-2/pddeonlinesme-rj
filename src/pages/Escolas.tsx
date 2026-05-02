@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
-  MoreVertical, FileText, Eye, Trash2, ArrowUpRight,
+  MoreVertical, FileText, Eye, Trash2, ArrowUpRight, AlertCircle,
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -139,7 +139,7 @@ export default function Escolas() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   // Foundation v1: dados vem da view via React Query.
-  const { data, isLoading, error } = useUnidadesLocalizador();
+  const { data, isLoading, error, refetch, isFetching } = useUnidadesLocalizador();
   const unidades: Unidade[] = useMemo(() => data ?? [], [data]);
   const loading = isLoading;
 
@@ -376,6 +376,27 @@ export default function Escolas() {
                       ))}
                     </TableRow>
                   ))
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={COLUMNS} className="p-0">
+                      <EmptyState
+                        variant="inline"
+                        icon={AlertCircle}
+                        title="Erro ao carregar unidades escolares"
+                        description="Não foi possível consultar os dados do Supabase. Verifique sua sessão, conexão ou permissões."
+                        action={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => refetch()}
+                            disabled={isFetching}
+                          >
+                            {isFetching ? "Tentando..." : "Tentar novamente"}
+                          </Button>
+                        }
+                      />
+                    </TableCell>
+                  </TableRow>
                 ) : lista.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={COLUMNS} className="p-0">
