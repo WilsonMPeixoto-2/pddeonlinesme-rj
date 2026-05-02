@@ -244,20 +244,20 @@ async function run() {
     updated_rows: updated,
     skipped_rows: 0,
     errors: errors.slice(0, 100),
-    status: "success",
+    status: errors.length > 0 ? "partial" : "success",
   });
 
   console.log("\n📊 VALIDAÇÃO DE CONTAGENS NO SUPABASE:");
-  const [{ count: c1 }] = (await supabaseAdmin.from("unidades_escolares").select("*", { count: "exact", head: true })).data || [{ count: 0 }];
-  const [{ count: c2 }] = (await supabaseAdmin.from("execucao_financeira").select("*", { count: "exact", head: true })).data || [{ count: 0 }];
-  const [{ count: c3 }] = (await supabaseAdmin.from("vw_unidades_localizador").select("*", { count: "exact", head: true })).data || [{ count: 0 }];
-  const [{ count: c4 }] = (await supabaseAdmin.from("vw_unidade_detalhe").select("*", { count: "exact", head: true })).data || [{ count: 0 }];
+  const res1 = await supabaseAdmin.from("unidades_escolares").select("*", { count: "exact", head: true });
+  const res2 = await supabaseAdmin.from("execucao_financeira").select("*", { count: "exact", head: true });
+  const res3 = await supabaseAdmin.from("vw_unidades_localizador").select("*", { count: "exact", head: true });
+  const res4 = await supabaseAdmin.from("vw_unidade_detalhe").select("*", { count: "exact", head: true });
   const { data: dbData } = await supabaseAdmin.from("vw_dashboard_basico").select("*");
 
-  console.log(`  - unidades_escolares: ${c1}`);
-  console.log(`  - execucao_financeira: ${c2}`);
-  console.log(`  - vw_unidades_localizador: ${c3}`);
-  console.log(`  - vw_unidade_detalhe: ${c4}`);
+  console.log(`  - unidades_escolares: ${res1.count || 0}`);
+  console.log(`  - execucao_financeira: ${res2.count || 0}`);
+  console.log(`  - vw_unidades_localizador: ${res3.count || 0}`);
+  console.log(`  - vw_unidade_detalhe: ${res4.count || 0}`);
   console.log(`  - vw_dashboard_basico:`);
   console.table(dbData);
 

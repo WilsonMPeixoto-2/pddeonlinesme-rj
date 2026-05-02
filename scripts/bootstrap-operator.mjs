@@ -111,7 +111,7 @@ async function bootstrap() {
   console.log("Você pode agora acessar http://localhost:8080/");
   console.log("Fazer o login com:");
   console.log(`E-mail: ${BOOTSTRAP_EMAIL}`);
-  console.log(`Senha: ${BOOTSTRAP_PASSWORD}`);
+  console.log(`Senha: [Oculta por segurança]`);
   console.log("E então navegar para http://localhost:8080/base para importar a planilha.");
   console.log("---------------------------------------------------");
 }
