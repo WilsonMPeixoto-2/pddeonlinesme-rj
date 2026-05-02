@@ -218,22 +218,26 @@ export default function EscolaEditar() {
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Detalhe da Unidade
               </p>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                {headerTitle}
-              </h1>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                {u.inep && (
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                  {headerTitle}
+                </h1>
+                <div className="flex items-center gap-2 mt-1 sm:mt-0">
+                  <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary border border-primary/20">
+                    {PROGRAMA_PADRAO === "basico" ? "PDDE BÁSICO" : `PDDE ${PROGRAMA_PADRAO.toUpperCase()}`}
+                  </span>
+                  <span className="inline-flex items-center rounded-md bg-secondary/60 px-2 py-0.5 text-xs font-semibold text-secondary-foreground border border-border/50">
+                    Exercício {exercicio}
+                  </span>
+                </div>
+              </div>
+              {u.inep && (
+                <div className="pt-1">
                   <span className="font-mono text-xs font-medium text-muted-foreground border border-border/50 bg-background/50 px-2 py-0.5 rounded-md">
                     INEP {u.inep}
                   </span>
-                )}
-                <span className="inline-flex items-center rounded-md bg-secondary/60 px-2 py-0.5 text-xs font-semibold text-secondary-foreground border border-border/50">
-                  Exercício {exercicio}
-                </span>
-                <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary border border-primary/20">
-                  {PROGRAMA_PADRAO === "basico" ? "PDDE BÁSICO" : `PDDE ${PROGRAMA_PADRAO.toUpperCase()}`}
-                </span>
-              </div>
+                </div>
+              )}
             </div>
             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
               <CheckCircle2 className="h-3 w-3" />
