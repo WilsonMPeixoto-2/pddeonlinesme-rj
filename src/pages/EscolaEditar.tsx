@@ -78,6 +78,7 @@ export default function EscolaEditar() {
   const [docsOpen, setDocsOpen] = useState(false);
 
   const PROGRAMA_PADRAO = "basico";
+  const readOnlyInputClass = "bg-background/60 border-border/50 text-foreground cursor-default shadow-inner";
 
   const { data: u, isLoading, error, refetch, isFetching } = useUnidadeDetalhe({
     unidadeId: id,
@@ -215,14 +216,24 @@ export default function EscolaEditar() {
           <div className="relative flex flex-wrap items-end justify-between gap-4">
             <div className="space-y-2">
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Detalhe · Exercício {exercicio} · {PROGRAMA_PADRAO.toUpperCase()}
+                Detalhe da Unidade
               </p>
               <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
                 {headerTitle}
               </h1>
-              {u.inep && (
-                <p className="font-mono text-xs text-muted-foreground">INEP {u.inep}</p>
-              )}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {u.inep && (
+                  <span className="font-mono text-xs font-medium text-muted-foreground border border-border/50 bg-background/50 px-2 py-0.5 rounded-md">
+                    INEP {u.inep}
+                  </span>
+                )}
+                <span className="inline-flex items-center rounded-md bg-secondary/60 px-2 py-0.5 text-xs font-semibold text-secondary-foreground border border-border/50">
+                  Exercício {exercicio}
+                </span>
+                <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary border border-primary/20">
+                  {PROGRAMA_PADRAO === "basico" ? "PDDE BÁSICO" : `PDDE ${PROGRAMA_PADRAO.toUpperCase()}`}
+                </span>
+              </div>
             </div>
             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
               <CheckCircle2 className="h-3 w-3" />
@@ -286,32 +297,32 @@ export default function EscolaEditar() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label>Designação</Label>
-                    <Input readOnly value={formatText(u.designacao)} className="bg-muted/30 cursor-default" />
+                    <Input readOnly value={formatText(u.designacao)} className={readOnlyInputClass} />
                   </div>
                   
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label>Nome Completo</Label>
-                    <Input readOnly value={formatText(u.nome)} className="bg-muted/30 cursor-default" />
+                    <Input readOnly value={formatText(u.nome)} className={readOnlyInputClass} />
                   </div>
 
                   <div className="space-y-1.5">
                     <Label>INEP</Label>
-                    <Input readOnly value={formatText(u.inep)} className="font-mono tabular-nums bg-muted/30 cursor-default" />
+                    <Input readOnly value={formatText(u.inep)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
                   </div>
 
                   <div className="space-y-1.5">
                     <Label>CNPJ</Label>
-                    <Input readOnly value={formatText(u.cnpj)} className="font-mono tabular-nums bg-muted/30 cursor-default" />
+                    <Input readOnly value={formatText(u.cnpj)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
                   </div>
 
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label>Diretor(a)</Label>
-                    <Input readOnly value={formatText(u.diretor)} className="bg-muted/30 cursor-default" />
+                    <Input readOnly value={formatText(u.diretor)} className={readOnlyInputClass} />
                   </div>
 
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label>Endereço</Label>
-                    <Input readOnly value={formatText(u.endereco)} className="bg-muted/30 cursor-default" />
+                    <Input readOnly value={formatText(u.endereco)} className={readOnlyInputClass} />
                   </div>
                 </div>
               </CardContent>
@@ -334,15 +345,15 @@ export default function EscolaEditar() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
                   <div className="space-y-1.5 sm:col-span-3">
                     <Label>Banco</Label>
-                    <Input readOnly value={formatText(u.banco)} className="bg-muted/30 cursor-default" />
+                    <Input readOnly value={formatText(u.banco, "Banco do Brasil")} className={readOnlyInputClass} />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Agência</Label>
-                    <Input readOnly value={formatText(u.agencia)} className="font-mono tabular-nums bg-muted/30 cursor-default" />
+                    <Input readOnly value={formatText(u.agencia)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label>Conta corrente</Label>
-                    <Input readOnly value={formatText(u.conta_corrente)} className="font-mono tabular-nums bg-muted/30 cursor-default" />
+                    <Input readOnly value={formatText(u.conta_corrente)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
                   </div>
                 </div>
               </CardContent>
