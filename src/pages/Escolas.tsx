@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -44,9 +44,7 @@ import { cn } from "@/lib/utils";
 // O tipo vem do hook, que ja faz o narrowing de id/designacao no boundary.
 type Unidade = UnidadeLocalizador;
 
-type StatusFilter = "todas" | "pronta" | "incompleta" | "pendente";
-type Programa = "basico" | "qualidade" | "equidade";
-type ProgramaFilter = "todos" | Programa;
+type StatusFilter = "todas" | "completo" | "incompleto";
 
 /* ─── Helpers ─── */
 
@@ -57,71 +55,26 @@ function getStatus(e: Unidade) {
   const filled = identityFields.filter(
     (f) => Boolean(f && String(f).trim()),
   ).length;
-  if (filled === identityFields.length) return "pronta" as const;
-  if (filled > 0 || e.designacao.trim()) return "incompleta" as const;
-  return "pendente" as const;
+  if (filled === identityFields.length) return "completo" as const;
+  return "incompleto" as const;
 }
 
-/** Mock de contagem de documentos por escola (O3 + O5) */
-function getDocMeta(e: Unidade) {
-  const st = getStatus(e);
-  if (st === "pronta") {
-    const seed = e.id.charCodeAt(0) % 3;
-    const counts = [1, 2, 3];
-    const times = ["Há 2 dias", "Há 5 dias", "Há 1 semana"];
-    return { generated: counts[seed], total: 6, lastGen: times[seed] };
-  }
-  if (st === "incompleta") return { generated: 0, total: 6, lastGen: null };
-  return { generated: 0, total: 6, lastGen: null };
-}
+
 
 const statusConfig = {
-  pronta: {
-    label: "Pronta",
+  completo: {
+    label: "Cadastro completo",
     dotClass: "bg-success",
     badgeClass: "border-success/30 bg-success/10 text-success",
   },
-  incompleta: {
-    label: "Incompleta",
+  incompleto: {
+    label: "Cadastro incompleto",
     dotClass: "bg-warning",
     badgeClass: "border-warning/30 bg-warning/10 text-warning",
   },
-  pendente: {
-    label: "Pendente",
-    dotClass: "bg-destructive",
-    badgeClass: "border-destructive/30 bg-destructive/10 text-destructive",
-  },
 } as const;
 
-/**
- * Programa PDDE — placeholder visual.
- * O campo `programa` ainda não existe em vw_unidades_localizador (a view
- * propositalmente fica enxuta). Derivamos deterministicamente do id para
- * que o filtro funcione no protótipo. Substituir quando a coluna existir.
- */
-function getPrograma(e: Unidade): Programa {
-  const code = e.id.charCodeAt(0) + e.id.charCodeAt(e.id.length - 1);
-  const opts: Programa[] = ["basico", "qualidade", "equidade"];
-  return opts[code % 3];
-}
 
-const programaConfig: Record<Programa, { label: string; short: string; className: string }> = {
-  basico: {
-    label: "PDDE Básico",
-    short: "Básico",
-    className: "border-primary/30 bg-primary/10 text-primary",
-  },
-  qualidade: {
-    label: "PDDE Qualidade",
-    short: "Qualidade",
-    className: "border-success/30 bg-success/10 text-success",
-  },
-  equidade: {
-    label: "PDDE Equidade",
-    short: "Equidade",
-    className: "border-warning/40 bg-warning/10 text-warning",
-  },
-};
 
 /* ─── Secondary actions menu (smaller, less prominent) ─── */
 
@@ -179,7 +132,6 @@ export default function Escolas() {
   const [confirmLote, setConfirmLote] = useState(false);
   const { exercicio } = useExercicio();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
-  const [programaFilter, setProgramaFilter] = useState<ProgramaFilter>("todos");
 
   // Documents panel state
   const [docsPanelOpen, setDocsPanelOpen] = useState(false);
@@ -233,36 +185,26 @@ export default function Escolas() {
     if (statusFilter !== "todas") {
       filtered = filtered.filter((e) => getStatus(e) === statusFilter);
     }
-    if (programaFilter !== "todos") {
-      filtered = filtered.filter((e) => getPrograma(e) === programaFilter);
-    }
     return filtered;
-  }, [q, statusFilter, programaFilter, unidades]);
+  }, [q, statusFilter, unidades]);
 
   const isSearching =
-    q.trim().length > 0 || statusFilter !== "todas" || programaFilter !== "todos";
+    q.trim().length > 0 || statusFilter !== "todas";
 
   const clearFilters = () => {
     setQ("");
     setStatusFilter("todas");
-    setProgramaFilter("todos");
   };
 
   const statusCounts = useMemo(() => {
-    const counts = { pronta: 0, incompleta: 0, pendente: 0 };
+    const counts = { completo: 0, incompleto: 0 };
     unidades.forEach((e) => {
       counts[getStatus(e)]++;
     });
     return counts;
   }, [unidades]);
 
-  const programaCounts = useMemo(() => {
-    const counts: Record<Programa, number> = { basico: 0, qualidade: 0, equidade: 0 };
-    unidades.forEach((e) => {
-      counts[getPrograma(e)]++;
-    });
-    return counts;
-  }, [unidades]);
+
 
   const COLUMNS = 5;
 
@@ -314,57 +256,17 @@ export default function Escolas() {
           )}
         </div>
 
-        {/* Programa filter pills (PDDE Básico / Qualidade / Equidade) */}
-        {!loading && unidades.length > 0 && (
+        {/* Clear filters (moved from removed Programa section) */}
+        {isSearching && !loading && unidades.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Programa
-            </span>
             <button
               type="button"
-              onClick={() => setProgramaFilter("todos")}
-              aria-pressed={programaFilter === "todos"}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                programaFilter === "todos"
-                  ? "border-foreground/30 bg-foreground/5 text-foreground"
-                  : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
-              )}
+              onClick={clearFilters}
+              className="ml-auto inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
             >
-              Todos
-              <span className="font-semibold tabular-nums">{unidades.length}</span>
+              <X className="h-3 w-3" />
+              Limpar filtros
             </button>
-            {(Object.keys(programaConfig) as Programa[]).map((key) => {
-              const active = programaFilter === key;
-              const cfg = programaConfig[key];
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setProgramaFilter(active ? "todos" : key)}
-                  aria-pressed={active}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    active
-                      ? cfg.className
-                      : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
-                  )}
-                >
-                  {cfg.short}
-                  <span className="font-semibold tabular-nums">{programaCounts[key]}</span>
-                </button>
-              );
-            })}
-            {isSearching && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="ml-auto inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
-              >
-                <X className="h-3 w-3" />
-                Limpar filtros
-              </button>
-            )}
           </div>
         )}
 
@@ -409,24 +311,13 @@ export default function Escolas() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="todas">Todos status</SelectItem>
-                <SelectItem value="pronta">Prontas</SelectItem>
-                <SelectItem value="incompleta">Incompletas</SelectItem>
-                <SelectItem value="pendente">Pendentes</SelectItem>
+                <SelectItem value="todas">Todos</SelectItem>
+                <SelectItem value="completo">Cadastro completo</SelectItem>
+                <SelectItem value="incompleto">Cadastro incompleto</SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={programaFilter} onValueChange={(v) => setProgramaFilter(v as ProgramaFilter)}>
-              <SelectTrigger className="h-10 w-[170px] shrink-0">
-                <SelectValue placeholder="Programa" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos programas</SelectItem>
-                <SelectItem value="basico">PDDE Básico</SelectItem>
-                <SelectItem value="qualidade">PDDE Qualidade</SelectItem>
-                <SelectItem value="equidade">PDDE Equidade</SelectItem>
-              </SelectContent>
-            </Select>
+
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -519,8 +410,6 @@ export default function Escolas() {
                   lista.map((e) => {
                     const st = getStatus(e);
                     const cfg = statusConfig[st];
-                    const prog = getPrograma(e);
-                    const progCfg = programaConfig[prog];
                     return (
                       <TableRow
                         key={e.id}
@@ -545,15 +434,14 @@ export default function Escolas() {
                               <span className="font-mono tabular-nums">
                                 INEP {e.inep ?? "—"}
                               </span>
-                              <span className="text-border">·</span>
-                              <span
-                                className={cn(
-                                  "inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium",
-                                  progCfg.className,
-                                )}
-                              >
-                                {progCfg.short}
-                              </span>
+                              {e.cnpj && (
+                                <>
+                                  <span className="text-border">·</span>
+                                  <span className="font-mono tabular-nums">
+                                    CNPJ {e.cnpj}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </TableCell>
@@ -580,25 +468,9 @@ export default function Escolas() {
                               <FileText className="h-3.5 w-3.5" />
                               Gerar documentos
                             </Button>
-                            {(() => {
-                              const dm = getDocMeta(e);
-                              return (
-                                <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
-                                  <span className={cn(
-                                    "font-semibold tabular-nums",
-                                    dm.generated > 0 ? "text-success" : "text-muted-foreground/60"
-                                  )}>
-                                    {dm.generated}/{dm.total}
-                                  </span>
-                                  {dm.lastGen && (
-                                    <>
-                                      <span className="text-border">·</span>
-                                      <span>{dm.lastGen}</span>
-                                    </>
-                                  )}
-                                </div>
-                              );
-                            })()}
+                            <div className="flex items-center justify-center text-[10px] text-muted-foreground">
+                              <span>Em breve</span>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
