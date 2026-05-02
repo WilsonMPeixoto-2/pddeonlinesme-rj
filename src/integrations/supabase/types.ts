@@ -14,45 +14,176 @@ export type Database = {
   }
   public: {
     Tables: {
+      contas_bancarias: {
+        Row: {
+          agencia: string | null
+          banco: string | null
+          conta_corrente: string | null
+          created_at: string
+          id: string
+          principal: boolean
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          agencia?: string | null
+          banco?: string | null
+          conta_corrente?: string | null
+          created_at?: string
+          id?: string
+          principal?: boolean
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          agencia?: string | null
+          banco?: string | null
+          conta_corrente?: string | null
+          created_at?: string
+          id?: string
+          principal?: boolean
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contas_bancarias_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades_escolares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contas_bancarias_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidade_detalhe"
+            referencedColumns: ["unidade_id"]
+          },
+          {
+            foreignKeyName: "contas_bancarias_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidades_localizador"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      execucao_financeira: {
+        Row: {
+          created_at: string
+          exercicio: number
+          gasto: number
+          id: string
+          parcela_1_capital: number
+          parcela_1_custeio: number
+          parcela_2_capital: number
+          parcela_2_custeio: number
+          programa: string
+          reprogramado_capital: number
+          reprogramado_custeio: number
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exercicio: number
+          gasto?: number
+          id?: string
+          parcela_1_capital?: number
+          parcela_1_custeio?: number
+          parcela_2_capital?: number
+          parcela_2_custeio?: number
+          programa?: string
+          reprogramado_capital?: number
+          reprogramado_custeio?: number
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exercicio?: number
+          gasto?: number
+          id?: string
+          parcela_1_capital?: number
+          parcela_1_custeio?: number
+          parcela_2_capital?: number
+          parcela_2_custeio?: number
+          programa?: string
+          reprogramado_capital?: number
+          reprogramado_custeio?: number
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "execucao_financeira_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades_escolares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "execucao_financeira_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidade_detalhe"
+            referencedColumns: ["unidade_id"]
+          },
+          {
+            foreignKeyName: "execucao_financeira_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidades_localizador"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_logs: {
         Row: {
           created_at: string
           errors: Json
+          exercicio: number | null
           filename: string | null
           id: string
           inserted_rows: number
+          programa: string | null
           skipped_rows: number
           source: string
           status: string
           total_rows: number
           updated_rows: number
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           errors?: Json
+          exercicio?: number | null
           filename?: string | null
           id?: string
           inserted_rows?: number
+          programa?: string | null
           skipped_rows?: number
           source?: string
           status?: string
           total_rows?: number
           updated_rows?: number
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           errors?: Json
+          exercicio?: number | null
           filename?: string | null
           id?: string
           inserted_rows?: number
+          programa?: string | null
           skipped_rows?: number
           source?: string
           status?: string
           total_rows?: number
           updated_rows?: number
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -70,6 +201,7 @@ export type Database = {
           gasto: number
           id: string
           inep: string | null
+          nome: string | null
           parcela_1_capital: number
           parcela_1_custeio: number
           parcela_2_capital: number
@@ -93,6 +225,7 @@ export type Database = {
           gasto?: number
           id?: string
           inep?: string | null
+          nome?: string | null
           parcela_1_capital?: number
           parcela_1_custeio?: number
           parcela_2_capital?: number
@@ -116,6 +249,7 @@ export type Database = {
           gasto?: number
           id?: string
           inep?: string | null
+          nome?: string | null
           parcela_1_capital?: number
           parcela_1_custeio?: number
           parcela_2_capital?: number
@@ -151,7 +285,84 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_dashboard_basico: {
+        Row: {
+          exercicio: number | null
+          programa: string | null
+          total_disponivel_inicial: number | null
+          total_parcela_1_capital: number | null
+          total_parcela_1_custeio: number | null
+          total_parcela_2_capital: number | null
+          total_parcela_2_custeio: number | null
+          total_parcelas: number | null
+          total_reprogramado: number | null
+          total_reprogramado_capital: number | null
+          total_reprogramado_custeio: number | null
+          total_unidades: number | null
+          updated_at_max: string | null
+        }
+        Relationships: []
+      }
+      vw_unidade_detalhe: {
+        Row: {
+          agencia: string | null
+          banco: string | null
+          cnpj: string | null
+          conta_corrente: string | null
+          designacao: string | null
+          diretor: string | null
+          endereco: string | null
+          exercicio: number | null
+          inep: string | null
+          nome: string | null
+          parcela_1_capital: number | null
+          parcela_1_custeio: number | null
+          parcela_2_capital: number | null
+          parcela_2_custeio: number | null
+          programa: string | null
+          reprogramado_capital: number | null
+          reprogramado_custeio: number | null
+          total_disponivel_inicial: number | null
+          total_parcelas: number | null
+          total_reprogramado: number | null
+          unidade_id: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
+      vw_unidades_localizador: {
+        Row: {
+          cnpj: string | null
+          created_at: string | null
+          designacao: string | null
+          diretor: string | null
+          id: string | null
+          inep: string | null
+          nome: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string | null
+          designacao?: string | null
+          diretor?: string | null
+          id?: string | null
+          inep?: string | null
+          nome?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string | null
+          designacao?: string | null
+          diretor?: string | null
+          id?: string | null
+          inep?: string | null
+          nome?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
