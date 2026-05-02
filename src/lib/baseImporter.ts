@@ -177,7 +177,11 @@ export async function parseBaseXlsx(file: File): Promise<ParseResult> {
     }
 
     const inepRaw = onlyDigits(get("inep"));
-    const cnpjRaw = onlyDigits(get("cnpj"));
+    let cnpjRaw = onlyDigits(get("cnpj"));
+
+    if (cnpjRaw && cnpjRaw.length === 13) {
+      cnpjRaw = cnpjRaw.padStart(14, "0");
+    }
 
     if (inepRaw && inepRaw.length !== 8) {
       errors.push({
