@@ -25,9 +25,14 @@ import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { cn } from "@/lib/utils";
 
 /* ─── Helpers ─── */
+const moneyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
+
 const formatMoney = (val: number | null | undefined) => {
   if (val == null) return "—";
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
+  return moneyFormatter.format(val);
 };
 
 const formatText = (val: string | null | undefined, fallback = "Não informado") => {
@@ -78,7 +83,12 @@ export default function EscolaEditar() {
   const [docsOpen, setDocsOpen] = useState(false);
 
   const PROGRAMA_PADRAO = "basico";
+  const programaLabel = PROGRAMA_PADRAO === "basico" ? "básico" : PROGRAMA_PADRAO;
   const readOnlyInputClass = "bg-background/60 border-border/50 text-foreground cursor-default shadow-inner";
+
+  // Fase 2A: fallback visual para o padrão bancário do PDDE.
+  // A normalização persistida do campo banco será tratada em etapa própria.
+  const BANCO_PADRAO_PDDE = "Banco do Brasil";
 
   const { data: u, isLoading, error, refetch, isFetching } = useUnidadeDetalhe({
     unidadeId: id,
@@ -165,7 +175,7 @@ export default function EscolaEditar() {
         <div className="flex justify-center p-10">
           <EmptyState
             icon={AlertCircle}
-            title={`Unidade escolar não encontrada para o exercício ${exercicio} e programa básico.`}
+            title={`Unidade escolar não encontrada para o exercício ${exercicio} e programa ${programaLabel}.`}
             action={
               <Button variant="outline" onClick={() => navigate("/escolas")}>
                 Voltar para o localizador
@@ -349,7 +359,7 @@ export default function EscolaEditar() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
                   <div className="space-y-1.5 sm:col-span-3">
                     <Label>Banco</Label>
-                    <Input readOnly value={formatText(u.banco, "Banco do Brasil")} className={readOnlyInputClass} />
+                    <Input readOnly value={formatText(u.banco, BANCO_PADRAO_PDDE)} className={readOnlyInputClass} />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Agência</Label>
