@@ -32,17 +32,31 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
 
 /* ─── Types ─── */
 
-// Foundation v1: /escolas opera como localizador a partir de vw_unidades_localizador.
-// id e designacao são NOT NULL na tabela base (PK + UNIQUE) — narremos no boundary.
-type Unidade = Tables<"vw_unidades_localizador"> & {
+type Unidade = {
   id: string;
   designacao: string;
+  inep: string | null;
+  cnpj: string | null;
+  diretor: string | null;
+  email: string | null;
+  endereco: string | null;
+  agencia: string | null;
+  conta_corrente: string | null;
+  alunos: number;
+  saldo_anterior: number;
+  recebido: number;
+  gasto: number;
+  reprogramado_custeio: number;
+  reprogramado_capital: number;
+  parcela_1_custeio: number;
+  parcela_1_capital: number;
+  parcela_2_custeio: number;
+  parcela_2_capital: number;
 };
 
 type StatusFilter = "todas" | "pronta" | "incompleta" | "pendente";
@@ -51,15 +65,27 @@ type ProgramaFilter = "todos" | Programa;
 
 /* ─── Helpers ─── */
 
-// Foundation v1: status agora reflete completude de identidade (INEP, CNPJ, diretor).
-// Antes do PR de localizador, "pronta" também exigia presença financeira; financeiro
-// migrou para a página individual da unidade (vw_unidade_detalhe), então o localizador
-// avalia apenas o que ele próprio expõe.
+const fmt = (n: number) =>
+  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
 function getStatus(e: Unidade) {
-  const identityFields = [e.inep, e.cnpj, e.diretor];
-  const filled = identityFields.filter((f) => Boolean(f && String(f).trim())).length;
-  if (filled === identityFields.length) return "pronta" as const;
-  if (filled > 0 || e.designacao.trim()) return "incompleta" as const;
+  const hasFinancial =
+    Number(e.saldo_anterior) +
+      Number(e.recebido) +
+      Number(e.gasto) +
+      Number(e.parcela_1_custeio ?? 0) +
+      Number(e.parcela_1_capital ?? 0) +
+      Number(e.parcela_2_custeio ?? 0) +
+      Number(e.parcela_2_capital ?? 0) >
+    0;
+  const hasIdentity =
+    Boolean(e.designacao?.trim()) &&
+    Boolean(e.inep) &&
+    Boolean(e.cnpj) &&
+    Boolean(e.agencia) &&
+    Boolean(e.conta_corrente);
+  if (hasIdentity && hasFinancial) return "pronta" as const;
+  if (e.designacao?.trim() || hasFinancial) return "incompleta" as const;
   return "pendente" as const;
 }
 
@@ -123,6 +149,29 @@ const programaConfig: Record<Programa, { label: string; short: string; className
     className: "border-warning/40 bg-warning/10 text-warning",
   },
 };
+
+/* ─── Execution bar (saldo vs gasto) ─── */
+
+function ExecutionBar({ recebido, saldo, gasto }: { recebido: number; saldo: number; gasto: number }) {
+  const total = recebido + saldo;
+  const pct = total > 0 ? Math.min(100, (gasto / total) * 100) : 0;
+  const tone =
+    pct >= 90 ? "bg-warning" : pct >= 50 ? "bg-primary" : "bg-success";
+  return (
+    <div className="space-y-1">
+      <div className="flex items-baseline justify-between gap-2 text-[11px]">
+        <span className="font-medium tabular-nums">{fmt(gasto)}</span>
+        <span className="text-muted-foreground/70 tabular-nums">{pct.toFixed(0)}%</span>
+      </div>
+      <div className="h-1 overflow-hidden rounded-full bg-muted/40">
+        <div
+          className={cn("h-full rounded-full transition-all duration-500", tone)}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
 /* ─── Secondary actions menu (smaller, less prominent) ─── */
 
@@ -209,17 +258,11 @@ export default function Escolas() {
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
-        .from("vw_unidades_localizador")
+        .from("unidades_escolares")
         .select("*")
         .order("designacao");
-      if (error) {
-        toast.error(error.message);
-      } else {
-        const valid = (data ?? []).filter(
-          (u): u is Unidade => u.id !== null && u.designacao !== null,
-        );
-        setUnidades(valid);
-      }
+      if (error) toast.error(error.message);
+      else setUnidades((data ?? []) as Unidade[]);
       setLoading(false);
     })();
   }, []);
@@ -231,12 +274,14 @@ export default function Escolas() {
       const digits = q.replace(/\D/g, "");
       filtered = filtered.filter((e) => {
         if (e.designacao.toLowerCase().includes(lower)) return true;
-        if ((e.nome ?? "").toLowerCase().includes(lower)) return true;
         if ((e.diretor ?? "").toLowerCase().includes(lower)) return true;
+        if ((e.email ?? "").toLowerCase().includes(lower)) return true;
 
         if (digits.length >= 2) {
           if ((e.inep ?? "").includes(digits)) return true;
           if ((e.cnpj ?? "").replace(/\D/g, "").includes(digits)) return true;
+          if ((e.agencia ?? "").replace(/\D/g, "").includes(digits)) return true;
+          if ((e.conta_corrente ?? "").replace(/\D/g, "").includes(digits)) return true;
         }
 
         return false;
@@ -276,7 +321,7 @@ export default function Escolas() {
     return counts;
   }, [unidades]);
 
-  const COLUMNS = 5;
+  const COLUMNS = 7;
 
   const openDocs = (e: Unidade) => {
     setSelectedEscola(e);
@@ -387,7 +432,7 @@ export default function Escolas() {
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 ref={searchRef}
-                placeholder="Buscar por designação, nome, INEP, CNPJ ou diretor(a)…"
+                placeholder="Buscar por nome, INEP, CNPJ, agência, conta, diretor(a)…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 className="h-10 pl-9 pr-24"
@@ -474,6 +519,12 @@ export default function Escolas() {
                   </TableHead>
                   <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Status
+                  </TableHead>
+                  <TableHead className="h-11 w-[60px] text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Alunos
+                  </TableHead>
+                  <TableHead className="h-11 w-[200px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Execução financeira
                   </TableHead>
                   <TableHead className="h-11 w-[170px] border-l border-border/40 bg-primary/5 text-center text-[11px] font-semibold uppercase tracking-wide text-primary/80">
                     <span className="inline-flex items-center gap-1.5">
@@ -566,6 +617,17 @@ export default function Escolas() {
                               >
                                 {progCfg.short}
                               </span>
+                              {(e.agencia || e.conta_corrente) && (
+                                <>
+                                  <span className="text-border">·</span>
+                                  <span
+                                    className="font-mono tabular-nums"
+                                    title="Agência / Conta corrente"
+                                  >
+                                    Ag {e.agencia ?? "—"} · CC {e.conta_corrente ?? "—"}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </TableCell>
@@ -580,6 +642,14 @@ export default function Escolas() {
                             <span className={cn("inline-block h-1.5 w-1.5 rounded-full", cfg.dotClass)} />
                             {cfg.label}
                           </span>
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">{e.alunos}</TableCell>
+                        <TableCell>
+                          <ExecutionBar
+                            recebido={Number(e.recebido)}
+                            saldo={Number(e.saldo_anterior)}
+                            gasto={Number(e.gasto)}
+                          />
                         </TableCell>
                         <TableCell className="border-l border-border/40 bg-primary/[0.025] p-2">
                           <div className="space-y-1.5">
