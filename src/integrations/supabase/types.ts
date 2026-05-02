@@ -73,20 +73,6 @@ export type Database = {
             referencedRelation: "unidades_escolares"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "contas_bancarias_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "vw_unidade_detalhe"
-            referencedColumns: ["unidade_id"]
-          },
-          {
-            foreignKeyName: "contas_bancarias_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "vw_unidades_localizador"
-            referencedColumns: ["id"]
-          },
         ]
       }
       execucao_financeira: {
@@ -141,20 +127,6 @@ export type Database = {
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades_escolares"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "execucao_financeira_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "vw_unidade_detalhe"
-            referencedColumns: ["unidade_id"]
-          },
-          {
-            foreignKeyName: "execucao_financeira_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "vw_unidades_localizador"
             referencedColumns: ["id"]
           },
         ]
@@ -305,84 +277,7 @@ export type Database = {
       }
     }
     Views: {
-      vw_dashboard_basico: {
-        Row: {
-          exercicio: number | null
-          programa: string | null
-          total_disponivel_inicial: number | null
-          total_parcela_1_capital: number | null
-          total_parcela_1_custeio: number | null
-          total_parcela_2_capital: number | null
-          total_parcela_2_custeio: number | null
-          total_parcelas: number | null
-          total_reprogramado: number | null
-          total_reprogramado_capital: number | null
-          total_reprogramado_custeio: number | null
-          total_unidades: number | null
-          updated_at_max: string | null
-        }
-        Relationships: []
-      }
-      vw_unidade_detalhe: {
-        Row: {
-          agencia: string | null
-          banco: string | null
-          cnpj: string | null
-          conta_corrente: string | null
-          designacao: string | null
-          diretor: string | null
-          endereco: string | null
-          exercicio: number | null
-          inep: string | null
-          nome: string | null
-          parcela_1_capital: number | null
-          parcela_1_custeio: number | null
-          parcela_2_capital: number | null
-          parcela_2_custeio: number | null
-          programa: string | null
-          reprogramado_capital: number | null
-          reprogramado_custeio: number | null
-          total_disponivel_inicial: number | null
-          total_parcelas: number | null
-          total_reprogramado: number | null
-          unidade_id: string | null
-          updated_at: string | null
-        }
-        Relationships: []
-      }
-      vw_unidades_localizador: {
-        Row: {
-          cnpj: string | null
-          created_at: string | null
-          designacao: string | null
-          diretor: string | null
-          id: string | null
-          inep: string | null
-          nome: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          cnpj?: string | null
-          created_at?: string | null
-          designacao?: string | null
-          diretor?: string | null
-          id?: string | null
-          inep?: string | null
-          nome?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          cnpj?: string | null
-          created_at?: string | null
-          designacao?: string | null
-          diretor?: string | null
-          id?: string | null
-          inep?: string | null
-          nome?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       has_role: {
