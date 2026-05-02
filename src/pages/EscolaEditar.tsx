@@ -429,7 +429,7 @@ export default function EscolaEditar() {
                   Voltar
                 </Button>
                 <Button type="button" variant="outline" onClick={handleSaveClick}>
-                  <Save className="mr-2 h-4 w-4" /> Salvar
+                  <Save className="mr-2 h-4 w-4" /> Edição em breve
                 </Button>
               </div>
             </div>
