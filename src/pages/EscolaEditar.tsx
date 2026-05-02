@@ -6,8 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CurrencyInput } from "@/components/inputs/CurrencyInput";
-import { NumberInput } from "@/components/inputs/NumberInput";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
 import {
   ArrowLeft,
@@ -25,59 +23,92 @@ import {
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
 
 /* ─── Types ─── */
 
-type Unidade = {
-  id: string;
+type UnidadeDetalheRow = Tables<"vw_unidade_detalhe">;
+
+type Unidade = Omit<UnidadeDetalheRow, "unidade_id" | "designacao"> & {
+  unidade_id: string;
   designacao: string;
-  inep: string | null;
-  cnpj: string | null;
-  diretor: string | null;
-  email: string | null;
-  endereco: string | null;
-  agencia: string | null;
-  conta_corrente: string | null;
-  alunos: number;
-  saldo_anterior: number;
-  recebido: number;
-  gasto: number;
-  reprogramado_custeio: number;
-  reprogramado_capital: number;
-  parcela_1_custeio: number;
-  parcela_1_capital: number;
-  parcela_2_custeio: number;
-  parcela_2_capital: number;
 };
 
 type Errors = Partial<Record<keyof Unidade, string>>;
+type EditableField =
+  | "designacao"
+  | "nome"
+  | "inep"
+  | "cnpj"
+  | "diretor"
+  | "endereco"
+  | "banco"
+  | "agencia"
+  | "conta_corrente";
 
 /* ─── Helpers ─── */
 
+const PROGRAMA_PADRAO = "basico";
 const onlyDigits = (s: string) => s.replace(/\D/g, "");
-const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+const moneyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const financialFields = [
+  "reprogramado_custeio",
+  "reprogramado_capital",
+  "parcela_1_custeio",
+  "parcela_1_capital",
+  "parcela_2_custeio",
+  "parcela_2_capital",
+  "total_reprogramado",
+  "total_parcelas",
+  "total_disponivel_inicial",
+] satisfies (keyof Unidade)[];
+
+const accountFields = ["banco", "agencia", "conta_corrente"] satisfies (keyof Unidade)[];
+
+const nullableText = (value: string | null | undefined) => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+};
+
+const toNumber = (value: number | null | undefined) =>
+  typeof value === "number" && Number.isFinite(value) ? value : 0;
+
+const formatMoney = (value: number | null | undefined) =>
+  typeof value === "number" && Number.isFinite(value) ? moneyFormatter.format(value) : "—";
+
+function normalizeUnidade(row: UnidadeDetalheRow | null): Unidade | null {
+  if (!row?.unidade_id) return null;
+  return {
+    ...row,
+    unidade_id: row.unidade_id,
+    designacao: row.designacao ?? "",
+  };
+}
 
 function validate(u: Unidade): Errors {
   const errs: Errors = {};
   if (!u.designacao?.trim()) errs.designacao = "Informe a designação da unidade.";
   if (u.inep && onlyDigits(u.inep).length !== 8) errs.inep = "INEP deve ter 8 dígitos.";
   if (u.cnpj && onlyDigits(u.cnpj).length !== 14) errs.cnpj = "CNPJ deve ter 14 dígitos.";
-  if (u.email && !isValidEmail(u.email)) errs.email = "E-mail inválido.";
-  if (!Number.isFinite(Number(u.alunos)) || Number(u.alunos) < 0)
-    errs.alunos = "Informe um número inteiro ≥ 0.";
-  if (Number(u.saldo_anterior) < 0) errs.saldo_anterior = "Saldo não pode ser negativo.";
-  if (Number(u.recebido) < 0) errs.recebido = "Valor recebido não pode ser negativo.";
-  if (Number(u.gasto) < 0) errs.gasto = "Valor gasto não pode ser negativo.";
-  if (Number(u.gasto) > Number(u.saldo_anterior) + Number(u.recebido))
-    errs.gasto = "Gasto excede saldo anterior + recebido.";
+  financialFields.forEach((field) => {
+    if (toNumber(u[field] as number | null) < 0) {
+      errs[field] = "Valor financeiro não pode ser negativo.";
+    }
+  });
   return errs;
 }
 
 function getStatusInfo(u: Unidade, hasErrors: boolean) {
   if (hasErrors) return { label: "Dados com erro", tone: "destructive" as const, icon: AlertTriangle };
-  const hasFinancial = Number(u.saldo_anterior) + Number(u.recebido) + Number(u.gasto) > 0;
+  const hasFinancial = financialFields.some((field) => u[field] !== null);
   const hasIdentity = u.designacao?.trim() && u.inep;
   if (hasIdentity && hasFinancial)
     return { label: "Cadastro completo", tone: "success" as const, icon: CheckCircle2 };
@@ -89,20 +120,21 @@ function getStatusInfo(u: Unidade, hasErrors: boolean) {
 /** Conta quantos campos importantes da seção estão preenchidos. */
 function sectionProgress(u: Unidade, section: "id" | "bank" | "fin"): { done: number; total: number } {
   if (section === "id") {
-    const fields = [u.designacao?.trim(), u.inep, u.cnpj, u.diretor, u.email];
+    const fields = [u.designacao?.trim(), u.nome, u.inep, u.cnpj, u.diretor];
     return { done: fields.filter(Boolean).length, total: fields.length };
   }
   if (section === "bank") {
-    const fields = [u.agencia, u.conta_corrente, u.endereco];
+    const fields = [u.banco, u.agencia, u.conta_corrente, u.endereco];
     return { done: fields.filter((v) => Boolean(v && String(v).trim())).length, total: fields.length };
   }
   // fin
   const filled = [
-    u.alunos > 0,
-    Number(u.reprogramado_custeio) + Number(u.reprogramado_capital) > 0,
-    Number(u.parcela_1_custeio) + Number(u.parcela_1_capital) > 0,
-    Number(u.parcela_2_custeio) + Number(u.parcela_2_capital) > 0,
-    Number(u.gasto) > 0,
+    u.reprogramado_custeio !== null || u.reprogramado_capital !== null,
+    u.parcela_1_custeio !== null || u.parcela_1_capital !== null,
+    u.parcela_2_custeio !== null || u.parcela_2_capital !== null,
+    u.total_reprogramado !== null,
+    u.total_parcelas !== null,
+    u.total_disponivel_inicial !== null,
   ];
   return { done: filled.filter(Boolean).length, total: filled.length };
 }
@@ -173,6 +205,120 @@ function SectionHeader({
   );
 }
 
+function ReadOnlyMoneyField({
+  id,
+  value,
+  placeholder = "Aguardando importação",
+}: {
+  id: string;
+  value: number | null | undefined;
+  placeholder?: string;
+}) {
+  return (
+    <Input
+      id={id}
+      value={typeof value === "number" && Number.isFinite(value) ? formatMoney(value) : ""}
+      placeholder={placeholder}
+      readOnly
+      className="font-mono text-right tabular-nums"
+    />
+  );
+}
+
+function DetalheBreakdown({ unidade }: { unidade: Unidade }) {
+  const rows = [
+    {
+      label: "Saldo Reprogramado",
+      custeio: unidade.reprogramado_custeio,
+      capital: unidade.reprogramado_capital,
+      total: unidade.total_reprogramado,
+    },
+    {
+      label: "1ª Parcela",
+      custeio: unidade.parcela_1_custeio,
+      capital: unidade.parcela_1_capital,
+      total:
+        unidade.parcela_1_custeio !== null || unidade.parcela_1_capital !== null
+          ? toNumber(unidade.parcela_1_custeio) + toNumber(unidade.parcela_1_capital)
+          : null,
+    },
+    {
+      label: "2ª Parcela",
+      custeio: unidade.parcela_2_custeio,
+      capital: unidade.parcela_2_capital,
+      total:
+        unidade.parcela_2_custeio !== null || unidade.parcela_2_capital !== null
+          ? toNumber(unidade.parcela_2_custeio) + toNumber(unidade.parcela_2_capital)
+          : null,
+    },
+  ];
+  const hasImportedValues = rows.some((row) => row.custeio !== null || row.capital !== null);
+
+  return (
+    <div className="mt-5 rounded-lg border border-dashed border-border/50 bg-muted/5 p-5">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Detalhamento Custeio × Capital
+        </p>
+        <span className="rounded-full border border-border/60 bg-muted/20 px-2 py-0.5 text-[11px] text-muted-foreground">
+          {unidade.programa ?? "Não informado"}
+        </span>
+      </div>
+      <div className="overflow-hidden rounded-md border border-border/40">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-muted/30">
+              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Componente
+              </th>
+              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Custeio
+              </th>
+              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Capital
+              </th>
+              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Total
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/30">
+            {rows.map((row) => (
+              <tr key={row.label}>
+                <td className="px-3 py-2.5 text-sm text-muted-foreground/80">{row.label}</td>
+                <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums">
+                  {formatMoney(row.custeio)}
+                </td>
+                <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums">
+                  {formatMoney(row.capital)}
+                </td>
+                <td className="px-3 py-2.5 text-right font-mono text-sm font-medium tabular-nums">
+                  {formatMoney(row.total)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t border-border/40 bg-muted/20">
+              <td className="px-3 py-2.5 text-sm font-medium">Total disponível inicial</td>
+              <td className="px-3 py-2.5" />
+              <td className="px-3 py-2.5" />
+              <td className="px-3 py-2.5 text-right font-mono text-sm font-semibold tabular-nums">
+                {formatMoney(unidade.total_disponivel_inicial)}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      {!hasImportedValues && (
+        <p className="mt-3 text-xs italic text-muted-foreground/70">
+          Aguardando importação financeira para este exercício e programa.
+        </p>
+      )}
+    </div>
+  );
+}
+
 /* ─── Main component ─── */
 
 export default function EscolaEditar() {
@@ -190,18 +336,44 @@ export default function EscolaEditar() {
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
+      if (!id) {
+        setU(null);
+        setOriginal(null);
+        setLoading(false);
+        return;
+      }
+
+      const exercicioFiltro = Number.parseInt(exercicio, 10);
+      if (!Number.isFinite(exercicioFiltro)) {
+        toast.error("Exercício inválido para consulta da unidade.");
+        setU(null);
+        setOriginal(null);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
       const { data, error } = await supabase
-        .from("unidades_escolares")
+        .from("vw_unidade_detalhe")
         .select("*")
-        .eq("id", id!)
+        .eq("unidade_id", id)
+        .eq("exercicio", exercicioFiltro)
+        .eq("programa", PROGRAMA_PADRAO)
         .maybeSingle();
+
+      if (cancelled) return;
       if (error) toast.error(error.message);
-      setU(data as Unidade | null);
-      setOriginal(data as Unidade | null);
+      const unidade = normalizeUnidade(data);
+      setU(unidade);
+      setOriginal(unidade);
       setLoading(false);
     })();
-  }, [id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [id, exercicio]);
 
   // Scroll-spy: observe sections
   useEffect(() => {
@@ -229,7 +401,7 @@ export default function EscolaEditar() {
     return JSON.stringify(u) !== JSON.stringify(original);
   }, [u, original]);
 
-  const setField = <K extends keyof Unidade>(k: K, v: Unidade[K]) => {
+  const setField = <K extends EditableField>(k: K, v: Unidade[K]) => {
     setU((prev) => (prev ? { ...prev, [k]: v } : prev));
     setTouched((prev) => new Set(prev).add(k));
   };
@@ -247,31 +419,78 @@ export default function EscolaEditar() {
       return;
     }
     setSaving(true);
-    const { error } = await supabase
+    const { error: unidadeError } = await supabase
       .from("unidades_escolares")
       .update({
         designacao: u.designacao,
+        nome: nullableText(u.nome),
         inep: u.inep,
         cnpj: u.cnpj,
         diretor: u.diretor,
-        email: u.email,
         endereco: u.endereco,
         agencia: u.agencia,
         conta_corrente: u.conta_corrente,
-        alunos: Number(u.alunos),
-        saldo_anterior: Number(u.saldo_anterior),
-        recebido: Number(u.recebido),
-        gasto: Number(u.gasto),
-        reprogramado_custeio: Number(u.reprogramado_custeio),
-        reprogramado_capital: Number(u.reprogramado_capital),
-        parcela_1_custeio: Number(u.parcela_1_custeio),
-        parcela_1_capital: Number(u.parcela_1_capital),
-        parcela_2_custeio: Number(u.parcela_2_custeio),
-        parcela_2_capital: Number(u.parcela_2_capital),
       })
-      .eq("id", u.id);
+      .eq("id", u.unidade_id);
+
+    if (unidadeError) {
+      setSaving(false);
+      return toast.error(unidadeError.message);
+    }
+
+    const accountChanged = original
+      ? accountFields.some((field) => (u[field] ?? "") !== (original[field] ?? ""))
+      : false;
+
+    if (accountChanged) {
+      const { data: existingAccount, error: accountLookupError } = await supabase
+        .from("contas_bancarias")
+        .select("id")
+        .eq("unidade_id", u.unidade_id)
+        .eq("principal", true)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (accountLookupError) {
+        setSaving(false);
+        return toast.error(accountLookupError.message);
+      }
+
+      const accountPayload = {
+        banco: nullableText(u.banco),
+        agencia: nullableText(u.agencia),
+        conta_corrente: nullableText(u.conta_corrente),
+      };
+      const hasAccountData = Object.values(accountPayload).some(Boolean);
+
+      if (existingAccount) {
+        const { error: accountUpdateError } = await supabase
+          .from("contas_bancarias")
+          .update(accountPayload)
+          .eq("id", existingAccount.id);
+
+        if (accountUpdateError) {
+          setSaving(false);
+          return toast.error(accountUpdateError.message);
+        }
+      } else if (hasAccountData) {
+        const { error: accountInsertError } = await supabase
+          .from("contas_bancarias")
+          .insert({
+            unidade_id: u.unidade_id,
+            principal: true,
+            ...accountPayload,
+          });
+
+        if (accountInsertError) {
+          setSaving(false);
+          return toast.error(accountInsertError.message);
+        }
+      }
+    }
+
     setSaving(false);
-    if (error) return toast.error(error.message);
     setOriginal(u);
     toast.success("Cadastro salvo na BASE central");
   };
@@ -310,7 +529,9 @@ export default function EscolaEditar() {
     return (
       <AppLayout>
         <div className="rounded-md border border-dashed border-border/70 bg-muted/20 p-10 text-center">
-          <p className="text-sm font-medium">Unidade escolar não encontrada.</p>
+          <p className="text-sm font-medium">
+            Unidade escolar não encontrada para o exercício {exercicio} e programa {PROGRAMA_PADRAO}.
+          </p>
           <Button variant="link" onClick={() => navigate("/escolas")}>
             Voltar para o cadastro
           </Button>
@@ -321,6 +542,7 @@ export default function EscolaEditar() {
 
   const status = getStatusInfo(u, hasErrors);
   const StatusIcon = status.icon;
+  const unidadeNome = u.designacao.trim() || u.nome?.trim() || "Unidade sem designação";
 
   const statusColors: Record<string, string> = {
     success: "border-success/30 bg-success/10 text-success",
@@ -330,9 +552,9 @@ export default function EscolaEditar() {
   };
 
   // Overall progress
-  const allProg = ["id", "fin"].reduce(
+  const allProg = ["id", "bank", "fin"].reduce(
     (acc, k) => {
-      const p = sectionProgress(u, k as "id" | "fin");
+      const p = sectionProgress(u, k as "id" | "bank" | "fin");
       return { done: acc.done + p.done, total: acc.total + p.total };
     },
     { done: 0, total: 0 },
@@ -354,7 +576,7 @@ export default function EscolaEditar() {
             </Link>
             <span className="text-muted-foreground/40">/</span>
             <span className="max-w-[300px] truncate font-medium text-foreground">
-              {u.designacao}
+              {unidadeNome}
             </span>
           </nav>
 
@@ -385,7 +607,7 @@ export default function EscolaEditar() {
                 Cadastro · 4ª CRE · Exercício {exercicio}
               </p>
               <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                {u.designacao || "Unidade sem designação"}
+                {unidadeNome}
               </h1>
               {u.inep && (
                 <p className="font-mono text-xs text-muted-foreground">INEP {u.inep}</p>
@@ -498,6 +720,7 @@ export default function EscolaEditar() {
                     <Input
                       id="designacao"
                       value={u.designacao}
+                      placeholder="Não informado"
                       onChange={(e) => setField("designacao", e.target.value)}
                       onBlur={() => setTouched((p) => new Set(p).add("designacao"))}
                       className={cn(
@@ -519,7 +742,7 @@ export default function EscolaEditar() {
                       value={u.inep ?? ""}
                       inputMode="numeric"
                       maxLength={8}
-                      placeholder="00000000"
+                      placeholder="Não informado"
                       onChange={(e) => setField("inep", onlyDigits(e.target.value))}
                       onBlur={() => setTouched((p) => new Set(p).add("inep"))}
                       className={cn(
@@ -542,7 +765,7 @@ export default function EscolaEditar() {
                       value={u.cnpj ?? ""}
                       inputMode="numeric"
                       maxLength={14}
-                      placeholder="00000000000000"
+                      placeholder="Não informado"
                       onChange={(e) => setField("cnpj", onlyDigits(e.target.value))}
                       onBlur={() => setTouched((p) => new Set(p).add("cnpj"))}
                       className={cn(
@@ -563,30 +786,24 @@ export default function EscolaEditar() {
                     <Input
                       id="diretor"
                       value={u.diretor ?? ""}
+                      placeholder="Não informado"
                       onChange={(e) => setField("diretor", e.target.value)}
                       className={cn(isDirty("diretor") && "border-primary/40")}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="email" className="flex items-center gap-2">
-                      E-mail
-                      {isDirty("email") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
+                    <Label htmlFor="nome" className="flex items-center gap-2">
+                      Nome
+                      {isDirty("nome") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
                     </Label>
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder="unidade@sme.rio"
-                      value={u.email ?? ""}
-                      onChange={(e) => setField("email", e.target.value)}
-                      onBlur={() => setTouched((p) => new Set(p).add("email"))}
-                      className={cn(
-                        errOf("email") && "border-destructive focus-visible:ring-destructive",
-                        isDirty("email") && !errOf("email") && "border-primary/40",
-                      )}
-                      aria-invalid={Boolean(errOf("email"))}
+                      id="nome"
+                      value={u.nome ?? ""}
+                      placeholder="Não informado"
+                      onChange={(e) => setField("nome", e.target.value)}
+                      className={cn(isDirty("nome") && "border-primary/40")}
                     />
-                    <FieldError message={errOf("email")} />
                   </div>
                 </div>
               </CardContent>
@@ -608,7 +825,20 @@ export default function EscolaEditar() {
                   done={sectionProgress(u, "bank").done}
                   total={sectionProgress(u, "bank").total}
                 />
-                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-4">
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="banco" className="flex items-center gap-2">
+                      Banco
+                      {isDirty("banco") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
+                    </Label>
+                    <Input
+                      id="banco"
+                      value={u.banco ?? ""}
+                      placeholder="Não informado"
+                      onChange={(e) => setField("banco", e.target.value)}
+                      className={cn(isDirty("banco") && "border-primary/40")}
+                    />
+                  </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="agencia" className="flex items-center gap-2">
                       Agência
@@ -617,12 +847,12 @@ export default function EscolaEditar() {
                     <Input
                       id="agencia"
                       value={u.agencia ?? ""}
-                      placeholder="0000"
+                      placeholder="Não informado"
                       onChange={(e) => setField("agencia", e.target.value)}
                       className={cn("font-mono tabular-nums", isDirty("agencia") && "border-primary/40")}
                     />
                   </div>
-                  <div className="space-y-1.5 sm:col-span-2">
+                  <div className="space-y-1.5">
                     <Label htmlFor="conta_corrente" className="flex items-center gap-2">
                       Conta corrente
                       {isDirty("conta_corrente") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
@@ -630,12 +860,12 @@ export default function EscolaEditar() {
                     <Input
                       id="conta_corrente"
                       value={u.conta_corrente ?? ""}
-                      placeholder="000000"
+                      placeholder="Não informado"
                       onChange={(e) => setField("conta_corrente", e.target.value)}
                       className={cn("font-mono tabular-nums", isDirty("conta_corrente") && "border-primary/40")}
                     />
                   </div>
-                  <div className="space-y-1.5 sm:col-span-3">
+                  <div className="space-y-1.5 sm:col-span-4">
                     <Label htmlFor="endereco" className="flex items-center gap-2">
                       Endereço
                       {isDirty("endereco") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
@@ -643,7 +873,7 @@ export default function EscolaEditar() {
                     <Input
                       id="endereco"
                       value={u.endereco ?? ""}
-                      placeholder="Rua, número, bairro — CEP"
+                      placeholder="Não informado"
                       onChange={(e) => setField("endereco", e.target.value)}
                       className={cn(isDirty("endereco") && "border-primary/40")}
                     />
@@ -670,94 +900,41 @@ export default function EscolaEditar() {
                 />
                 <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="alunos" className="flex items-center gap-2">
-                      Nº de alunos
-                      {isDirty("alunos") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
-                    </Label>
-                    <NumberInput
-                      id="alunos"
-                      value={u.alunos}
-                      onChange={(v) => setField("alunos", v)}
-                      min={0}
-                      error={errOf("alunos")}
+                    <Label htmlFor="programa">Programa</Label>
+                    <Input
+                      id="programa"
+                      value={u.programa ?? ""}
+                      placeholder="Não informado"
+                      readOnly
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="saldo_anterior" className="flex items-center gap-2">
-                      Saldo anterior
-                      {isDirty("saldo_anterior") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
-                    </Label>
-                    <CurrencyInput
-                      id="saldo_anterior"
-                      value={u.saldo_anterior}
-                      onChange={(v) => setField("saldo_anterior", v)}
-                      error={errOf("saldo_anterior")}
+                    <Label htmlFor="total_reprogramado">Total reprogramado</Label>
+                    <ReadOnlyMoneyField
+                      id="total_reprogramado"
+                      value={u.total_reprogramado}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="recebido" className="flex items-center gap-2">
-                      Recebido
-                      {isDirty("recebido") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
-                    </Label>
-                    <CurrencyInput
-                      id="recebido"
-                      value={u.recebido}
-                      onChange={(v) => setField("recebido", v)}
-                      error={errOf("recebido")}
+                    <Label htmlFor="total_parcelas">Total parcelas</Label>
+                    <ReadOnlyMoneyField
+                      id="total_parcelas"
+                      value={u.total_parcelas}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="gasto" className="flex items-center gap-2">
-                      Gasto
-                      {isDirty("gasto") && <Circle className="h-1.5 w-1.5 fill-primary text-primary" />}
-                    </Label>
-                    <CurrencyInput
-                      id="gasto"
-                      value={u.gasto}
-                      onChange={(v) => setField("gasto", v)}
-                      error={errOf("gasto")}
+                    <Label htmlFor="total_disponivel_inicial">Total disponível inicial</Label>
+                    <ReadOnlyMoneyField
+                      id="total_disponivel_inicial"
+                      value={u.total_disponivel_inicial}
                     />
                   </div>
                 </div>
 
-                {/* Editorial preview */}
-                <div className="mt-5 rounded-lg border border-dashed border-border/50 bg-muted/5 p-5">
-                  <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Detalhamento Custeio × Capital
-                  </p>
-                  <div className="overflow-hidden rounded-md border border-border/40">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-muted/30">
-                          <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Componente
-                          </th>
-                          <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Custeio
-                          </th>
-                          <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Capital
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/30">
-                        {["Saldo Reprogramado", "1ª Parcela", "2ª Parcela"].map((row) => (
-                          <tr key={row}>
-                            <td className="px-3 py-2.5 text-sm text-muted-foreground/80">{row}</td>
-                            <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground/40">—</td>
-                            <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground/40">—</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="mt-3 text-xs italic text-muted-foreground/70">
-                    Detalhamento financeiro disponível após migração da BASE.
-                  </p>
-                </div>
+                <DetalheBreakdown unidade={u} />
               </CardContent>
             </Card>
 
@@ -786,7 +963,7 @@ export default function EscolaEditar() {
       <DocumentsPanel
         open={docsOpen}
         onOpenChange={setDocsOpen}
-        schoolName={u.designacao}
+        schoolName={unidadeNome}
         exercicio={exercicio}
       />
     </AppLayout>
