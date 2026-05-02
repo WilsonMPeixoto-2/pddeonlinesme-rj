@@ -11,6 +11,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Anti-flash: aplica tema (dark por default) antes do paint -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var resolved = stored || 'dark';
+          if (resolved === 'system') {
+            resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          if (resolved === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (_) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+
     <!-- TODO: Update og:title to match your application name -->
     
     

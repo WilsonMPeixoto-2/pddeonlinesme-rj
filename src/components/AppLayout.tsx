@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useExercicio } from "@/hooks/useExercicio";
 import BrandMark from "@/components/BrandMark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const tabs = [
   { to: "/dashboard", label: "Dashboard" },
@@ -91,6 +92,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <SelectItem value="2026">2026</SelectItem>
                 </SelectContent>
               </Select>
+
+              {/* Theme toggle */}
+              <ThemeToggle />
 
             {/* User avatar + dropdown */}
             <DropdownMenu>
