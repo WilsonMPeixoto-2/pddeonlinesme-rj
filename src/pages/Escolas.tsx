@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -25,153 +25,56 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
-  MoreVertical, FileText, Eye, Trash2, ArrowUpRight,
+  MoreVertical, FileText, Eye, Trash2, ArrowUpRight, AlertCircle,
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  useUnidadesLocalizador,
+  type UnidadeLocalizador,
+} from "@/hooks/useUnidadesLocalizador";
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
 
 /* ─── Types ─── */
 
-type Unidade = {
-  id: string;
-  designacao: string;
-  inep: string | null;
-  cnpj: string | null;
-  diretor: string | null;
-  email: string | null;
-  endereco: string | null;
-  agencia: string | null;
-  conta_corrente: string | null;
-  alunos: number;
-  saldo_anterior: number;
-  recebido: number;
-  gasto: number;
-  reprogramado_custeio: number;
-  reprogramado_capital: number;
-  parcela_1_custeio: number;
-  parcela_1_capital: number;
-  parcela_2_custeio: number;
-  parcela_2_capital: number;
-};
+// Foundation v1: /escolas opera como localizador a partir de vw_unidades_localizador.
+// O tipo vem do hook, que ja faz o narrowing de id/designacao no boundary.
+type Unidade = UnidadeLocalizador;
 
-type StatusFilter = "todas" | "pronta" | "incompleta" | "pendente";
-type Programa = "basico" | "qualidade" | "equidade";
-type ProgramaFilter = "todos" | Programa;
+type StatusFilter = "todas" | "completo" | "incompleto";
 
 /* ─── Helpers ─── */
 
-const fmt = (n: number) =>
-  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
+// Foundation v1: status reflete somente completude de identidade (INEP, CNPJ, diretor).
+// Dados financeiros vivem na pagina individual via vw_unidade_detalhe.
 function getStatus(e: Unidade) {
-  const hasFinancial =
-    Number(e.saldo_anterior) +
-      Number(e.recebido) +
-      Number(e.gasto) +
-      Number(e.parcela_1_custeio ?? 0) +
-      Number(e.parcela_1_capital ?? 0) +
-      Number(e.parcela_2_custeio ?? 0) +
-      Number(e.parcela_2_capital ?? 0) >
-    0;
-  const hasIdentity =
-    Boolean(e.designacao?.trim()) &&
-    Boolean(e.inep) &&
-    Boolean(e.cnpj) &&
-    Boolean(e.agencia) &&
-    Boolean(e.conta_corrente);
-  if (hasIdentity && hasFinancial) return "pronta" as const;
-  if (e.designacao?.trim() || hasFinancial) return "incompleta" as const;
-  return "pendente" as const;
+  const identityFields = [e.inep, e.cnpj, e.diretor];
+  const filled = identityFields.filter(
+    (f) => Boolean(f && String(f).trim()),
+  ).length;
+  if (filled === identityFields.length) return "completo" as const;
+  return "incompleto" as const;
 }
 
-/** Mock de contagem de documentos por escola (O3 + O5) */
-function getDocMeta(e: Unidade) {
-  const st = getStatus(e);
-  if (st === "pronta") {
-    const seed = e.id.charCodeAt(0) % 3;
-    const counts = [1, 2, 3];
-    const times = ["Há 2 dias", "Há 5 dias", "Há 1 semana"];
-    return { generated: counts[seed], total: 6, lastGen: times[seed] };
-  }
-  if (st === "incompleta") return { generated: 0, total: 6, lastGen: null };
-  return { generated: 0, total: 6, lastGen: null };
-}
+
 
 const statusConfig = {
-  pronta: {
-    label: "Pronta",
+  completo: {
+    label: "Cadastro completo",
     dotClass: "bg-success",
     badgeClass: "border-success/30 bg-success/10 text-success",
   },
-  incompleta: {
-    label: "Incompleta",
+  incompleto: {
+    label: "Cadastro incompleto",
     dotClass: "bg-warning",
     badgeClass: "border-warning/30 bg-warning/10 text-warning",
   },
-  pendente: {
-    label: "Pendente",
-    dotClass: "bg-destructive",
-    badgeClass: "border-destructive/30 bg-destructive/10 text-destructive",
-  },
 } as const;
 
-/**
- * Programa PDDE — placeholder visual.
- * O campo `programa` ainda não existe em `unidades_escolares`.
- * Derivamos deterministicamente do id para que o filtro funcione no protótipo.
- * Substituir por `e.programa` quando a coluna for adicionada ao schema.
- */
-function getPrograma(e: Unidade): Programa {
-  const code = e.id.charCodeAt(0) + e.id.charCodeAt(e.id.length - 1);
-  const opts: Programa[] = ["basico", "qualidade", "equidade"];
-  return opts[code % 3];
-}
 
-const programaConfig: Record<Programa, { label: string; short: string; className: string }> = {
-  basico: {
-    label: "PDDE Básico",
-    short: "Básico",
-    className: "border-primary/30 bg-primary/10 text-primary",
-  },
-  qualidade: {
-    label: "PDDE Qualidade",
-    short: "Qualidade",
-    className: "border-success/30 bg-success/10 text-success",
-  },
-  equidade: {
-    label: "PDDE Equidade",
-    short: "Equidade",
-    className: "border-warning/40 bg-warning/10 text-warning",
-  },
-};
-
-/* ─── Execution bar (saldo vs gasto) ─── */
-
-function ExecutionBar({ recebido, saldo, gasto }: { recebido: number; saldo: number; gasto: number }) {
-  const total = recebido + saldo;
-  const pct = total > 0 ? Math.min(100, (gasto / total) * 100) : 0;
-  const tone =
-    pct >= 90 ? "bg-warning" : pct >= 50 ? "bg-primary" : "bg-success";
-  return (
-    <div className="space-y-1">
-      <div className="flex items-baseline justify-between gap-2 text-[11px]">
-        <span className="font-medium tabular-nums">{fmt(gasto)}</span>
-        <span className="text-muted-foreground/70 tabular-nums">{pct.toFixed(0)}%</span>
-      </div>
-      <div className="h-1 overflow-hidden rounded-full bg-muted/40">
-        <div
-          className={cn("h-full rounded-full transition-all duration-500", tone)}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 /* ─── Secondary actions menu (smaller, less prominent) ─── */
 
@@ -226,17 +129,23 @@ function SecondaryActions({
 export default function Escolas() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
-  const [unidades, setUnidades] = useState<Unidade[]>([]);
-  const [loading, setLoading] = useState(true);
   const [confirmLote, setConfirmLote] = useState(false);
   const { exercicio } = useExercicio();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
-  const [programaFilter, setProgramaFilter] = useState<ProgramaFilter>("todos");
 
   // Documents panel state
   const [docsPanelOpen, setDocsPanelOpen] = useState(false);
   const [selectedEscola, setSelectedEscola] = useState<Unidade | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // Foundation v1: dados vem da view via React Query.
+  const { data, isLoading, error, refetch, isFetching } = useUnidadesLocalizador();
+  const unidades: Unidade[] = useMemo(() => data ?? [], [data]);
+  const loading = isLoading;
+
+  useEffect(() => {
+    if (error) toast.error(error.message ?? "Erro ao carregar unidades.");
+  }, [error]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -255,18 +164,6 @@ export default function Escolas() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      const { data, error } = await supabase
-        .from("unidades_escolares")
-        .select("*")
-        .order("designacao");
-      if (error) toast.error(error.message);
-      else setUnidades((data ?? []) as Unidade[]);
-      setLoading(false);
-    })();
-  }, []);
-
   const lista = useMemo(() => {
     let filtered = unidades;
     if (q.trim()) {
@@ -274,14 +171,12 @@ export default function Escolas() {
       const digits = q.replace(/\D/g, "");
       filtered = filtered.filter((e) => {
         if (e.designacao.toLowerCase().includes(lower)) return true;
+        if ((e.nome ?? "").toLowerCase().includes(lower)) return true;
         if ((e.diretor ?? "").toLowerCase().includes(lower)) return true;
-        if ((e.email ?? "").toLowerCase().includes(lower)) return true;
 
         if (digits.length >= 2) {
           if ((e.inep ?? "").includes(digits)) return true;
           if ((e.cnpj ?? "").replace(/\D/g, "").includes(digits)) return true;
-          if ((e.agencia ?? "").replace(/\D/g, "").includes(digits)) return true;
-          if ((e.conta_corrente ?? "").replace(/\D/g, "").includes(digits)) return true;
         }
 
         return false;
@@ -290,38 +185,28 @@ export default function Escolas() {
     if (statusFilter !== "todas") {
       filtered = filtered.filter((e) => getStatus(e) === statusFilter);
     }
-    if (programaFilter !== "todos") {
-      filtered = filtered.filter((e) => getPrograma(e) === programaFilter);
-    }
     return filtered;
-  }, [q, statusFilter, programaFilter, unidades]);
+  }, [q, statusFilter, unidades]);
 
   const isSearching =
-    q.trim().length > 0 || statusFilter !== "todas" || programaFilter !== "todos";
+    q.trim().length > 0 || statusFilter !== "todas";
 
   const clearFilters = () => {
     setQ("");
     setStatusFilter("todas");
-    setProgramaFilter("todos");
   };
 
   const statusCounts = useMemo(() => {
-    const counts = { pronta: 0, incompleta: 0, pendente: 0 };
+    const counts = { completo: 0, incompleto: 0 };
     unidades.forEach((e) => {
       counts[getStatus(e)]++;
     });
     return counts;
   }, [unidades]);
 
-  const programaCounts = useMemo(() => {
-    const counts: Record<Programa, number> = { basico: 0, qualidade: 0, equidade: 0 };
-    unidades.forEach((e) => {
-      counts[getPrograma(e)]++;
-    });
-    return counts;
-  }, [unidades]);
 
-  const COLUMNS = 7;
+
+  const COLUMNS = 5;
 
   const openDocs = (e: Unidade) => {
     setSelectedEscola(e);
@@ -371,57 +256,17 @@ export default function Escolas() {
           )}
         </div>
 
-        {/* Programa filter pills (PDDE Básico / Qualidade / Equidade) */}
-        {!loading && unidades.length > 0 && (
+        {/* Clear filters (moved from removed Programa section) */}
+        {isSearching && !loading && unidades.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Programa
-            </span>
             <button
               type="button"
-              onClick={() => setProgramaFilter("todos")}
-              aria-pressed={programaFilter === "todos"}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                programaFilter === "todos"
-                  ? "border-foreground/30 bg-foreground/5 text-foreground"
-                  : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
-              )}
+              onClick={clearFilters}
+              className="ml-auto inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
             >
-              Todos
-              <span className="font-semibold tabular-nums">{unidades.length}</span>
+              <X className="h-3 w-3" />
+              Limpar filtros
             </button>
-            {(Object.keys(programaConfig) as Programa[]).map((key) => {
-              const active = programaFilter === key;
-              const cfg = programaConfig[key];
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setProgramaFilter(active ? "todos" : key)}
-                  aria-pressed={active}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    active
-                      ? cfg.className
-                      : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
-                  )}
-                >
-                  {cfg.short}
-                  <span className="font-semibold tabular-nums">{programaCounts[key]}</span>
-                </button>
-              );
-            })}
-            {isSearching && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="ml-auto inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
-              >
-                <X className="h-3 w-3" />
-                Limpar filtros
-              </button>
-            )}
           </div>
         )}
 
@@ -432,7 +277,7 @@ export default function Escolas() {
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 ref={searchRef}
-                placeholder="Buscar por nome, INEP, CNPJ, agência, conta, diretor(a)…"
+                placeholder="Buscar por designação, nome, INEP, CNPJ ou diretor(a)…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 className="h-10 pl-9 pr-24"
@@ -466,24 +311,13 @@ export default function Escolas() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="todas">Todos status</SelectItem>
-                <SelectItem value="pronta">Prontas</SelectItem>
-                <SelectItem value="incompleta">Incompletas</SelectItem>
-                <SelectItem value="pendente">Pendentes</SelectItem>
+                <SelectItem value="todas">Todos</SelectItem>
+                <SelectItem value="completo">Cadastro completo</SelectItem>
+                <SelectItem value="incompleto">Cadastro incompleto</SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={programaFilter} onValueChange={(v) => setProgramaFilter(v as ProgramaFilter)}>
-              <SelectTrigger className="h-10 w-[170px] shrink-0">
-                <SelectValue placeholder="Programa" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos programas</SelectItem>
-                <SelectItem value="basico">PDDE Básico</SelectItem>
-                <SelectItem value="qualidade">PDDE Qualidade</SelectItem>
-                <SelectItem value="equidade">PDDE Equidade</SelectItem>
-              </SelectContent>
-            </Select>
+
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -520,12 +354,6 @@ export default function Escolas() {
                   <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Status
                   </TableHead>
-                  <TableHead className="h-11 w-[60px] text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Alunos
-                  </TableHead>
-                  <TableHead className="h-11 w-[200px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Execução financeira
-                  </TableHead>
                   <TableHead className="h-11 w-[170px] border-l border-border/40 bg-primary/5 text-center text-[11px] font-semibold uppercase tracking-wide text-primary/80">
                     <span className="inline-flex items-center gap-1.5">
                       <FileText className="h-3 w-3" />
@@ -548,6 +376,27 @@ export default function Escolas() {
                       ))}
                     </TableRow>
                   ))
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={COLUMNS} className="p-0">
+                      <EmptyState
+                        variant="inline"
+                        icon={AlertCircle}
+                        title="Erro ao carregar unidades escolares"
+                        description="Não foi possível consultar os dados do Supabase. Verifique sua sessão, conexão ou permissões."
+                        action={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => refetch()}
+                            disabled={isFetching}
+                          >
+                            {isFetching ? "Tentando..." : "Tentar novamente"}
+                          </Button>
+                        }
+                      />
+                    </TableCell>
+                  </TableRow>
                 ) : lista.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={COLUMNS} className="p-0">
@@ -582,8 +431,6 @@ export default function Escolas() {
                   lista.map((e) => {
                     const st = getStatus(e);
                     const cfg = statusConfig[st];
-                    const prog = getPrograma(e);
-                    const progCfg = programaConfig[prog];
                     return (
                       <TableRow
                         key={e.id}
@@ -608,23 +455,11 @@ export default function Escolas() {
                               <span className="font-mono tabular-nums">
                                 INEP {e.inep ?? "—"}
                               </span>
-                              <span className="text-border">·</span>
-                              <span
-                                className={cn(
-                                  "inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium",
-                                  progCfg.className,
-                                )}
-                              >
-                                {progCfg.short}
-                              </span>
-                              {(e.agencia || e.conta_corrente) && (
+                              {e.cnpj && (
                                 <>
                                   <span className="text-border">·</span>
-                                  <span
-                                    className="font-mono tabular-nums"
-                                    title="Agência / Conta corrente"
-                                  >
-                                    Ag {e.agencia ?? "—"} · CC {e.conta_corrente ?? "—"}
+                                  <span className="font-mono tabular-nums">
+                                    CNPJ {e.cnpj}
                                   </span>
                                 </>
                               )}
@@ -643,14 +478,6 @@ export default function Escolas() {
                             {cfg.label}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">{e.alunos}</TableCell>
-                        <TableCell>
-                          <ExecutionBar
-                            recebido={Number(e.recebido)}
-                            saldo={Number(e.saldo_anterior)}
-                            gasto={Number(e.gasto)}
-                          />
-                        </TableCell>
                         <TableCell className="border-l border-border/40 bg-primary/[0.025] p-2">
                           <div className="space-y-1.5">
                             <Button
@@ -662,25 +489,9 @@ export default function Escolas() {
                               <FileText className="h-3.5 w-3.5" />
                               Gerar documentos
                             </Button>
-                            {(() => {
-                              const dm = getDocMeta(e);
-                              return (
-                                <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
-                                  <span className={cn(
-                                    "font-semibold tabular-nums",
-                                    dm.generated > 0 ? "text-success" : "text-muted-foreground/60"
-                                  )}>
-                                    {dm.generated}/{dm.total}
-                                  </span>
-                                  {dm.lastGen && (
-                                    <>
-                                      <span className="text-border">·</span>
-                                      <span>{dm.lastGen}</span>
-                                    </>
-                                  )}
-                                </div>
-                              );
-                            })()}
+                            <div className="flex items-center justify-center text-[10px] text-muted-foreground">
+                              <span>Em breve</span>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
