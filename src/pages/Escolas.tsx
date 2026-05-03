@@ -351,7 +351,7 @@ export default function Escolas() {
                   <TableHead className="h-11 min-w-[180px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Diretor(a)
                   </TableHead>
-                  <TableHead className="h-11 w-[110px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-11 w-[150px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Status
                   </TableHead>
                   <TableHead className="h-11 w-[170px] border-l border-border/40 bg-primary/5 text-center text-[11px] font-semibold uppercase tracking-wide text-primary/80">
@@ -470,7 +470,7 @@ export default function Escolas() {
                         <TableCell>
                           <span
                             className={cn(
-                              "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                              "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium",
                               cfg.badgeClass,
                             )}
                           >
