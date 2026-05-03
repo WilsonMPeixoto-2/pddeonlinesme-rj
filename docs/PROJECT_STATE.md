@@ -1,55 +1,112 @@
 # Estado do Projeto — PDDE Online 2026
 
+Atualizado em: 2026-05-02
+
 ## Status Global
-Fase atual: **Validação Visual e Prototipação de Alta Fidelidade (Step -1) / Fase 5 (Parcial)**
 
-## Gate técnico antecipado — TypeScript Strict Mode
-Foi antecipado o gate de endurecimento do TypeScript previsto antes do motor documental. Os arquivos `tsconfig.json` e `tsconfig.app.json` foram atualizados com `strict: true`, `noImplicitAny: true` e `strictNullChecks: true`.
+Fase atual: **Pós-Supabase Foundation v1 concluída / retorno ao Plano Global v4**.
 
-A validação `npx tsc --noEmit` foi executada sem erros. Essa condição passa a ser requisito permanente do projeto: novas alterações não devem ser aceitas se quebrarem o modo estrito.
+A migração fundacional para o Supabase próprio foi encerrada como etapa tática. O projeto deve voltar a ser conduzido pelo Plano Global v4, com as pendências funcionais realocadas para seus marcos próprios.
 
-## Atualizações já implementadas antes do Marco 2
+## Fonte de verdade
 
-### Recomendação O6 — Seletor global de exercício
-A recomendação O6 do diagnóstico organizacional já foi implementada no frontend.
+A fonte oficial de continuidade é o GitHub (`main`), complementado pelos deployments da Vercel e pelas configurações externas documentadas.
 
-Estado atual:
-* `ExercicioProvider` envolve todo o `App.tsx`, tornando o exercício selecionado disponível globalmente.
-* O seletor 2025/2026 está no `AppLayout` como controle global persistente.
-* O próprio código identifica a entrega com o comentário `Exercício global (O6)`.
-* Telas como Base, Escolas e EscolaEditar já consomem `useExercicio()`.
+Estados locais em Antigravity, Codex, Claude Code, Lovable, PC doméstico, notebook ou clones temporários não devem ser tratados como fonte de verdade se divergirem da `main`.
 
-Impacto para o Marco 2.6: a atualização dos registros mínimos do saneamento deve tratar O6 como entregue, não como pendência.
+## Marcos recentes incorporados à main
 
-### RBAC e RLS — Esqueleto de banco já existente
-O repositório já contém uma base funcional de RBAC/RLS em migrations Supabase.
+| PR | Entrega | Resultado |
+|---:|---|---|
+| #27 | Script administrativo de importação remota da BASE para Supabase próprio | Incorporado |
+| #29 | `/escolas` com `vw_unidades_localizador` via React Query | Incorporado |
+| #30 | `/escolas/:id` com `vw_unidade_detalhe` via React Query, read-only | Incorporado |
+| #31 | Dependências essenciais e scaffold inicial de Zod para Fase 2B | Incorporado |
+| #33 | Light Mode institucional premium + ThemeToggle | Incorporado |
+| #32 | Premium UI Kit + `MaskedInput` | Incorporado |
 
-Estado atual:
-* A primeira migration cria `public.app_role`, `public.user_roles`, `public.has_role()` e habilita RLS em `unidades_escolares`.
-* `public.has_role()` está definida como `security definer` com `set search_path = public`.
-* A segunda migration restringe `INSERT` e `UPDATE` em `unidades_escolares` para usuários com papel `admin` ou `operador`.
-* `DELETE` permanece restrito a `admin`.
-* A leitura de `unidades_escolares` continua liberada para usuários autenticados.
+## Supabase Foundation v1 — encerramento
 
-Impacto para o Marco 2: o esqueleto de RBAC no banco está pronto; a pendência passa a ser integração efetiva no frontend, guards por perfil e revisão humana de segurança antes de dados reais.
+A Supabase Foundation v1 está formalmente concluída como **migração fundacional**.
 
-### Infraestrutura transversal da aplicação
-A camada de aplicação está mais avançada do que a descrição documental anterior.
+Entregas concluídas:
 
-Já existem:
-* `QueryClientProvider` com `staleTime` de 5 minutos, `retry: 1` e `refetchOnWindowFocus: false`.
-* `TooltipProvider`, `Toaster` shadcn e `Sonner`.
-* `BrowserRouter` com rotas protegidas por `ProtectedRoute`.
-* `TopLoadingBar` e `CommandPalette` globais.
-* `ErrorBoundary` envolvendo as rotas.
-* `AnimatePresence` no `AppLayout` para transições entre páginas.
-* Vercel Web Analytics via `@vercel/analytics/react`.
+- Supabase próprio operacional.
+- Dados reais da planilha BASE importados.
+- Views fundacionais criadas e validadas.
+- `/escolas` consumindo `vw_unidades_localizador`.
+- `/escolas/:id` consumindo `vw_unidade_detalhe`.
+- Validação read-only do Supabase concluída para a view de detalhe.
+- Dependência operacional do Supabase Lovable superada nas telas principais.
 
-Essas decisões estão detalhadas em `docs/UI_CHANGELOG.md`.
+O encerramento da Foundation v1 não significa conclusão do sistema final. Significa que a base real de dados e as telas principais de unidades escolares já operam sobre o Supabase próprio.
 
-### Pendente na Fase 5:
-* Bloqueio/controle de cadastro público.
-* Integração dos papéis reais no frontend.
-* Guards por perfil usando o RBAC existente.
-* Controle de acesso antes de dados reais.
-* Revisão humana de segurança.
+Documento de encerramento: `docs/SUPABASE_FOUNDATION_V1_CLOSURE.md`.
+
+## Retorno ao Plano Global v4
+
+As frentes abaixo retornam ao Plano Global v4 e não devem manter a migração Supabase aberta:
+
+| Frente | Estado | Destino lógico |
+|---|---|---|
+| Dashboard real com `vw_dashboard_basico` | Pendente | Marco 9 / painel analítico |
+| Edição cadastral/bancária | Pendente | Fase 2B / governança de dados |
+| Importador institucional via interface | Pendente | Marco 10 |
+| Motor documental | Pendente | Marco 11 |
+| Geração individual real | Pendente | Marco 12 |
+| Portal do Diretor funcional | Pendente | Marco 13 |
+| Auth/roles/guards/RLS final | Parcial | Marco 6 e Marco 13 |
+| Light Mode institucional | Concluído/antecipado | Eixo visual/design system |
+| Premium UI Kit / MaskedInput / Zod scaffold | Concluído/antecipado | Preparação Fase 2B/documentos |
+
+## Estado atual das telas principais
+
+- `/escolas`: usa dados reais via `vw_unidades_localizador`.
+- `/escolas/:id`: usa dados reais via `vw_unidade_detalhe` e permanece read-only.
+- `Dashboard`: ainda requer reconciliação funcional com `vw_dashboard_basico`; há lógica anterior que deve ser revisada no marco analítico.
+- `Base/importação`: a carga real foi feita por script administrativo; o importador institucional via interface permanece pendente.
+- `DocumentsPanel`/geração: permanece como funcionalidade futura.
+
+## Light Mode e design system
+
+O Light Mode institucional premium foi incorporado. O projeto agora possui alternância de tema com ThemeToggle, preservação do Dark Mode, persistência de preferência e script anti-flash.
+
+Essa entrega foi antecipada em relação ao fluxo funcional e deve ser tratada como evolução do eixo visual/design system, não como pendência de migração Supabase.
+
+## Premium UI Kit e preparação para Fase 2B
+
+Foram incorporados recursos preparatórios para próximas fases, incluindo `MaskedInput` e bibliotecas para máscaras, tabelas, upload e geração PDF. Também houve scaffold inicial de Zod.
+
+Esses recursos não tornam `/escolas/:id` editável ainda. A edição cadastral/bancária deve ser tratada em PR próprio da Fase 2B, com governança de dados e validações.
+
+## RBAC/RLS e segurança
+
+O repositório já contém base de RBAC/RLS em migrations Supabase, com `app_role`, `user_roles`, `has_role()` e políticas básicas.
+
+Pendências permanecem:
+
+- integração efetiva dos papéis reais no frontend;
+- guards por perfil;
+- revisão humana de segurança;
+- definição institucional de permissões por perfil;
+- controle de cadastro público;
+- revisão de RLS/policies antes de ampliação de uso.
+
+## PRs antigos
+
+- PR #22: superado pelo PR #30.
+- PR #7 / PR3B: superado pela reconstrução limpa realizada em PRs menores e deve permanecer apenas como referência histórica até fechamento formal.
+- PR #3: requer auditoria separada, pois a documentação/código já indicam presença de Vercel Analytics.
+
+## Próxima ação recomendada
+
+Antes de iniciar implementação funcional, recomenda-se encerrar a reconciliação documental e depois escolher uma frente do Plano Global v4:
+
+1. Dashboard real com `vw_dashboard_basico`;
+2. Fase 2B — edição cadastral/bancária;
+3. fechamento formal dos PRs antigos superados;
+4. importador institucional;
+5. auth/roles/guards;
+6. motor documental.
+
+Toda nova frente deve seguir `AGENTS.md`: declarar ferramenta líder, objetivo, arquivos a ler, arquivos que pode alterar, arquivos que não deve alterar, critérios de aceite e handoff.

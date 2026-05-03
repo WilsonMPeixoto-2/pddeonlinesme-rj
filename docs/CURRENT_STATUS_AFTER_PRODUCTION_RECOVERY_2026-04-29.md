@@ -1,3 +1,5 @@
+> **Documento histórico.** Este registro foi superado pelo encerramento da Supabase Foundation v1 em 2026-05-02. Para continuidade atual, consulte `docs/PROJECT_STATE.md`, `docs/SUPABASE_FOUNDATION_V1_CLOSURE.md` e `docs/GLOBAL_PLAN_V4_RECONCILIATION_AFTER_SUPABASE.md`.
+
 # PDDE Online 2026 — Estado atual após recuperação da produção
 
 Data: 2026-04-29
