@@ -1,15 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
-export interface DashboardUnidadeResumo {
+// Foundation v1: id e designacao sao NOT NULL na tabela-base (PK + UNIQUE INDEX),
+// mas o gerador de types os marca nullable porque a view nao redeclara constraints.
+// Filtramos no boundary do fetch para um tipo seguro a jusante.
+export type DashboardUnidadeResumo = Tables<"vw_unidades_localizador"> & {
   id: string;
   designacao: string;
-  nome: string | null;
-  inep: string | null;
-  cnpj: string | null;
-  diretor: string | null;
-  updated_at: string | null;
-}
+};
 
 export interface DashboardUnidadesResumo {
   total: number;
