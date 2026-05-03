@@ -30,6 +30,10 @@ const fmtBRL = (n: number) =>
 const fmtBRLDecimal = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+// Retorna "—" quando não há dado (indicadores sem linha na view).
+const fmtBRLOrDash = (n: number | null): string =>
+  n !== null ? fmtBRL(n) : "—";
+
 type Tone = "primary" | "success" | "warning" | "muted";
 const toneRing: Record<Tone, string> = {
   primary: "bg-primary/10 text-primary ring-1 ring-primary/20",
@@ -63,16 +67,21 @@ export default function Dashboard() {
   // funciona como fallback quando a view de dashboard ainda não retornou.
   const totalUnidades =
     indicadores?.total_unidades ?? resumoUnidades?.total ?? null;
-  const totalReprogramado = indicadores?.total_reprogramado ?? 0;
-  const totalParcelas = indicadores?.total_parcelas ?? 0;
-  const totalDisponivelInicial = indicadores?.total_disponivel_inicial ?? 0;
-  const reprogramadoCusteio = indicadores?.total_reprogramado_custeio ?? 0;
-  const reprogramadoCapital = indicadores?.total_reprogramado_capital ?? 0;
+
+  // Manter null quando indicadores não retornou linha (exercício sem dados em
+  // execucao_financeira), para não exibir R$0,00 enganoso no Dashboard.
+  const totalReprogramado = indicadores?.total_reprogramado ?? null;
+  const totalParcelas = indicadores?.total_parcelas ?? null;
+  const totalDisponivelInicial = indicadores?.total_disponivel_inicial ?? null;
+  const reprogramadoCusteio = indicadores?.total_reprogramado_custeio ?? null;
+  const reprogramadoCapital = indicadores?.total_reprogramado_capital ?? null;
 
   const cadastroIncompletoCount = resumoUnidades?.cadastroIncompletoCount ?? 0;
   const recentes = resumoUnidades?.recentes ?? [];
 
-  const parcelasZeradas = !loading && totalParcelas === 0;
+  // parcelasZeradas só faz sentido quando os indicadores foram carregados e a
+  // view retornou uma linha (indicadores != null); zero significa valor real = 0.
+  const parcelasZeradas = !loading && indicadores != null && totalParcelas === 0;
 
   const stats: {
     label: string;
@@ -174,12 +183,16 @@ export default function Dashboard() {
                 <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
                   {loading ? (
                     <Skeleton className="h-16 w-[80%]" />
-                  ) : (
+                  ) : totalDisponivelInicial !== null ? (
                     <NumberTicker
                       value={totalDisponivelInicial}
                       format={fmtBRLDecimal}
                       className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
                     />
+                  ) : (
+                    <span className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                      —
+                    </span>
                   )}
                 </h1>
                 <p className="mt-3 text-sm font-light tracking-wide text-muted-foreground sm:text-base">
@@ -211,11 +224,11 @@ export default function Dashboard() {
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">Reprogramado</span>
                     <span className="text-[11px] text-muted-foreground">
-                      Custeio {fmtBRL(reprogramadoCusteio)} · Capital {fmtBRL(reprogramadoCapital)}
+                      Custeio {fmtBRLOrDash(reprogramadoCusteio)} · Capital {fmtBRLOrDash(reprogramadoCapital)}
                     </span>
                   </div>
                   <span className="font-mono text-sm tabular-nums text-foreground">
-                    {loading ? "—" : fmtBRL(totalReprogramado)}
+                    {loading ? "—" : fmtBRLOrDash(totalReprogramado)}
                   </span>
                 </div>
 
@@ -229,14 +242,14 @@ export default function Dashboard() {
                     )}
                   </div>
                   <span className="font-mono text-sm tabular-nums text-foreground">
-                    {loading ? "—" : fmtBRL(totalParcelas)}
+                    {loading ? "—" : fmtBRLOrDash(totalParcelas)}
                   </span>
                 </div>
 
                 <div className="border-t border-border/40 pt-3 flex items-baseline justify-between gap-4">
                   <span className="text-sm font-semibold">Disponível inicial</span>
                   <span className="font-mono text-base font-semibold tabular-nums text-primary">
-                    {loading ? "—" : fmtBRL(totalDisponivelInicial)}
+                    {loading ? "—" : fmtBRLOrDash(totalDisponivelInicial)}
                   </span>
                 </div>
               </div>
