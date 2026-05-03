@@ -138,8 +138,8 @@ export default function Dashboard() {
             <p className="max-w-md text-sm text-muted-foreground">
               Não foi possível consultar os dados do Supabase. Verifique sua sessão, conexão ou permissões.
             </p>
-            <Button onClick={() => refetchBasico()} disabled={fetchingBasico}>
-              {fetchingBasico ? "Tentando..." : "Tentar novamente"}
+            <Button onClick={() => window.location.reload()}>
+              Tentar novamente
             </Button>
           </CardContent>
         </Card>
