@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,19 +7,22 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   ArrowUpRight,
-  FileSpreadsheet,
-  School,
+  AlertCircle,
   AlertTriangle,
   CheckCircle2,
+  Coins,
   Inbox,
-  TrendingUp,
+  Receipt,
+  School,
+  Wallet,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { NumberTicker } from "@/components/NumberTicker";
-import { MiniSparkline } from "@/components/MiniSparkline";
 import { TiltCard } from "@/components/TiltCard";
+import { useDashboardBasico } from "@/hooks/useDashboardBasico";
+import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
+import { useExercicio } from "@/hooks/useExercicio";
 
-type Recente = { id: string; designacao: string; updated_at: string };
+const PROGRAMA_PADRAO = "basico";
 
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -28,11 +30,9 @@ const fmtBRL = (n: number) =>
 const fmtBRLDecimal = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-// Mock sparkline series — replace with real per-month aggregates later
-const SPARK_RECEBIDO = [12, 18, 22, 19, 27, 35, 41, 38, 46, 52, 58, 63];
-const SPARK_GASTO = [4, 9, 14, 11, 19, 22, 31, 29, 38, 41, 47, 51];
-const SPARK_UNIDADES = [40, 41, 42, 42, 43, 44, 44, 45, 46, 46, 47, 47];
-const SPARK_DOCS = [0, 2, 4, 6, 8, 12, 16, 22, 28, 35, 41, 48];
+// Retorna "—" quando não há dado (indicadores sem linha na view).
+const fmtBRLOrDash = (n: number | null): string =>
+  n !== null ? fmtBRL(n) : "—";
 
 type Tone = "primary" | "success" | "warning" | "muted";
 const toneRing: Record<Tone, string> = {
@@ -44,33 +44,42 @@ const toneRing: Record<Tone, string> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [total, setTotal] = useState<number | null>(null);
-  const [totalRecebido, setTotalRecebido] = useState(0);
-  const [totalGasto, setTotalGasto] = useState(0);
-  const [recentes, setRecentes] = useState<Recente[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { exercicio } = useExercicio();
 
-  useEffect(() => {
-    (async () => {
-      const { data, count } = await supabase
-        .from("unidades_escolares")
-        .select("id, designacao, updated_at, recebido, gasto, saldo_anterior", {
-          count: "exact",
-        })
-        .order("updated_at", { ascending: false });
+  const {
+    data: indicadores,
+    isLoading: loadingBasico,
+    error: errorBasico,
+  } = useDashboardBasico({ exercicio, programa: PROGRAMA_PADRAO });
 
-      const lista = data ?? [];
-      setTotal(count ?? lista.length);
-      setTotalRecebido(
-        lista.reduce((s, r) => s + Number(r.recebido ?? 0) + Number(r.saldo_anterior ?? 0), 0),
-      );
-      setTotalGasto(lista.reduce((s, r) => s + Number(r.gasto ?? 0), 0));
-      setRecentes(lista.slice(0, 5).map((r) => ({ id: r.id, designacao: r.designacao, updated_at: r.updated_at })));
-      setLoading(false);
-    })();
-  }, []);
+  const {
+    data: resumoUnidades,
+    isLoading: loadingResumo,
+    error: errorResumo,
+  } = useDashboardUnidadesResumo();
 
-  const executionRate = totalRecebido > 0 ? Math.min(100, (totalGasto / totalRecebido) * 100) : 0;
+  const loading = loadingBasico || loadingResumo;
+  const queryError = errorBasico ?? errorResumo;
+
+  // Marco 9B: total_unidades vem da view de indicadores; resumoUnidades.total
+  // funciona como fallback quando a view de dashboard ainda não retornou.
+  const totalUnidades =
+    indicadores?.total_unidades ?? resumoUnidades?.total ?? null;
+
+  // Manter null quando indicadores não retornou linha (exercício sem dados em
+  // execucao_financeira), para não exibir R$0,00 enganoso no Dashboard.
+  const totalReprogramado = indicadores?.total_reprogramado ?? null;
+  const totalParcelas = indicadores?.total_parcelas ?? null;
+  const totalDisponivelInicial = indicadores?.total_disponivel_inicial ?? null;
+  const reprogramadoCusteio = indicadores?.total_reprogramado_custeio ?? null;
+  const reprogramadoCapital = indicadores?.total_reprogramado_capital ?? null;
+
+  const cadastroIncompletoCount = resumoUnidades?.cadastroIncompletoCount ?? 0;
+  const recentes = resumoUnidades?.recentes ?? [];
+
+  // parcelasZeradas só faz sentido quando os indicadores foram carregados e a
+  // view retornou uma linha (indicadores != null); zero significa valor real = 0.
+  const parcelasZeradas = !loading && indicadores != null && totalParcelas === 0;
 
   const stats: {
     label: string;
@@ -78,42 +87,40 @@ export default function Dashboard() {
     icon: typeof School;
     hint: string;
     tone: Tone;
-    spark: number[];
     format?: (n: number) => string;
   }[] = [
     {
       label: "Unidades escolares",
-      value: total,
+      value: totalUnidades,
       icon: School,
       hint: "Cadastradas na 4ª CRE",
       tone: "primary",
-      spark: SPARK_UNIDADES,
     },
     {
-      label: "Recebido + saldo",
-      value: totalRecebido,
-      icon: TrendingUp,
-      hint: "Recursos disponíveis no exercício",
+      label: "Total reprogramado",
+      value: totalReprogramado,
+      icon: Coins,
+      hint: "Custeio + capital reprogramados",
+      tone: "primary",
+      format: fmtBRL,
+    },
+    {
+      label: "Parcelas lançadas",
+      value: totalParcelas,
+      icon: Receipt,
+      hint: parcelasZeradas
+        ? "Nenhum valor lançado na BASE atual"
+        : "1ª e 2ª parcelas do exercício",
+      tone: parcelasZeradas ? "muted" : "primary",
+      format: fmtBRL,
+    },
+    {
+      label: "Disponível inicial",
+      value: totalDisponivelInicial,
+      icon: Wallet,
+      hint: "Reprogramado + parcelas",
       tone: "success",
-      spark: SPARK_RECEBIDO,
       format: fmtBRL,
-    },
-    {
-      label: "Total executado",
-      value: totalGasto,
-      icon: CheckCircle2,
-      hint: `${executionRate.toFixed(1)}% do disponível`,
-      tone: "warning",
-      spark: SPARK_GASTO,
-      format: fmtBRL,
-    },
-    {
-      label: "Demonstrativos gerados",
-      value: 0,
-      icon: FileSpreadsheet,
-      hint: "Disponível em breve",
-      tone: "muted",
-      spark: SPARK_DOCS,
     },
   ];
 
@@ -125,6 +132,27 @@ export default function Dashboard() {
     hidden: { opacity: 0, y: 14 },
     show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } },
   };
+
+  if (queryError && !loading) {
+    return (
+      <AppLayout>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <h2 className="text-lg font-semibold">Erro ao carregar indicadores do Dashboard</h2>
+            <p className="max-w-md text-sm text-muted-foreground">
+              Não foi possível consultar os dados do Supabase. Verifique sua sessão, conexão ou permissões.
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Tentar novamente
+            </Button>
+          </CardContent>
+        </Card>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -145,7 +173,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2">
                 <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
                 <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-                  Painel operacional · Exercício 2026
+                  Painel operacional · Exercício {exercicio} · PDDE Básico
                 </p>
               </div>
 
@@ -153,17 +181,21 @@ export default function Dashboard() {
                 <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
                   {loading ? (
                     <Skeleton className="h-16 w-[80%]" />
-                  ) : (
+                  ) : totalDisponivelInicial !== null ? (
                     <NumberTicker
-                      value={totalRecebido}
+                      value={totalDisponivelInicial}
                       format={fmtBRLDecimal}
                       className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
                     />
+                  ) : (
+                    <span className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                      —
+                    </span>
                   )}
                 </h1>
                 <p className="mt-3 text-sm font-light tracking-wide text-muted-foreground sm:text-base">
-                  Recursos disponíveis nas{" "}
-                  <span className="font-medium text-foreground">{total ?? "—"}</span>{" "}
+                  Disponibilidade inicial identificada na BASE para{" "}
+                  <span className="font-medium text-foreground">{totalUnidades ?? "—"}</span>{" "}
                   unidades escolares da 4ª Coordenadoria Regional de Educação.
                 </p>
               </div>
@@ -179,29 +211,45 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Execution gauge */}
-            <div className="space-y-3 rounded-xl border border-border/50 bg-background/40 p-5">
-              <div className="flex items-baseline justify-between">
-                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                  Execução financeira
-                </p>
-                <p className="text-2xl font-semibold tabular-nums">
-                  {loading ? "—" : `${executionRate.toFixed(1)}%`}
-                </p>
-              </div>
-              <div className="relative h-2 overflow-hidden rounded-full bg-muted/60">
-                <motion.div
-                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-primary/70 shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${executionRate}%` }}
-                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-                >
-                  <span className="sheen-overlay" aria-hidden />
-                </motion.div>
-              </div>
-              <div className="flex justify-between text-[11px] text-muted-foreground">
-                <span>Executado: {fmtBRL(totalGasto)}</span>
-                <span>Disponível: {fmtBRL(totalRecebido)}</span>
+            {/* Composição financeira — substitui gauge de execução */}
+            <div className="space-y-4 rounded-xl border border-border/50 bg-background/40 p-5">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                Composição da disponibilidade
+              </p>
+
+              <div className="space-y-3">
+                <div className="flex items-baseline justify-between gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">Reprogramado</span>
+                    <span className="text-[11px] text-muted-foreground">
+                      Custeio {fmtBRLOrDash(reprogramadoCusteio)} · Capital {fmtBRLOrDash(reprogramadoCapital)}
+                    </span>
+                  </div>
+                  <span className="font-mono text-sm tabular-nums text-foreground">
+                    {loading ? "—" : fmtBRLOrDash(totalReprogramado)}
+                  </span>
+                </div>
+
+                <div className="flex items-baseline justify-between gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">Parcelas lançadas</span>
+                    {parcelasZeradas && (
+                      <span className="text-[11px] text-muted-foreground">
+                        Sem valores na BASE atual
+                      </span>
+                    )}
+                  </div>
+                  <span className="font-mono text-sm tabular-nums text-foreground">
+                    {loading ? "—" : fmtBRLOrDash(totalParcelas)}
+                  </span>
+                </div>
+
+                <div className="border-t border-border/40 pt-3 flex items-baseline justify-between gap-4">
+                  <span className="text-sm font-semibold">Disponível inicial</span>
+                  <span className="font-mono text-base font-semibold tabular-nums text-primary">
+                    {loading ? "—" : fmtBRLOrDash(totalDisponivelInicial)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -234,8 +282,12 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      {!isReady || loading ? (
+                      {loading ? (
                         <Skeleton className="h-9 w-24" />
+                      ) : !isReady ? (
+                        <p className="text-3xl font-semibold tracking-tight tabular-nums sm:text-[2rem]">
+                          —
+                        </p>
                       ) : (
                         <p className="text-3xl font-semibold tracking-tight tabular-nums sm:text-[2rem]">
                           <NumberTicker
@@ -245,14 +297,6 @@ export default function Dashboard() {
                         </p>
                       )}
                       <p className="mt-1 text-[11px] text-muted-foreground">{s.hint}</p>
-                    </div>
-
-                    <div className="-mx-1 mt-auto">
-                      <MiniSparkline
-                        data={s.spark}
-                        tone={s.tone === "muted" ? "primary" : s.tone}
-                        height={32}
-                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -316,12 +360,14 @@ export default function Dashboard() {
                         <span className="truncate text-sm font-medium">{r.designacao}</span>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
-                        <span className="hidden text-[11px] tabular-nums text-muted-foreground/70 xl:inline">
-                          {new Date(r.updated_at).toLocaleDateString("pt-BR", {
-                            day: "2-digit",
-                            month: "short",
-                          })}
-                        </span>
+                        {r.updated_at && (
+                          <span className="hidden text-[11px] tabular-nums text-muted-foreground/70 xl:inline">
+                            {new Date(r.updated_at).toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "short",
+                            })}
+                          </span>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -347,24 +393,43 @@ export default function Dashboard() {
               </div>
 
               <ul className="space-y-2">
-                <li className="flex items-start gap-3 rounded-lg border border-warning/20 bg-warning/5 p-3">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Cadastros incompletos</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      Unidades sem CNPJ, INEP ou diretor(a).
-                    </p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3">
-                  <FileSpreadsheet className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Próxima geração em lote</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      Disponível após validação completa da BASE.
-                    </p>
-                  </div>
-                </li>
+                {/* Cadastros incompletos — dado real de vw_unidades_localizador */}
+                {cadastroIncompletoCount > 0 ? (
+                  <li className="flex items-start gap-3 rounded-lg border border-warning/20 bg-warning/5 p-3">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">
+                        {cadastroIncompletoCount} cadastro{cadastroIncompletoCount === 1 ? "" : "s"} incompleto{cadastroIncompletoCount === 1 ? "" : "s"}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Unidades sem CNPJ, INEP ou diretor(a).
+                      </p>
+                    </div>
+                  </li>
+                ) : !loading ? (
+                  <li className="flex items-start gap-3 rounded-lg border border-success/20 bg-success/5 p-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">Cadastros completos</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Todas as unidades têm CNPJ, INEP e diretor(a) preenchidos.
+                      </p>
+                    </div>
+                  </li>
+                ) : null}
+
+                {/* Parcelas zeradas — informativo, não erro */}
+                {parcelasZeradas && (
+                  <li className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3">
+                    <Receipt className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">Parcelas zeradas</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        As colunas de parcelas existem na BASE, mas não há valores lançados no arquivo atual.
+                      </p>
+                    </div>
+                  </li>
+                )}
               </ul>
             </CardContent>
           </Card>
