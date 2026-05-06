@@ -178,8 +178,8 @@ export default function Dashboard() {
           <div className="relative grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-end">
             <div className="space-y-5">
               <div className="flex items-center gap-2">
-                <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
-                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+                <span className="ds-dot-success animate-pulse pulse-dot-success" />
+                <p className="ds-eyebrow">
                   Painel operacional · Exercício {exercicio} · PDDE Básico
                 </p>
               </div>
@@ -219,8 +219,8 @@ export default function Dashboard() {
             </div>
 
             {/* Composição financeira com Recharts */}
-            <div className="space-y-4 rounded-xl border border-border/50 bg-background/40 p-5 backdrop-blur-md shadow-xl">
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="ds-card-elevated space-y-4 p-5 backdrop-blur-md">
+              <p className="ds-eyebrow">
                 Composição da disponibilidade
               </p>
 
@@ -326,10 +326,10 @@ export default function Dashboard() {
             return (
               <motion.div key={s.label} variants={item}>
                 <TiltCard className="h-full">
-                  <Card className="group relative h-full overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_24px_hsl(var(--primary)/0.08)]">
+                  <Card className="ds-card-interactive ds-lift group relative h-full overflow-hidden">
                   <CardContent className="flex h-full flex-col gap-4 p-5">
                     <div className="flex items-start justify-between gap-3">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="ds-label">
                         {s.label}
                       </p>
                       <div
@@ -343,11 +343,11 @@ export default function Dashboard() {
                       {loading ? (
                         <Skeleton className="h-9 w-24" />
                       ) : !isReady ? (
-                        <p className="text-3xl font-semibold tracking-tight tabular-nums sm:text-[2rem]">
+                        <p className="ds-h1 ds-num">
                           —
                         </p>
                       ) : (
-                        <p className="text-3xl font-semibold tracking-tight tabular-nums sm:text-[2rem]">
+                        <p className="ds-h1 ds-num text-foreground">
                           <NumberTicker
                             value={s.value as number}
                             format={s.format ?? ((n) => Math.round(n).toLocaleString("pt-BR"))}
@@ -366,12 +366,12 @@ export default function Dashboard() {
 
         {/* RECENT ACTIVITY + ALERTS */}
         <div className="grid gap-4 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
+          <Card className="ds-card lg:col-span-2">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <h2 className="text-base font-semibold">Atualizadas recentemente</h2>
-                  <p className="text-[11px] text-muted-foreground">
+                  <h2 className="ds-h3">Atualizadas recentemente</h2>
+                  <p className="text-xs text-muted-foreground">
                     Últimas modificações no cadastro das unidades.
                   </p>
                 </div>
@@ -443,11 +443,11 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="ds-card">
             <CardContent className="space-y-4 p-5">
               <div>
-                <h2 className="text-base font-semibold">Atenção operacional</h2>
-                <p className="text-[11px] text-muted-foreground">Indicadores que exigem revisão.</p>
+                <h2 className="ds-h3">Atenção operacional</h2>
+                <p className="text-xs text-muted-foreground">Indicadores que exigem revisão.</p>
               </div>
 
               <ul className="space-y-2">
