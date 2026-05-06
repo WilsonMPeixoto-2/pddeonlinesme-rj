@@ -38,7 +38,9 @@ import {
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-
+import * as XLSX from "xlsx";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 /* ─── Types ─── */
 
 // Foundation v1: /escolas opera como localizador a partir de vw_unidades_localizador.
@@ -214,6 +216,66 @@ export default function Escolas() {
     setDocsPanelOpen(true);
   };
 
+  const handleExportSelection = () => {
+    try {
+      const exportData = lista.map(u => ({
+        "INEP": u.inep,
+        "CNPJ": u.cnpj,
+        "Designação": u.designacao,
+        "Nome": u.nome,
+        "Diretor(a)": u.diretor,
+        "Status": getStatus(u) === "completo" ? "Completo" : "Incompleto"
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Unidades");
+      
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+      const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      saveAs(data, `PDDE_Selecao_4CRE_${exercicio}.xlsx`);
+      toast.success("Seleção exportada com sucesso!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao exportar a seleção.");
+    }
+  };
+
+  const handleGenerateZip = async () => {
+    try {
+      setConfirmLote(false);
+      const zip = new JSZip();
+      
+      const resumos = zip.folder(`Resumos_Cadastrais_Preliminares_${exercicio}`);
+      if (!resumos) return;
+
+      lista.forEach(u => {
+        const textContent = [
+          "RESUMO CADASTRAL PRELIMINAR",
+          "",
+          "Artefato técnico preliminar, sem valor de documento oficial.",
+          "Não substitui prestação de contas, demonstrativo oficial, assinatura, validação humana ou conferência documental.",
+          "",
+          `Unidade: ${u.designacao}`,
+          `Nome: ${u.nome || "Não informado"}`,
+          `INEP: ${u.inep || "N/A"}`,
+          `CNPJ: ${u.cnpj || "N/A"}`,
+          `Diretor(a): ${u.diretor || "N/A"}`,
+          `Exercício: ${exercicio}`,
+          "",
+        ].join("\n");
+        resumos.file(`Resumo_Cadastral_${u.inep || u.id}.txt`, textContent);
+      });
+
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `Resumos_Cadastrais_Preliminares_4CRE_${exercicio}.zip`);
+      toast.success("Resumos cadastrais preliminares gerados com sucesso!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao gerar os resumos preliminares.");
+    }
+  };
+
   return (
     <AppLayout>
       <div className="space-y-5">
@@ -326,9 +388,9 @@ export default function Escolas() {
               variant="outline"
               size="sm"
               className="h-10"
-              onClick={() => toast.info("Em breve: exportar BASE em .xlsx")}
+              onClick={handleExportSelection}
             >
-              <Download className="mr-2 h-4 w-4" /> Exportar BASE
+              <Download className="mr-2 h-4 w-4" /> Exportar seleção
             </Button>
             <Button
               size="sm"
@@ -336,7 +398,7 @@ export default function Escolas() {
               onClick={() => setConfirmLote(true)}
               disabled={unidades.length === 0}
             >
-              <FileSpreadsheet className="mr-2 h-4 w-4" /> Gerar lote (.zip)
+              <FileSpreadsheet className="mr-2 h-4 w-4" /> Gerar resumos (.zip)
             </Button>
           </div>
         </div>
@@ -536,19 +598,16 @@ export default function Escolas() {
         open={confirmLote}
         onOpenChange={setConfirmLote}
         tone="primary"
-        title="Gerar documentos em lote"
+        title="Gerar resumos cadastrais preliminares"
         description={
           <>
-            Será gerado um arquivo <strong>.zip</strong> contendo os documentos da prestação de contas
-            de cada unidade escolar. O processo pode levar alguns minutos.
+            Será gerado um arquivo <strong>.zip</strong> com resumos cadastrais preliminares
+            das unidades filtradas. Estes arquivos são artefatos técnicos preliminares e não têm valor de documento oficial.
           </>
         }
-        highlight={`${unidades.length} unidades serão processadas`}
-        confirmLabel="Gerar lote"
-        onConfirm={() => {
-          setConfirmLote(false);
-          toast.info("Em breve: geração de lote (.zip)");
-        }}
+        highlight={`${lista.length} unidades filtradas serão processadas`}
+        confirmLabel="Gerar resumos"
+        onConfirm={handleGenerateZip}
       />
 
       <DocumentsPanel

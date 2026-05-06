@@ -21,6 +21,7 @@ import { TiltCard } from "@/components/TiltCard";
 import { useDashboardBasico } from "@/hooks/useDashboardBasico";
 import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
 import { useExercicio } from "@/hooks/useExercicio";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
 
 const PROGRAMA_PADRAO = "basico";
 
@@ -80,6 +81,12 @@ export default function Dashboard() {
   // parcelasZeradas só faz sentido quando os indicadores foram carregados e a
   // view retornou uma linha (indicadores != null); zero significa valor real = 0.
   const parcelasZeradas = !loading && indicadores != null && totalParcelas === 0;
+
+  const chartData = [
+    { name: "Reprogramado Custeio", value: reprogramadoCusteio || 0, color: "hsl(var(--primary))" },
+    { name: "Reprogramado Capital", value: reprogramadoCapital || 0, color: "hsl(var(--primary) / 0.5)" },
+    { name: "Parcelas", value: totalParcelas || 0, color: "hsl(var(--success))" },
+  ].filter((d) => d.value > 0);
 
   const stats: {
     label: string;
@@ -211,44 +218,95 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Composição financeira — substitui gauge de execução */}
-            <div className="space-y-4 rounded-xl border border-border/50 bg-background/40 p-5">
+            {/* Composição financeira com Recharts */}
+            <div className="space-y-4 rounded-xl border border-border/50 bg-background/40 p-5 backdrop-blur-md shadow-xl">
               <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 Composição da disponibilidade
               </p>
 
-              <div className="space-y-3">
-                <div className="flex items-baseline justify-between gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">Reprogramado</span>
-                    <span className="text-[11px] text-muted-foreground">
-                      Custeio {fmtBRLOrDash(reprogramadoCusteio)} · Capital {fmtBRLOrDash(reprogramadoCapital)}
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                {/* Chart Area */}
+                <div className="h-[120px] w-[120px] shrink-0 relative">
+                  {!loading && chartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={chartData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={42}
+                          outerRadius={55}
+                          paddingAngle={3}
+                          dataKey="value"
+                          stroke="none"
+                        >
+                          {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip
+                          formatter={(value: number) => fmtBRL(value)}
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            borderColor: "hsl(var(--border))",
+                            borderRadius: "8px",
+                            fontSize: "12px"
+                          }}
+                          itemStyle={{ color: "hsl(var(--foreground))" }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-24 w-24 rounded-full border-4 border-muted/30" />
+                    </div>
+                  )}
+                  {/* Central Label */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[10px] uppercase text-muted-foreground font-medium tracking-widest">Total</span>
+                  </div>
+                </div>
+
+                {/* Legend & Details Area */}
+                <div className="flex-1 space-y-3 w-full">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="text-sm font-medium">Reprogramado</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground ml-4">
+                        Custeio {fmtBRLOrDash(reprogramadoCusteio)} · Capital {fmtBRLOrDash(reprogramadoCapital)}
+                      </span>
+                    </div>
+                    <span className="font-mono text-sm tabular-nums text-foreground">
+                      {loading ? "—" : fmtBRLOrDash(totalReprogramado)}
                     </span>
                   </div>
-                  <span className="font-mono text-sm tabular-nums text-foreground">
-                    {loading ? "—" : fmtBRLOrDash(totalReprogramado)}
-                  </span>
-                </div>
 
-                <div className="flex items-baseline justify-between gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">Parcelas lançadas</span>
-                    {parcelasZeradas && (
-                      <span className="text-[11px] text-muted-foreground">
-                        Sem valores na BASE atual
-                      </span>
-                    )}
+                  <div className="flex items-baseline justify-between gap-4">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-success" />
+                        <span className="text-sm font-medium">Parcelas lançadas</span>
+                      </div>
+                      {parcelasZeradas && (
+                        <span className="text-[10px] text-muted-foreground ml-4">
+                          Sem valores na BASE atual
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-mono text-sm tabular-nums text-foreground">
+                      {loading ? "—" : fmtBRLOrDash(totalParcelas)}
+                    </span>
                   </div>
-                  <span className="font-mono text-sm tabular-nums text-foreground">
-                    {loading ? "—" : fmtBRLOrDash(totalParcelas)}
-                  </span>
-                </div>
 
-                <div className="border-t border-border/40 pt-3 flex items-baseline justify-between gap-4">
-                  <span className="text-sm font-semibold">Disponível inicial</span>
-                  <span className="font-mono text-base font-semibold tabular-nums text-primary">
-                    {loading ? "—" : fmtBRLOrDash(totalDisponivelInicial)}
-                  </span>
+                  <div className="border-t border-border/40 pt-2 flex items-baseline justify-between gap-4">
+                    <span className="text-sm font-semibold ml-4">Disponível inicial</span>
+                    <span className="font-mono text-base font-semibold tabular-nums text-primary">
+                      {loading ? "—" : fmtBRLOrDash(totalDisponivelInicial)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
