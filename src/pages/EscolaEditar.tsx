@@ -23,6 +23,8 @@ import { motion } from "framer-motion";
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { cn } from "@/lib/utils";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+
 
 /* ─── Helpers ─── */
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -257,9 +259,221 @@ export default function EscolaEditar() {
         </motion.div>
 
         {/* TWO-COLUMN LAYOUT */}
-        <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
-          {/* SIDEBAR — section nav */}
-          <aside className="lg:sticky lg:top-32 lg:self-start">
+        <div className="hidden lg:block">
+          <ResizablePanelGroup direction="horizontal" className="min-h-[80vh] items-stretch gap-2">
+            {/* SIDEBAR — section nav */}
+            <ResizablePanel defaultSize={22} minSize={18} maxSize={35} className="pr-4">
+              <aside className="sticky top-32 self-start">
+                <nav className="space-y-1 rounded-xl border border-border/60 bg-card/50 p-2 backdrop-blur-sm">
+                  <p className="px-3 pb-2 pt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    Seções
+                  </p>
+                  {SECTIONS.map((s) => {
+                    const Icon = s.icon;
+                    const isActive = activeSection === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => scrollTo(s.id)}
+                        className={cn(
+                          "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all",
+                          isActive
+                            ? "bg-primary/10 text-foreground shadow-[inset_2px_0_0_hsl(var(--primary))]"
+                            : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "h-4 w-4 shrink-0 transition-colors",
+                            isActive ? "text-primary" : "text-muted-foreground/70",
+                          )}
+                        />
+                        <span className="flex-1 truncate font-medium">{s.label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </aside>
+            </ResizablePanel>
+
+            <ResizableHandle withHandle />
+
+            {/* MAIN FORM */}
+            <ResizablePanel defaultSize={78} minSize={50} className="pl-4 pb-20">
+              <div className="space-y-5">
+                {/* SECTION 1: Identificação */}
+                <Card
+                  id="identificacao"
+                  ref={(el) => {
+                    sectionRefs.current["identificacao"] = el;
+                  }}
+                  className="scroll-mt-32"
+                >
+                  <CardContent className="p-6">
+                    <SectionHeader
+                      icon={User}
+                      title="Identificação"
+                      subtitle="Dados institucionais da unidade"
+                    />
+                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label>Designação</Label>
+                        <Input readOnly value={formatText(u.designacao)} className={readOnlyInputClass} />
+                      </div>
+                      
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label>Nome Completo</Label>
+                        <Input readOnly value={formatText(u.nome)} className={readOnlyInputClass} />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label>INEP</Label>
+                        <Input readOnly value={formatText(u.inep)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label>CNPJ</Label>
+                        <Input readOnly value={formatText(u.cnpj)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
+                      </div>
+
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label>Diretor(a)</Label>
+                        <Input readOnly value={formatText(u.diretor)} className={readOnlyInputClass} />
+                      </div>
+
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label>Endereço</Label>
+                        <Input readOnly value={formatText(u.endereco)} className={readOnlyInputClass} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* SECTION 2: Bancários */}
+                <Card
+                  id="bancarios"
+                  ref={(el) => {
+                    sectionRefs.current["bancarios"] = el;
+                  }}
+                  className="scroll-mt-32"
+                >
+                  <CardContent className="p-6">
+                    <SectionHeader
+                      icon={Landmark}
+                      title="Dados Bancários"
+                      subtitle="Conta vinculada da unidade"
+                    />
+                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
+                      <div className="space-y-1.5 sm:col-span-3">
+                        <Label>Banco</Label>
+                        <Input readOnly value={formatText(u.banco, BANCO_PADRAO_PDDE)} className={readOnlyInputClass} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Agência</Label>
+                        <Input readOnly value={formatText(u.agencia)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
+                      </div>
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label>Conta corrente</Label>
+                        <Input readOnly value={formatText(u.conta_corrente)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* SECTION 3: Financeiros */}
+                <Card
+                  id="financeiros"
+                  ref={(el) => {
+                    sectionRefs.current["financeiros"] = el;
+                  }}
+                  className="scroll-mt-32"
+                >
+                  <CardContent className="p-6">
+                    <SectionHeader
+                      icon={Coins}
+                      title="Execução Financeira Importada"
+                      subtitle={`Valores referentes a ${exercicio} - Programa ${PROGRAMA_PADRAO.toUpperCase()}`}
+                    />
+                    
+                    <div className="mb-6 rounded-lg border border-border/40 bg-muted/10 p-5">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total Reprogramado</p>
+                          <p className="text-lg font-mono font-medium text-foreground">{formatMoney(u.total_reprogramado)}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total Parcelas</p>
+                          <p className="text-lg font-mono font-medium text-foreground">{formatMoney(u.total_parcelas)}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground text-primary">Disponível Inicial</p>
+                          <p className="text-lg font-mono font-semibold text-primary">{formatMoney(u.total_disponivel_inicial)}</p>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-xs italic text-muted-foreground/70">
+                        Valores exibidos conforme BASE importada para o exercício e programa selecionados.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Detalhamento Custeio × Capital
+                      </p>
+                      <div className="overflow-hidden rounded-md border border-border/40">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="bg-muted/30">
+                              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Componente</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Custeio</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Capital</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/30">
+                            <tr>
+                              <td className="px-3 py-2.5 text-sm font-medium text-foreground">Saldo Reprogramado</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.reprogramado_custeio)}</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.reprogramado_capital)}</td>
+                            </tr>
+                            <tr>
+                              <td className="px-3 py-2.5 text-sm font-medium text-foreground">1ª Parcela</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_1_custeio)}</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_1_capital)}</td>
+                            </tr>
+                            <tr>
+                              <td className="px-3 py-2.5 text-sm font-medium text-foreground">2ª Parcela</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_2_custeio)}</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_2_capital)}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* STICKY ACTION BAR */}
+                <div className="sticky bottom-4 z-20 flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/90 p-3 shadow-lg backdrop-blur-md">
+                  <p className="px-2 text-xs text-muted-foreground">
+                    Visão consolidada read-only.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="ghost" onClick={() => navigate("/escolas")}>
+                      Voltar
+                    </Button>
+                    <Button type="button" variant="outline" onClick={handleSaveClick}>
+                      <Save className="mr-2 h-4 w-4" /> Edição em breve
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+
+        {/* MOBILE FALLBACK (Stack) */}
+        <div className="lg:hidden space-y-6">
+          <aside className="self-start">
             <nav className="space-y-1 rounded-xl border border-border/60 bg-card/50 p-2 backdrop-blur-sm">
               <p className="px-3 pb-2 pt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Seções
@@ -292,14 +506,10 @@ export default function EscolaEditar() {
             </nav>
           </aside>
 
-          {/* MAIN FORM */}
           <div className="space-y-5">
             {/* SECTION 1: Identificação */}
             <Card
-              id="identificacao"
-              ref={(el) => {
-                sectionRefs.current["identificacao"] = el;
-              }}
+              id="identificacao-mobile"
               className="scroll-mt-32"
             >
               <CardContent className="p-6">
@@ -308,13 +518,13 @@ export default function EscolaEditar() {
                   title="Identificação"
                   subtitle="Dados institucionais da unidade"
                 />
-                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                  <div className="space-y-1.5 sm:col-span-2">
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4">
+                  <div className="space-y-1.5">
                     <Label>Designação</Label>
                     <Input readOnly value={formatText(u.designacao)} className={readOnlyInputClass} />
                   </div>
                   
-                  <div className="space-y-1.5 sm:col-span-2">
+                  <div className="space-y-1.5">
                     <Label>Nome Completo</Label>
                     <Input readOnly value={formatText(u.nome)} className={readOnlyInputClass} />
                   </div>
@@ -329,12 +539,12 @@ export default function EscolaEditar() {
                     <Input readOnly value={formatText(u.cnpj)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
                   </div>
 
-                  <div className="space-y-1.5 sm:col-span-2">
+                  <div className="space-y-1.5">
                     <Label>Diretor(a)</Label>
                     <Input readOnly value={formatText(u.diretor)} className={readOnlyInputClass} />
                   </div>
 
-                  <div className="space-y-1.5 sm:col-span-2">
+                  <div className="space-y-1.5">
                     <Label>Endereço</Label>
                     <Input readOnly value={formatText(u.endereco)} className={readOnlyInputClass} />
                   </div>
@@ -344,10 +554,7 @@ export default function EscolaEditar() {
 
             {/* SECTION 2: Bancários */}
             <Card
-              id="bancarios"
-              ref={(el) => {
-                sectionRefs.current["bancarios"] = el;
-              }}
+              id="bancarios-mobile"
               className="scroll-mt-32"
             >
               <CardContent className="p-6">
@@ -356,8 +563,8 @@ export default function EscolaEditar() {
                   title="Dados Bancários"
                   subtitle="Conta vinculada da unidade"
                 />
-                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
-                  <div className="space-y-1.5 sm:col-span-3">
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4">
+                  <div className="space-y-1.5">
                     <Label>Banco</Label>
                     <Input readOnly value={formatText(u.banco, BANCO_PADRAO_PDDE)} className={readOnlyInputClass} />
                   </div>
@@ -365,7 +572,7 @@ export default function EscolaEditar() {
                     <Label>Agência</Label>
                     <Input readOnly value={formatText(u.agencia)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
                   </div>
-                  <div className="space-y-1.5 sm:col-span-2">
+                  <div className="space-y-1.5">
                     <Label>Conta corrente</Label>
                     <Input readOnly value={formatText(u.conta_corrente)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
                   </div>
@@ -375,10 +582,7 @@ export default function EscolaEditar() {
 
             {/* SECTION 3: Financeiros */}
             <Card
-              id="financeiros"
-              ref={(el) => {
-                sectionRefs.current["financeiros"] = el;
-              }}
+              id="financeiros-mobile"
               className="scroll-mt-32"
             >
               <CardContent className="p-6">
@@ -389,7 +593,7 @@ export default function EscolaEditar() {
                 />
                 
                 <div className="mb-6 rounded-lg border border-border/40 bg-muted/10 p-5">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-1">
                       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total Reprogramado</p>
                       <p className="text-lg font-mono font-medium text-foreground">{formatMoney(u.total_reprogramado)}</p>
@@ -445,15 +649,15 @@ export default function EscolaEditar() {
             </Card>
 
             {/* STICKY ACTION BAR */}
-            <div className="sticky bottom-4 z-20 flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/90 p-3 shadow-lg backdrop-blur-md">
-              <p className="px-2 text-xs text-muted-foreground">
+            <div className="sticky bottom-4 z-20 flex flex-col items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/90 p-3 shadow-lg backdrop-blur-md">
+              <p className="px-2 text-xs text-center text-muted-foreground">
                 Visão consolidada read-only.
               </p>
-              <div className="flex gap-2">
-                <Button type="button" variant="ghost" onClick={() => navigate("/escolas")}>
+              <div className="flex w-full gap-2">
+                <Button type="button" variant="ghost" className="flex-1" onClick={() => navigate("/escolas")}>
                   Voltar
                 </Button>
-                <Button type="button" variant="outline" onClick={handleSaveClick}>
+                <Button type="button" variant="outline" className="flex-1" onClick={handleSaveClick}>
                   <Save className="mr-2 h-4 w-4" /> Edição em breve
                 </Button>
               </div>

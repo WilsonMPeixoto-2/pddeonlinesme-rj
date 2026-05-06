@@ -1,19 +1,33 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
 
+const loginSchema = z.object({
+  email: z.string().min(1, "E-mail é obrigatório").email("E-mail inválido"),
+  senha: z.string().min(1, "Senha é obrigatória"),
+});
+
+const signUpSchema = z.object({
+  email: z.string().min(1, "E-mail é obrigatório").email("E-mail inválido").endsWith("@sme.rio", { message: "Apenas e-mails institucionais @sme.rio são permitidos" }),
+  senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+type SignUpFormValues = z.infer<typeof signUpSchema>;
+
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -22,22 +36,30 @@ const Login = () => {
     });
   }, [navigate]);
 
-  const signIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const loginForm = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", senha: "" },
+  });
+
+  const signUpForm = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: { email: "", senha: "" },
+  });
+
+  const onSignIn = async (values: LoginFormValues) => {
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    const { error } = await supabase.auth.signInWithPassword({ email: values.email, password: values.senha });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Bem-vindo(a)!");
     navigate("/dashboard");
   };
 
-  const signUp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSignUp = async (values: SignUpFormValues) => {
     setBusy(true);
     const { error } = await supabase.auth.signUp({
-      email,
-      password: senha,
+      email: values.email,
+      password: values.senha,
       options: { emailRedirectTo: `${window.location.origin}/dashboard` },
     });
     setBusy(false);
@@ -87,107 +109,102 @@ const Login = () => {
               </TabsList>
 
               <TabsContent value="signin" className="mt-5">
-                <form onSubmit={signIn} className="space-y-4" noValidate>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-sm font-medium">
-                      E-mail institucional
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      autoComplete="email"
-                      placeholder="seu.nome@sme.rio"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="h-10"
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(onSignIn)} className="space-y-4" noValidate>
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>E-mail institucional</FormLabel>
+                          <FormControl>
+                            <Input placeholder="seu.nome@sme.rio" type="email" autoComplete="email" className="h-10" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="senha" className="text-sm font-medium">
-                      Senha
-                    </Label>
-                    <Input
-                      id="senha"
-                      type="password"
-                      autoComplete="current-password"
-                      placeholder="••••••••"
-                      value={senha}
-                      onChange={(e) => setSenha(e.target.value)}
-                      required
-                      className="h-10"
+                    <FormField
+                      control={loginForm.control}
+                      name="senha"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha</FormLabel>
+                          <FormControl>
+                            <Input placeholder="••••••••" type="password" autoComplete="current-password" className="h-10" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      className="text-xs text-primary hover:text-primary/80 transition-colors"
-                      onClick={() => toast.info("Em breve: recuperação de senha")}
-                    >
-                      Esqueci minha senha
-                    </button>
-                  </div>
-                  <Button type="submit" className="h-10 w-full font-medium" disabled={busy}>
-                    {busy ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Entrando…
-                      </>
-                    ) : (
-                      "Entrar"
-                    )}
-                  </Button>
-                </form>
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        className="text-xs text-primary hover:text-primary/80 transition-colors"
+                        onClick={() => toast.info("Em breve: recuperação de senha")}
+                      >
+                        Esqueci minha senha
+                      </button>
+                    </div>
+                    <Button type="submit" className="h-10 w-full font-medium" disabled={busy}>
+                      {busy ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Entrando…
+                        </>
+                      ) : (
+                        "Entrar"
+                      )}
+                    </Button>
+                  </form>
+                </Form>
               </TabsContent>
 
               <TabsContent value="signup" className="mt-5">
-                <form onSubmit={signUp} className="space-y-4" noValidate>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email2" className="text-sm font-medium">
-                      E-mail institucional
-                    </Label>
-                    <Input
-                      id="email2"
-                      type="email"
-                      autoComplete="email"
-                      placeholder="seu.nome@sme.rio"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="h-10"
+                <Form {...signUpForm}>
+                  <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-4" noValidate>
+                    <FormField
+                      control={signUpForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>E-mail institucional</FormLabel>
+                          <FormControl>
+                            <Input placeholder="seu.nome@sme.rio" type="email" autoComplete="email" className="h-10" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="senha2" className="text-sm font-medium">
-                      Senha
-                    </Label>
-                    <Input
-                      id="senha2"
-                      type="password"
-                      autoComplete="new-password"
-                      placeholder="Mínimo de 6 caracteres"
-                      value={senha}
-                      onChange={(e) => setSenha(e.target.value)}
-                      minLength={6}
-                      required
-                      className="h-10"
+                    <FormField
+                      control={signUpForm.control}
+                      name="senha"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Mínimo de 6 caracteres" type="password" autoComplete="new-password" className="h-10" {...field} />
+                          </FormControl>
+                          <FormDescription className="text-xs">
+                            Use pelo menos 6 caracteres. Recomenda-se combinar letras e números.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Use pelo menos 6 caracteres. Recomenda-se combinar letras e números.
+                    <Button type="submit" className="h-10 w-full font-medium" disabled={busy}>
+                      {busy ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Criando conta…
+                        </>
+                      ) : (
+                        "Criar conta"
+                      )}
+                    </Button>
+                    <p className="text-center text-xs text-muted-foreground">
+                      Após o cadastro, um administrador atribuirá seu papel de operador.
                     </p>
-                  </div>
-                  <Button type="submit" className="h-10 w-full font-medium" disabled={busy}>
-                    {busy ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Criando conta…
-                      </>
-                    ) : (
-                      "Criar conta"
-                    )}
-                  </Button>
-                  <p className="text-center text-xs text-muted-foreground">
-                    Após o cadastro, um administrador atribuirá seu papel de operador.
-                  </p>
-                </form>
+                  </form>
+                </Form>
               </TabsContent>
             </Tabs>
           </CardContent>
