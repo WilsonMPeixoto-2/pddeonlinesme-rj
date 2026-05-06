@@ -32,7 +32,7 @@ export function useDashboardBasico({
       const { data, error } = await supabase
         .from("vw_dashboard_basico")
         .select(
-          "exercicio, programa, total_unidades, total_reprogramado_custeio, total_reprogramado_capital, total_reprogramado, total_parcelas, total_disponivel_inicial, updated_at_max",
+          "exercicio, programa, total_unidades, total_reprogramado_custeio, total_reprogramado_capital, total_reprogramado, total_parcela_1_custeio, total_parcela_1_capital, total_parcela_2_custeio, total_parcela_2_capital, total_parcelas, total_disponivel_inicial, updated_at_max",
         )
         .eq("exercicio", exercicioNumber)
         .eq("programa", programa)
@@ -43,5 +43,7 @@ export function useDashboardBasico({
       }
       return data ?? null;
     },
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }

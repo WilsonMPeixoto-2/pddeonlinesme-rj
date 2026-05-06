@@ -50,8 +50,6 @@ export default function Dashboard() {
     data: indicadores,
     isLoading: loadingBasico,
     error: errorBasico,
-    refetch: refetchBasico,
-    isFetching: fetchingBasico,
   } = useDashboardBasico({ exercicio, programa: PROGRAMA_PADRAO });
 
   const {
@@ -284,8 +282,12 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      {!isReady || loading ? (
+                      {loading ? (
                         <Skeleton className="h-9 w-24" />
+                      ) : !isReady ? (
+                        <p className="text-3xl font-semibold tracking-tight tabular-nums sm:text-[2rem]">
+                          —
+                        </p>
                       ) : (
                         <p className="text-3xl font-semibold tracking-tight tabular-nums sm:text-[2rem]">
                           <NumberTicker

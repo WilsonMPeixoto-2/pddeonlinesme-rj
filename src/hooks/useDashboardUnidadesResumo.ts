@@ -77,5 +77,7 @@ export function useDashboardUnidadesResumo() {
         cadastroIncompletoCount: total - cadastroCompletoCount,
       };
     },
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
