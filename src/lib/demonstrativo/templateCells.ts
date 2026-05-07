@@ -1,5 +1,8 @@
-export const DEMONSTRATIVO_TEMPLATE_URL =
-  "/templates/demonstrativo-basico-4cre-template.xlsx";
+const appBaseUrl = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
+export const DEMONSTRATIVO_TEMPLATE_URL = `${appBaseUrl}templates/demonstrativo-basico-4cre-template.xlsx`;
 
 export const XLSX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";

@@ -1,6 +1,6 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-07T02:18:17.8941995-03:00",
+  "updated_at": "2026-05-07T02:22:41.8105585-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
@@ -95,7 +95,8 @@
     "tests": "passed: npm test",
     "build": "passed: npm run build; existing large chunk warning remains, exceljs is dynamically imported into a separate chunk",
     "vercel_checks": "passed: Vercel Preview Comments, Vercel - pddeonlinesme-rj, Vercel - pddeonlinesme-rj-pr8-validate",
-    "preview_smoke": "blocked for anonymous access by Vercel Authentication; authenticated browser/session validation still required"
+    "preview_smoke": "blocked for anonymous access by Vercel Authentication; authenticated browser/session validation still required",
+    "review_comments": "initial Copilot comments addressed locally: BASE_URL-aware template URL, template buffer cache, metadata separated from MEMORIA fields, robust money string parsing, and aria-busy/decorative icons on the generate button"
   },
   "next_priority": {
     "after_this_pr": [

@@ -78,6 +78,7 @@ Decisao tecnica de dependencia:
 - Template inspecionado antes da implementacao: abas `BASE`, `MEMORIA`, `Demonstrativo` e `Conciliação Bancária`; celulas-alvo da `MEMORIA` confirmadas.
 - Smoke local do gerador: dois arquivos `.xlsx` gerados com fixtures de unidades diferentes.
 - Inspecao com `openpyxl`: celulas-alvo da `MEMORIA` preenchidas diretamente, sem XLOOKUP remanescente em `MEMORIA`, sem tokens `#REF!`, `#VALUE!` ou `#NAME?`.
+- Comentarios iniciais do Copilot foram tratados: URL do template respeita `BASE_URL`, template fica em cache de modulo, metadados do nome de arquivo foram separados dos campos reais de `MEMORIA`, parsing monetario aceita strings como `R$ 1.000,50`, e o botao recebeu `aria-busy`/icones decorativos.
 - `npx tsc --noEmit`: passou.
 - `npm run lint`: passou com dois warnings preexistentes de `react-refresh/only-export-components`.
 - `npm test`: passou.

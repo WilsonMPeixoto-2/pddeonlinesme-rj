@@ -245,11 +245,12 @@ export default function EscolaEditar() {
               variant="outline"
               onClick={handleGenerateDemonstrativo}
               disabled={isGeneratingDemonstrativo}
+              aria-busy={isGeneratingDemonstrativo}
             >
               {isGeneratingDemonstrativo ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
               ) : (
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="mr-2 h-4 w-4" aria-hidden="true" />
               )}
               Gerar Demonstrativo Básico (.xlsx)
             </Button>

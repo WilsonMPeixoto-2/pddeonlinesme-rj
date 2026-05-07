@@ -8,7 +8,6 @@ import {
   XLSX_MIME_TYPE,
 } from "./templateCells";
 import {
-  buildDemonstrativoFileName,
   mapUnidadeToMemoria,
   type DemonstrativoMemoriaData,
 } from "./mapUnidadeToMemoria";
@@ -18,6 +17,8 @@ export interface GeneratedDemonstrativo {
   fileName: string;
   memoria: DemonstrativoMemoriaData;
 }
+
+let templateBufferPromise: Promise<ArrayBuffer> | null = null;
 
 const fetchTemplate = async () => {
   const response = await fetch(DEMONSTRATIVO_TEMPLATE_URL);
@@ -29,6 +30,13 @@ const fetchTemplate = async () => {
   }
 
   return response.arrayBuffer();
+};
+
+const getTemplateBuffer = async () => {
+  templateBufferPromise ??= fetchTemplate();
+  const templateBuffer = await templateBufferPromise;
+
+  return templateBuffer.slice(0);
 };
 
 const setCell = (worksheet: Worksheet, address: string, value: string | number) => {
@@ -54,7 +62,7 @@ export async function generateDemonstrativoBasico(
   unidade: UnidadeDetalhe,
   exercicio: string,
 ): Promise<GeneratedDemonstrativo> {
-  const templateBuffer = await fetchTemplate();
+  const templateBuffer = await getTemplateBuffer();
   const { default: ExcelJS } = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
 
@@ -73,14 +81,14 @@ export async function generateDemonstrativoBasico(
     throw new Error(`Aba ${DEMONSTRATIVO_SHEET_NAME} nao encontrada no template.`);
   }
 
-  const memoria = mapUnidadeToMemoria(unidade, exercicio);
+  const { fileName, memoria } = mapUnidadeToMemoria(unidade, exercicio);
   fillMemoria(memoriaWorksheet, memoria);
 
   const outputBuffer = await workbook.xlsx.writeBuffer();
 
   return {
     blob: new Blob([outputBuffer as BlobPart], { type: XLSX_MIME_TYPE }),
-    fileName: buildDemonstrativoFileName(memoria),
+    fileName,
     memoria,
   };
 }
