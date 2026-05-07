@@ -13,7 +13,8 @@ Este roadmap adaptativo nao substitui o plano. Ele organiza a fila curta e regis
 - Supabase Foundation v1 encerrada como migracao fundacional.
 - `main` e a fonte oficial de continuidade.
 - Telas principais de escolas ja usam views reais do Supabase proprio.
-- PRs abertos atuais: #40 e #41, ambos aguardando revisao.
+- PRs #40 e #41 incorporados na `main`.
+- PR aberto atual: #42, infraestrutura de continuidade agentic.
 - Este PR e exclusivamente documental/operacional.
 
 ## Fila curta recomendada
@@ -25,6 +26,7 @@ Este roadmap adaptativo nao substitui o plano. Ele organiza a fila curta e regis
 2. `feat(documentos): gerar Demonstrativo Basico individual via MEMORIA`
    - Escopo: gerar o Demonstrativo Basico Individual.
    - Decisao tecnica: Opcao B, preencher `MEMORIA` diretamente com dados do Supabase.
+   - Restricao: nao depender da aba `BASE` nem de `XLOOKUP`.
    - Bloqueios: revisar contrato de dados, template oficial, regras financeiras e criterios de rastreabilidade antes de implementar.
 
 3. Revisao/fechamento dos PRs abertos ou superados

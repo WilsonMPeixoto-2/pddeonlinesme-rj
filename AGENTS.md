@@ -32,7 +32,7 @@ Se a tarefa alterar rumo, decisao tecnica, prioridade ou criterio de aceite, tam
 
 O Plano Global v4.1, em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`, e o norte operacional atual. O backlog adaptativo e radar de oportunidades; ele nao autoriza mudancas funcionais sem PR proprio.
 
-O proximo sub-marco prioritario registrado e o **Demonstrativo Basico Individual**. A decisao tecnica vigente e **Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase**. Essa decisao orienta o proximo PR funcional, mas este arquivo nao autoriza alteracao de codigo, Supabase, migrations ou UI fora de escopo.
+O proximo sub-marco prioritario registrado e o **Demonstrativo Basico Individual**. A decisao tecnica vigente e **Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase**. O arquivo individual nao deve depender da aba BASE nem de XLOOKUP. Essa decisao orienta o proximo PR funcional, mas este arquivo nao autoriza alteracao de codigo, Supabase, migrations ou UI fora de escopo.
 
 ## Regra-mae
 

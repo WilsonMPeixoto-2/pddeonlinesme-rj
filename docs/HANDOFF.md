@@ -6,7 +6,7 @@ Atualizado em: 2026-05-07
 
 Este PR e documental/operacional. Ele cria a infraestrutura minima de continuidade agentic antes do proximo PR funcional de documentos.
 
-Fonte de verdade: GitHub `main`, baseado em `07f3226`.
+Fonte de verdade: GitHub `main`, baseado em `89d2306`.
 
 Branch deste PR: `ops/agentic-continuity-workflows`.
 
@@ -16,9 +16,9 @@ PR deste handoff: #42 - https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pul
 
 | PR | Titulo | Branch | Estado |
 |---:|---|---|---|
-| #42 | ops(agentic): add Codex continuity and workflow infrastructure | `ops/agentic-continuity-workflows` | aberto, review required |
-| #41 | feat: dashboard B/C paths | `feat/dashboard-export-polish` | aberto, review required, merge blocked |
-| #40 | feat: integrate tech stack updates (preview) | `feat/tech-stack-integration` | aberto, review required, merge blocked |
+| #42 | ops(agentic): add Codex continuity and workflow infrastructure | `ops/agentic-continuity-workflows` | aberto, rebaseado apos #40/#41 |
+| #41 | feat: dashboard B/C paths | `feat/dashboard-export-polish` | mergeado em `89d2306` |
+| #40 | feat: integrate tech stack updates (preview) | `feat/tech-stack-integration` | mergeado em `502dbeb` |
 
 ## Norte operacional
 
@@ -41,6 +41,13 @@ Decisao tecnica vigente:
 ```txt
 Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase.
 ```
+
+Restricoes da decisao:
+
+- nao depender da aba BASE para o arquivo individual;
+- nao depender de XLOOKUP para o arquivo individual;
+- preservar layout, formulas, bordas e mesclagens do template oficial;
+- manter revisao humana para regras documentais oficiais.
 
 ## Regras antes de qualquer tarefa
 

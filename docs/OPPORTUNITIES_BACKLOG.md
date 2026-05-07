@@ -6,8 +6,8 @@ Este backlog e um radar. Ele registra oportunidades, riscos e proximas frentes, 
 
 | Prioridade | Item | Tipo | Status | Observacao |
 |---:|---|---|---|---|
-| 1 | Demonstrativo Basico Individual via `MEMORIA` | documentos | proximo sub-marco | Usar Opcao B; requer rastreabilidade entre Supabase e template. |
-| 2 | Revisao dos PRs #40 e #41 | governanca GitHub | aberto | Ambos estao com review required e merge blocked. |
+| 1 | Demonstrativo Basico Individual via `MEMORIA` | documentos | proximo sub-marco | Usar Opcao B; nao depender de `BASE` nem de `XLOOKUP`; requer rastreabilidade entre Supabase e template. |
+| 2 | PRs #40 e #41 | governanca GitHub | incorporado | Ambos ja foram mergeados na `main`. |
 | 3 | Fechamento de PRs historicos superados | governanca GitHub | pendente | Seguir docs de reconciliacao antes de fechar. |
 | 4 | Dashboard real/analitico | produto/dados | pendente | Pertence ao Marco 9; nao tratar como Foundation v1. |
 | 5 | Fase 2B edicao cadastral/bancaria | dados/UI | pendente | Exige contrato, permissao, auditoria e validacao. |

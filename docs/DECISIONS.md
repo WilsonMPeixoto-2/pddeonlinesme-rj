@@ -26,6 +26,8 @@ Este documento registra decisoes operacionais vigentes. Ele complementa `docs/DE
 
 **Consequencia:** a implementacao funcional deve evitar caminhos intermediarios desnecessarios quando a aba `MEMORIA` puder ser preenchida de forma rastreavel, testavel e compativel com o template oficial.
 
+**Restricao:** o arquivo individual nao deve depender da aba `BASE` nem de `XLOOKUP`.
+
 **Limite:** esta decisao nao autoriza alteracao de Supabase, RLS, auth, migrations, regras financeiras ou template oficial sem revisao humana.
 
 ## 2026-05-07 - Continuidade obrigatoria
