@@ -37,6 +37,7 @@ import {
 } from "@/hooks/useUnidadesLocalizador";
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 /* ─── Types ─── */
 
@@ -428,84 +429,91 @@ export default function Escolas() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  lista.map((e) => {
-                    const st = getStatus(e);
-                    const cfg = statusConfig[st];
-                    return (
-                      <TableRow
-                        key={e.id}
-                        className="group border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
-                      >
-                        <TableCell className="py-3">
-                          <div className="flex flex-col gap-1">
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/escolas/${e.id}`)}
-                              title="Abrir cadastro completo"
-                              className="group/link inline-flex items-center gap-1.5 self-start rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                              aria-label={`Abrir cadastro de ${e.designacao}`}
-                            >
-                              <span>{e.designacao}</span>
-                              <ArrowUpRight
-                                className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
-                                aria-hidden="true"
-                              />
-                            </button>
-                            <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                              <span className="font-mono tabular-nums">
-                                INEP {e.inep ?? "—"}
-                              </span>
-                              {e.cnpj && (
-                                <>
-                                  <span className="text-border">·</span>
-                                  <span className="font-mono tabular-nums">
-                                    CNPJ {e.cnpj}
-                                  </span>
-                                </>
+                  <AnimatePresence mode="popLayout">
+                    {lista.map((e) => {
+                      const st = getStatus(e);
+                      const cfg = statusConfig[st];
+                      return (
+                        <motion.tr
+                          layout
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.2 }}
+                          key={e.id}
+                          className="group border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
+                        >
+                          <TableCell className="py-3">
+                            <div className="flex flex-col gap-1">
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/escolas/${e.id}`)}
+                                title="Abrir cadastro completo"
+                                className="group/link inline-flex items-center gap-1.5 self-start rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                                aria-label={`Abrir cadastro de ${e.designacao}`}
+                              >
+                                <span>{e.designacao}</span>
+                                <ArrowUpRight
+                                  className="h-3.5 w-3.5 opacity-0 -translate-x-0.5 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0"
+                                  aria-hidden="true"
+                                />
+                              </button>
+                              <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                                <span className="font-mono tabular-nums">
+                                  INEP {e.inep ?? "—"}
+                                </span>
+                                {e.cnpj && (
+                                  <>
+                                    <span className="text-border">·</span>
+                                    <span className="font-mono tabular-nums">
+                                      CNPJ {e.cnpj}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm">{e.diretor ?? "—"}</TableCell>
+                          <TableCell>
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                                cfg.badgeClass,
                               )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm">{e.diretor ?? "—"}</TableCell>
-                        <TableCell>
-                          <span
-                            className={cn(
-                              "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium",
-                              cfg.badgeClass,
-                            )}
-                          >
-                            <span className={cn("inline-block h-1.5 w-1.5 rounded-full", cfg.dotClass)} />
-                            {cfg.label}
-                          </span>
-                        </TableCell>
-                        <TableCell className="border-l border-border/40 bg-primary/[0.025] p-2">
-                          <div className="space-y-1.5">
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="h-9 w-full justify-center gap-2 text-xs shadow-[0_0_16px_hsl(var(--primary)/0.18)] transition-shadow hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]"
-                              onClick={() => openDocs(e)}
                             >
-                              <FileText className="h-3.5 w-3.5" />
-                              Gerar documentos
-                            </Button>
-                            <div className="flex items-center justify-center text-[10px] text-muted-foreground">
-                              <span>Em breve</span>
+                              <span className={cn("inline-block h-1.5 w-1.5 rounded-full", cfg.dotClass)} />
+                              {cfg.label}
+                            </span>
+                          </TableCell>
+                          <TableCell className="border-l border-border/40 bg-primary/[0.025] p-2">
+                            <div className="space-y-1.5">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="h-9 w-full justify-center gap-2 text-xs shadow-[0_0_16px_hsl(var(--primary)/0.18)] transition-shadow hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]"
+                                onClick={() => openDocs(e)}
+                              >
+                                <FileText className="h-3.5 w-3.5" />
+                                Gerar documentos
+                              </Button>
+                              <div className="flex items-center justify-center text-[10px] text-muted-foreground">
+                                <span>Em breve</span>
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <SecondaryActions
-                            onEdit={() => navigate(`/escolas/${e.id}`)}
-                            onView={() => navigate(`/escolas/${e.id}`)}
-                            onDelete={() => {
-                              toast.info(`Em breve: remover ${e.designacao}`);
-                            }}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <SecondaryActions
+                              onEdit={() => navigate(`/escolas/${e.id}`)}
+                              onView={() => navigate(`/escolas/${e.id}`)}
+                              onDelete={() => {
+                                toast.info(`Em breve: remover ${e.designacao}`);
+                              }}
+                            />
+                          </TableCell>
+                        </motion.tr>
+                      );
+                    })}
+                  </AnimatePresence>
                 )}
               </TableBody>
           </Table>
