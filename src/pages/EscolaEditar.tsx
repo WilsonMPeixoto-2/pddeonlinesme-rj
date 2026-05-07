@@ -222,16 +222,16 @@ export default function EscolaEditar() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-card/90 via-card/70 to-card/50 p-6"
+          className="ds-card-elevated relative overflow-hidden p-6"
         >
           <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
           <div className="relative flex flex-wrap items-end justify-between gap-4">
             <div className="space-y-2">
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="ds-eyebrow">
                 Detalhe da Unidade
               </p>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                <h1 className="ds-h1">
                   {headerTitle}
                 </h1>
                 <div className="flex items-center gap-2 mt-1 sm:mt-0">
@@ -510,7 +510,7 @@ export default function EscolaEditar() {
             {/* SECTION 1: Identificação */}
             <Card
               id="identificacao-mobile"
-              className="scroll-mt-32"
+              className="ds-card scroll-mt-32"
             >
               <CardContent className="p-6">
                 <SectionHeader
@@ -555,7 +555,7 @@ export default function EscolaEditar() {
             {/* SECTION 2: Bancários */}
             <Card
               id="bancarios-mobile"
-              className="scroll-mt-32"
+              className="ds-card scroll-mt-32"
             >
               <CardContent className="p-6">
                 <SectionHeader
@@ -583,7 +583,7 @@ export default function EscolaEditar() {
             {/* SECTION 3: Financeiros */}
             <Card
               id="financeiros-mobile"
-              className="scroll-mt-32"
+              className="ds-card scroll-mt-32"
             >
               <CardContent className="p-6">
                 <SectionHeader
@@ -595,16 +595,16 @@ export default function EscolaEditar() {
                 <div className="mb-6 rounded-lg border border-border/40 bg-muted/10 p-5">
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total Reprogramado</p>
-                      <p className="text-lg font-mono font-medium text-foreground">{formatMoney(u.total_reprogramado)}</p>
+                      <p className="ds-label">Total Reprogramado</p>
+                      <p className="ds-num-mono text-lg font-medium text-foreground">{formatMoney(u.total_reprogramado)}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total Parcelas</p>
-                      <p className="text-lg font-mono font-medium text-foreground">{formatMoney(u.total_parcelas)}</p>
+                      <p className="ds-label">Total Parcelas</p>
+                      <p className="ds-num-mono text-lg font-medium text-foreground">{formatMoney(u.total_parcelas)}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground text-primary">Disponível Inicial</p>
-                      <p className="text-lg font-mono font-semibold text-primary">{formatMoney(u.total_disponivel_inicial)}</p>
+                      <p className="ds-label text-primary">Disponível Inicial</p>
+                      <p className="ds-num-mono text-lg font-semibold text-primary">{formatMoney(u.total_disponivel_inicial)}</p>
                     </div>
                   </div>
                   <p className="mt-3 text-xs italic text-muted-foreground/70">
@@ -613,33 +613,33 @@ export default function EscolaEditar() {
                 </div>
 
                 <div className="space-y-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <p className="ds-label">
                     Detalhamento Custeio × Capital
                   </p>
                   <div className="overflow-hidden rounded-md border border-border/40">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-muted/30">
-                          <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Componente</th>
-                          <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Custeio</th>
-                          <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Capital</th>
+                          <th className="ds-th px-3 py-2 text-left">Componente</th>
+                          <th className="ds-th px-3 py-2 text-right">Custeio</th>
+                          <th className="ds-th px-3 py-2 text-right">Capital</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/30">
                         <tr>
-                          <td className="px-3 py-2.5 text-sm font-medium text-foreground">Saldo Reprogramado</td>
-                          <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.reprogramado_custeio)}</td>
-                          <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.reprogramado_capital)}</td>
+                          <td className="ds-td px-3 py-2.5 font-medium text-foreground">Saldo Reprogramado</td>
+                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.reprogramado_custeio)}</td>
+                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.reprogramado_capital)}</td>
                         </tr>
                         <tr>
-                          <td className="px-3 py-2.5 text-sm font-medium text-foreground">1ª Parcela</td>
-                          <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_1_custeio)}</td>
-                          <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_1_capital)}</td>
+                          <td className="ds-td px-3 py-2.5 font-medium text-foreground">1ª Parcela</td>
+                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_1_custeio)}</td>
+                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_1_capital)}</td>
                         </tr>
                         <tr>
-                          <td className="px-3 py-2.5 text-sm font-medium text-foreground">2ª Parcela</td>
-                          <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_2_custeio)}</td>
-                          <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_2_capital)}</td>
+                          <td className="ds-td px-3 py-2.5 font-medium text-foreground">2ª Parcela</td>
+                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_2_custeio)}</td>
+                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_2_capital)}</td>
                         </tr>
                       </tbody>
                     </table>

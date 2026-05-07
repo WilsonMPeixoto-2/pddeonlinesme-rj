@@ -38,7 +38,9 @@ import {
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-
+import * as XLSX from "xlsx";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 /* ─── Types ─── */
 
 // Foundation v1: /escolas opera como localizador a partir de vw_unidades_localizador.
@@ -65,13 +67,13 @@ function getStatus(e: Unidade) {
 const statusConfig = {
   completo: {
     label: "Cadastro completo",
-    dotClass: "bg-success",
-    badgeClass: "border-success/30 bg-success/10 text-success",
+    dotClass: "ds-dot-success",
+    badgeClass: "ds-badge-success",
   },
   incompleto: {
     label: "Cadastro incompleto",
-    dotClass: "bg-warning",
-    badgeClass: "border-warning/30 bg-warning/10 text-warning",
+    dotClass: "ds-dot-warning",
+    badgeClass: "ds-badge-warning",
   },
 } as const;
 
@@ -214,16 +216,76 @@ export default function Escolas() {
     setDocsPanelOpen(true);
   };
 
+  const handleExportSelection = () => {
+    try {
+      const exportData = lista.map(u => ({
+        "INEP": u.inep,
+        "CNPJ": u.cnpj,
+        "Designação": u.designacao,
+        "Nome": u.nome,
+        "Diretor(a)": u.diretor,
+        "Status": getStatus(u) === "completo" ? "Completo" : "Incompleto"
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Unidades");
+      
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+      const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      saveAs(data, `PDDE_Selecao_4CRE_${exercicio}.xlsx`);
+      toast.success("Seleção exportada com sucesso!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao exportar a seleção.");
+    }
+  };
+
+  const handleGenerateZip = async () => {
+    try {
+      setConfirmLote(false);
+      const zip = new JSZip();
+      
+      const resumos = zip.folder(`Resumos_Cadastrais_Preliminares_${exercicio}`);
+      if (!resumos) return;
+
+      lista.forEach(u => {
+        const textContent = [
+          "RESUMO CADASTRAL PRELIMINAR",
+          "",
+          "Artefato técnico preliminar, sem valor de documento oficial.",
+          "Não substitui prestação de contas, demonstrativo oficial, assinatura, validação humana ou conferência documental.",
+          "",
+          `Unidade: ${u.designacao}`,
+          `Nome: ${u.nome || "Não informado"}`,
+          `INEP: ${u.inep || "N/A"}`,
+          `CNPJ: ${u.cnpj || "N/A"}`,
+          `Diretor(a): ${u.diretor || "N/A"}`,
+          `Exercício: ${exercicio}`,
+          "",
+        ].join("\n");
+        resumos.file(`Resumo_Cadastral_${u.inep || u.id}.txt`, textContent);
+      });
+
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `Resumos_Cadastrais_Preliminares_4CRE_${exercicio}.zip`);
+      toast.success("Resumos cadastrais preliminares gerados com sucesso!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao gerar os resumos preliminares.");
+    }
+  };
+
   return (
     <AppLayout>
       <div className="space-y-5">
         {/* Page header */}
         <div className="flex flex-col gap-3 border-b border-border/60 pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="ds-eyebrow">
               Cadastro · 4ª CRE · Exercício {exercicio}
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Unidades Escolares</h1>
+            <h1 className="ds-h1">Unidades Escolares</h1>
             <p className="text-sm text-muted-foreground">
               {loading
                 ? "Carregando cadastro…"
@@ -247,7 +309,7 @@ export default function Escolas() {
                         : "border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
                     )}
                   >
-                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${statusConfig[key].dotClass}`} />
+                    <span className={`ds-dot ${statusConfig[key].dotClass}`} />
                     <span className="font-semibold tabular-nums">{statusCounts[key]}</span>
                     <span>{statusConfig[key].label.toLowerCase()}</span>
                   </button>
@@ -326,9 +388,9 @@ export default function Escolas() {
               variant="outline"
               size="sm"
               className="h-10"
-              onClick={() => toast.info("Em breve: exportar BASE em .xlsx")}
+              onClick={handleExportSelection}
             >
-              <Download className="mr-2 h-4 w-4" /> Exportar BASE
+              <Download className="mr-2 h-4 w-4" /> Exportar seleção
             </Button>
             <Button
               size="sm"
@@ -336,32 +398,32 @@ export default function Escolas() {
               onClick={() => setConfirmLote(true)}
               disabled={unidades.length === 0}
             >
-              <FileSpreadsheet className="mr-2 h-4 w-4" /> Gerar lote (.zip)
+              <FileSpreadsheet className="mr-2 h-4 w-4" /> Gerar resumos (.zip)
             </Button>
           </div>
         </div>
 
         {/* Table */}
-        <Card className="overflow-hidden border-border/70">
+        <Card className="ds-card overflow-hidden">
           <Table>
               <TableHeader>
                 <TableRow className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 backdrop-blur-md hover:bg-muted/50">
-                  <TableHead className="h-11 min-w-[300px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="ds-th h-11 min-w-[300px]">
                     Unidade escolar
                   </TableHead>
-                  <TableHead className="h-11 min-w-[180px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="ds-th h-11 min-w-[180px]">
                     Diretor(a)
                   </TableHead>
-                  <TableHead className="h-11 w-[150px] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="ds-th h-11 w-[150px]">
                     Status
                   </TableHead>
-                  <TableHead className="h-11 w-[170px] border-l border-border/40 bg-primary/5 text-center text-[11px] font-semibold uppercase tracking-wide text-primary/80">
+                  <TableHead className="ds-th h-11 w-[170px] border-l border-border/40 bg-primary/5 text-center text-primary/80">
                     <span className="inline-flex items-center gap-1.5">
                       <FileText className="h-3 w-3" />
                       Documentos
                     </span>
                   </TableHead>
-                  <TableHead className="h-11 w-[50px] text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="ds-th h-11 w-[50px] text-right">
                     {""}
                   </TableHead>
                 </TableRow>
@@ -441,9 +503,9 @@ export default function Escolas() {
                           exit={{ opacity: 0, scale: 0.95 }}
                           transition={{ duration: 0.2 }}
                           key={e.id}
-                          className="group border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
+                          className="group row-accent border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
                         >
-                          <TableCell className="py-3">
+                          <TableCell className="ds-td py-3">
                             <div className="flex flex-col gap-1">
                               <button
                                 type="button"
@@ -459,13 +521,13 @@ export default function Escolas() {
                                 />
                               </button>
                               <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                                <span className="font-mono tabular-nums">
+                                <span className="ds-num-mono">
                                   INEP {e.inep ?? "—"}
                                 </span>
                                 {e.cnpj && (
                                   <>
                                     <span className="text-border">·</span>
-                                    <span className="font-mono tabular-nums">
+                                    <span className="ds-num-mono">
                                       CNPJ {e.cnpj}
                                     </span>
                                   </>
@@ -473,15 +535,10 @@ export default function Escolas() {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm">{e.diretor ?? "—"}</TableCell>
+                          <TableCell className="ds-td">{e.diretor ?? "—"}</TableCell>
                           <TableCell>
-                            <span
-                              className={cn(
-                                "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium",
-                                cfg.badgeClass,
-                              )}
-                            >
-                              <span className={cn("inline-block h-1.5 w-1.5 rounded-full", cfg.dotClass)} />
+                            <span className={cn("ds-badge-pill", cfg.badgeClass)}>
+                              <span className={cn("ds-dot", cfg.dotClass)} />
                               {cfg.label}
                             </span>
                           </TableCell>
@@ -536,19 +593,16 @@ export default function Escolas() {
         open={confirmLote}
         onOpenChange={setConfirmLote}
         tone="primary"
-        title="Gerar documentos em lote"
+        title="Gerar resumos cadastrais preliminares"
         description={
           <>
-            Será gerado um arquivo <strong>.zip</strong> contendo os documentos da prestação de contas
-            de cada unidade escolar. O processo pode levar alguns minutos.
+            Será gerado um arquivo <strong>.zip</strong> com resumos cadastrais preliminares
+            das unidades filtradas. Estes arquivos são artefatos técnicos preliminares e não têm valor de documento oficial.
           </>
         }
-        highlight={`${unidades.length} unidades serão processadas`}
-        confirmLabel="Gerar lote"
-        onConfirm={() => {
-          setConfirmLote(false);
-          toast.info("Em breve: geração de lote (.zip)");
-        }}
+        highlight={`${lista.length} unidades filtradas serão processadas`}
+        confirmLabel="Gerar resumos"
+        onConfirm={handleGenerateZip}
       />
 
       <DocumentsPanel

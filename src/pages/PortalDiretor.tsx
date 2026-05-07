@@ -153,9 +153,9 @@ export default function PortalDiretor() {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* ─── Financeiro resumido ─── */}
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="lg:col-span-2">
-            <Card className="border-border/70 h-full">
+            <Card className="ds-card h-full">
               <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="ds-h3 flex items-center gap-2">
                   <BarChart3 className="h-4 w-4 text-primary" /> Resumo Financeiro
                 </CardTitle>
               </CardHeader>
@@ -168,12 +168,12 @@ export default function PortalDiretor() {
                     { label: "Saldo atual", value: ESCOLA.saldo_anterior + ESCOLA.recebido - ESCOLA.gasto, tone: "primary" },
                   ].map((item) => (
                     <div key={item.label} className="rounded-lg border border-border/50 bg-muted/10 p-3 text-center">
-                      <p className={`text-lg font-semibold tabular-nums tracking-tight ${
+                      <p className={`ds-num-mono text-lg font-semibold ${
                         item.tone === "success" ? "text-success" : item.tone === "warning" ? "text-warning" : item.tone === "primary" ? "text-primary" : "text-foreground"
                       }`}>
                         {item.value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                       </p>
-                      <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{item.label}</p>
+                      <p className="ds-label mt-1">{item.label}</p>
                     </div>
                   ))}
                 </div>
@@ -183,9 +183,9 @@ export default function PortalDiretor() {
 
           {/* ─── Avisos e pendências ─── */}
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="border-border/70 h-full">
+            <Card className="ds-card h-full">
               <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="ds-h3 flex items-center gap-2">
                   <Bell className="h-4 w-4 text-primary" /> Avisos
                 </CardTitle>
               </CardHeader>
@@ -209,10 +209,10 @@ export default function PortalDiretor() {
 
         {/* ─── Documentos ─── */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <Card className="border-border/70">
+          <Card className="ds-card">
             <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="ds-h3 flex items-center gap-2">
                   <FileText className="h-4 w-4 text-primary" /> Documentos da Prestação de Contas
                 </CardTitle>
                 <Button size="sm" onClick={() => toast.info("Wireframe: gerar pacote completo")}>
@@ -235,13 +235,13 @@ export default function PortalDiretor() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {doc.status === "gerado" ? (
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-success/30 bg-success/8 text-success">
-                        <CheckCircle2 className="mr-1 h-2.5 w-2.5" /> Gerado
-                      </Badge>
+                      <span className="ds-badge ds-badge-success">
+                        <CheckCircle2 className="h-2.5 w-2.5" /> Gerado
+                      </span>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-border/50 bg-muted/40 text-muted-foreground">
-                        <Clock className="mr-1 h-2.5 w-2.5" /> Pendente
-                      </Badge>
+                      <span className="ds-badge ds-badge-neutral">
+                        <Clock className="h-2.5 w-2.5" /> Pendente
+                      </span>
                     )}
                     <Button
                       variant="ghost"
