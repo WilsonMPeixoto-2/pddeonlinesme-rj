@@ -1,0 +1,81 @@
+{
+  "project": "PDDE Online 2026",
+  "updated_at": "2026-05-07T01:56:28.6354476-03:00",
+  "source_of_truth": {
+    "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
+    "base_branch": "main",
+    "base_commit": "89d2306cac1a5dc8767dbbdfa03c97619518627b",
+    "local_branch_for_this_pr": "ops/agentic-continuity-workflows"
+  },
+  "operational_north": {
+    "plan": "Plano Global v4.1 atualizado apos Supabase Foundation v1",
+    "plan_file": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
+    "current_mode": "documental and operational governance before next functional PR"
+  },
+  "pull_requests": [
+    {
+      "number": 42,
+      "title": "ops(agentic): add Codex continuity and workflow infrastructure",
+      "head": "ops/agentic-continuity-workflows",
+      "base": "main",
+      "state": "open",
+      "merge_state": "pending_checks_after_rebase",
+      "review_decision": "REVIEW_REQUIRED",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/42"
+    },
+    {
+      "number": 41,
+      "title": "feat: dashboard B/C paths",
+      "head": "feat/dashboard-export-polish",
+      "base": "main",
+      "state": "merged",
+      "merge_commit": "89d2306cac1a5dc8767dbbdfa03c97619518627b",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/41"
+    },
+    {
+      "number": 40,
+      "title": "feat: integrate tech stack updates (preview)",
+      "head": "feat/tech-stack-integration",
+      "base": "main",
+      "state": "merged",
+      "merge_commit": "502dbeb4ea1e65367b672723d02fb7e629853934",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/40"
+    }
+  ],
+  "next_priority": {
+    "sub_milestone": "Demonstrativo Basico Individual",
+    "next_functional_pr": "feat(documentos): gerar Demonstrativo Basico individual via MEMORIA",
+    "technical_decision": "Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase",
+    "document_generation_constraints": [
+      "Do not depend on the BASE sheet for the individual file",
+      "Do not depend on XLOOKUP for the individual file",
+      "Preserve official template layout, formulas, borders and merged cells",
+      "Keep official document rules under human review"
+    ],
+    "scope_warning": "This governance PR must not implement document generation."
+  },
+  "mandatory_before_task": [
+    "Read AGENTS.md",
+    "Read .continuity/current-state.json",
+    "Read docs/HANDOFF.md",
+    "Read docs/DECISIONS.md",
+    "Read docs/ROADMAP_ADAPTIVE.md",
+    "Read docs/OPPORTUNITIES_BACKLOG.md",
+    "Read docs/PROJECT_STATE.md",
+    "Read docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md"
+  ],
+  "mandatory_after_task": [
+    "Update .continuity/current-state.json",
+    "Append .continuity/session-log.jsonl",
+    "Update docs/HANDOFF.md",
+    "Update decisions, roadmap, or backlog when scope or priority changes"
+  ],
+  "protected_boundaries": [
+    "Do not alter src/** in this PR",
+    "Do not alter supabase/** in this PR",
+    "Do not alter migrations in this PR",
+    "Do not alter package.json or package-lock.json in this PR",
+    "Do not alter Vercel configuration in this PR",
+    "Do not alter functional UI in this PR"
+  ]
+}

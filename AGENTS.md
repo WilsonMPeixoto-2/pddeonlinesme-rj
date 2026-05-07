@@ -5,6 +5,35 @@
 Este arquivo define a politica operacional de uso de ferramentas no projeto.
 O objetivo e reduzir retrabalho, evitar conflitos de responsabilidade e manter clareza sobre quem desenha, quem implementa e quem integra cada tarefa.
 
+## Continuidade agentic obrigatoria
+
+Antes de qualquer tarefa neste repositorio, o agente deve ler, nesta ordem:
+
+1. `AGENTS.md`
+2. `.continuity/current-state.json`
+3. `docs/HANDOFF.md`
+4. `docs/DECISIONS.md`
+5. `docs/ROADMAP_ADAPTIVE.md`
+6. `docs/OPPORTUNITIES_BACKLOG.md`
+7. `docs/PROJECT_STATE.md`
+8. `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`
+
+Depois de qualquer tarefa relevante, o agente deve atualizar:
+
+1. `.continuity/current-state.json`
+2. `.continuity/session-log.jsonl`
+3. `docs/HANDOFF.md`
+
+Se a tarefa alterar rumo, decisao tecnica, prioridade ou criterio de aceite, tambem atualizar:
+
+1. `docs/DECISIONS.md`
+2. `docs/ROADMAP_ADAPTIVE.md`
+3. `docs/OPPORTUNITIES_BACKLOG.md`
+
+O Plano Global v4.1, em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`, e o norte operacional atual. O backlog adaptativo e radar de oportunidades; ele nao autoriza mudancas funcionais sem PR proprio.
+
+O proximo sub-marco prioritario registrado e o **Demonstrativo Basico Individual**. A decisao tecnica vigente e **Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase**. O arquivo individual nao deve depender da aba BASE nem de XLOOKUP. Essa decisao orienta o proximo PR funcional, mas este arquivo nao autoriza alteracao de codigo, Supabase, migrations ou UI fora de escopo.
+
 ## Regra-mae
 
 Cursor define contrato, boundaries e impacto sistemico.
