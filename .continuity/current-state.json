@@ -1,6 +1,6 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-07T01:36:15.8099617-03:00",
+  "updated_at": "2026-05-07T01:40:39.1644488-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
@@ -13,6 +13,16 @@
     "current_mode": "documental and operational governance before next functional PR"
   },
   "open_pull_requests": [
+    {
+      "number": 42,
+      "title": "ops(agentic): add Codex continuity and workflow infrastructure",
+      "head": "ops/agentic-continuity-workflows",
+      "base": "main",
+      "state": "open",
+      "merge_state": "BLOCKED",
+      "review_decision": "REVIEW_REQUIRED",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/42"
+    },
     {
       "number": 41,
       "title": "feat: dashboard B/C paths",

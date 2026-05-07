@@ -10,10 +10,13 @@ Fonte de verdade: GitHub `main`, baseado em `07f3226`.
 
 Branch deste PR: `ops/agentic-continuity-workflows`.
 
+PR deste handoff: #42 - https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/42
+
 ## PRs abertos no GitHub
 
 | PR | Titulo | Branch | Estado |
 |---:|---|---|---|
+| #42 | ops(agentic): add Codex continuity and workflow infrastructure | `ops/agentic-continuity-workflows` | aberto, review required |
 | #41 | feat: dashboard B/C paths | `feat/dashboard-export-polish` | aberto, review required, merge blocked |
 | #40 | feat: integrate tech stack updates (preview) | `feat/tech-stack-integration` | aberto, review required, merge blocked |
 
