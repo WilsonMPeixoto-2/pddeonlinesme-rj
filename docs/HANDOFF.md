@@ -6,7 +6,13 @@ Atualizado em: 2026-05-07
 
 Fonte de verdade: GitHub `main`, atualmente em `d7061edfbafd669d2064bd30af68a351ece57637`.
 
-PRs #40, #41 e #42 foram incorporados. A branch funcional atual e:
+PRs #40, #41 e #42 foram incorporados. O PR funcional atual e:
+
+```txt
+#43 - https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43
+```
+
+Branch:
 
 ```txt
 feat/demonstrativo-basico-individual
@@ -22,7 +28,7 @@ feat(documentos): generate Demonstrativo Basico from school detail
 
 | PR | Titulo | Branch | Estado |
 |---:|---|---|---|
-| #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | local, pronto para abrir PR |
+| #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | aberto |
 | #42 | ops(agentic): add Codex continuity and workflow infrastructure | `ops/agentic-continuity-workflows` | mergeado em `d7061ed` |
 | #41 | feat: dashboard B/C paths | `feat/dashboard-export-polish` | mergeado em `89d2306` |
 | #40 | feat: integrate tech stack updates (preview) | `feat/tech-stack-integration` | mergeado em `502dbeb` |
