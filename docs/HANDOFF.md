@@ -28,7 +28,7 @@ feat(documentos): generate Demonstrativo Basico from school detail
 
 | PR | Titulo | Branch | Estado |
 |---:|---|---|---|
-| #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | aberto |
+| #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | aberto, mergeable, aguardando review |
 | #42 | ops(agentic): add Codex continuity and workflow infrastructure | `ops/agentic-continuity-workflows` | mergeado em `d7061ed` |
 | #41 | feat: dashboard B/C paths | `feat/dashboard-export-polish` | mergeado em `89d2306` |
 | #40 | feat: integrate tech stack updates (preview) | `feat/tech-stack-integration` | mergeado em `502dbeb` |
@@ -82,6 +82,15 @@ Decisao tecnica de dependencia:
 - `npm run lint`: passou com dois warnings preexistentes de `react-refresh/only-export-components`.
 - `npm test`: passou.
 - `npm run build`: passou; permanece warning de chunk grande. `exceljs` ficou em chunk separado.
+- Checks Vercel do PR #43: passaram.
+
+Preview:
+
+```txt
+https://pddeonlinesme-rj-git-feat-dem-beaa6a-wilson-m-peixotos-projects.vercel.app
+```
+
+Observacao: acesso anonimo ao Preview retorna Vercel Authentication. A validacao visual/autenticada ainda precisa ser feita com sessao autorizada.
 
 ## Validacoes pendentes apos Preview
 

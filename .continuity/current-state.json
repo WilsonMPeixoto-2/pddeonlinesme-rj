@@ -1,6 +1,6 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-07T02:14:32.7528022-03:00",
+  "updated_at": "2026-05-07T02:18:17.8941995-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
@@ -19,7 +19,10 @@
       "head": "feat/demonstrativo-basico-individual",
       "base": "main",
       "state": "open",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43"
+      "mergeable": "MERGEABLE",
+      "merge_state": "BLOCKED_BY_REQUIRED_REVIEW",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43",
+      "preview_url": "https://pddeonlinesme-rj-git-feat-dem-beaa6a-wilson-m-peixotos-projects.vercel.app"
     },
     {
       "number": 42,
@@ -90,7 +93,9 @@
     "typescript": "passed: npx tsc --noEmit",
     "lint": "passed with existing react-refresh warnings in masked-input.tsx and useExercicio.tsx",
     "tests": "passed: npm test",
-    "build": "passed: npm run build; existing large chunk warning remains, exceljs is dynamically imported into a separate chunk"
+    "build": "passed: npm run build; existing large chunk warning remains, exceljs is dynamically imported into a separate chunk",
+    "vercel_checks": "passed: Vercel Preview Comments, Vercel - pddeonlinesme-rj, Vercel - pddeonlinesme-rj-pr8-validate",
+    "preview_smoke": "blocked for anonymous access by Vercel Authentication; authenticated browser/session validation still required"
   },
   "next_priority": {
     "after_this_pr": [
