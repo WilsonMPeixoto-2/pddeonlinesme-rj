@@ -35,3 +35,11 @@ Este documento registra decisoes operacionais vigentes. Ele complementa `docs/DE
 **Decisao:** todo agente deve ler os documentos de continuidade antes de agir e atualizar continuidade/handoff depois de tarefas relevantes.
 
 **Consequencia:** PRs futuros devem registrar estado, decisoes e proximo passo para reduzir perda de contexto entre ferramentas.
+
+## 2026-05-07 - ExcelJS para Demonstrativo individual
+
+**Decisao:** usar `exceljs` no gerador individual do Demonstrativo Basico.
+
+**Consequencia:** a dependencia `xlsx` existente permanece disponivel para exportacoes tabulares simples, mas o Demonstrativo individual usa `exceljs` porque precisa preservar template, formulas, bordas e mesclagens com maior fidelidade.
+
+**Restricao:** `exceljs` deve ser carregado sob demanda, via `dynamic import()`, para nao aumentar desnecessariamente o bundle inicial.

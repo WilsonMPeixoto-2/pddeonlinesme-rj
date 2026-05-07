@@ -1,26 +1,36 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-07T01:56:28.6354476-03:00",
+  "updated_at": "2026-05-07T02:22:41.8105585-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "89d2306cac1a5dc8767dbbdfa03c97619518627b",
-    "local_branch_for_this_pr": "ops/agentic-continuity-workflows"
+    "base_commit": "d7061edfbafd669d2064bd30af68a351ece57637",
+    "local_branch_for_this_pr": "feat/demonstrativo-basico-individual"
   },
   "operational_north": {
     "plan": "Plano Global v4.1 atualizado apos Supabase Foundation v1",
     "plan_file": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "documental and operational governance before next functional PR"
+    "current_mode": "functional document generation PR after agentic continuity infrastructure"
   },
   "pull_requests": [
+    {
+      "number": 43,
+      "title": "feat(documentos): generate Demonstrativo Basico from school detail",
+      "head": "feat/demonstrativo-basico-individual",
+      "base": "main",
+      "state": "open",
+      "mergeable": "MERGEABLE",
+      "merge_state": "BLOCKED_BY_REQUIRED_REVIEW",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43",
+      "preview_url": "https://pddeonlinesme-rj-git-feat-dem-beaa6a-wilson-m-peixotos-projects.vercel.app"
+    },
     {
       "number": 42,
       "title": "ops(agentic): add Codex continuity and workflow infrastructure",
       "head": "ops/agentic-continuity-workflows",
       "base": "main",
-      "state": "open",
-      "merge_state": "pending_checks_after_rebase",
-      "review_decision": "REVIEW_REQUIRED",
+      "state": "merged",
+      "merge_commit": "d7061edfbafd669d2064bd30af68a351ece57637",
       "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/42"
     },
     {
@@ -42,18 +52,25 @@
       "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/40"
     }
   ],
-  "next_priority": {
+  "current_implementation": {
     "sub_milestone": "Demonstrativo Basico Individual",
-    "next_functional_pr": "feat(documentos): gerar Demonstrativo Basico individual via MEMORIA",
     "technical_decision": "Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase",
-    "document_generation_constraints": [
-      "Do not depend on the BASE sheet for the individual file",
-      "Do not depend on XLOOKUP for the individual file",
-      "Preserve official template layout, formulas, borders and merged cells",
-      "Keep official document rules under human review"
+    "template": "public/templates/demonstrativo-basico-4cre-template.xlsx",
+    "generator_files": [
+      "src/lib/demonstrativo/templateCells.ts",
+      "src/lib/demonstrativo/mapUnidadeToMemoria.ts",
+      "src/lib/demonstrativo/generateDemonstrativoBasico.ts"
     ],
-    "scope_warning": "This governance PR must not implement document generation."
+    "ui_entrypoint": "src/pages/EscolaEditar.tsx",
+    "dependency_decision": "exceljs was added because xlsx does not preserve workbook template styles, borders and merged-cell fidelity reliably."
   },
+  "document_generation_constraints": [
+    "Fill MEMORIA directly from vw_unidade_detalhe data",
+    "Do not depend on the BASE sheet for the individual file",
+    "Do not depend on XLOOKUP for the individual file",
+    "Preserve template layout, formulas, borders and merged cells",
+    "Keep official document rules under human review"
+  ],
   "mandatory_before_task": [
     "Read AGENTS.md",
     "Read .continuity/current-state.json",
@@ -70,12 +87,27 @@
     "Update docs/HANDOFF.md",
     "Update decisions, roadmap, or backlog when scope or priority changes"
   ],
-  "protected_boundaries": [
-    "Do not alter src/** in this PR",
-    "Do not alter supabase/** in this PR",
-    "Do not alter migrations in this PR",
-    "Do not alter package.json or package-lock.json in this PR",
-    "Do not alter Vercel configuration in this PR",
-    "Do not alter functional UI in this PR"
-  ]
+  "last_validation": {
+    "template_inspection": "MEMORIA target cells confirmed in the template before implementation.",
+    "generated_workbook_smoke": "Generated two .xlsx files from fixture school units and inspected MEMORIA target cells with openpyxl; no XLOOKUP remained in MEMORIA and no #REF!, #VALUE! or #NAME? tokens were found.",
+    "typescript": "passed: npx tsc --noEmit",
+    "lint": "passed with existing react-refresh warnings in masked-input.tsx and useExercicio.tsx",
+    "tests": "passed: npm test",
+    "build": "passed: npm run build; existing large chunk warning remains, exceljs is dynamically imported into a separate chunk",
+    "vercel_checks": "passed: Vercel Preview Comments, Vercel - pddeonlinesme-rj, Vercel - pddeonlinesme-rj-pr8-validate",
+    "preview_smoke": "blocked for anonymous access by Vercel Authentication; authenticated browser/session validation still required",
+    "review_comments": "initial Copilot comments addressed locally: BASE_URL-aware template URL, template buffer cache, metadata separated from MEMORIA fields, robust money string parsing, and aria-busy/decorative icons on the generate button"
+  },
+  "next_priority": {
+    "after_this_pr": [
+      "Validate the Vercel Preview with an authenticated session.",
+      "Open /escolas/:id and generate a Demonstrativo Basico from at least two real Supabase units.",
+      "Confirm each generated workbook opens in Excel and recalculates the Demonstrativo sheet from MEMORIA."
+    ],
+    "later": [
+      "Edicao cadastral minima",
+      "Audit log",
+      "Geracao em lote dos Demonstrativos"
+    ]
+  }
 }

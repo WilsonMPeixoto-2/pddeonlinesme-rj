@@ -15,13 +15,17 @@ import {
   Landmark,
   Coins,
   CheckCircle2,
+  Download,
   FileText,
+  Loader2,
   Save,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { saveAs } from "file-saver";
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
+import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
 import { cn } from "@/lib/utils";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
@@ -83,6 +87,7 @@ export default function EscolaEditar() {
   const { exercicio } = useExercicio();
   const [activeSection, setActiveSection] = useState<string>("identificacao");
   const [docsOpen, setDocsOpen] = useState(false);
+  const [isGeneratingDemonstrativo, setIsGeneratingDemonstrativo] = useState(false);
 
   const PROGRAMA_PADRAO = "basico";
   const programaLabel = PROGRAMA_PADRAO === "basico" ? "básico" : PROGRAMA_PADRAO;
@@ -120,6 +125,30 @@ export default function EscolaEditar() {
 
   const handleSaveClick = () => {
     toast.info("Edição cadastral será tratada em etapa própria de governança de dados.");
+  };
+
+  const handleGenerateDemonstrativo = async () => {
+    if (!u) return;
+
+    try {
+      setIsGeneratingDemonstrativo(true);
+      const { blob, fileName } = await generateDemonstrativoBasico(u, exercicio);
+
+      saveAs(blob, fileName);
+      toast.success("Demonstrativo Básico gerado.", {
+        description: fileName,
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao gerar o Demonstrativo Básico.", {
+        description:
+          err instanceof Error
+            ? err.message
+            : "Verifique o template e tente novamente.",
+      });
+    } finally {
+      setIsGeneratingDemonstrativo(false);
+    }
   };
 
   const scrollTo = (sectionId: string) => {
@@ -211,6 +240,20 @@ export default function EscolaEditar() {
           </nav>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleGenerateDemonstrativo}
+              disabled={isGeneratingDemonstrativo}
+              aria-busy={isGeneratingDemonstrativo}
+            >
+              {isGeneratingDemonstrativo ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+              )}
+              Gerar Demonstrativo Básico (.xlsx)
+            </Button>
             <Button size="sm" onClick={() => setDocsOpen(true)}>
               <FileText className="mr-2 h-4 w-4" /> Gerar documentos
             </Button>
