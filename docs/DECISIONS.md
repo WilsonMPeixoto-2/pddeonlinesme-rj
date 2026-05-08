@@ -30,6 +30,16 @@ Este documento registra decisoes operacionais vigentes. Ele complementa `docs/DE
 
 **Limite:** esta decisao nao autoriza alteracao de Supabase, RLS, auth, migrations, regras financeiras ou template oficial sem revisao humana.
 
+## 2026-05-08 - Saneamento do template publico do Demonstrativo
+
+**Decisao:** templates documentais publicados em `public/` nao podem conter dados reais consolidados de unidades escolares.
+
+**Consequencia:** o template publico do Demonstrativo Basico deve conter apenas estrutura documental, layout e abas necessarias ao documento individual. Dados reais permanecem no Supabase e sao injetados pelo gerador.
+
+**Restricao:** arquivos individuais gerados nao podem conter a aba `BASE`, formulas `XLOOKUP`, referencias `BASE!` ou referencias estruturadas `BASE[...]`.
+
+**Regra operacional:** planilhas-mestras legadas com `BASE`, formulas de busca ou dados consolidados podem ser usadas apenas como referencia historica/documental, nunca como template publico nem como arquivo final entregue a uma unidade.
+
 ## 2026-05-07 - Continuidade obrigatoria
 
 **Decisao:** todo agente deve ler os documentos de continuidade antes de agir e atualizar continuidade/handoff depois de tarefas relevantes.

@@ -1,6 +1,6 @@
 # Handoff Operacional - PDDE Online 2026
 
-Atualizado em: 2026-05-07
+Atualizado em: 2026-05-08
 
 ## Contexto atual
 
@@ -53,6 +53,8 @@ Restricoes da decisao:
 
 - nao depender da aba `BASE` para o arquivo individual;
 - nao depender de `XLOOKUP` para o arquivo individual;
+- nao publicar template com dados reais consolidados de unidades em `public/`;
+- remover a aba `BASE` do workbook em memoria antes de salvar o arquivo final, se ela existir;
 - preservar layout, formulas, bordas e mesclagens do template;
 - manter revisao humana para regras documentais oficiais.
 
@@ -64,6 +66,7 @@ Arquivos criados/alterados:
 - `src/lib/demonstrativo/templateCells.ts`
 - `src/lib/demonstrativo/mapUnidadeToMemoria.ts`
 - `src/lib/demonstrativo/generateDemonstrativoBasico.ts`
+- `src/lib/demonstrativo/generateDemonstrativoBasico.test.ts`
 - `src/pages/EscolaEditar.tsx`
 - `package.json`
 - `package-lock.json`
@@ -76,9 +79,14 @@ Decisao tecnica de dependencia:
 ## Validacoes executadas
 
 - Template inspecionado antes da implementacao: abas `BASE`, `MEMORIA`, `Demonstrativo` e `Conciliação Bancária`; celulas-alvo da `MEMORIA` confirmadas.
+- Saneamento de 2026-05-08: template publico reinspecionado apos remocao da aba `BASE`; abas finais `MEMORIA`, `Demonstrativo` e `Conciliação Bancária`.
+- Saneamento de 2026-05-08: celulas de entrada da `MEMORIA` no template publico foram neutralizadas; nenhuma formula com `BASE!`, `BASE[` ou `XLOOKUP` permaneceu no template.
+- Gerador atualizado para remover defensivamente a aba `BASE` do workbook em memoria apos preencher `MEMORIA` e antes de salvar o arquivo final.
+- Teste automatizado adicionado para gerar workbook individual, confirmar ausencia da aba `BASE`, existencia das abas `MEMORIA`/`Demonstrativo`, preenchimento de `MEMORIA!B2` e ausencia de formulas `BASE!`, `BASE[` ou `XLOOKUP`.
 - Smoke local do gerador: dois arquivos `.xlsx` gerados com fixtures de unidades diferentes.
 - Inspecao com `openpyxl`: celulas-alvo da `MEMORIA` preenchidas diretamente, sem XLOOKUP remanescente em `MEMORIA`, sem tokens `#REF!`, `#VALUE!` ou `#NAME?`.
 - Comentarios iniciais do Copilot foram tratados: URL do template respeita `BASE_URL`, template fica em cache de modulo, metadados do nome de arquivo foram separados dos campos reais de `MEMORIA`, parsing monetario aceita strings como `R$ 1.000,50`, e o botao recebeu `aria-busy`/icones decorativos.
+- `npm test -- generateDemonstrativoBasico`: passou.
 - `npx tsc --noEmit`: passou.
 - `npm run lint`: passou com dois warnings preexistentes de `react-refresh/only-export-components`.
 - `npm test`: passou.

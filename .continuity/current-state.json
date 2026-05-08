@@ -1,6 +1,6 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-07T02:22:41.8105585-03:00",
+  "updated_at": "2026-05-08T03:25:02-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
@@ -56,10 +56,12 @@
     "sub_milestone": "Demonstrativo Basico Individual",
     "technical_decision": "Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase",
     "template": "public/templates/demonstrativo-basico-4cre-template.xlsx",
+    "template_public_state": "Sanitized on 2026-05-08: no BASE sheet, no real consolidated unit data, MEMORIA input cells blank.",
     "generator_files": [
       "src/lib/demonstrativo/templateCells.ts",
       "src/lib/demonstrativo/mapUnidadeToMemoria.ts",
-      "src/lib/demonstrativo/generateDemonstrativoBasico.ts"
+      "src/lib/demonstrativo/generateDemonstrativoBasico.ts",
+      "src/lib/demonstrativo/generateDemonstrativoBasico.test.ts"
     ],
     "ui_entrypoint": "src/pages/EscolaEditar.tsx",
     "dependency_decision": "exceljs was added because xlsx does not preserve workbook template styles, borders and merged-cell fidelity reliably."
@@ -68,6 +70,8 @@
     "Fill MEMORIA directly from vw_unidade_detalhe data",
     "Do not depend on the BASE sheet for the individual file",
     "Do not depend on XLOOKUP for the individual file",
+    "Do not publish templates in public/ with real consolidated BASE data",
+    "Remove the BASE sheet from generated individual workbooks if present",
     "Preserve template layout, formulas, borders and merged cells",
     "Keep official document rules under human review"
   ],
@@ -88,12 +92,12 @@
     "Update decisions, roadmap, or backlog when scope or priority changes"
   ],
   "last_validation": {
-    "template_inspection": "MEMORIA target cells confirmed in the template before implementation.",
-    "generated_workbook_smoke": "Generated two .xlsx files from fixture school units and inspected MEMORIA target cells with openpyxl; no XLOOKUP remained in MEMORIA and no #REF!, #VALUE! or #NAME? tokens were found.",
+    "template_inspection": "2026-05-08 openpyxl inspection confirmed the public template has sheets MEMORIA, Demonstrativo and Conciliacao Bancaria only; no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits.",
+    "generated_workbook_smoke": "Automated Vitest coverage generates a fixture workbook, confirms no BASE sheet, confirms MEMORIA/Demonstrativo sheets, fills MEMORIA!B2 and scans generated formulas for BASE!/BASE[/XLOOKUP.",
     "typescript": "passed: npx tsc --noEmit",
     "lint": "passed with existing react-refresh warnings in masked-input.tsx and useExercicio.tsx",
     "tests": "passed: npm test",
-    "build": "passed: npm run build; existing large chunk warning remains, exceljs is dynamically imported into a separate chunk",
+    "build": "passed: npm run build; existing large chunk warning remains; post-build inspection confirmed dist template has no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits",
     "vercel_checks": "passed: Vercel Preview Comments, Vercel - pddeonlinesme-rj, Vercel - pddeonlinesme-rj-pr8-validate",
     "preview_smoke": "blocked for anonymous access by Vercel Authentication; authenticated browser/session validation still required",
     "review_comments": "initial Copilot comments addressed locally: BASE_URL-aware template URL, template buffer cache, metadata separated from MEMORIA fields, robust money string parsing, and aria-busy/decorative icons on the generate button"

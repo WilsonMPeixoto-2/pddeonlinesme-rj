@@ -7,6 +7,7 @@ export const DEMONSTRATIVO_TEMPLATE_URL = `${appBaseUrl}templates/demonstrativo-
 export const XLSX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
+export const BASE_SHEET_NAME = "BASE";
 export const MEMORIA_SHEET_NAME = "MEMORIA";
 export const DEMONSTRATIVO_SHEET_NAME = "Demonstrativo";
 

@@ -1,6 +1,7 @@
 import type { Worksheet } from "exceljs";
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import {
+  BASE_SHEET_NAME,
   DEMONSTRATIVO_SHEET_NAME,
   DEMONSTRATIVO_TEMPLATE_URL,
   MEMORIA_CELLS,
@@ -83,6 +84,13 @@ export async function generateDemonstrativoBasico(
 
   const { fileName, memoria } = mapUnidadeToMemoria(unidade, exercicio);
   fillMemoria(memoriaWorksheet, memoria);
+
+  // The individual workbook must not carry the legacy consolidated BASE sheet.
+  // Once MEMORIA is filled with literal values, BASE is no longer required.
+  const baseWorksheet = workbook.getWorksheet(BASE_SHEET_NAME);
+  if (baseWorksheet) {
+    workbook.removeWorksheet(baseWorksheet.id);
+  }
 
   const outputBuffer = await workbook.xlsx.writeBuffer();
 
