@@ -1,12 +1,12 @@
 # Handoff Operacional - PDDE Online 2026
 
-Atualizado em: 2026-05-08
+Atualizado em: 2026-05-09
 
 ## Contexto atual
 
-Fonte de verdade: GitHub `main`, atualmente em `d7061edfbafd669d2064bd30af68a351ece57637`.
+Fonte de verdade: GitHub `main`, atualmente em `9c47ed99887fb8df5ee2ba17251ff2c8591df989`.
 
-PRs #40, #41 e #42 foram incorporados. O PR funcional atual e:
+PRs #40, #41, #42 e #44 foram incorporados. O PR funcional atual e:
 
 ```txt
 #43 - https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43
@@ -24,11 +24,14 @@ Objetivo da branch:
 feat(documentos): generate Demonstrativo Basico from school detail
 ```
 
+A branch do PR #43 foi sincronizada em 2026-05-09 com `origin/main` apos o merge do PR #44. Com isso, `supabase/config.toml` tambem aponta para o Supabase proprio `raluxyojqosfzrfozmpz`, e a branch nao contem referencias ativas aos refs antigos do Supabase Lovable.
+
 ## PRs recentes
 
 | PR | Titulo | Branch | Estado |
 |---:|---|---|---|
-| #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | aberto, mergeable, aguardando review |
+| #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | aberto, mergeable, sincronizado com `main` apos #44, aguardando review |
+| #44 | Feat/dashboard real vw dashboard basico | `feat/dashboard-real-vw-dashboard-basico` | mergeado em `9c47ed9` |
 | #42 | ops(agentic): add Codex continuity and workflow infrastructure | `ops/agentic-continuity-workflows` | mergeado em `d7061ed` |
 | #41 | feat: dashboard B/C paths | `feat/dashboard-export-polish` | mergeado em `89d2306` |
 | #40 | feat: integrate tech stack updates (preview) | `feat/tech-stack-integration` | mergeado em `502dbeb` |
@@ -92,6 +95,12 @@ Decisao tecnica de dependencia:
 - `npm test`: passou.
 - `npm run build`: passou; permanece warning de chunk grande. `exceljs` ficou em chunk separado.
 - Checks Vercel do PR #43: passaram.
+- Sincronizacao de 2026-05-09 com `origin/main`: `supabase/config.toml` corrigido para `raluxyojqosfzrfozmpz`; `git grep` no `HEAD` nao encontrou `hhzenztvelxjnrzoseaa` nem `jasqctuzeznwdtbcuixn`.
+- Validacao tecnica apos sincronizacao: `npx tsc --noEmit`, `npm run lint`, `npm test` e `npm run build` passaram.
+- Lint permanece com os dois warnings preexistentes de `react-refresh/only-export-components` em `masked-input.tsx` e `useExercicio.tsx`.
+- Build permanece com warning de chunk grande; `exceljs` continua em chunk separado.
+- Inspecao `openpyxl` apos build confirmou que os templates em `public/` e `dist/` nao contem aba `BASE` nem formulas `BASE!`, `BASE[` ou `XLOOKUP`.
+- `supabase link --project-ref raluxyojqosfzrfozmpz --yes` foi executado neste worktree; `supabase projects list` mostra `pdde-online-2026-dev` como `LINKED`.
 
 Preview:
 

@@ -1,10 +1,10 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-08T03:25:02-03:00",
+  "updated_at": "2026-05-09T19:01:14-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "d7061edfbafd669d2064bd30af68a351ece57637",
+    "base_commit": "9c47ed99887fb8df5ee2ba17251ff2c8591df989",
     "local_branch_for_this_pr": "feat/demonstrativo-basico-individual"
   },
   "operational_north": {
@@ -23,6 +23,16 @@
       "merge_state": "BLOCKED_BY_REQUIRED_REVIEW",
       "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43",
       "preview_url": "https://pddeonlinesme-rj-git-feat-dem-beaa6a-wilson-m-peixotos-projects.vercel.app"
+    },
+    {
+      "number": 44,
+      "title": "Feat/dashboard real vw dashboard basico",
+      "head": "feat/dashboard-real-vw-dashboard-basico",
+      "base": "main",
+      "state": "merged",
+      "merge_commit": "9c47ed99887fb8df5ee2ba17251ff2c8591df989",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/44",
+      "summary": "Aligned Supabase project config to raluxyojqosfzrfozmpz and stopped tracking the local .env file."
     },
     {
       "number": 42,
@@ -92,12 +102,15 @@
     "Update decisions, roadmap, or backlog when scope or priority changes"
   ],
   "last_validation": {
+    "main_sync": "2026-05-09: merged origin/main at 9c47ed99887fb8df5ee2ba17251ff2c8591df989 into PR 43 branch. supabase/config.toml now points to raluxyojqosfzrfozmpz and git grep found no old Supabase refs in HEAD.",
+    "supabase_link": "2026-05-09: supabase link --project-ref raluxyojqosfzrfozmpz --yes completed in this worktree; supabase projects list shows LINKED for pdde-online-2026-dev.",
     "template_inspection": "2026-05-08 openpyxl inspection confirmed the public template has sheets MEMORIA, Demonstrativo and Conciliacao Bancaria only; no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits.",
     "generated_workbook_smoke": "Automated Vitest coverage generates a fixture workbook, confirms no BASE sheet, confirms MEMORIA/Demonstrativo sheets, fills MEMORIA!B2 and scans generated formulas for BASE!/BASE[/XLOOKUP.",
     "typescript": "passed: npx tsc --noEmit",
     "lint": "passed with existing react-refresh warnings in masked-input.tsx and useExercicio.tsx",
     "tests": "passed: npm test",
     "build": "passed: npm run build; existing large chunk warning remains; post-build inspection confirmed dist template has no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits",
+    "post_main_sync_validation": "2026-05-09 passed: npx tsc --noEmit, npm run lint with existing react-refresh warnings, npm test, npm run build with existing large chunk warnings, openpyxl inspection of public and dist templates.",
     "vercel_checks": "passed: Vercel Preview Comments, Vercel - pddeonlinesme-rj, Vercel - pddeonlinesme-rj-pr8-validate",
     "preview_smoke": "blocked for anonymous access by Vercel Authentication; authenticated browser/session validation still required",
     "review_comments": "initial Copilot comments addressed locally: BASE_URL-aware template URL, template buffer cache, metadata separated from MEMORIA fields, robust money string parsing, and aria-busy/decorative icons on the generate button"
