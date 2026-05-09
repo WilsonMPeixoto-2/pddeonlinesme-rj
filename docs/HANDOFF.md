@@ -95,7 +95,7 @@ Decisao tecnica de dependencia:
 - `npm test`: passou.
 - `npm run build`: passou; permanece warning de chunk grande. `exceljs` ficou em chunk separado.
 - Checks Vercel do PR #43: passaram.
-- Sincronizacao de 2026-05-09 com `origin/main`: `supabase/config.toml` corrigido para `raluxyojqosfzrfozmpz`; `git grep` no `HEAD` nao encontrou `hhzenztvelxjnrzoseaa` nem `jasqctuzeznwdtbcuixn`.
+- Sincronizacao de 2026-05-09 com `origin/main`: `supabase/config.toml` corrigido para `raluxyojqosfzrfozmpz`; `git grep` no `HEAD` nao encontrou refs antigos do Supabase Lovable.
 - Validacao tecnica apos sincronizacao: `npx tsc --noEmit`, `npm run lint`, `npm test` e `npm run build` passaram.
 - Lint permanece com os dois warnings preexistentes de `react-refresh/only-export-components` em `masked-input.tsx` e `useExercicio.tsx`.
 - Build permanece com warning de chunk grande; `exceljs` continua em chunk separado.
