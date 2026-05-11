@@ -71,8 +71,7 @@ Restricoes da decisao (permanecem vigentes para futuras alteracoes):
 2. **README real** — substituir boilerplate Lovable por documentacao propria do projeto.
 3. **CI minimo** — lint + typecheck em PRs.
 4. **Lockfile unico** — remover `bun.lock` e `bun.lockb`, manter apenas `package-lock.json`.
-5. **Limpeza lovable-tagger** — remover dependencia e import no `vite.config.ts`.
-6. **Cobertura de testes DocumentsPanel** — ampliar coverage de erro e placeholders.
+5. **Cobertura de testes DocumentsPanel** — ampliar coverage de erro e placeholders.
 
 ## Riscos operacionais conhecidos
 

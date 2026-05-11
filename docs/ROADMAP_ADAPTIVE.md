@@ -33,10 +33,7 @@ Este roadmap adaptativo nao substitui o plano. Ele organiza a fila curta e regis
 4. `Lockfile unico` — remover `bun.lock` e `bun.lockb`, manter apenas `package-lock.json`.
    - Escopo: lockfiles.
 
-5. `Limpeza lovable-tagger` — remover dependencia e import no `vite.config.ts`.
-   - Escopo: `package.json`, `package-lock.json`, `vite.config.ts`.
-
-6. `Cobertura de testes DocumentsPanel` — ampliar coverage de erro e placeholders.
+5. `Cobertura de testes DocumentsPanel` — ampliar coverage de erro e placeholders.
    - Escopo: `src/components/escola/DocumentsPanel.test.tsx`.
 
 ## Marcos funcionais maiores (pós higiene)

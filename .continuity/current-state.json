@@ -140,7 +140,6 @@
       "README real (replace Lovable boilerplate)",
       "Minimal CI (lint + typecheck on PR)",
       "Single lockfile (remove bun.lock/bun.lockb)",
-      "Remove lovable-tagger from devDependencies and vite.config.ts",
       "DocumentsPanel test coverage",
       "Edicao cadastral minima (Fase 2B)"
     ]

@@ -14,9 +14,9 @@ Este backlog e um radar. Ele registra oportunidades, riscos e proximas frentes, 
 | 2 | README real | documentacao | pendente | Substituir boilerplate Lovable. |
 | 3 | CI minimo | infraestrutura | pendente | lint + typecheck em PRs. |
 | 4 | Lockfile unico | infraestrutura | pendente | Remover `bun.lock` e `bun.lockb`. |
-| 5 | Limpeza lovable-tagger | infraestrutura | pendente | Remover de devDependencies e `vite.config.ts`. |
-| 6 | Cobertura de testes DocumentsPanel | qualidade | pendente | Caminhos de erro e placeholders. |
-| 7 | Dashboard real/analitico | produto/dados | pendente | Pertence ao Marco 9; nao tratar como Foundation v1. |
+| — | Limpeza lovable-tagger | infraestrutura | **concluido** | Removido de devDependencies e `vite.config.ts`. |
+| 5 | Cobertura de testes DocumentsPanel | qualidade | pendente | Caminhos de erro e placeholders. |
+| 6 | Dashboard real/analitico | produto/dados | pendente | Pertence ao Marco 9; nao tratar como Foundation v1. |
 | 8 | Fase 2B edicao cadastral/bancaria | dados/UI | pendente | Exige contrato, permissao, auditoria e validacao. |
 | 9 | Importador institucional via interface | dados/documentos | pendente | Pertence ao Marco 10; carga administrativa inicial ja cumpriu seu papel. |
 | 10 | Auth/roles/guards/RLS final | seguranca | pendente | Revisao humana obrigatoria. |
