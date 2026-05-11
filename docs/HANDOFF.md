@@ -2,27 +2,56 @@
 
 Atualizado em: 2026-05-11
 
-## Regra de fonte de verdade
+## Regra de leitura
 
-A fonte de verdade tecnica do projeto e sempre a verificacao direta do codigo-fonte, branch, commit, diff, configuracao versionada e testes reais no GitHub.
+A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, configuração versionada e testes reais no GitHub. Este arquivo é um snapshot operacional para continuidade; deve orientar a retomada, mas não substitui verificação direta na `main`.
 
-Este documento e um snapshot operacional para continuidade entre sessoes. Ele deve orientar a retomada, mas nao substitui a verificacao direta da `main` antes de qualquer decisao.
+## Contexto atual
 
-## Contexto atual verificado
+Fonte de verdade a verificar: GitHub `main`.
 
-Repositorio: `WilsonMPeixoto-2/pddeonlinesme-rj`
+Snapshot operacional desta atualização: `main` em `c769d473170cca63ce6f4108b873ce12277e3072`.
 
-Branch base: `main`
+PRs #40 a #53 foram incorporados a `main`. Não há indicação, neste snapshot, de PR funcional aberto a ser continuado.
 
-HEAD atual verificado: `c769d473170cca63ce6f4108b873ce12277e3072`
+## Estado consolidado entregue
 
-Status: nao ha indicacao de PR funcional aberto neste snapshot.
+### Demonstrativo Básico Individual
 
-## Ciclo recente concluido
+Status: **concluído, testado e implantado em produção**.
 
-A fila curta de higiene, governanca e estabilizacao foi concluida nos PRs recentes:
+```txt
+#43 - https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43
+Merge commit: 4d97a9cba09fcfe155402f4c6b6679087fc3d19e
+Merged at: 2026-05-11T01:37:40Z
+Merged by: WilsonMPeixoto-2 (admin bypass)
+```
 
-| PR | Titulo | Estado |
+Decisão técnica vigente:
+
+```txt
+Opção B: preencher a aba MEMORIA diretamente com dados do Supabase.
+```
+
+Restrições vigentes para qualquer alteração futura:
+
+- não depender da aba `BASE` para o arquivo individual;
+- não depender de `XLOOKUP` para o arquivo individual;
+- não publicar template com dados reais consolidados de unidades em `public/`;
+- remover a aba `BASE` do workbook em memória antes de salvar o arquivo final, se ela existir;
+- preservar layout, fórmulas, bordas e mesclagens do template;
+- manter revisão humana para regras documentais oficiais.
+
+### Correções de UI entregues no PR #43
+
+1. **Tabela `/escolas`:** substituição de `motion.tr` + `row-accent` por `TableRow` nativo, `table-fixed` e `colgroup`, para evitar desalinhamento de colunas.
+2. **DocumentsPanel:** integração com `useUnidadeDetalhe`, `generateDemonstrativoBasico` e `file-saver/saveAs`, eliminando o antigo sucesso falso sem download.
+
+Arquivo real do componente: `src/components/DocumentsPanel.tsx`.
+
+## PRs recentes incorporados
+
+| PR | Título | Estado |
 |---:|---|---|
 | #53 | chore(deps): safe patch updates | mergeado em `c769d47` |
 | #52 | docs(state): reconcile documentation with current main state | mergeado em `3152aec` |
@@ -34,31 +63,48 @@ A fila curta de higiene, governanca e estabilizacao foi concluida nos PRs recent
 | #46 | docs(governance): realign AGENTS with source-of-truth protocol | mergeado em `a34c3d0` |
 | #45 | docs(state): reconcile continuity after PR 43 merge | mergeado em `88238ce` |
 | #43 | feat(documentos): generate Demonstrativo Basico from school detail | mergeado em `4d97a9c` |
+| #44 | Feat/dashboard real vw dashboard basico | mergeado em `9c47ed9` |
+| #42 | ops(agentic): add Codex continuity and workflow infrastructure | mergeado em `d7061ed` |
+| #41 | feat: dashboard B/C paths | mergeado em `89d2306` |
+| #40 | feat: integrate tech stack updates (preview) | mergeado em `502dbeb` |
 
-## Sub-marco entregue: Demonstrativo Basico Individual
+## Validações e limites da evidência
 
-Status: concluido, mergeado e implantado em producao.
+- O código e os testes versionados são a evidência primária.
+- Smoke autenticado em produção foi reportado em sessão operacional, mas não há artefato versionado no repositório para esse smoke.
+- Qualquer agente deve validar novamente no código antes de afirmar estado funcional.
 
-URL de producao: https://pddeonlinesme-rj.vercel.app
+## Norte operacional
 
-Decisao tecnica vigente:
+O norte atual é o Plano Global v4.1 registrado em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`.
 
-```txt
-Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase.
-```
+Itens como login definitivo, roles, RLS, Portal do Diretor, importador institucional, motor documental em lote, configurações reais e hardening **já estão alocados no Plano Global**. Não devem ser tratados como novas falhas urgentes apenas por ainda não estarem implementados no protótipo.
 
-Restricoes permanentes para futuras alteracoes:
+## Próxima frente funcional recomendada
 
-- nao depender da aba `BASE` para o arquivo individual;
-- nao depender de `XLOOKUP` para o arquivo individual;
-- nao publicar template com dados reais consolidados de unidades em `public/`;
-- remover a aba `BASE` do workbook em memoria antes de salvar o arquivo final, se ela existir;
-- preservar layout, formulas, bordas e mesclagens do template;
-- manter revisao humana para regras documentais oficiais.
+**Fase 2B — Edição cadastral mínima**, iniciando por contrato técnico antes de UI:
 
-## Implementacao funcional relevante
+- campos editáveis;
+- quem pode editar;
+- se a alteração será direta ou por solicitação;
+- validação;
+- trilha de auditoria;
+- impacto em documentos já gerados.
 
-Arquivos centrais do Demonstrativo Basico Individual:
+## Pendências planejadas, não urgentes
+
+| Tema | Alocação planejada | Observação |
+|---|---|---|
+| Login, cadastro público, roles, guards e RLS final | Marco 6B | Protótipo usado pelo desenvolvedor; não tratar como urgência sem risco real. |
+| Configurações/Admin real | Marco 6B / fluxos administrativos | A tela atual pode conter placeholders. |
+| Importador institucional final | Marco 10B | Diferenciar importador técnico atual de fluxo institucional final. |
+| Portal do Diretor | Marco 13 | Depende de papéis e vínculo diretor-escola. |
+| Motor documental em lote / ZIP | Marcos 11, 12 e 15 | Avançar após contratos documentais. |
+| Hardening, smoke/e2e, acessibilidade, logs e bundle | Marco 14 / contínuo | Não bloquear protótipo salvo regressão concreta. |
+
+## Implementação entregue pelo PR #43
+
+Arquivos principais:
 
 - `public/templates/demonstrativo-basico-4cre-template.xlsx`
 - `src/lib/demonstrativo/templateCells.ts`
@@ -69,60 +115,28 @@ Arquivos centrais do Demonstrativo Basico Individual:
 - `src/pages/Escolas.tsx`
 - `src/components/DocumentsPanel.tsx`
 - `src/components/DocumentsPanel.test.tsx`
-
-Observacao: o caminho real atual do componente e `src/components/DocumentsPanel.tsx`. Nao usar `src/components/escola/DocumentsPanel.tsx` salvo se o codigo futuro criar esse caminho.
-
-## Itens planejados, nao urgentes
-
-Os seguintes pontos nao devem ser tratados como novas descobertas emergenciais. Eles ja pertencem ao Plano Global v4.1 e devem ser executados no marco adequado, salvo justificativa tecnica concreta para reordenacao:
-
-| Item | Alocacao planejada |
-|---|---|
-| Login, cadastro publico, roles, guards e RLS final | Marco 6B |
-| Configuracoes/Admin real | Marco 6B / fluxos administrativos |
-| Importador institucional final | Marco 10B |
-| Portal do Diretor | Marco 13 |
-| Motor documental em lote/ZIP | Marcos 11, 12 e 15 |
-| Hardening, smoke/e2e, acessibilidade, logs e bundle | Marco 14 / melhoria continua |
-
-## Proxima frente recomendada
-
-A proxima frente funcional recomendada e a **Fase 2B - edicao cadastral minima**.
-
-Metodo recomendado:
-
-1. iniciar por contrato tecnico pequeno;
-2. definir campos editaveis;
-3. definir permissao e auditoria;
-4. definir validacoes e logs;
-5. somente depois implementar UI.
-
-Nao iniciar por alteracao visual ampla sem contrato de dados, permissao e rastreabilidade.
-
-## Politica contra ciclo infinito de documentacao
-
-Documentacao acompanha o desenvolvimento; ela nao deve travar o projeto.
-
-Abrir PR exclusivamente documental apenas quando:
-
-- a documentacao induzir o proximo agente a executar tarefa errada;
-- listar como pendente algo ja concluido de forma que altere decisao operacional;
-- apontar caminho de arquivo incorreto que possa causar erro;
-- registrar prioridade incompatível com o plano global;
-- houver decisao nova que altere escopo, risco ou aceite.
-
-Drift pequeno de commit SHA, sem impacto operacional, deve preferencialmente ser corrigido junto ao proximo PR funcional.
+- `package.json`
+- `package-lock.json`
 
 ## Regras antes de qualquer tarefa
 
-Ler e verificar:
+Ler como orientação, não como fonte absoluta:
 
 1. `AGENTS.md`
-2. `.continuity/current-state.json` como snapshot, nao fonte absoluta
-3. `docs/HANDOFF.md` como snapshot, nao fonte absoluta
+2. `.continuity/current-state.json`
+3. `docs/HANDOFF.md`
 4. `docs/DECISIONS.md`
 5. `docs/ROADMAP_ADAPTIVE.md`
 6. `docs/OPPORTUNITIES_BACKLOG.md`
 7. `docs/PROJECT_STATE.md`
 8. `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`
-9. GitHub `main`, PRs recentes e arquivos reais antes de decidir
+
+Depois, verificar diretamente o código, branch, commit e diff reais no GitHub.
+
+## Política de atualização documental
+
+Documentação deve servir ao desenvolvimento, não capturá-lo.
+
+Abrir PR exclusivamente documental apenas quando o documento puder induzir a próxima tarefa ao erro, marcar trabalho concluído como pendente, marcar pendência planejada como falha urgente ou alterar prioridade/escopo de forma relevante.
+
+Drift pequeno de SHA ou metadado histórico deve ser corrigido no próximo PR funcional, salvo se afetar decisão operacional imediata.
