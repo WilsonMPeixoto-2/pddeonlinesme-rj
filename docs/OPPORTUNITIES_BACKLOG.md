@@ -9,12 +9,13 @@ Este backlog e um radar. Ele registra oportunidades, riscos e proximas frentes, 
 | — | Demonstrativo Basico Individual via `MEMORIA` | documentos | **concluido** (PR #43, merge `4d97a9c`) | Entregue em producao. Opcao B. |
 | — | PRs #40, #41, #42, #44 | governanca GitHub | **concluido** | Todos mergeados em `main`. |
 | — | PRs historicos superados | governanca GitHub | **concluido** | Branches deletadas, PRs fechados. |
-| 1 | Reconciliacao pos-merge PR #43 | governanca/docs | em andamento | Este PR: `docs/state-reconcile-after-pr43`. |
+| — | Reconciliacao pos-merge PR #43 | governanca/docs | **concluido** (PR #45, merge `88238ce`) | Drift corrigido. |
+| 1 | AGENTS.md realinhado | governanca | em andamento | Este PR: `docs/agents-source-of-truth`. |
 | 2 | README real | documentacao | pendente | Substituir boilerplate Lovable. |
-| 3 | AGENTS.md realinhado | governanca | pendente | Alinhar regra de fonte de verdade. |
-| 4 | CI minimo | infraestrutura | pendente | lint + typecheck em PRs. |
-| 5 | Lockfile unico | infraestrutura | pendente | Remover `yarn.lock` se presente. |
-| 6 | Limpeza lovable-tagger | infraestrutura | pendente | Remover GitHub Action herdada. |
+| 3 | CI minimo | infraestrutura | pendente | lint + typecheck em PRs. |
+| 4 | Lockfile unico | infraestrutura | pendente | Remover `bun.lock` e `bun.lockb`. |
+| 5 | Limpeza lovable-tagger | infraestrutura | pendente | Remover de devDependencies e `vite.config.ts`. |
+| 6 | Cobertura de testes DocumentsPanel | qualidade | pendente | Caminhos de erro e placeholders. |
 | 7 | Dashboard real/analitico | produto/dados | pendente | Pertence ao Marco 9; nao tratar como Foundation v1. |
 | 8 | Fase 2B edicao cadastral/bancaria | dados/UI | pendente | Exige contrato, permissao, auditoria e validacao. |
 | 9 | Importador institucional via interface | dados/documentos | pendente | Pertence ao Marco 10; carga administrativa inicial ja cumpriu seu papel. |

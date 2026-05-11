@@ -78,3 +78,20 @@ Este documento registra decisoes operacionais vigentes. Ele complementa `docs/DE
 
 **Restricao:** a preferencia permanece por revisao externa quando houver colaborador disponivel. O bypass administrativo nao substitui revisao de codigo como pratica permanente; e um procedimento excepcional permitido ao mantenedor em contexto de PR solo validado.
 
+## 2026-05-11 - Protocolo de fonte de verdade tecnica
+
+**Decisao:** a fonte de verdade primaria do projeto e a verificacao direta do codigo-fonte, branch, commit, diff, configuracao versionada e testes reais no GitHub. Relatorios de ferramentas, handoffs, `current-state.json`, roadmap, backlog, comentarios de PR e memorias sao snapshots auxiliares.
+
+**Consequencia:** todo agente deve classificar cada afirmacao como FATO VERIFICADO NO CODIGO, HIPOTESE, RELATO DE OUTRA FERRAMENTA ou PENDENCIA A CONFIRMAR. Nenhuma ferramenta e fonte de verdade. Se houver conflito entre documento e codigo real, o codigo prevalece.
+
+**Restricao:** nenhum agente pode tratar conteudo de `current-state.json`, `HANDOFF.md`, `ROADMAP_ADAPTIVE.md` ou qualquer outro documento operacional como prova definitiva de estado funcional sem conferir diretamente o repositorio.
+
+## 2026-05-11 - Modelo de ferramentas por escopo, sem hierarquia fixa
+
+**Decisao:** substituir o modelo rigido "Cursor define / Codex implementa / Cursor integra" por modelo por escopo. Qualquer ferramenta (Claude Code, Codex, Copilot, Cursor, Antigravity) pode liderar uma tarefa conforme sua capacidade e o escopo definido.
+
+**Consequencia:** a divisao de trabalho e determinada pelo tipo da tarefa (isolada vs integracao, funcional vs governanca, seguranca vs limpeza), nao pela identidade da ferramenta.
+
+**Restricao:** revisao humana continua obrigatoria para auth, RLS, roles, segredos, regras financeiras, templates oficiais e decisoes arquiteturais. Nenhuma ferramenta pode improvisar nessas areas.
+
+
