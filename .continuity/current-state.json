@@ -1,18 +1,32 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-11T05:00:00-03:00",
+  "updated_at": "2026-05-11T08:20:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "a1d04a971f265b9c9e525628b85e16dcd2c092f2",
-    "note": "Always verify against GitHub. This file is a snapshot, not a source of truth."
+    "base_commit": "c769d473170cca63ce6f4108b873ce12277e3072",
+    "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
     "plan": "Plano Global v4.1 atualizado apos Supabase Foundation v1",
     "plan_file": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "hygiene PRs completed"
+    "current_mode": "hygiene cycle completed; planned functional work should follow roadmap milestones"
   },
-  "pull_requests": [
+  "recent_pull_requests": [
+    {
+      "number": 53,
+      "title": "chore(deps): safe patch updates",
+      "state": "merged",
+      "merge_commit": "c769d473170cca63ce6f4108b873ce12277e3072",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/53"
+    },
+    {
+      "number": 52,
+      "title": "docs(state): reconcile documentation with current main state",
+      "state": "merged",
+      "merge_commit": "3152aec28bee9809d96f4f89a1c79a12c3b99c6c",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/52"
+    },
     {
       "number": 51,
       "title": "test(documents): cover DocumentsPanel error and placeholder flows",
@@ -56,93 +70,51 @@
       "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/46"
     },
     {
-      "number": 45,
-      "title": "docs(state): reconcile continuity after PR 43 merge",
-      "head": "docs/state-reconcile-after-pr43",
-      "base": "main",
-      "state": "merged",
-      "merge_commit": "88238cea1a4294c7b3c84c9501c2c3e434c73f79",
-      "merged_at": "2026-05-11T04:18:25Z",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/45"
-    },
-    {
       "number": 43,
       "title": "feat(documentos): generate Demonstrativo Basico from school detail",
-      "head": "feat/demonstrativo-basico-individual",
-      "base": "main",
       "state": "merged",
       "merge_commit": "4d97a9cba09fcfe155402f4c6b6679087fc3d19e",
-      "merged_at": "2026-05-11T01:37:40Z",
-      "merged_by": "WilsonMPeixoto-2",
       "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43"
-    },
-    {
-      "number": 44,
-      "title": "Feat/dashboard real vw dashboard basico",
-      "head": "feat/dashboard-real-vw-dashboard-basico",
-      "base": "main",
-      "state": "merged",
-      "merge_commit": "9c47ed99887fb8df5ee2ba17251ff2c8591df989",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/44",
-      "summary": "Aligned Supabase project config to raluxyojqosfzrfozmpz and stopped tracking the local .env file."
-    },
-    {
-      "number": 42,
-      "title": "ops(agentic): add Codex continuity and workflow infrastructure",
-      "head": "ops/agentic-continuity-workflows",
-      "base": "main",
-      "state": "merged",
-      "merge_commit": "d7061edfbafd669d2064bd30af68a351ece57637",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/42"
-    },
-    {
-      "number": 41,
-      "title": "feat: dashboard B/C paths",
-      "head": "feat/dashboard-export-polish",
-      "base": "main",
-      "state": "merged",
-      "merge_commit": "89d2306cac1a5dc8767dbbdfa03c97619518627b",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/41"
-    },
-    {
-      "number": 40,
-      "title": "feat: integrate tech stack updates (preview)",
-      "head": "feat/tech-stack-integration",
-      "base": "main",
-      "state": "merged",
-      "merge_commit": "502dbeb4ea1e65367b672723d02fb7e629853934",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/40"
     }
   ],
-  "current_implementation": {
-    "sub_milestone": "Demonstrativo Basico Individual",
-    "status": "concluded",
-    "deployed_to_production": true,
-    "production_url": "https://pddeonlinesme-rj.vercel.app",
-    "technical_decision": "Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase",
-    "template": "public/templates/demonstrativo-basico-4cre-template.xlsx",
-    "template_public_state": "Sanitized on 2026-05-08: no BASE sheet, no real consolidated unit data, MEMORIA input cells blank.",
-    "generator_files": [
-      "src/lib/demonstrativo/templateCells.ts",
-      "src/lib/demonstrativo/mapUnidadeToMemoria.ts",
-      "src/lib/demonstrativo/generateDemonstrativoBasico.ts",
-      "src/lib/demonstrativo/generateDemonstrativoBasico.test.ts"
-    ],
-    "ui_entrypoint": "src/pages/EscolaEditar.tsx",
-    "dependency_decision": "exceljs was added because xlsx does not preserve workbook template styles, borders and merged-cell fidelity reliably."
+  "delivered_state": {
+    "demonstrativo_basico_individual": "concluded and deployed",
+    "documents_panel": "wired to real generator and covered by tests",
+    "schools_table": "stabilized with native TableRow, table-fixed and colgroup",
+    "governance_hygiene": "initial short hygiene cycle completed through PR #53",
+    "ci": "minimal GitHub Actions workflow present",
+    "dependency_management": "npm/package-lock is canonical; safe patch update PR #53 merged"
   },
-  "ui_fixes_delivered_in_pr43": [
+  "planned_not_urgent": [
     {
-      "component": "/escolas table (Escolas.tsx)",
-      "issue": "motion.tr with row-accent class caused column misalignment after Framer Motion upgrade",
-      "fix": "Replaced motion.tr with native TableRow, applied table-fixed layout and colgroup with percentage widths",
-      "files": ["src/pages/Escolas.tsx"]
+      "item": "Login, public signup, roles, guards and RLS final",
+      "allocation": "Marco 6B",
+      "note": "Prototype is currently used by the developer; do not treat this as an urgent new defect unless it blocks the current milestone or creates real exposure."
     },
     {
-      "component": "DocumentsPanel (EscolaEditar.tsx)",
-      "issue": "Panel showed hardcoded mock cards instead of wiring to the real generator",
-      "fix": "Integrated DocumentsPanel with useUnidadeDetalhe + generateDemonstrativoBasico + file-saver saveAs",
-      "files": ["src/pages/EscolaEditar.tsx", "src/components/escola/DocumentsPanel.tsx"]
+      "item": "Configuracoes/Admin real",
+      "allocation": "Marco 6B / admin flows",
+      "note": "Current screen contains placeholders; implement when the planned admin/security milestone begins."
+    },
+    {
+      "item": "Importador institucional final",
+      "allocation": "Marco 10B",
+      "note": "A technical import UI exists, but the institutional flow with roles, preview, validation and governance remains planned."
+    },
+    {
+      "item": "Portal do Diretor",
+      "allocation": "Marco 13",
+      "note": "Depends on role and director-school access model."
+    },
+    {
+      "item": "Motor documental v1 / lote / ZIP",
+      "allocation": "Marcos 11, 12 and 15",
+      "note": "Proceed only when document contracts and templates are validated."
+    },
+    {
+      "item": "Hardening, smoke, accessibility, logs and bundle work",
+      "allocation": "Marco 14 / continuous hardening",
+      "note": "Continuous quality work, not a blocker for the current prototype stage unless a concrete regression appears."
     }
   ],
   "document_generation_constraints": [
@@ -156,30 +128,29 @@
   ],
   "mandatory_before_task": [
     "Read AGENTS.md",
-    "Read .continuity/current-state.json",
-    "Read docs/HANDOFF.md",
+    "Read .continuity/current-state.json as a snapshot only",
+    "Read docs/HANDOFF.md as a snapshot only",
     "Read docs/DECISIONS.md",
     "Read docs/ROADMAP_ADAPTIVE.md",
     "Read docs/OPPORTUNITIES_BACKLOG.md",
-    "Read docs/PROJECT_STATE.md",
-    "Read docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md"
+    "Verify the actual GitHub main/head/code before deciding"
   ],
-  "mandatory_after_task": [
-    "Update .continuity/current-state.json",
-    "Append .continuity/session-log.jsonl",
-    "Update docs/HANDOFF.md",
-    "Update decisions, roadmap, or backlog when scope or priority changes"
-  ],
-  "last_validation": {
-    "main_head": "a1d04a971f265b9c9e525628b85e16dcd2c092f2",
-    "pr43_merged": "2026-05-11T01:37:40Z via admin bypass by repository owner",
-    "production_smoke": "Validated operationally by agent session (not a versioned artifact in the repo). Agent reported 6/6 authenticated routes loaded successfully in production after merge.",
-    "technical_checks_before_merge": "npx tsc --noEmit, npm run lint, npm test, npm run build all passed on PR #43 branch prior to merge"
+  "documentation_update_policy": {
+    "rule": "Documentation follows development; it must not trap the project in reconciliation loops.",
+    "when_to_open_doc_only_pr": [
+      "When documentation can induce the next task to run against the wrong milestone or file path",
+      "When it marks completed work as pending or pending work as completed in a way that changes decisions",
+      "When a new decision changes scope, priority, safety or acceptance criteria"
+    ],
+    "when_to_fold_into_next_pr": [
+      "Minor commit SHA drift without operational consequence",
+      "Purely historical metadata that does not affect the next task",
+      "Small wording updates that do not alter priority or scope"
+    ]
   },
   "next_priority": {
-    "current_pr": "docs/state-reconciliation",
-    "queued_prs": [
-      "Edicao cadastral minima (Fase 2B)"
-    ]
+    "current_pr": null,
+    "recommended_next_functional_front": "Fase 2B - edicao cadastral minima",
+    "method": "Start with a small technical contract for editable fields, permission model, validation and audit trail before UI implementation."
   }
 }
