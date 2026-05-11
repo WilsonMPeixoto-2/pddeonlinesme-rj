@@ -2,13 +2,23 @@
 
 Atualizado em: 2026-05-11
 
+## Regra de leitura
+
+A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, configuração versionada e testes reais no GitHub. Este arquivo é um snapshot operacional para continuidade; deve orientar a retomada, mas não substitui verificação direta na `main`.
+
 ## Contexto atual
 
-Fonte de verdade: GitHub `main`, atualmente em `a1d04a971f265b9c9e525628b85e16dcd2c092f2`.
+Fonte de verdade a verificar: GitHub `main`.
 
-PRs #40 até #51 foram incorporados a `main`. Nao ha PRs abertos no momento.
+Snapshot operacional desta atualização: `main` em `c769d473170cca63ce6f4108b873ce12277e3072`.
 
-## PR #43 — Demonstrativo Basico Individual (mergeado)
+PRs #40 a #53 foram incorporados a `main`. Não há indicação, neste snapshot, de PR funcional aberto a ser continuado.
+
+## Estado consolidado entregue
+
+### Demonstrativo Básico Individual
+
+Status: **concluído e mergeado; validação/deploy em produção reportados operacionalmente, sem artefato versionado no repositório**.
 
 ```txt
 #43 - https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43
@@ -17,74 +27,84 @@ Merged at: 2026-05-11T01:37:40Z
 Merged by: WilsonMPeixoto-2 (admin bypass)
 ```
 
-### Fixes de UI integration entregues no commit final
+Decisão técnica vigente:
 
-1. **Tabela /escolas (Escolas.tsx):** `motion.tr` com `row-accent` causava desalinhamento de colunas apos interacao com Framer Motion. Fix: substituido por `TableRow` nativo + `table-fixed` + `colgroup` com larguras percentuais.
+```txt
+Opção B: preencher a aba MEMORIA diretamente com dados do Supabase.
+```
 
-2. **DocumentsPanel (EscolaEditar.tsx):** painel exibia cards mock hardcoded em vez de conectar ao gerador real. Fix: integrado com `useUnidadeDetalhe` + `generateDemonstrativoBasico` + `file-saver saveAs`.
+Restrições vigentes para qualquer alteração futura:
 
-### Validacoes em producao
+- não depender da aba `BASE` para o arquivo individual;
+- não depender de `XLOOKUP` para o arquivo individual;
+- não publicar template com dados reais consolidados de unidades em `public/`;
+- remover a aba `BASE` do workbook em memória antes de salvar o arquivo final, se ela existir;
+- preservar layout, fórmulas, bordas e mesclagens do template;
+- manter revisão humana para regras documentais oficiais.
 
-Smoke autenticado executado localmente por agente, com validacao operacional de rotas autenticadas em producao apos o merge. Este smoke nao possui artefato versionado no repositorio (script/log/screenshot); trata-se de validacao operacional reportada na sessao.
+### Correções de UI entregues no PR #43
 
-## PRs recentes
+1. **Tabela `/escolas`:** substituição de `motion.tr` + `row-accent` por `TableRow` nativo, `table-fixed` e `colgroup`, para evitar desalinhamento de colunas.
+2. **DocumentsPanel:** integração com `useUnidadeDetalhe`, `generateDemonstrativoBasico` e `file-saver/saveAs`, eliminando o antigo sucesso falso sem download.
 
-| PR | Titulo | Branch | Estado |
-|---:|---|---|---|
-| #51 | test(documents): cover DocumentsPanel error and placeholder flows | `test/documents-panel-coverage` | mergeado em `a1d04a9` |
-| #50 | chore(cleanup): remove unused lovable-tagger residue | `chore/remove-lovable-tagger` | mergeado em `41e7cc4` |
-| #49 | chore(deps): standardize on npm lockfile | `chore/single-lockfile` | mergeado em `308fade` |
-| #48 | ci: add minimal pull request validation workflow | `ci/minimal-pr-validation` | mergeado em `8ec8b39` |
-| #47 | docs(readme): replace Lovable placeholder with project overview | `docs/readme-real` | mergeado em `6739dd6` |
-| #46 | docs(governance): realign AGENTS with source-of-truth protocol | `docs/agents-source-of-truth` | mergeado em `a34c3d0` |
-| #45 | docs(state): reconcile continuity after PR 43 merge | `docs/state-reconcile-after-pr43` | mergeado em `88238ce` |
-| #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | mergeado em `4d97a9c` |
-| #44 | Feat/dashboard real vw dashboard basico | `feat/dashboard-real-vw-dashboard-basico` | mergeado em `9c47ed9` |
-| #42 | ops(agentic): add Codex continuity and workflow infrastructure | `ops/agentic-continuity-workflows` | mergeado em `d7061ed` |
-| #41 | feat: dashboard B/C paths | `feat/dashboard-export-polish` | mergeado em `89d2306` |
-| #40 | feat: integrate tech stack updates (preview) | `feat/tech-stack-integration` | mergeado em `502dbeb` |
+Arquivo real do componente: `src/components/DocumentsPanel.tsx`.
+
+## PRs recentes incorporados
+
+| PR | Título | Estado |
+|---:|---|---|
+| #53 | chore(deps): safe patch updates | mergeado em `c769d47` |
+| #52 | docs(state): reconcile documentation with current main state | mergeado em `3152aec` |
+| #51 | test(documents): cover DocumentsPanel error and placeholder flows | mergeado em `a1d04a9` |
+| #50 | chore(cleanup): remove unused lovable-tagger residue | mergeado em `41e7cc4` |
+| #49 | chore(deps): standardize on npm lockfile | mergeado em `308fade` |
+| #48 | ci: add minimal pull request validation workflow | mergeado em `8ec8b39` |
+| #47 | docs(readme): replace Lovable placeholder with project overview | mergeado em `6739dd6` |
+| #46 | docs(governance): realign AGENTS with source-of-truth protocol | mergeado em `a34c3d0` |
+| #45 | docs(state): reconcile continuity after PR 43 merge | mergeado em `88238ce` |
+| #43 | feat(documentos): generate Demonstrativo Basico from school detail | mergeado em `4d97a9c` |
+| #44 | Feat/dashboard real vw dashboard basico | mergeado em `9c47ed9` |
+| #42 | ops(agentic): add Codex continuity and workflow infrastructure | mergeado em `d7061ed` |
+| #41 | feat: dashboard B/C paths | mergeado em `89d2306` |
+| #40 | feat: integrate tech stack updates (preview) | mergeado em `502dbeb` |
+
+## Validações e limites da evidência
+
+- O código e os testes versionados são a evidência primária.
+- Smoke autenticado em produção foi reportado em sessão operacional, mas não há artefato versionado no repositório para esse smoke.
+- Qualquer agente deve validar novamente no código antes de afirmar estado funcional.
 
 ## Norte operacional
 
-O norte atual e o Plano Global v4.1 registrado em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`.
+O norte atual é o Plano Global v4.1 registrado em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`.
 
-O backlog adaptativo em `docs/OPPORTUNITIES_BACKLOG.md` funciona como radar de oportunidades. Itens ali registrados nao autorizam execucao funcional sem PR proprio.
+Itens como login definitivo, roles, RLS, Portal do Diretor, importador institucional, motor documental em lote, configurações reais e hardening **já estão alocados no Plano Global**. Não devem ser tratados como novas falhas urgentes apenas por ainda não estarem implementados no protótipo.
 
-## Sub-marco entregue: Demonstrativo Basico Individual
+## Próxima frente funcional recomendada
 
-Decisao tecnica vigente:
+**Fase 2B — Edição cadastral mínima**, iniciando por contrato técnico antes de UI:
 
-```txt
-Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase.
-```
+- campos editáveis;
+- quem pode editar;
+- se a alteração será direta ou por solicitação;
+- validação;
+- trilha de auditoria;
+- impacto em documentos já gerados.
 
-Status: **concluido e implantado em producao**.
+## Pendências planejadas, não urgentes
 
-URL de producao: https://pddeonlinesme-rj.vercel.app
+| Tema | Alocação planejada | Observação |
+|---|---|---|
+| Login, cadastro público, roles, guards e RLS final | Marco 6B | Protótipo usado pelo desenvolvedor; não tratar como urgência sem risco real. |
+| Configurações/Admin real | Marco 6B / fluxos administrativos | A tela atual pode conter placeholders. |
+| Importador institucional final | Marco 10B | Diferenciar importador técnico atual de fluxo institucional final. |
+| Portal do Diretor | Marco 13 | Depende de papéis e vínculo diretor-escola. |
+| Motor documental em lote / ZIP | Marcos 11, 12 e 15 | Avançar após contratos documentais. |
+| Hardening, smoke/e2e, acessibilidade, logs e bundle | Marco 14 / contínuo | Não bloquear protótipo salvo regressão concreta. |
 
-Restricoes da decisao (permanecem vigentes para futuras alteracoes):
+## Implementação entregue pelo PR #43
 
-- nao depender da aba `BASE` para o arquivo individual;
-- nao depender de `XLOOKUP` para o arquivo individual;
-- nao publicar template com dados reais consolidados de unidades em `public/`;
-- remover a aba `BASE` do workbook em memoria antes de salvar o arquivo final, se ela existir;
-- preservar layout, formulas, bordas e mesclagens do template;
-- manter revisao humana para regras documentais oficiais.
-
-## Proximas frentes recomendadas
-
-1. **Fase 2B - Edição cadastral mínima** — implementar fluxo auditável e restrito para edição de dados bancários e cadastrais, substituindo inputs diretos por requisição de alteração ou roles específicas.
-
-*(A fila de higiene técnica/infraestrutura inicial foi concluída nos PRs #46 ao #51)*
-
-## Riscos operacionais conhecidos
-
-- **Rotacao de senha Supabase:** a senha do Supabase `pdde-online-2026-dev` deve ser rotacionada periodicamente. Atualmente nao ha automacao para isso.
-- **Continuity drift:** documentos em `.continuity/` e `docs/` podem divergir de `main` se nao forem reconciliados apos cada merge. A fonte de verdade e sempre o codigo no GitHub.
-
-## Implementacao entregue
-
-Arquivos criados/alterados pelo PR #43:
+Arquivos principais:
 
 - `public/templates/demonstrativo-basico-4cre-template.xlsx`
 - `src/lib/demonstrativo/templateCells.ts`
@@ -93,18 +113,14 @@ Arquivos criados/alterados pelo PR #43:
 - `src/lib/demonstrativo/generateDemonstrativoBasico.test.ts`
 - `src/pages/EscolaEditar.tsx`
 - `src/pages/Escolas.tsx`
-- `src/components/escola/DocumentsPanel.tsx`
+- `src/components/DocumentsPanel.tsx`
+- `src/components/DocumentsPanel.test.tsx`
 - `package.json`
 - `package-lock.json`
 
-Decisao tecnica de dependencia:
-
-- `exceljs` foi adicionado porque a dependencia `xlsx` existente nao preserva com confianca estilos, bordas e mesclagens do template.
-- `exceljs` e carregado por `dynamic import()` apenas durante a geracao do arquivo.
-
 ## Regras antes de qualquer tarefa
 
-Ler:
+Ler como orientação, não como fonte absoluta:
 
 1. `AGENTS.md`
 2. `.continuity/current-state.json`
@@ -115,12 +131,12 @@ Ler:
 7. `docs/PROJECT_STATE.md`
 8. `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`
 
-## Regras depois de qualquer tarefa
+Depois, verificar diretamente o código, branch, commit e diff reais no GitHub.
 
-Atualizar:
+## Política de atualização documental
 
-1. `.continuity/current-state.json`
-2. `.continuity/session-log.jsonl`
-3. `docs/HANDOFF.md`
+Documentação deve servir ao desenvolvimento, não capturá-lo.
 
-Se houver nova decisao ou mudanca de prioridade, atualizar tambem `docs/DECISIONS.md`, `docs/ROADMAP_ADAPTIVE.md` e `docs/OPPORTUNITIES_BACKLOG.md`.
+Abrir PR exclusivamente documental apenas quando o documento puder induzir a próxima tarefa ao erro, marcar trabalho concluído como pendente, marcar pendência planejada como falha urgente ou alterar prioridade/escopo de forma relevante.
+
+Drift pequeno de SHA ou metadado histórico deve ser corrigido no próximo PR funcional, salvo se afetar decisão operacional imediata.
