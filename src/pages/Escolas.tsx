@@ -404,7 +404,8 @@ export default function Escolas() {
 
         {/* Table */}
         <Card className="ds-card overflow-hidden">
-          <Table className="table-fixed">
+          <div className="overflow-x-auto">
+            <Table className="table-fixed min-w-[800px]">
               <colgroup>
                 <col className="w-[38%]" />
                 <col className="w-[24%]" />
@@ -575,7 +576,8 @@ export default function Escolas() {
                   </>
                 )}
               </TableBody>
-          </Table>
+            </Table>
+          </div>
         </Card>
 
         {/* Footer */}

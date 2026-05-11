@@ -463,8 +463,8 @@ export default function EscolaEditar() {
                       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         Detalhamento Custeio × Capital
                       </p>
-                      <div className="overflow-hidden rounded-md border border-border/40">
-                        <table className="w-full text-sm">
+                      <div className="overflow-x-auto rounded-md border border-border/40">
+                        <table className="w-full text-sm min-w-[500px]">
                           <thead>
                             <tr className="bg-muted/30">
                               <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Componente</th>
@@ -659,8 +659,8 @@ export default function EscolaEditar() {
                   <p className="ds-label">
                     Detalhamento Custeio × Capital
                   </p>
-                  <div className="overflow-hidden rounded-md border border-border/40">
-                    <table className="w-full text-sm">
+                  <div className="overflow-x-auto rounded-md border border-border/40">
+                    <table className="w-full text-sm min-w-[500px]">
                       <thead>
                         <tr className="bg-muted/30">
                           <th className="ds-th px-3 py-2 text-left">Componente</th>
