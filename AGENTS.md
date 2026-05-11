@@ -73,7 +73,7 @@ Para tarefas envolvendo dados financeiros, planilhas, importacao/exportacao, CNP
 
 ## Estado atual do projeto
 
-**main HEAD:** `88238cea1a4294c7b3c84c9501c2c3e434c73f79`
+**main HEAD:** `a1d04a971f265b9c9e525628b85e16dcd2c092f2`
 
 ### Entregue e em producao
 
@@ -81,15 +81,16 @@ Para tarefas envolvendo dados financeiros, planilhas, importacao/exportacao, CNP
 - Dashboard com views reais do Supabase (PR #44)
 - Infraestrutura de continuidade agentic (PR #42)
 - Reconciliacao pos-PR43 (PR #45, merge em `88238ce`)
+- AGENTS.md realinhado (PR #46)
+- README real (PR #47)
+- CI minimo (PR #48)
+- Lockfile unico (PR #49)
+- Remocao lovable-tagger (PR #50)
+- Cobertura de testes DocumentsPanel (PR #51)
 
 ### Proxima fila
 
-1. AGENTS.md realinhado (este PR)
-2. README real
-3. CI minimo
-4. Lockfile unico
-5. Remocao lovable-tagger
-6. Cobertura de testes DocumentsPanel
+*(Fila de higiene concluída. Ver Frentes Funcionais Maiores abaixo)*
 
 ### Frentes funcionais maiores (pos-higiene)
 

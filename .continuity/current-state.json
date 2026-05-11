@@ -1,10 +1,10 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-11T04:25:00-03:00",
+  "updated_at": "2026-05-11T05:00:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "88238cea1a4294c7b3c84c9501c2c3e434c73f79",
+    "base_commit": "a1d04a971f265b9c9e525628b85e16dcd2c092f2",
     "note": "Always verify against GitHub. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -13,6 +13,48 @@
     "current_mode": "hygiene PRs completed"
   },
   "pull_requests": [
+    {
+      "number": 51,
+      "title": "test(documents): cover DocumentsPanel error and placeholder flows",
+      "state": "merged",
+      "merge_commit": "a1d04a971f265b9c9e525628b85e16dcd2c092f2",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/51"
+    },
+    {
+      "number": 50,
+      "title": "chore(cleanup): remove unused lovable-tagger residue",
+      "state": "merged",
+      "merge_commit": "41e7cc45f90f89996f30446b814d2e8a3ff293de",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/50"
+    },
+    {
+      "number": 49,
+      "title": "chore(deps): standardize on npm lockfile",
+      "state": "merged",
+      "merge_commit": "308fadeb3aec61ffa278c7d23f0f172df62d3696",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/49"
+    },
+    {
+      "number": 48,
+      "title": "ci: add minimal pull request validation workflow",
+      "state": "merged",
+      "merge_commit": "8ec8b393cf9910a8903fcad7784c99527a8c6127",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/48"
+    },
+    {
+      "number": 47,
+      "title": "docs(readme): replace Lovable placeholder with project overview",
+      "state": "merged",
+      "merge_commit": "6739dd6f286a59ec11de8945619aa5c87464c7bc",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/47"
+    },
+    {
+      "number": 46,
+      "title": "docs(governance): realign AGENTS with source-of-truth protocol",
+      "state": "merged",
+      "merge_commit": "a34c3d0034933f2ac5ed39ff32bc51318b64302c",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/46"
+    },
     {
       "number": 45,
       "title": "docs(state): reconcile continuity after PR 43 merge",
@@ -129,17 +171,14 @@
     "Update decisions, roadmap, or backlog when scope or priority changes"
   ],
   "last_validation": {
-    "main_head": "88238cea1a4294c7b3c84c9501c2c3e434c73f79",
+    "main_head": "a1d04a971f265b9c9e525628b85e16dcd2c092f2",
     "pr43_merged": "2026-05-11T01:37:40Z via admin bypass by repository owner",
     "production_smoke": "Validated operationally by agent session (not a versioned artifact in the repo). Agent reported 6/6 authenticated routes loaded successfully in production after merge.",
     "technical_checks_before_merge": "npx tsc --noEmit, npm run lint, npm test, npm run build all passed on PR #43 branch prior to merge"
   },
   "next_priority": {
-    "current_pr": "docs/agents-source-of-truth (this PR)",
+    "current_pr": "docs/state-reconciliation",
     "queued_prs": [
-      "README real (replace Lovable boilerplate)",
-      "Minimal CI (lint + typecheck on PR)",
-      "Single lockfile (remove bun.lock/bun.lockb)",
       "Edicao cadastral minima (Fase 2B)"
     ]
   }

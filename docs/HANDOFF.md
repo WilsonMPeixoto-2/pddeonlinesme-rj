@@ -4,9 +4,9 @@ Atualizado em: 2026-05-11
 
 ## Contexto atual
 
-Fonte de verdade: GitHub `main`, atualmente em `88238cea1a4294c7b3c84c9501c2c3e434c73f79`.
+Fonte de verdade: GitHub `main`, atualmente em `a1d04a971f265b9c9e525628b85e16dcd2c092f2`.
 
-PRs #40, #41, #42, #43, #44 e #45 foram incorporados a `main`. Nao ha PRs abertos no momento.
+PRs #40 até #51 foram incorporados a `main`. Nao ha PRs abertos no momento.
 
 ## PR #43 — Demonstrativo Basico Individual (mergeado)
 
@@ -31,6 +31,12 @@ Smoke autenticado executado localmente por agente, com validacao operacional de 
 
 | PR | Titulo | Branch | Estado |
 |---:|---|---|---|
+| #51 | test(documents): cover DocumentsPanel error and placeholder flows | `test/documents-panel-coverage` | mergeado em `a1d04a9` |
+| #50 | chore(cleanup): remove unused lovable-tagger residue | `chore/remove-lovable-tagger` | mergeado em `41e7cc4` |
+| #49 | chore(deps): standardize on npm lockfile | `chore/single-lockfile` | mergeado em `308fade` |
+| #48 | ci: add minimal pull request validation workflow | `ci/minimal-pr-validation` | mergeado em `8ec8b39` |
+| #47 | docs(readme): replace Lovable placeholder with project overview | `docs/readme-real` | mergeado em `6739dd6` |
+| #46 | docs(governance): realign AGENTS with source-of-truth protocol | `docs/agents-source-of-truth` | mergeado em `a34c3d0` |
 | #45 | docs(state): reconcile continuity after PR 43 merge | `docs/state-reconcile-after-pr43` | mergeado em `88238ce` |
 | #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | mergeado em `4d97a9c` |
 | #44 | Feat/dashboard real vw dashboard basico | `feat/dashboard-real-vw-dashboard-basico` | mergeado em `9c47ed9` |
@@ -67,12 +73,9 @@ Restricoes da decisao (permanecem vigentes para futuras alteracoes):
 
 ## Proximas frentes recomendadas
 
-1. **AGENTS.md realinhado** — alinhar regra de fonte de verdade (este PR).
-2. **README real** — substituir boilerplate Lovable por documentacao propria do projeto.
-3. **CI minimo** — lint + typecheck em PRs.
-4. **Lockfile unico** — remover `bun.lock` e `bun.lockb`, manter apenas `package-lock.json`.
+1. **Fase 2B - Edição cadastral mínima** — implementar fluxo auditável e restrito para edição de dados bancários e cadastrais, substituindo inputs diretos por requisição de alteração ou roles específicas.
 
-*(A fila de higiene inicial foi concluída. Próximo passo funcional recomendado: Fase 2B - Edição cadastral mínima)*
+*(A fila de higiene técnica/infraestrutura inicial foi concluída nos PRs #46 ao #51)*
 
 ## Riscos operacionais conhecidos
 

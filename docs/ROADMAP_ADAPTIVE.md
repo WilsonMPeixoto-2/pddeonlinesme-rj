@@ -11,29 +11,16 @@ Este roadmap adaptativo nao substitui o plano. Ele organiza a fila curta e regis
 ## Estado atual
 
 - Supabase Foundation v1 encerrada como migracao fundacional.
-- `main` e a fonte oficial de continuidade, atualmente em `88238cea1a4294c7b3c84c9501c2c3e434c73f79`.
+- `main` e a fonte oficial de continuidade, atualmente em `a1d04a971f265b9c9e525628b85e16dcd2c092f2`.
 - PR #43 (Demonstrativo Basico Individual) entregue e implantado em producao.
-- PR #45 (reconciliacao pos-PR43) mergeado.
+- PRs de higiene/governanca (#46 a #51) mergeados.
 - Telas principais de escolas ja usam views reais do Supabase proprio.
-- PRs #40, #41, #42, #43, #44 e #45 incorporados na `main`.
+- PRs #40 ate #51 incorporados na `main`.
 - Nenhum PR funcional aberto no momento.
 
 ## Fila curta recomendada
 
-1. `docs/agents-source-of-truth` — realinhar AGENTS.md com regra de fonte de verdade.
-   - Escopo: `AGENTS.md`, `.continuity/`, `docs/`.
-   - Status: em preparacao neste PR.
-
-2. `README real` — substituir boilerplate Lovable por documentacao propria do projeto.
-   - Escopo: `README.md`.
-
-3. `CI minimo` — lint + typecheck em PRs.
-   - Escopo: `.github/workflows/`.
-
-4. `Lockfile unico` — remover `bun.lock` e `bun.lockb`, manter apenas `package-lock.json`.
-   - Escopo: lockfiles.
-
-*(Fila curta de higiene concluída)*
+*(Fila curta de higiene concluída nos PRs #46 a #51. Ver Marcos Funcionais abaixo para próximos passos)*
 
 ## Marcos funcionais maiores (pós higiene)
 

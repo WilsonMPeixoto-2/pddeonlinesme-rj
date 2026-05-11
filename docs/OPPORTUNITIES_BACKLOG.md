@@ -10,10 +10,10 @@ Este backlog e um radar. Ele registra oportunidades, riscos e proximas frentes, 
 | — | PRs #40, #41, #42, #44 | governanca GitHub | **concluido** | Todos mergeados em `main`. |
 | — | PRs historicos superados | governanca GitHub | **concluido** | Branches deletadas, PRs fechados. |
 | — | Reconciliacao pos-merge PR #43 | governanca/docs | **concluido** (PR #45, merge `88238ce`) | Drift corrigido. |
-| 1 | AGENTS.md realinhado | governanca | em andamento | Este PR: `docs/agents-source-of-truth`. |
-| 2 | README real | documentacao | pendente | Substituir boilerplate Lovable. |
-| 3 | CI minimo | infraestrutura | pendente | lint + typecheck em PRs. |
-| 4 | Lockfile unico | infraestrutura | pendente | Remover `bun.lock` e `bun.lockb`. |
+| — | AGENTS.md realinhado | governanca | **concluido** (PR #46, merge `a34c3d0`) | Fonte de verdade estabelecida. |
+| — | README real | documentacao | **concluido** (PR #47, merge `6739dd6`) | Substituiu boilerplate Lovable. |
+| — | CI minimo | infraestrutura | **concluido** (PR #48, merge `8ec8b39`) | lint + typecheck em PRs adicionado. |
+| — | Lockfile unico | infraestrutura | **concluido** (PR #49, merge `308fade`) | `bun.lock` e `bun.lockb` removidos. |
 | — | Limpeza lovable-tagger | infraestrutura | **concluido** | Removido de devDependencies e `vite.config.ts`. |
 | — | Cobertura de testes DocumentsPanel | qualidade | **concluido** | Caminhos de erro e placeholders cobertos. |
 | 6 | Dashboard real/analitico | produto/dados | pendente | Pertence ao Marco 9; nao tratar como Foundation v1. |
