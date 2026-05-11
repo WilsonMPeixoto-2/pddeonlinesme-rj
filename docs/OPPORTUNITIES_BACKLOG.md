@@ -1,21 +1,38 @@
 # Backlog Adaptativo de Oportunidades - PDDE Online 2026
 
-Atualizado em: 2026-05-07
+Atualizado em: 2026-05-11
 
 Este backlog e um radar. Ele registra oportunidades, riscos e proximas frentes, mas nao autoriza execucao sem PR proprio.
 
 | Prioridade | Item | Tipo | Status | Observacao |
 |---:|---|---|---|---|
-| 1 | Demonstrativo Basico Individual via `MEMORIA` | documentos | proximo sub-marco | Usar Opcao B; nao depender de `BASE` nem de `XLOOKUP`; requer rastreabilidade entre Supabase e template. |
-| 2 | PRs #40 e #41 | governanca GitHub | incorporado | Ambos ja foram mergeados na `main`. |
-| 3 | Fechamento de PRs historicos superados | governanca GitHub | pendente | Seguir docs de reconciliacao antes de fechar. |
-| 4 | Dashboard real/analitico | produto/dados | pendente | Pertence ao Marco 9; nao tratar como Foundation v1. |
-| 5 | Fase 2B edicao cadastral/bancaria | dados/UI | pendente | Exige contrato, permissao, auditoria e validacao. |
-| 6 | Importador institucional via interface | dados/documentos | pendente | Pertence ao Marco 10; carga administrativa inicial ja cumpriu seu papel. |
-| 7 | Auth/roles/guards/RLS final | seguranca | pendente | Revisao humana obrigatoria. |
-| 8 | Portal do Diretor | produto/seguranca | pendente | Depende de vinculo diretor-escola e escopo de acesso. |
-| 9 | Motor documental v1 | documentos | pendente | Deve respeitar templates oficiais e revisao humana. |
-| 10 | Hardening pre-producao | qualidade/seguranca | continuo | Incluir bundle, smoke, acessibilidade, logs e validacoes. |
+| — | Demonstrativo Basico Individual via `MEMORIA` | documentos | **concluido** (PR #43, merge `4d97a9c`) | Entregue em producao. Opcao B. |
+| — | PRs #40, #41, #42, #44 | governanca GitHub | **concluido** | Todos mergeados em `main`. |
+| — | PRs historicos superados | governanca GitHub | **concluido** | Branches deletadas, PRs fechados. |
+| 1 | Reconciliacao pos-merge PR #43 | governanca/docs | em andamento | Este PR: `docs/state-reconcile-after-pr43`. |
+| 2 | README real | documentacao | pendente | Substituir boilerplate Lovable. |
+| 3 | AGENTS.md realinhado | governanca | pendente | Alinhar regra de fonte de verdade. |
+| 4 | CI minimo | infraestrutura | pendente | lint + typecheck em PRs. |
+| 5 | Lockfile unico | infraestrutura | pendente | Remover `yarn.lock` se presente. |
+| 6 | Limpeza lovable-tagger | infraestrutura | pendente | Remover GitHub Action herdada. |
+| 7 | Dashboard real/analitico | produto/dados | pendente | Pertence ao Marco 9; nao tratar como Foundation v1. |
+| 8 | Fase 2B edicao cadastral/bancaria | dados/UI | pendente | Exige contrato, permissao, auditoria e validacao. |
+| 9 | Importador institucional via interface | dados/documentos | pendente | Pertence ao Marco 10; carga administrativa inicial ja cumpriu seu papel. |
+| 10 | Auth/roles/guards/RLS final | seguranca | pendente | Revisao humana obrigatoria. |
+| 11 | Portal do Diretor | produto/seguranca | pendente | Depende de vinculo diretor-escola e escopo de acesso. |
+| 12 | Motor documental v1 | documentos | pendente | Deve respeitar templates oficiais e revisao humana. |
+| 13 | Hardening pre-producao | qualidade/seguranca | continuo | Incluir bundle, smoke, acessibilidade, logs e validacoes. |
+| 14 | Cobertura de teste | qualidade | continuo | Ampliar coverage do gerador e das views. |
+| 15 | Mobile responsiveness | UI | pendente | Validar telas em viewport mobile. |
+| 16 | Rotacao de senha Supabase | operacional | pendente | Automatizar ou documentar periodicidade. |
+
+## Lessons learned recentes
+
+1. **Reconcile pos-merge:** documentos de continuidade divergem rapidamente. O PR de reconciliacao deve ser a primeira acao apos cada merge significativo.
+
+2. **Smoke operacional necessario alem de checks tecnicos:** `tsc`, `lint`, `test` e `build` nao detectam bugs de integracao visual. Validacao visual autenticada complementa os checks automatizados.
+
+3. **Comments de PR vs blob atual:** ao retomar um PR, verificar o blob atual no GitHub, nao apenas comments de revisao que podem referir-se a um estado anterior do diff.
 
 ## Como promover um item
 

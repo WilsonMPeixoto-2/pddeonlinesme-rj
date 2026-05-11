@@ -1,16 +1,16 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-09T19:01:14-03:00",
+  "updated_at": "2026-05-11T02:00:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "9c47ed99887fb8df5ee2ba17251ff2c8591df989",
-    "local_branch_for_this_pr": "feat/demonstrativo-basico-individual"
+    "base_commit": "4d97a9cba09fcfe155402f4c6b6679087fc3d19e",
+    "note": "Always verify against GitHub. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
     "plan": "Plano Global v4.1 atualizado apos Supabase Foundation v1",
     "plan_file": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "functional document generation PR after agentic continuity infrastructure"
+    "current_mode": "post-merge reconciliation and next PR queue"
   },
   "pull_requests": [
     {
@@ -18,11 +18,11 @@
       "title": "feat(documentos): generate Demonstrativo Basico from school detail",
       "head": "feat/demonstrativo-basico-individual",
       "base": "main",
-      "state": "open",
-      "mergeable": "MERGEABLE",
-      "merge_state": "BLOCKED_BY_REQUIRED_REVIEW",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43",
-      "preview_url": "https://pddeonlinesme-rj-git-feat-dem-beaa6a-wilson-m-peixotos-projects.vercel.app"
+      "state": "merged",
+      "merge_commit": "4d97a9cba09fcfe155402f4c6b6679087fc3d19e",
+      "merged_at": "2026-05-11T01:37:40Z",
+      "merged_by": "WilsonMPeixoto-2",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43"
     },
     {
       "number": 44,
@@ -64,6 +64,9 @@
   ],
   "current_implementation": {
     "sub_milestone": "Demonstrativo Basico Individual",
+    "status": "concluded",
+    "deployed_to_production": true,
+    "production_url": "https://pddeonlinesme-rj.vercel.app",
     "technical_decision": "Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase",
     "template": "public/templates/demonstrativo-basico-4cre-template.xlsx",
     "template_public_state": "Sanitized on 2026-05-08: no BASE sheet, no real consolidated unit data, MEMORIA input cells blank.",
@@ -76,6 +79,20 @@
     "ui_entrypoint": "src/pages/EscolaEditar.tsx",
     "dependency_decision": "exceljs was added because xlsx does not preserve workbook template styles, borders and merged-cell fidelity reliably."
   },
+  "ui_fixes_delivered_in_pr43": [
+    {
+      "component": "/escolas table (Escolas.tsx)",
+      "issue": "motion.tr with row-accent class caused column misalignment after Framer Motion upgrade",
+      "fix": "Replaced motion.tr with native TableRow, applied table-fixed layout and colgroup with percentage widths",
+      "files": ["src/pages/Escolas.tsx"]
+    },
+    {
+      "component": "DocumentsPanel (EscolaEditar.tsx)",
+      "issue": "Panel showed hardcoded mock cards instead of wiring to the real generator",
+      "fix": "Integrated DocumentsPanel with useUnidadeDetalhe + generateDemonstrativoBasico + file-saver saveAs",
+      "files": ["src/pages/EscolaEditar.tsx", "src/components/escola/DocumentsPanel.tsx"]
+    }
+  ],
   "document_generation_constraints": [
     "Fill MEMORIA directly from vw_unidade_detalhe data",
     "Do not depend on the BASE sheet for the individual file",
@@ -102,29 +119,20 @@
     "Update decisions, roadmap, or backlog when scope or priority changes"
   ],
   "last_validation": {
-    "main_sync": "2026-05-09: merged origin/main at 9c47ed99887fb8df5ee2ba17251ff2c8591df989 into PR 43 branch. supabase/config.toml now points to raluxyojqosfzrfozmpz and git grep found no old Supabase refs in HEAD.",
-    "supabase_link": "2026-05-09: supabase link --project-ref raluxyojqosfzrfozmpz --yes completed in this worktree; supabase projects list shows LINKED for pdde-online-2026-dev.",
-    "template_inspection": "2026-05-08 openpyxl inspection confirmed the public template has sheets MEMORIA, Demonstrativo and Conciliacao Bancaria only; no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits.",
-    "generated_workbook_smoke": "Automated Vitest coverage generates a fixture workbook, confirms no BASE sheet, confirms MEMORIA/Demonstrativo sheets, fills MEMORIA!B2 and scans generated formulas for BASE!/BASE[/XLOOKUP.",
-    "typescript": "passed: npx tsc --noEmit",
-    "lint": "passed with existing react-refresh warnings in masked-input.tsx and useExercicio.tsx",
-    "tests": "passed: npm test",
-    "build": "passed: npm run build; existing large chunk warning remains; post-build inspection confirmed dist template has no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits",
-    "post_main_sync_validation": "2026-05-09 passed: npx tsc --noEmit, npm run lint with existing react-refresh warnings, npm test, npm run build with existing large chunk warnings, openpyxl inspection of public and dist templates.",
-    "vercel_checks": "passed: Vercel Preview Comments, Vercel - pddeonlinesme-rj, Vercel - pddeonlinesme-rj-pr8-validate",
-    "preview_smoke": "blocked for anonymous access by Vercel Authentication; authenticated browser/session validation still required",
-    "review_comments": "initial Copilot comments addressed locally: BASE_URL-aware template URL, template buffer cache, metadata separated from MEMORIA fields, robust money string parsing, and aria-busy/decorative icons on the generate button"
+    "main_head": "4d97a9cba09fcfe155402f4c6b6679087fc3d19e",
+    "pr43_merged": "2026-05-11T01:37:40Z via admin bypass by repository owner",
+    "production_smoke": "Validated operationally by agent session (not a versioned artifact in the repo). Agent reported 6/6 authenticated routes loaded successfully in production after merge.",
+    "technical_checks_before_merge": "npx tsc --noEmit, npm run lint, npm test, npm run build all passed on PR #43 branch prior to merge"
   },
   "next_priority": {
-    "after_this_pr": [
-      "Validate the Vercel Preview with an authenticated session.",
-      "Open /escolas/:id and generate a Demonstrativo Basico from at least two real Supabase units.",
-      "Confirm each generated workbook opens in Excel and recalculates the Demonstrativo sheet from MEMORIA."
-    ],
-    "later": [
-      "Edicao cadastral minima",
-      "Audit log",
-      "Geracao em lote dos Demonstrativos"
+    "current_pr": "docs/state-reconcile-after-pr43 (this PR)",
+    "queued_prs": [
+      "README real (replace Lovable boilerplate)",
+      "AGENTS.md realigned to source-of-truth rule",
+      "Minimal CI (lint + typecheck on PR)",
+      "Single lockfile (remove yarn.lock if present)",
+      "Drop lovable-tagger GitHub Action",
+      "Edicao cadastral minima (Fase 2B)"
     ]
   }
 }

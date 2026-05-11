@@ -1,36 +1,37 @@
 # Handoff Operacional - PDDE Online 2026
 
-Atualizado em: 2026-05-09
+Atualizado em: 2026-05-11
 
 ## Contexto atual
 
-Fonte de verdade: GitHub `main`, atualmente em `9c47ed99887fb8df5ee2ba17251ff2c8591df989`.
+Fonte de verdade: GitHub `main`, atualmente em `4d97a9cba09fcfe155402f4c6b6679087fc3d19e`.
 
-PRs #40, #41, #42 e #44 foram incorporados. O PR funcional atual e:
+PRs #40, #41, #42, #43 e #44 foram incorporados a `main`. Nao ha PRs abertos no momento.
+
+## PR #43 — Demonstrativo Basico Individual (mergeado)
 
 ```txt
 #43 - https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43
+Merge commit: 4d97a9cba09fcfe155402f4c6b6679087fc3d19e
+Merged at: 2026-05-11T01:37:40Z
+Merged by: WilsonMPeixoto-2 (admin bypass)
 ```
 
-Branch:
+### Fixes de UI integration entregues no commit final
 
-```txt
-feat/demonstrativo-basico-individual
-```
+1. **Tabela /escolas (Escolas.tsx):** `motion.tr` com `row-accent` causava desalinhamento de colunas apos interacao com Framer Motion. Fix: substituido por `TableRow` nativo + `table-fixed` + `colgroup` com larguras percentuais.
 
-Objetivo da branch:
+2. **DocumentsPanel (EscolaEditar.tsx):** painel exibia cards mock hardcoded em vez de conectar ao gerador real. Fix: integrado com `useUnidadeDetalhe` + `generateDemonstrativoBasico` + `file-saver saveAs`.
 
-```txt
-feat(documentos): generate Demonstrativo Basico from school detail
-```
+### Validacoes em producao
 
-A branch do PR #43 foi sincronizada em 2026-05-09 com `origin/main` apos o merge do PR #44. Com isso, `supabase/config.toml` tambem aponta para o Supabase proprio `raluxyojqosfzrfozmpz`, e a branch nao contem referencias ativas aos refs antigos do Supabase Lovable.
+Smoke autenticado executado localmente por agente, com validacao operacional de rotas autenticadas em producao apos o merge. Este smoke nao possui artefato versionado no repositorio (script/log/screenshot); trata-se de validacao operacional reportada na sessao.
 
 ## PRs recentes
 
 | PR | Titulo | Branch | Estado |
 |---:|---|---|---|
-| #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | aberto, mergeable, sincronizado com `main` apos #44, aguardando review |
+| #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | mergeado em `4d97a9c` |
 | #44 | Feat/dashboard real vw dashboard basico | `feat/dashboard-real-vw-dashboard-basico` | mergeado em `9c47ed9` |
 | #42 | ops(agentic): add Codex continuity and workflow infrastructure | `ops/agentic-continuity-workflows` | mergeado em `d7061ed` |
 | #41 | feat: dashboard B/C paths | `feat/dashboard-export-polish` | mergeado em `89d2306` |
@@ -42,9 +43,7 @@ O norte atual e o Plano Global v4.1 registrado em `docs/PLANO_GLOBAL_V4_ATUALIZA
 
 O backlog adaptativo em `docs/OPPORTUNITIES_BACKLOG.md` funciona como radar de oportunidades. Itens ali registrados nao autorizam execucao funcional sem PR proprio.
 
-## Sub-marco em execucao
-
-Demonstrativo Basico Individual.
+## Sub-marco entregue: Demonstrativo Basico Individual
 
 Decisao tecnica vigente:
 
@@ -52,7 +51,11 @@ Decisao tecnica vigente:
 Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase.
 ```
 
-Restricoes da decisao:
+Status: **concluido e implantado em producao**.
+
+URL de producao: https://pddeonlinesme-rj.vercel.app
+
+Restricoes da decisao (permanecem vigentes para futuras alteracoes):
 
 - nao depender da aba `BASE` para o arquivo individual;
 - nao depender de `XLOOKUP` para o arquivo individual;
@@ -61,9 +64,22 @@ Restricoes da decisao:
 - preservar layout, formulas, bordas e mesclagens do template;
 - manter revisao humana para regras documentais oficiais.
 
-## Implementacao atual
+## Proximas frentes recomendadas
 
-Arquivos criados/alterados:
+1. **README real** — substituir boilerplate Lovable por documentacao propria do projeto.
+2. **AGENTS.md realinhado** — alinhar a regra de fonte de verdade (GitHub > documentos).
+3. **CI minimo** — lint + typecheck em PRs.
+4. **Lockfile unico** — remover `yarn.lock` se presente, manter apenas `package-lock.json`.
+5. **Limpeza lovable-tagger** — remover GitHub Action herdada do Lovable.
+
+## Riscos operacionais conhecidos
+
+- **Rotacao de senha Supabase:** a senha do Supabase `pdde-online-2026-dev` deve ser rotacionada periodicamente. Atualmente nao ha automacao para isso.
+- **Continuity drift:** documentos em `.continuity/` e `docs/` podem divergir de `main` se nao forem reconciliados apos cada merge. A fonte de verdade e sempre o codigo no GitHub.
+
+## Implementacao entregue
+
+Arquivos criados/alterados pelo PR #43:
 
 - `public/templates/demonstrativo-basico-4cre-template.xlsx`
 - `src/lib/demonstrativo/templateCells.ts`
@@ -71,6 +87,8 @@ Arquivos criados/alterados:
 - `src/lib/demonstrativo/generateDemonstrativoBasico.ts`
 - `src/lib/demonstrativo/generateDemonstrativoBasico.test.ts`
 - `src/pages/EscolaEditar.tsx`
+- `src/pages/Escolas.tsx`
+- `src/components/escola/DocumentsPanel.tsx`
 - `package.json`
 - `package-lock.json`
 
@@ -78,45 +96,6 @@ Decisao tecnica de dependencia:
 
 - `exceljs` foi adicionado porque a dependencia `xlsx` existente nao preserva com confianca estilos, bordas e mesclagens do template.
 - `exceljs` e carregado por `dynamic import()` apenas durante a geracao do arquivo.
-
-## Validacoes executadas
-
-- Template inspecionado antes da implementacao: abas `BASE`, `MEMORIA`, `Demonstrativo` e `Conciliação Bancária`; celulas-alvo da `MEMORIA` confirmadas.
-- Saneamento de 2026-05-08: template publico reinspecionado apos remocao da aba `BASE`; abas finais `MEMORIA`, `Demonstrativo` e `Conciliação Bancária`.
-- Saneamento de 2026-05-08: celulas de entrada da `MEMORIA` no template publico foram neutralizadas; nenhuma formula com `BASE!`, `BASE[` ou `XLOOKUP` permaneceu no template.
-- Gerador atualizado para remover defensivamente a aba `BASE` do workbook em memoria apos preencher `MEMORIA` e antes de salvar o arquivo final.
-- Teste automatizado adicionado para gerar workbook individual, confirmar ausencia da aba `BASE`, existencia das abas `MEMORIA`/`Demonstrativo`, preenchimento de `MEMORIA!B2` e ausencia de formulas `BASE!`, `BASE[` ou `XLOOKUP`.
-- Smoke local do gerador: dois arquivos `.xlsx` gerados com fixtures de unidades diferentes.
-- Inspecao com `openpyxl`: celulas-alvo da `MEMORIA` preenchidas diretamente, sem XLOOKUP remanescente em `MEMORIA`, sem tokens `#REF!`, `#VALUE!` ou `#NAME?`.
-- Comentarios iniciais do Copilot foram tratados: URL do template respeita `BASE_URL`, template fica em cache de modulo, metadados do nome de arquivo foram separados dos campos reais de `MEMORIA`, parsing monetario aceita strings como `R$ 1.000,50`, e o botao recebeu `aria-busy`/icones decorativos.
-- `npm test -- generateDemonstrativoBasico`: passou.
-- `npx tsc --noEmit`: passou.
-- `npm run lint`: passou com dois warnings preexistentes de `react-refresh/only-export-components`.
-- `npm test`: passou.
-- `npm run build`: passou; permanece warning de chunk grande. `exceljs` ficou em chunk separado.
-- Checks Vercel do PR #43: passaram.
-- Sincronizacao de 2026-05-09 com `origin/main`: `supabase/config.toml` corrigido para `raluxyojqosfzrfozmpz`; `git grep` no `HEAD` nao encontrou refs antigos do Supabase Lovable.
-- Validacao tecnica apos sincronizacao: `npx tsc --noEmit`, `npm run lint`, `npm test` e `npm run build` passaram.
-- Lint permanece com os dois warnings preexistentes de `react-refresh/only-export-components` em `masked-input.tsx` e `useExercicio.tsx`.
-- Build permanece com warning de chunk grande; `exceljs` continua em chunk separado.
-- Inspecao `openpyxl` apos build confirmou que os templates em `public/` e `dist/` nao contem aba `BASE` nem formulas `BASE!`, `BASE[` ou `XLOOKUP`.
-- `supabase link --project-ref raluxyojqosfzrfozmpz --yes` foi executado neste worktree; `supabase projects list` mostra `pdde-online-2026-dev` como `LINKED`.
-
-Preview:
-
-```txt
-https://pddeonlinesme-rj-git-feat-dem-beaa6a-wilson-m-peixotos-projects.vercel.app
-```
-
-Observacao: acesso anonimo ao Preview retorna Vercel Authentication. A validacao visual/autenticada ainda precisa ser feita com sessao autorizada.
-
-## Validacoes pendentes apos Preview
-
-- Abrir o Preview autenticado.
-- Confirmar que `/escolas/:id` carrega.
-- Confirmar que o botao `Gerar Demonstrativo Básico (.xlsx)` aparece.
-- Gerar arquivos a partir de pelo menos duas unidades reais do Supabase.
-- Abrir os arquivos no Excel e confirmar recalculo visual da aba `Demonstrativo` a partir da `MEMORIA`.
 
 ## Regras antes de qualquer tarefa
 
