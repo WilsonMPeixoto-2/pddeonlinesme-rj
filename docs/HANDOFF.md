@@ -18,7 +18,7 @@ PRs #40 a #53 foram incorporados a `main`. Não há indicação, neste snapshot,
 
 ### Demonstrativo Básico Individual
 
-Status: **concluído, testado e implantado em produção**.
+Status: **concluído e mergeado; validação/deploy em produção reportados operacionalmente, sem artefato versionado no repositório**.
 
 ```txt
 #43 - https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43

@@ -114,14 +114,14 @@ Alterar a ordem do Plano Global somente com justificativa tecnica explicita e ga
 
 ## Politica de documentacao
 
-Documentacao deve apoiar o desenvolvimento, nao capturá-lo em ciclos de reconciliacao.
+Documentacao deve apoiar o desenvolvimento, nao captura-lo em ciclos de reconciliacao.
 
 Abrir PR exclusivamente documental apenas quando a documentacao:
 
 - induzir o proximo agente a executar tarefa errada;
 - listar como pendente algo ja concluido de forma que altere decisao operacional;
 - apontar caminho de arquivo incorreto que possa causar erro;
-- registrar prioridade incompatível com o Plano Global;
+- registrar prioridade incompativel com o Plano Global;
 - criar risco real de replanejamento equivocado.
 
 Drift pequeno de SHA, sem consequencia operacional, deve preferencialmente ser corrigido junto ao proximo PR funcional.

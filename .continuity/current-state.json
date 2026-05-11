@@ -78,7 +78,7 @@
     }
   ],
   "delivered_state": {
-    "demonstrativo_basico_individual": "concluded and deployed",
+    "demonstrativo_basico_individual": "concluded and merged; production deploy reported operationally",
     "documents_panel": "wired to real generator and covered by tests",
     "schools_table": "stabilized with native TableRow, table-fixed and colgroup",
     "governance_hygiene": "initial short hygiene cycle completed through PR #53",
