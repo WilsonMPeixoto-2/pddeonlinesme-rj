@@ -111,4 +111,174 @@ describe("DocumentsPanel", () => {
       description: "Demonstrativo_Basico_2026_EM_Teste.xlsx",
     });
   });
+
+  it("não chama gerador e exibe erro se unidadeId estiver ausente", async () => {
+    render(
+      <DocumentsPanel
+        open
+        onOpenChange={vi.fn()}
+        schoolName="EM Teste"
+        exercicio="2026"
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Demonstrativo Básico/i }),
+    );
+
+    expect(generateDemonstrativoBasico).not.toHaveBeenCalled();
+    expect(saveAs).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith("Não foi possível identificar a unidade escolar.");
+  });
+
+  it("não chama gerador e exibe aviso se useUnidadeDetalhe estiver em loading", async () => {
+    vi.mocked(useUnidadeDetalhe).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: null,
+    } as unknown as ReturnType<typeof useUnidadeDetalhe>);
+
+    render(
+      <DocumentsPanel
+        open
+        onOpenChange={vi.fn()}
+        unidadeId="unidade-1"
+        schoolName="EM Teste"
+        exercicio="2026"
+      />,
+    );
+
+    const button = screen.getByRole("button", { name: /Demonstrativo Básico/i });
+    expect(button).toHaveAttribute("aria-busy", "true");
+    expect(button).toBeDisabled();
+
+    fireEvent.click(button);
+
+    expect(generateDemonstrativoBasico).not.toHaveBeenCalled();
+    // A logica atual desabilita o botao, entao o clique nem propaga.
+    // Mas se propagasse, a condicao do loading exibiria o aviso:
+    // expect(toast.info).toHaveBeenCalledWith("Aguarde o carregamento dos dados completos da unidade.");
+  });
+
+  it("não chama gerador e exibe erro se useUnidadeDetalhe retornar erro", async () => {
+    vi.mocked(useUnidadeDetalhe).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error("Erro de conexão"),
+    } as unknown as ReturnType<typeof useUnidadeDetalhe>);
+
+    render(
+      <DocumentsPanel
+        open
+        onOpenChange={vi.fn()}
+        unidadeId="unidade-1"
+        schoolName="EM Teste"
+        exercicio="2026"
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Demonstrativo Básico/i }),
+    );
+
+    expect(generateDemonstrativoBasico).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith("Erro ao carregar os dados completos da unidade.", {
+      description: "Erro de conexão",
+    });
+  });
+
+  it("não chama gerador e exibe erro se unidadeDetalhe estiver ausente", async () => {
+    vi.mocked(useUnidadeDetalhe).mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: null,
+    } as unknown as ReturnType<typeof useUnidadeDetalhe>);
+
+    render(
+      <DocumentsPanel
+        open
+        onOpenChange={vi.fn()}
+        unidadeId="unidade-1"
+        schoolName="EM Teste"
+        exercicio="2026"
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Demonstrativo Básico/i }),
+    );
+
+    expect(generateDemonstrativoBasico).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith("Dados completos da unidade não encontrados.", {
+      description: "Abra o cadastro da unidade e tente novamente.",
+    });
+  });
+
+  it("trata rejeição do gerador sem chamar saveAs e exibe erro", async () => {
+    vi.mocked(generateDemonstrativoBasico).mockRejectedValue(new Error("Falha no parse do template"));
+
+    render(
+      <DocumentsPanel
+        open
+        onOpenChange={vi.fn()}
+        unidadeId="unidade-1"
+        schoolName="EM Teste"
+        exercicio="2026"
+      />,
+    );
+
+    const button = screen.getByRole("button", { name: /Demonstrativo Básico/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(generateDemonstrativoBasico).toHaveBeenCalled();
+    });
+
+    expect(saveAs).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith("Erro ao gerar Demonstrativo Básico.", {
+      description: "Falha no parse do template",
+    });
+  });
+
+  it("não chama gerador e exibe info para documento em breve", async () => {
+    render(
+      <DocumentsPanel
+        open
+        onOpenChange={vi.fn()}
+        unidadeId="unidade-1"
+        schoolName="EM Teste"
+        exercicio="2026"
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Relação de Bens Adquiridos/i }),
+    );
+
+    expect(generateDemonstrativoBasico).not.toHaveBeenCalled();
+    expect(saveAs).not.toHaveBeenCalled();
+    expect(toast.info).toHaveBeenCalledWith("Relação de Bens Adquiridos — funcionalidade em desenvolvimento");
+  });
+
+  it("exibe info ao clicar no pacote completo", async () => {
+    render(
+      <DocumentsPanel
+        open
+        onOpenChange={vi.fn()}
+        unidadeId="unidade-1"
+        schoolName="EM Teste"
+        exercicio="2026"
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Pacote completo em breve/i }),
+    );
+
+    expect(generateDemonstrativoBasico).not.toHaveBeenCalled();
+    expect(saveAs).not.toHaveBeenCalled();
+    expect(toast.info).toHaveBeenCalledWith("Pacote completo ainda não está disponível.", {
+      description: "Gere o Demonstrativo Básico individualmente.",
+    });
+  });
 });

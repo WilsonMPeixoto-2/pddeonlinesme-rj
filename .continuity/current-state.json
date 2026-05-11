@@ -10,7 +10,7 @@
   "operational_north": {
     "plan": "Plano Global v4.1 atualizado apos Supabase Foundation v1",
     "plan_file": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "governance realignment and hygiene PRs"
+    "current_mode": "hygiene PRs completed"
   },
   "pull_requests": [
     {
@@ -140,7 +140,6 @@
       "README real (replace Lovable boilerplate)",
       "Minimal CI (lint + typecheck on PR)",
       "Single lockfile (remove bun.lock/bun.lockb)",
-      "DocumentsPanel test coverage",
       "Edicao cadastral minima (Fase 2B)"
     ]
   }
