@@ -175,9 +175,9 @@ Este é um sistema interno mantido pela 4ª CRE. Para contribuir:
 
 ## Estado atual
 
-PR #43 (Demonstrativo Básico Individual) concluído e em produção. Próximos blocos de higiene: CI mínimo, lockfile único, remoção lovable-tagger, cobertura de testes.
+PR #43 (Demonstrativo Básico Individual) concluído e em produção. A fila inicial de higiene técnica (CI, lockfile, dependências, testes base e governança) foi finalizada nos PRs #46 a #51.
 
-Consulte `docs/HANDOFF.md` e `docs/ROADMAP_ADAPTIVE.md` para detalhes.
+Consulte `docs/HANDOFF.md` e `docs/ROADMAP_ADAPTIVE.md` para os próximos marcos funcionais.
 
 ## Licença
 
