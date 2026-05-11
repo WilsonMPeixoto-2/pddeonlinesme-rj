@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { saveAs } from "file-saver";
+import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
+import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
 import { cn } from "@/lib/utils";
 
 /* ─── Catálogo dos 6 documentos oficiais do PDDE ─── */
@@ -115,36 +118,95 @@ const statusStyle: Record<DocStatus, { label: string; className: string; dot: st
 interface DocumentsPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  unidadeId?: string;
   schoolName: string;
   exercicio?: string;
+  programa?: string;
 }
 
 export function DocumentsPanel({
   open,
   onOpenChange,
+  unidadeId,
   schoolName,
   exercicio = "2026",
+  programa = "basico",
 }: DocumentsPanelProps) {
   const [generating, setGenerating] = useState<string | null>(null);
 
-  const generate = (docId: string, label: string, status: DocStatus) => {
+  const {
+    data: unidadeDetalhe,
+    isLoading: isLoadingDetalhe,
+    error: detalheError,
+  } = useUnidadeDetalhe({
+    unidadeId: open ? unidadeId : undefined,
+    exercicio,
+    programa,
+  });
+
+  const generate = async (docId: string, label: string, status: DocStatus) => {
     if (status !== "disponivel") {
       toast.info(`${label} — funcionalidade em desenvolvimento`);
       return;
     }
+
+    if (docId !== "demonstrativo") {
+      toast.info(`${label} — funcionalidade em desenvolvimento`);
+      return;
+    }
+
+    if (!unidadeId) {
+      toast.error("Não foi possível identificar a unidade escolar.");
+      return;
+    }
+
+    if (isLoadingDetalhe) {
+      toast.info("Aguarde o carregamento dos dados completos da unidade.");
+      return;
+    }
+
+    if (detalheError) {
+      toast.error("Erro ao carregar os dados completos da unidade.", {
+        description: detalheError.message,
+      });
+      return;
+    }
+
+    if (!unidadeDetalhe) {
+      toast.error("Dados completos da unidade não encontrados.", {
+        description: "Abra o cadastro da unidade e tente novamente.",
+      });
+      return;
+    }
+
     setGenerating(docId);
-    setTimeout(() => {
+    try {
+      const { blob, fileName } = await generateDemonstrativoBasico(
+        unidadeDetalhe,
+        exercicio,
+      );
+
+      saveAs(blob, fileName);
+      toast.success(`${label} gerado.`, {
+        description: fileName,
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error(`Erro ao gerar ${label}.`, {
+        description:
+          err instanceof Error
+            ? err.message
+            : "Verifique o template e tente novamente.",
+      });
+    } finally {
       setGenerating(null);
-      toast.success(`${label} gerado para ${schoolName}`);
-    }, 1100);
+    }
   };
 
   const generateAll = () => {
-    setGenerating("__all__");
-    setTimeout(() => {
-      setGenerating(null);
-      toast.success(`Pacote completo gerado para ${schoolName}`);
-    }, 1500);
+    toast.info("Pacote completo ainda não está disponível.", {
+      description: "Gere o Demonstrativo Básico individualmente.",
+    });
   };
 
   const disponiveis = DOCUMENTOS.filter((d) => d.status === "disponivel").length;
@@ -185,15 +247,11 @@ export function DocumentsPanel({
             disabled={generating !== null}
           >
             <span className="flex items-center gap-2">
-              {generating === "__all__" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <PackageCheck className="h-4 w-4" />
-              )}
-              Gerar pacote completo (.zip)
+              <PackageCheck className="h-4 w-4" />
+              Pacote completo em breve (.zip)
             </span>
             <span className="text-[11px] font-normal opacity-80">
-              {DOCUMENTOS.length} documentos
+              {disponiveis} disponível{disponiveis > 1 ? "is" : ""}
             </span>
           </Button>
         </SheetHeader>
@@ -212,6 +270,8 @@ export function DocumentsPanel({
               const Icon = doc.icon;
               const style = statusStyle[doc.status];
               const isAvailable = doc.status === "disponivel";
+              const isPreparing =
+                doc.id === "demonstrativo" && isLoadingDetalhe;
               const isGenerating = generating === doc.id;
               return (
                 <motion.li
@@ -223,7 +283,8 @@ export function DocumentsPanel({
                   <button
                     type="button"
                     onClick={() => generate(doc.id, doc.label, doc.status)}
-                    disabled={generating !== null}
+                    disabled={generating !== null || isPreparing}
+                    aria-busy={isGenerating || isPreparing}
                     className={cn(
                       "group relative flex w-full items-start gap-3 rounded-xl border border-border/60 bg-background/40 p-4 text-left transition-all duration-200",
                       "hover:border-primary/40 hover:bg-background/70 hover:shadow-[0_0_20px_hsl(var(--primary)/0.08)]",
@@ -240,7 +301,7 @@ export function DocumentsPanel({
                           : "bg-muted text-muted-foreground ring-border/50",
                       )}
                     >
-                      {isGenerating ? (
+                      {isGenerating || isPreparing ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Icon className="h-4 w-4" />

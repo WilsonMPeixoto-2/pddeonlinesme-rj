@@ -1,26 +1,46 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-07T01:56:28.6354476-03:00",
+  "updated_at": "2026-05-09T19:01:14-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "89d2306cac1a5dc8767dbbdfa03c97619518627b",
-    "local_branch_for_this_pr": "ops/agentic-continuity-workflows"
+    "base_commit": "9c47ed99887fb8df5ee2ba17251ff2c8591df989",
+    "local_branch_for_this_pr": "feat/demonstrativo-basico-individual"
   },
   "operational_north": {
     "plan": "Plano Global v4.1 atualizado apos Supabase Foundation v1",
     "plan_file": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "documental and operational governance before next functional PR"
+    "current_mode": "functional document generation PR after agentic continuity infrastructure"
   },
   "pull_requests": [
+    {
+      "number": 43,
+      "title": "feat(documentos): generate Demonstrativo Basico from school detail",
+      "head": "feat/demonstrativo-basico-individual",
+      "base": "main",
+      "state": "open",
+      "mergeable": "MERGEABLE",
+      "merge_state": "BLOCKED_BY_REQUIRED_REVIEW",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43",
+      "preview_url": "https://pddeonlinesme-rj-git-feat-dem-beaa6a-wilson-m-peixotos-projects.vercel.app"
+    },
+    {
+      "number": 44,
+      "title": "Feat/dashboard real vw dashboard basico",
+      "head": "feat/dashboard-real-vw-dashboard-basico",
+      "base": "main",
+      "state": "merged",
+      "merge_commit": "9c47ed99887fb8df5ee2ba17251ff2c8591df989",
+      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/44",
+      "summary": "Aligned Supabase project config to raluxyojqosfzrfozmpz and stopped tracking the local .env file."
+    },
     {
       "number": 42,
       "title": "ops(agentic): add Codex continuity and workflow infrastructure",
       "head": "ops/agentic-continuity-workflows",
       "base": "main",
-      "state": "open",
-      "merge_state": "pending_checks_after_rebase",
-      "review_decision": "REVIEW_REQUIRED",
+      "state": "merged",
+      "merge_commit": "d7061edfbafd669d2064bd30af68a351ece57637",
       "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/42"
     },
     {
@@ -42,18 +62,29 @@
       "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/40"
     }
   ],
-  "next_priority": {
+  "current_implementation": {
     "sub_milestone": "Demonstrativo Basico Individual",
-    "next_functional_pr": "feat(documentos): gerar Demonstrativo Basico individual via MEMORIA",
     "technical_decision": "Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase",
-    "document_generation_constraints": [
-      "Do not depend on the BASE sheet for the individual file",
-      "Do not depend on XLOOKUP for the individual file",
-      "Preserve official template layout, formulas, borders and merged cells",
-      "Keep official document rules under human review"
+    "template": "public/templates/demonstrativo-basico-4cre-template.xlsx",
+    "template_public_state": "Sanitized on 2026-05-08: no BASE sheet, no real consolidated unit data, MEMORIA input cells blank.",
+    "generator_files": [
+      "src/lib/demonstrativo/templateCells.ts",
+      "src/lib/demonstrativo/mapUnidadeToMemoria.ts",
+      "src/lib/demonstrativo/generateDemonstrativoBasico.ts",
+      "src/lib/demonstrativo/generateDemonstrativoBasico.test.ts"
     ],
-    "scope_warning": "This governance PR must not implement document generation."
+    "ui_entrypoint": "src/pages/EscolaEditar.tsx",
+    "dependency_decision": "exceljs was added because xlsx does not preserve workbook template styles, borders and merged-cell fidelity reliably."
   },
+  "document_generation_constraints": [
+    "Fill MEMORIA directly from vw_unidade_detalhe data",
+    "Do not depend on the BASE sheet for the individual file",
+    "Do not depend on XLOOKUP for the individual file",
+    "Do not publish templates in public/ with real consolidated BASE data",
+    "Remove the BASE sheet from generated individual workbooks if present",
+    "Preserve template layout, formulas, borders and merged cells",
+    "Keep official document rules under human review"
+  ],
   "mandatory_before_task": [
     "Read AGENTS.md",
     "Read .continuity/current-state.json",
@@ -70,12 +101,30 @@
     "Update docs/HANDOFF.md",
     "Update decisions, roadmap, or backlog when scope or priority changes"
   ],
-  "protected_boundaries": [
-    "Do not alter src/** in this PR",
-    "Do not alter supabase/** in this PR",
-    "Do not alter migrations in this PR",
-    "Do not alter package.json or package-lock.json in this PR",
-    "Do not alter Vercel configuration in this PR",
-    "Do not alter functional UI in this PR"
-  ]
+  "last_validation": {
+    "main_sync": "2026-05-09: merged origin/main at 9c47ed99887fb8df5ee2ba17251ff2c8591df989 into PR 43 branch. supabase/config.toml now points to raluxyojqosfzrfozmpz and git grep found no old Supabase refs in HEAD.",
+    "supabase_link": "2026-05-09: supabase link --project-ref raluxyojqosfzrfozmpz --yes completed in this worktree; supabase projects list shows LINKED for pdde-online-2026-dev.",
+    "template_inspection": "2026-05-08 openpyxl inspection confirmed the public template has sheets MEMORIA, Demonstrativo and Conciliacao Bancaria only; no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits.",
+    "generated_workbook_smoke": "Automated Vitest coverage generates a fixture workbook, confirms no BASE sheet, confirms MEMORIA/Demonstrativo sheets, fills MEMORIA!B2 and scans generated formulas for BASE!/BASE[/XLOOKUP.",
+    "typescript": "passed: npx tsc --noEmit",
+    "lint": "passed with existing react-refresh warnings in masked-input.tsx and useExercicio.tsx",
+    "tests": "passed: npm test",
+    "build": "passed: npm run build; existing large chunk warning remains; post-build inspection confirmed dist template has no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits",
+    "post_main_sync_validation": "2026-05-09 passed: npx tsc --noEmit, npm run lint with existing react-refresh warnings, npm test, npm run build with existing large chunk warnings, openpyxl inspection of public and dist templates.",
+    "vercel_checks": "passed: Vercel Preview Comments, Vercel - pddeonlinesme-rj, Vercel - pddeonlinesme-rj-pr8-validate",
+    "preview_smoke": "blocked for anonymous access by Vercel Authentication; authenticated browser/session validation still required",
+    "review_comments": "initial Copilot comments addressed locally: BASE_URL-aware template URL, template buffer cache, metadata separated from MEMORIA fields, robust money string parsing, and aria-busy/decorative icons on the generate button"
+  },
+  "next_priority": {
+    "after_this_pr": [
+      "Validate the Vercel Preview with an authenticated session.",
+      "Open /escolas/:id and generate a Demonstrativo Basico from at least two real Supabase units.",
+      "Confirm each generated workbook opens in Excel and recalculates the Demonstrativo sheet from MEMORIA."
+    ],
+    "later": [
+      "Edicao cadastral minima",
+      "Audit log",
+      "Geracao em lote dos Demonstrativos"
+    ]
+  }
 }
