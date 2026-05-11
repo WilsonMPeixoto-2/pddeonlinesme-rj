@@ -1,4 +1,4 @@
-import type { Worksheet } from "exceljs";
+import type { Cell, CellFormulaValue, Worksheet } from "exceljs";
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import {
   BASE_SHEET_NAME,
@@ -12,6 +12,36 @@ import {
   mapUnidadeToMemoria,
   type DemonstrativoMemoriaData,
 } from "./mapUnidadeToMemoria";
+
+/**
+ * Extrai a referência de célula de uma fórmula simples apontando para a aba MEMORIA.
+ *
+ * Aceita variantes comuns emitidas por diferentes versões do Excel/ExcelJS:
+ *   MEMORIA!B2        → B2
+ *   =MEMORIA!B2       → B2
+ *   MEMORIA!$B$2      → B2
+ *   'MEMORIA'!B2      → B2
+ *   'MEMORIA'!$B$2    → B2
+ *
+ * Retorna `null` para fórmulas compostas (ex.: SUM(MEMORIA!B2)),
+ * referências a outras abas, ou strings vazias.
+ */
+export function extractMemoriaRef(formula: string): string | null {
+  const normalized = formula.trim().replace(/^=/, "");
+  const match = normalized.match(/^'?MEMORIA'?!\$?([A-Z]+)\$?(\d+)$/i);
+  if (!match) return null;
+  return `${match[1].toUpperCase()}${match[2]}`;
+}
+
+/** Type guard: extrai a string de fórmula de uma célula ExcelJS, independente do formato interno. */
+function getCellFormula(cell: Cell): string {
+  if (cell.formula) return cell.formula;
+  const val = cell.value;
+  if (val && typeof val === "object" && "formula" in val) {
+    return (val as CellFormulaValue).formula;
+  }
+  return "";
+}
 
 export interface GeneratedDemonstrativo {
   blob: Blob;
@@ -91,6 +121,21 @@ export async function generateDemonstrativoBasico(
   if (baseWorksheet) {
     workbook.removeWorksheet(baseWorksheet.id);
   }
+
+  // Workaround para falhas de recálculo (cache) em visualizadores web/Google Sheets:
+  // Substituímos as fórmulas simples que buscam na MEMORIA pelos valores literais.
+  demonstrativoWorksheet.eachRow((row) => {
+    row.eachCell((cell) => {
+      const formula = getCellFormula(cell);
+      if (!formula) return;
+
+      const memRef = extractMemoriaRef(formula);
+      if (!memRef) return;
+
+      const memVal = memoriaWorksheet.getCell(memRef).value;
+      cell.value = memVal ?? "";
+    });
+  });
 
   const outputBuffer = await workbook.xlsx.writeBuffer();
 
