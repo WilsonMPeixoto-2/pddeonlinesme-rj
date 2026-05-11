@@ -712,8 +712,10 @@ export default function EscolaEditar() {
       <DocumentsPanel
         open={docsOpen}
         onOpenChange={setDocsOpen}
+        unidadeId={u.unidade_id ?? id}
         schoolName={u.designacao || "Unidade Escolar"}
         exercicio={exercicio}
+        programa={PROGRAMA_PADRAO}
       />
     </AppLayout>
   );

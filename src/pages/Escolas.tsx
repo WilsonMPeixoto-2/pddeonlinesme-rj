@@ -37,7 +37,6 @@ import {
 } from "@/hooks/useUnidadesLocalizador";
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -405,25 +404,32 @@ export default function Escolas() {
 
         {/* Table */}
         <Card className="ds-card overflow-hidden">
-          <Table>
+          <Table className="table-fixed">
+              <colgroup>
+                <col className="w-[38%]" />
+                <col className="w-[24%]" />
+                <col className="w-[13%]" />
+                <col className="w-[17%]" />
+                <col className="w-[8%]" />
+              </colgroup>
               <TableHeader>
                 <TableRow className="sticky top-0 z-10 border-b border-border/60 bg-muted/50 backdrop-blur-md hover:bg-muted/50">
-                  <TableHead className="ds-th h-11 min-w-[300px]">
+                  <TableHead className="ds-th h-11">
                     Unidade escolar
                   </TableHead>
-                  <TableHead className="ds-th h-11 min-w-[180px]">
+                  <TableHead className="ds-th h-11">
                     Diretor(a)
                   </TableHead>
-                  <TableHead className="ds-th h-11 w-[150px]">
+                  <TableHead className="ds-th h-11">
                     Status
                   </TableHead>
-                  <TableHead className="ds-th h-11 w-[170px] border-l border-border/40 bg-primary/5 text-center text-primary/80">
+                  <TableHead className="ds-th h-11 border-l border-border/40 bg-primary/5 text-center text-primary/80">
                     <span className="inline-flex items-center gap-1.5">
                       <FileText className="h-3 w-3" />
                       Documentos
                     </span>
                   </TableHead>
-                  <TableHead className="ds-th h-11 w-[50px] text-right">
+                  <TableHead className="ds-th h-11 text-right">
                     {""}
                   </TableHead>
                 </TableRow>
@@ -491,19 +497,15 @@ export default function Escolas() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  <AnimatePresence mode="popLayout">
+                  <>
                     {lista.map((e) => {
                       const st = getStatus(e);
                       const cfg = statusConfig[st];
                       return (
-                        <motion.tr
-                          layout
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ duration: 0.2 }}
+                        // Keep rows native: row-accent/motion.tr already caused column drift in this table.
+                        <TableRow
                           key={e.id}
-                          className="group row-accent border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
+                          className="group border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
                         >
                           <TableCell className="ds-td py-3">
                             <div className="flex flex-col gap-1">
@@ -567,10 +569,10 @@ export default function Escolas() {
                               }}
                             />
                           </TableCell>
-                        </motion.tr>
+                        </TableRow>
                       );
                     })}
-                  </AnimatePresence>
+                  </>
                 )}
               </TableBody>
           </Table>
@@ -608,6 +610,7 @@ export default function Escolas() {
       <DocumentsPanel
         open={docsPanelOpen}
         onOpenChange={setDocsPanelOpen}
+        unidadeId={selectedEscola?.id}
         schoolName={selectedEscola?.designacao ?? ""}
         exercicio={exercicio}
       />
