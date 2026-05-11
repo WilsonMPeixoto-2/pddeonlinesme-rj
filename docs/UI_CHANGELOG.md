@@ -2,6 +2,31 @@
 
 Registro de decisões e entregas visuais/transversais já presentes no app.
 
+## 2026-05-11 — Fixes de integracao UI entregues no PR #43
+
+O commit final do PR #43 (`5202313`) corrigiu dois bugs de integracao visual detectados durante smoke operacional autenticado (validacao local por agente, sem artefato versionado no repo).
+
+### Fix 1 — Tabela /escolas: desalinhamento de colunas
+
+**Causa:** `motion.tr` do Framer Motion, combinado com a classe `row-accent`, interferia no calculo de largura das colunas, causando desalinhamento visual entre `thead` e `tbody`.
+
+**Fix estrutural:** substituido `motion.tr` por `TableRow` nativo. Aplicado `table-fixed` no `<table>` e `<colgroup>` com larguras percentuais explicitas para cada coluna.
+
+**Arquivo:** `src/pages/Escolas.tsx`
+
+### Fix 2 — DocumentsPanel: mock substituido por gerador real
+
+**Causa:** o `DocumentsPanel` em `EscolaEditar.tsx` exibia cards mockados com dados hardcoded, sem conexao ao gerador `generateDemonstrativoBasico`.
+
+**Fix funcional:** integrado o painel com `useUnidadeDetalhe` (hook React Query para `vw_unidade_detalhe`), `generateDemonstrativoBasico` (gerador ExcelJS) e `file-saver saveAs` para download direto do `.xlsx`.
+
+**Arquivos:** `src/pages/EscolaEditar.tsx`, `src/components/escola/DocumentsPanel.tsx`
+
+### Validacao em producao
+
+Smoke autenticado executado localmente por agente apos merge do PR #43. Rotas autenticadas verificadas operacionalmente em producao. Este smoke nao possui artefato versionado no repositorio.
+
+
 ## 2026-05-02 — Light Mode institucional premium
 
 O projeto incorporou um Light Mode institucional premium, mantendo o Dark Mode atmosférico como experiência preservada.

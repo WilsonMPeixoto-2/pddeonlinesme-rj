@@ -1,6 +1,6 @@
 # Roadmap Adaptativo - PDDE Online 2026
 
-Atualizado em: 2026-05-07
+Atualizado em: 2026-05-11
 
 ## Norte
 
@@ -11,34 +11,55 @@ Este roadmap adaptativo nao substitui o plano. Ele organiza a fila curta e regis
 ## Estado atual
 
 - Supabase Foundation v1 encerrada como migracao fundacional.
-- `main` e a fonte oficial de continuidade.
+- `main` e a fonte oficial de continuidade, atualmente em `4d97a9cba09fcfe155402f4c6b6679087fc3d19e`.
+- PR #43 (Demonstrativo Basico Individual) entregue e implantado em producao.
 - Telas principais de escolas ja usam views reais do Supabase proprio.
-- PRs #40 e #41 incorporados na `main`.
-- PR aberto atual: #42, infraestrutura de continuidade agentic.
-- Este PR e exclusivamente documental/operacional.
+- PRs #40, #41, #42, #43 e #44 incorporados na `main`.
+- Nenhum PR funcional aberto no momento.
 
 ## Fila curta recomendada
 
-1. `ops(agentic): add Codex continuity and workflow infrastructure`
-   - Escopo: governanca operacional e continuidade.
+1. `docs/state-reconcile-after-pr43` — reconciliacao de `.continuity/` e `docs/` apos merge do PR #43.
+   - Escopo: apenas `.continuity/` e `docs/`.
    - Status: em preparacao neste PR.
 
-2. `feat(documentos): gerar Demonstrativo Basico individual via MEMORIA`
-   - Escopo: gerar o Demonstrativo Basico Individual.
-   - Decisao tecnica: Opcao B, preencher `MEMORIA` diretamente com dados do Supabase.
-   - Restricao: nao depender da aba `BASE` nem de `XLOOKUP`.
-   - Bloqueios: revisar contrato de dados, template oficial, regras financeiras e criterios de rastreabilidade antes de implementar.
+2. `README real` — substituir boilerplate Lovable por documentacao propria do projeto.
+   - Escopo: `README.md`.
 
-3. Revisao/fechamento dos PRs abertos ou superados
-   - #40 e #41 requerem revisao.
-   - PRs historicos superados devem ser tratados conforme documentos de reconciliacao.
+3. `AGENTS.md realinhado` — alinhar a regra de fonte de verdade (GitHub > documentos).
+   - Escopo: `AGENTS.md`.
 
-4. Proximas frentes do Plano Global v4.1
-   - Dashboard real e analitico.
-   - Fase 2B de edicao cadastral/bancaria.
-   - Importador institucional.
-   - Auth/roles/guards/RLS.
-   - Portal do Diretor.
+4. `CI minimo` — lint + typecheck em PRs.
+   - Escopo: `.github/workflows/`.
+
+5. `Lockfile unico` — remover `yarn.lock` se presente, manter apenas `package-lock.json`.
+   - Escopo: lockfiles.
+
+6. `Limpeza lovable-tagger` — remover GitHub Action herdada do Lovable.
+   - Escopo: `.github/workflows/`.
+
+## Marcos funcionais maiores (pós higiene)
+
+- Marco 6B: Edicao cadastral minima (Fase 2B).
+- Marco 10B: Importador institucional via interface.
+- Marcos 11+12: Auth/roles/guards/RLS final.
+- Marco 13: Portal do Diretor.
+- Marco 14: Motor documental v1 (geracao em lote).
+
+## Melhorias acessorias
+
+- Cobertura de teste: ampliar coverage do gerador e das views.
+- Mobile responsiveness: validar telas em viewport mobile.
+- Rotacao de senha Supabase: automatizar ou documentar periodicidade.
+- Deletar diretorio fisico de branches locais ja mergeadas.
+
+## Lessons learned recentes
+
+1. **Reconcile pos-merge e obrigatorio:** documentos de continuidade divergem rapidamente de `main` apos um merge. O PR de reconciliacao deve ser aberto imediatamente apos cada merge significativo.
+
+2. **Smoke operacional e necessario alem de checks tecnicos:** `tsc`, `lint`, `test` e `build` nao detectam problemas de integracao visual (ex: `motion.tr` desalinhando colunas, painel mock nao conectado ao gerador). Validacao visual autenticada e complementar e necessaria.
+
+3. **Comments de PR vs blob atual:** comentarios de revisao em PR referem-se ao estado do diff no momento da revisao, nao ao estado final do blob apos fixups. Ao retomar um PR, verificar sempre o blob atual, nao os comments isolados.
 
 ## Regra de uso
 

@@ -53,3 +53,28 @@ Este documento registra decisoes operacionais vigentes. Ele complementa `docs/DE
 **Consequencia:** a dependencia `xlsx` existente permanece disponivel para exportacoes tabulares simples, mas o Demonstrativo individual usa `exceljs` porque precisa preservar template, formulas, bordas e mesclagens com maior fidelidade.
 
 **Restricao:** `exceljs` deve ser carregado sob demanda, via `dynamic import()`, para nao aumentar desnecessariamente o bundle inicial.
+
+## 2026-05-11 - DocumentsPanel integrado ao gerador real (Opcao B na listagem)
+
+**Decisao:** o `DocumentsPanel` em `EscolaEditar.tsx` foi integrado ao gerador real `generateDemonstrativoBasico`, usando `useUnidadeDetalhe` para obter dados do Supabase e `file-saver saveAs` para download.
+
+**Consequencia:** a listagem de documentos da unidade deixa de ser mockada e passa a gerar o Demonstrativo Basico real a partir dos dados da view `vw_unidade_detalhe`.
+
+**Restricao:** novos tipos documentais no painel devem seguir o mesmo padrao de integracao (hook de dados + gerador isolado + download). Nao acoplar logica de geracao ao componente visual.
+
+## 2026-05-11 - Fix estrutural anti-regressao na tabela /escolas
+
+**Decisao:** substituir `motion.tr` com classe `row-accent` por `TableRow` nativo com layout `table-fixed` e `colgroup` com larguras percentuais na pagina `/escolas`.
+
+**Consequencia:** a tabela de escolas nao depende mais de `motion.tr` para renderizar linhas, eliminando o desalinhamento de colunas causado pela interacao entre Framer Motion e CSS de acento.
+
+**Restricao:** futuras animacoes em linhas de tabela devem ser validadas contra `table-fixed` e `colgroup` antes de merge.
+
+## 2026-05-11 - Admin bypass do Ruleset como procedimento excepcional
+
+**Decisao:** em PRs mantidos exclusivamente pelo proprietario do repositorio (solo-author), o bypass administrativo do Ruleset "Protect main" podera ser utilizado quando os checks tecnicos e validacoes operacionais estiverem documentados.
+
+**Consequencia:** o PR #43 foi mergeado por admin bypass apos documentacao completa de checks tecnicos (tsc, lint, test, build) e validacao operacional local.
+
+**Restricao:** a preferencia permanece por revisao externa quando houver colaborador disponivel. O bypass administrativo nao substitui revisao de codigo como pratica permanente; e um procedimento excepcional permitido ao mantenedor em contexto de PR solo validado.
+
