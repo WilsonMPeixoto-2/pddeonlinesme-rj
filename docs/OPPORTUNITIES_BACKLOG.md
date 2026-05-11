@@ -15,7 +15,7 @@ Este backlog e um radar. Ele registra oportunidades, riscos e proximas frentes, 
 | 3 | CI minimo | infraestrutura | pendente | lint + typecheck em PRs. |
 | 4 | Lockfile unico | infraestrutura | pendente | Remover `bun.lock` e `bun.lockb`. |
 | — | Limpeza lovable-tagger | infraestrutura | **concluido** | Removido de devDependencies e `vite.config.ts`. |
-| 5 | Cobertura de testes DocumentsPanel | qualidade | pendente | Caminhos de erro e placeholders. |
+| — | Cobertura de testes DocumentsPanel | qualidade | **concluido** | Caminhos de erro e placeholders cobertos. |
 | 6 | Dashboard real/analitico | produto/dados | pendente | Pertence ao Marco 9; nao tratar como Foundation v1. |
 | 8 | Fase 2B edicao cadastral/bancaria | dados/UI | pendente | Exige contrato, permissao, auditoria e validacao. |
 | 9 | Importador institucional via interface | dados/documentos | pendente | Pertence ao Marco 10; carga administrativa inicial ja cumpriu seu papel. |
