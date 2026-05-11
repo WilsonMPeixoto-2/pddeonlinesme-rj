@@ -4,9 +4,9 @@ Atualizado em: 2026-05-11
 
 ## Contexto atual
 
-Fonte de verdade: GitHub `main`, atualmente em `4d97a9cba09fcfe155402f4c6b6679087fc3d19e`.
+Fonte de verdade: GitHub `main`, atualmente em `88238cea1a4294c7b3c84c9501c2c3e434c73f79`.
 
-PRs #40, #41, #42, #43 e #44 foram incorporados a `main`. Nao ha PRs abertos no momento.
+PRs #40, #41, #42, #43, #44 e #45 foram incorporados a `main`. Nao ha PRs abertos no momento.
 
 ## PR #43 — Demonstrativo Basico Individual (mergeado)
 
@@ -31,6 +31,7 @@ Smoke autenticado executado localmente por agente, com validacao operacional de 
 
 | PR | Titulo | Branch | Estado |
 |---:|---|---|---|
+| #45 | docs(state): reconcile continuity after PR 43 merge | `docs/state-reconcile-after-pr43` | mergeado em `88238ce` |
 | #43 | feat(documentos): generate Demonstrativo Basico from school detail | `feat/demonstrativo-basico-individual` | mergeado em `4d97a9c` |
 | #44 | Feat/dashboard real vw dashboard basico | `feat/dashboard-real-vw-dashboard-basico` | mergeado em `9c47ed9` |
 | #42 | ops(agentic): add Codex continuity and workflow infrastructure | `ops/agentic-continuity-workflows` | mergeado em `d7061ed` |
@@ -66,11 +67,12 @@ Restricoes da decisao (permanecem vigentes para futuras alteracoes):
 
 ## Proximas frentes recomendadas
 
-1. **README real** — substituir boilerplate Lovable por documentacao propria do projeto.
-2. **AGENTS.md realinhado** — alinhar a regra de fonte de verdade (GitHub > documentos).
+1. **AGENTS.md realinhado** — alinhar regra de fonte de verdade (este PR).
+2. **README real** — substituir boilerplate Lovable por documentacao propria do projeto.
 3. **CI minimo** — lint + typecheck em PRs.
-4. **Lockfile unico** — remover `yarn.lock` se presente, manter apenas `package-lock.json`.
-5. **Limpeza lovable-tagger** — remover GitHub Action herdada do Lovable.
+4. **Lockfile unico** — remover `bun.lock` e `bun.lockb`, manter apenas `package-lock.json`.
+5. **Limpeza lovable-tagger** — remover dependencia e import no `vite.config.ts`.
+6. **Cobertura de testes DocumentsPanel** — ampliar coverage de erro e placeholders.
 
 ## Riscos operacionais conhecidos
 

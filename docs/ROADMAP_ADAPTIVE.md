@@ -11,32 +11,33 @@ Este roadmap adaptativo nao substitui o plano. Ele organiza a fila curta e regis
 ## Estado atual
 
 - Supabase Foundation v1 encerrada como migracao fundacional.
-- `main` e a fonte oficial de continuidade, atualmente em `4d97a9cba09fcfe155402f4c6b6679087fc3d19e`.
+- `main` e a fonte oficial de continuidade, atualmente em `88238cea1a4294c7b3c84c9501c2c3e434c73f79`.
 - PR #43 (Demonstrativo Basico Individual) entregue e implantado em producao.
+- PR #45 (reconciliacao pos-PR43) mergeado.
 - Telas principais de escolas ja usam views reais do Supabase proprio.
-- PRs #40, #41, #42, #43 e #44 incorporados na `main`.
+- PRs #40, #41, #42, #43, #44 e #45 incorporados na `main`.
 - Nenhum PR funcional aberto no momento.
 
 ## Fila curta recomendada
 
-1. `docs/state-reconcile-after-pr43` — reconciliacao de `.continuity/` e `docs/` apos merge do PR #43.
-   - Escopo: apenas `.continuity/` e `docs/`.
+1. `docs/agents-source-of-truth` — realinhar AGENTS.md com regra de fonte de verdade.
+   - Escopo: `AGENTS.md`, `.continuity/`, `docs/`.
    - Status: em preparacao neste PR.
 
 2. `README real` — substituir boilerplate Lovable por documentacao propria do projeto.
    - Escopo: `README.md`.
 
-3. `AGENTS.md realinhado` — alinhar a regra de fonte de verdade (GitHub > documentos).
-   - Escopo: `AGENTS.md`.
-
-4. `CI minimo` — lint + typecheck em PRs.
+3. `CI minimo` — lint + typecheck em PRs.
    - Escopo: `.github/workflows/`.
 
-5. `Lockfile unico` — remover `yarn.lock` se presente, manter apenas `package-lock.json`.
+4. `Lockfile unico` — remover `bun.lock` e `bun.lockb`, manter apenas `package-lock.json`.
    - Escopo: lockfiles.
 
-6. `Limpeza lovable-tagger` — remover GitHub Action herdada do Lovable.
-   - Escopo: `.github/workflows/`.
+5. `Limpeza lovable-tagger` — remover dependencia e import no `vite.config.ts`.
+   - Escopo: `package.json`, `package-lock.json`, `vite.config.ts`.
+
+6. `Cobertura de testes DocumentsPanel` — ampliar coverage de erro e placeholders.
+   - Escopo: `src/components/escola/DocumentsPanel.test.tsx`.
 
 ## Marcos funcionais maiores (pós higiene)
 
