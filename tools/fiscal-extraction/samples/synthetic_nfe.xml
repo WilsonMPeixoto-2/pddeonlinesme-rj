@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe35260511222333000181550010000012341123456789" versao="4.00">
+      <ide>
+        <cUF>35</cUF>
+        <cNF>12345678</cNF>
+        <natOp>Venda de material pedagogico</natOp>
+        <mod>55</mod>
+        <serie>1</serie>
+        <nNF>1234</nNF>
+        <dhEmi>2026-05-15T10:30:00-03:00</dhEmi>
+        <tpNF>1</tpNF>
+      </ide>
+      <emit>
+        <CNPJ>11222333000181</CNPJ>
+        <xNome>ALFA MATERIAIS PEDAGOGICOS LTDA</xNome>
+      </emit>
+      <dest>
+        <CNPJ>04252011000110</CNPJ>
+        <xNome>ESCOLA MUNICIPAL TESTE PDDE</xNome>
+      </dest>
+      <det nItem="1">
+        <prod>
+          <cProd>001</cProd>
+          <xProd>Caderno universitario</xProd>
+          <qCom>10.0000</qCom>
+          <vUnCom>12.3450</vUnCom>
+          <vProd>123.45</vProd>
+        </prod>
+      </det>
+      <det nItem="2">
+        <prod>
+          <cProd>002</cProd>
+          <xProd>Caneta azul</xProd>
+          <qCom>20.0000</qCom>
+          <vUnCom>0.3000</vUnCom>
+          <vProd>6.00</vProd>
+        </prod>
+      </det>
+      <total>
+        <ICMSTot>
+          <vNF>1234.56</vNF>
+        </ICMSTot>
+      </total>
+    </infNFe>
+  </NFe>
+  <protNFe versao="4.00">
+    <infProt>
+      <chNFe>35260511222333000181550010000012341123456789</chNFe>
+    </infProt>
+  </protNFe>
+</nfeProc>
