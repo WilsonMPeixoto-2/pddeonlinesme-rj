@@ -90,10 +90,15 @@ The initial extraction contract focuses on:
 - `raw_text`
 - `confidence`
 - `warnings`
+- `status`
+
+For this POC, `source_type` is limited to `xml`, `pdf_text`, `manual_text` and reserved future values `pdf_ocr`, `image_ocr`, `unknown`. The POC only emits `status = "extraido"` or `status = "requer_revisao"`. It must never emit `status = "confirmado"` because confirmation is a future human-review action.
 
 ## Extraction strategy
 
 XML is the preferred source when available because it is structured and avoids OCR. PDF with selectable text is second, using PyMuPDF and pdfplumber. Scanned PDFs and images require OCR and are intentionally outside this first local implementation.
+
+The `confidence` value is a transparent initial heuristic, not a decision engine. It considers valid supplier CNPJ, valid recipient CNPJ when present, document number, issue date, total value, access key for NF-e, and supplier name. Any official use still requires human validation.
 
 ## Risks
 

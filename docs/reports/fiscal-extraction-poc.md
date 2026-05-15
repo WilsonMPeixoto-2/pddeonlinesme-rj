@@ -15,6 +15,8 @@ Implemented capabilities:
 - Conservative fiscal-text heuristics for CNPJ, number, date, access key, supplier, recipient, and total value.
 - Typer CLI for single-file extraction, text inspection, and local batch processing.
 - Unit tests using only synthetic samples.
+- More explicit `source_type` values: `xml`, `pdf_text`, `manual_text`, with `pdf_ocr` and `image_ocr` reserved for later.
+- Extraction `status` limited to `extraido` or `requer_revisao`.
 
 ## Libraries
 
@@ -60,6 +62,7 @@ npm run build
 ## Limitations
 
 - The committed samples are synthetic and do not prove real-world accuracy.
+- All committed names, CNPJs, access keys, school labels, supplier labels, item descriptions, dates and values are fictitious technical examples. They do not represent any real school, CEC, supplier, government entity, invoice or accountability record.
 - PDF parsing currently depends on text already present in the PDF.
 - OCR for scanned PDFs and images is not implemented.
 - Text heuristics can confuse supplier and recipient in weak layouts.
@@ -78,6 +81,16 @@ This POC does not integrate with:
 - the Portal do Diretor;
 - the Demonstrativo generator;
 - Vercel deployment or environment variables.
+
+## Alignment with validation protocol
+
+PR #59 defines the validation protocol, field dictionary, sample-corpus protocol and governance notes. PR #58 remains only the local technical POC.
+
+Fields already represented in the Pydantic model include `source_file`, `source_type`, `document_type`, `document_number`, `access_key`, `issue_date`, `supplier`, `recipient`, `total_value`, `items`, `raw_text`, `confidence`, `warnings` and `status`.
+
+Future institutional fields remain outside this POC, including reviewer identity, review timestamp, file hash, storage path conventions, per-field confidence, audit-log transitions, duplicate detection and database persistence.
+
+The POC never confirms official data. It can only return `extraido` or `requer_revisao`; `confirmado`, `rejeitado` and `substituido` are reserved states for a future human-review workflow. The current `confidence` is a simple heuristic score based on presence and structural validity of critical fields, not an automatic approval rule.
 
 ## Next steps
 

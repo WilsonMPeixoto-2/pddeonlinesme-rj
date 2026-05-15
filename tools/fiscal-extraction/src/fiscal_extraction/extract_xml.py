@@ -49,18 +49,6 @@ def _decimal(value: Any) -> Decimal | None:
         return None
 
 
-def _confidence(result: FiscalExtractionResult) -> float:
-    checks = [
-        result.document_number,
-        result.access_key,
-        result.issue_date,
-        result.supplier and result.supplier.cnpj,
-        result.recipient and result.recipient.cnpj,
-        result.total_value is not None,
-    ]
-    return round(sum(1 for check in checks if check) / len(checks), 2)
-
-
 def extract_from_xml(path: str | Path) -> FiscalExtractionResult:
     source_path = Path(path)
     raw_xml = source_path.read_text(encoding="utf-8")
@@ -110,5 +98,4 @@ def extract_from_xml(path: str | Path) -> FiscalExtractionResult:
         warnings=[],
     )
 
-    result = result.model_copy(update={"confidence": _confidence(result)})
     return validate_result(result)

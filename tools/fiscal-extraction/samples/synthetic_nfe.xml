@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic fictitious sample for local tests. It does not represent a real school, CEC, supplier, public entity or invoice. -->
 <nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
   <NFe>
     <infNFe Id="NFe35260511222333000181550010000012341123456789" versao="4.00">

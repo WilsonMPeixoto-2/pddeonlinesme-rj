@@ -38,6 +38,7 @@ def _print_table(result: FiscalExtractionResult) -> None:
     table.add_row("valor_total", str(result.total_value) if result.total_value is not None else "")
     table.add_row("itens", str(len(result.items)))
     table.add_row("confidence", str(result.confidence))
+    table.add_row("status", result.status)
     table.add_row("warnings", "; ".join(result.warnings))
     console.print(table)
 
@@ -52,7 +53,7 @@ def _extract(path: Path) -> FiscalExtractionResult:
         except Exception as exc:
             console.print(f"[yellow]PyMuPDF falhou, tentando pdfplumber: {exc}[/yellow]", stderr=True)
             raw_text = extract_text_pdfplumber(path)
-        return parse_fiscal_text(raw_text, source_file=path)
+        return parse_fiscal_text(raw_text, source_file=path, source_type="pdf_text")
     if suffix == ".txt":
         return parse_fiscal_text(path.read_text(encoding="utf-8"), source_file=path)
     raise typer.BadParameter(f"Extensao nao suportada: {path.suffix}")
@@ -102,6 +103,7 @@ def batch(directory: Annotated[Path, typer.Argument(exists=True, readable=True, 
     table.add_column("cnpj_emitente")
     table.add_column("valor_total")
     table.add_column("confidence")
+    table.add_column("status")
     table.add_column("warnings")
 
     for file_path in sorted(directory.iterdir()):
@@ -116,10 +118,11 @@ def batch(directory: Annotated[Path, typer.Argument(exists=True, readable=True, 
                 result.supplier.cnpj if result.supplier and result.supplier.cnpj else "",
                 str(result.total_value) if result.total_value is not None else "",
                 str(result.confidence),
+                result.status,
                 str(len(result.warnings)),
             )
         except Exception as exc:
-            table.add_row(file_path.name, "erro", "", "", "", "0", str(exc))
+            table.add_row(file_path.name, "erro", "", "", "", "0", "requer_revisao", str(exc))
 
     console.print(table)
 

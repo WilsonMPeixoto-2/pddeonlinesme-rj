@@ -22,4 +22,5 @@ def test_extract_from_synthetic_nfe_xml():
     assert len(result.items) == 2
     assert result.items[0].description == "Caderno universitario"
     assert result.confidence == 1.0
+    assert result.status == "extraido"
     assert result.warnings == []

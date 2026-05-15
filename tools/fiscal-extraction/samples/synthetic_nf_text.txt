@@ -1,4 +1,5 @@
 NOTA FISCAL ELETRONICA - NF-e
+Amostra sintetica ficticia para testes locais. Nao representa escola, CEC, fornecedor, entidade publica ou nota fiscal real.
 
 Emitente / Fornecedor
 Razao Social: ALFA MATERIAIS PEDAGOGICOS LTDA

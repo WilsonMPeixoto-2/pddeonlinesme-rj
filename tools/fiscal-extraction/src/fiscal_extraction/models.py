@@ -6,6 +6,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+SourceType = Literal["xml", "pdf_text", "pdf_ocr", "image_ocr", "manual_text", "unknown"]
+ExtractionStatus = Literal["extraido", "requer_revisao", "confirmado", "rejeitado", "substituido"]
+
 
 class FiscalParty(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -28,7 +31,7 @@ class FiscalExtractionResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     source_file: str | None = None
-    source_type: Literal["xml", "pdf", "text", "unknown"] = "unknown"
+    source_type: SourceType = "unknown"
     document_type: str | None = None
     document_number: str | None = None
     access_key: str | None = None
@@ -40,3 +43,4 @@ class FiscalExtractionResult(BaseModel):
     raw_text: str | None = None
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     warnings: list[str] = Field(default_factory=list)
+    status: ExtractionStatus = "extraido"
