@@ -2,7 +2,7 @@
 <!-- Synthetic fictitious sample for local tests. It does not represent a real school, CEC, supplier, public entity or invoice. -->
 <nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
   <NFe>
-    <infNFe Id="NFe35260511222333000181550010000012341123456789" versao="4.00">
+    <infNFe Id="NFe35260511222333000181550010000012341123456782" versao="4.00">
       <ide>
         <cUF>35</cUF>
         <cNF>12345678</cNF>
@@ -41,14 +41,14 @@
       </det>
       <total>
         <ICMSTot>
-          <vNF>1234.56</vNF>
+          <vNF>129.45</vNF>
         </ICMSTot>
       </total>
     </infNFe>
   </NFe>
   <protNFe versao="4.00">
     <infProt>
-      <chNFe>35260511222333000181550010000012341123456789</chNFe>
+      <chNFe>35260511222333000181550010000012341123456782</chNFe>
     </infProt>
   </protNFe>
 </nfeProc>

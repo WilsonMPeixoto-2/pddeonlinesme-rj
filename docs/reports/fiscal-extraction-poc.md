@@ -17,6 +17,7 @@ Implemented capabilities:
 - Unit tests using only synthetic samples.
 - More explicit `source_type` values: `xml`, `pdf_text`, `manual_text`, with `pdf_ocr` and `image_ocr` reserved for later.
 - Extraction `status` limited to `extraido` or `requer_revisao`.
+- Structural warnings for invalid NF-e access-key check digit, access key not matching supplier CNPJ, date outside the initial accepted range, non-positive total value, and item-total reconciliation mismatch.
 
 ## Libraries
 
@@ -90,7 +91,7 @@ Fields already represented in the Pydantic model include `source_file`, `source_
 
 Future institutional fields remain outside this POC, including reviewer identity, review timestamp, file hash, storage path conventions, per-field confidence, audit-log transitions, duplicate detection and database persistence.
 
-The POC never confirms official data. It can only return `extraido` or `requer_revisao`; `confirmado`, `rejeitado` and `substituido` are reserved states for a future human-review workflow. The current `confidence` is a simple heuristic score based on presence and structural validity of critical fields, not an automatic approval rule.
+The POC never confirms official data. It can only return `extraido` or `requer_revisao`; `confirmado`, `rejeitado` and `substituido` are reserved states for a future human-review workflow. The current `confidence` is a simple heuristic score based on presence and structural validity of critical fields, not an automatic approval rule. Warnings that indicate structural risk force `status = "requer_revisao"`.
 
 ## Next steps
 

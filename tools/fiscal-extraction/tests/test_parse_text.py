@@ -14,7 +14,7 @@ def test_parse_synthetic_nf_text():
     assert result.source_type == "manual_text"
     assert result.document_type == "NF-e"
     assert result.document_number == "1234"
-    assert result.access_key == "35260511222333000181550010000012341123456789"
+    assert result.access_key == "35260511222333000181550010000012341123456782"
     assert result.issue_date.isoformat() == "2026-05-15"
     assert result.supplier.cnpj == "11222333000181"
     assert result.supplier.name == "ALFA MATERIAIS PEDAGOGICOS LTDA"
@@ -71,3 +71,25 @@ def test_parse_missing_cnpj_warns_and_requires_review():
 
     assert result.status == "requer_revisao"
     assert "emitente: CNPJ ausente" in result.warnings
+
+
+def test_parse_invalid_access_key_requires_review():
+    raw_text = """
+    NOTA FISCAL ELETRONICA - NF-e
+    Emitente / Fornecedor
+    Razao Social: FORNECEDOR FICTICIO LTDA
+    CNPJ: 11.222.333/0001-81
+    Destinatario
+    Razao Social: ESCOLA MUNICIPAL TESTE PDDE
+    CNPJ: 04.252.011/0001-10
+    Numero da Nota: 1234
+    Data de Emissao: 15/05/2026
+    Chave de Acesso: 35260511222333000181550010000012341123456789
+    Valor Total da Nota: R$ 1.234,56
+    """
+
+    result = parse_fiscal_text(raw_text, source_file="invalid-key.local.txt")
+
+    assert result.status == "requer_revisao"
+    assert result.confidence < 1.0
+    assert "chave de acesso com digito verificador invalido" in result.warnings

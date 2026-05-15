@@ -98,7 +98,9 @@ For this POC, `source_type` is limited to `xml`, `pdf_text`, `manual_text` and r
 
 XML is the preferred source when available because it is structured and avoids OCR. PDF with selectable text is second, using PyMuPDF and pdfplumber. Scanned PDFs and images require OCR and are intentionally outside this first local implementation.
 
-The `confidence` value is a transparent initial heuristic, not a decision engine. It considers valid supplier CNPJ, valid recipient CNPJ when present, document number, issue date, total value, access key for NF-e, and supplier name. Any official use still requires human validation.
+The `confidence` value is a transparent initial heuristic, not a decision engine. It considers valid supplier CNPJ, valid recipient CNPJ when present, document number, issue date, positive total value, valid NF-e access key, and supplier name. Any official use still requires human validation.
+
+The local validator also flags structurally risky cases such as access keys with invalid check digits, access keys that do not encode the extracted supplier CNPJ, issue dates outside the initial accepted range, non-positive totals, and item totals that do not reconcile with the document total.
 
 ## Risks
 
