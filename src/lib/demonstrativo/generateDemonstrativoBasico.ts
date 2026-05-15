@@ -1,4 +1,4 @@
-import type { Cell, CellFormulaValue, Worksheet } from "exceljs";
+import type { Cell, CellFormulaValue, Workbook, Worksheet } from "exceljs";
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import {
   BASE_SHEET_NAME,
@@ -41,6 +41,19 @@ function getCellFormula(cell: Cell): string {
     return (val as CellFormulaValue).formula;
   }
   return "";
+}
+
+function clearCachedFormulaResults(workbook: Workbook) {
+  workbook.eachSheet((worksheet) => {
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        const formula = getCellFormula(cell);
+        if (!formula) return;
+
+        cell.value = { formula };
+      });
+    });
+  });
 }
 
 export interface GeneratedDemonstrativo {
@@ -100,6 +113,7 @@ export async function generateDemonstrativoBasico(
   await workbook.xlsx.load(templateBuffer);
   workbook.calcProperties.fullCalcOnLoad = true;
   workbook.calcProperties.forceFullCalc = true;
+  clearCachedFormulaResults(workbook);
 
   const memoriaWorksheet = workbook.getWorksheet(MEMORIA_SHEET_NAME);
   const demonstrativoWorksheet = workbook.getWorksheet(DEMONSTRATIVO_SHEET_NAME);

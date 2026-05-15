@@ -48,7 +48,15 @@ const fixtureUnidadeB: UnidadeDetalhe = {
   nome: "EM ALBINO SOUZA CRUZ",
   cnpj: "04552825000170",
   endereco: "AV. DOS DEMOCRATICOS 268, MANGUINHOS",
-  diretor: "ANDREA DOS SANTOS SIMOES"
+  agencia: "9876",
+  conta_corrente: "12345-6",
+  diretor: "ANDREA DOS SANTOS SIMOES",
+  reprogramado_custeio: 10,
+  reprogramado_capital: 20,
+  parcela_1_custeio: 30,
+  parcela_1_capital: 40,
+  parcela_2_custeio: 50,
+  parcela_2_capital: 60,
 };
 
 const formulaText = (value: ExcelJS.CellValue) => {
@@ -71,6 +79,89 @@ const blobToArrayBuffer = (blob: Blob) =>
     reader.readAsArrayBuffer(blob);
   });
 
+const loadGeneratedWorkbook = async (blob: Blob) => {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(await blobToArrayBuffer(blob));
+
+  return workbook;
+};
+
+const visibleDemonstrativoCells = {
+  nome: "C14",
+  cnpj: "O14",
+  endereco: "A16",
+  diretor: "H51",
+} as const;
+
+const criticalMemoriaCells = {
+  nome: "B2",
+  cnpj: "B3",
+  endereco: "B4",
+  agencia: "B6",
+  contaCorrente: "F6",
+  diretor: "A52",
+} as const;
+
+const expectedCriticalValues = (unidade: UnidadeDetalhe) => ({
+  nome: unidade.nome,
+  cnpj: unidade.cnpj,
+  endereco: unidade.endereco,
+  agencia: unidade.agencia,
+  contaCorrente: unidade.conta_corrente,
+  diretor: unidade.diretor,
+});
+
+const expectLiteralCellValue = (
+  worksheet: ExcelJS.Worksheet,
+  address: string,
+  expected: string | number | null,
+) => {
+  const cell = worksheet.getCell(address);
+  expect(formulaText(cell.value)).toBeNull();
+  expect(cell.formula).toBeUndefined();
+  expect(cell.value).toBe(expected);
+};
+
+const collectCellValues = (workbook: ExcelJS.Workbook) => {
+  const values: string[] = [];
+
+  workbook.eachSheet((worksheet) => {
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        const raw = cell.value;
+        if (raw === null || raw === undefined) return;
+
+        if (typeof raw === "object") {
+          values.push(JSON.stringify(raw));
+          return;
+        }
+
+        values.push(String(raw));
+      });
+    });
+  });
+
+  return values;
+};
+
+const collectForbiddenFormulas = (workbook: ExcelJS.Workbook) => {
+  const forbiddenFormulaPattern = /BASE!|BASE\[|XLOOKUP/i;
+  const forbiddenFormulas: string[] = [];
+
+  workbook.eachSheet((worksheet) => {
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        const formula = formulaText(cell.value);
+        if (formula && forbiddenFormulaPattern.test(formula)) {
+          forbiddenFormulas.push(`${worksheet.name}!${cell.address}:${formula}`);
+        }
+      });
+    });
+  });
+
+  return forbiddenFormulas;
+};
+
 describe("generateDemonstrativoBasico", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -82,10 +173,7 @@ describe("generateDemonstrativoBasico", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const generated = await generateDemonstrativoBasico(fixtureUnidade, "2026");
-    const outputBuffer = await blobToArrayBuffer(generated.blob);
-    const workbook = new ExcelJS.Workbook();
-
-    await workbook.xlsx.load(outputBuffer);
+    const workbook = await loadGeneratedWorkbook(generated.blob);
 
     expect(workbook.getWorksheet(BASE_SHEET_NAME)).toBeUndefined();
     expect(workbook.getWorksheet(MEMORIA_SHEET_NAME)).toBeDefined();
@@ -102,60 +190,60 @@ describe("generateDemonstrativoBasico", () => {
       expect(formula).toBeNull();
     }
 
-    const forbiddenFormulaPattern = /BASE!|BASE\[|XLOOKUP/i;
-    const forbiddenFormulas: string[] = [];
-
-    workbook.eachSheet((worksheet) => {
-      worksheet.eachRow((row) => {
-        row.eachCell((cell) => {
-          const formula = formulaText(cell.value);
-          if (formula && forbiddenFormulaPattern.test(formula)) {
-            forbiddenFormulas.push(`${worksheet.name}!${cell.address}:${formula}`);
-          }
-        });
-      });
-    });
-
-    expect(forbiddenFormulas).toEqual([]);
+    expect(collectForbiddenFormulas(workbook)).toEqual([]);
   });
 
-  it("materializa os campos críticos na aba Demonstrativo e não preserva cache antigo do template", async () => {
+  it("materializa campos críticos por unidade sem preservar BASE, cache ou dados cruzados", async () => {
     const templateBuffer = await readFile(templatePath);
     const fetchMock = vi.fn(async () => new Response(templateBuffer));
     vi.stubGlobal("fetch", fetchMock);
 
-    // Gerar workbook A
     const genA = await generateDemonstrativoBasico(fixtureUnidade, "2026");
-    const wbA = new ExcelJS.Workbook();
-    await wbA.xlsx.load(await blobToArrayBuffer(genA.blob));
-    
-    // Gerar workbook B
     const genB = await generateDemonstrativoBasico(fixtureUnidadeB, "2026");
-    const wbB = new ExcelJS.Workbook();
-    await wbB.xlsx.load(await blobToArrayBuffer(genB.blob));
 
-    // Validar MEMORIA
-    expect(wbA.getWorksheet(MEMORIA_SHEET_NAME)?.getCell("B2").value).toBe("EDI CONEGO FERNANDES PINHEIRO");
-    expect(wbB.getWorksheet(MEMORIA_SHEET_NAME)?.getCell("B2").value).toBe("EM ALBINO SOUZA CRUZ");
-    
-    // Validar Demonstrativo
+    const wbA = await loadGeneratedWorkbook(genA.blob);
+    const wbB = await loadGeneratedWorkbook(genB.blob);
+
+    const memoriaA = wbA.getWorksheet(MEMORIA_SHEET_NAME)!;
+    const memoriaB = wbB.getWorksheet(MEMORIA_SHEET_NAME)!;
     const wsDemA = wbA.getWorksheet(DEMONSTRATIVO_SHEET_NAME)!;
     const wsDemB = wbB.getWorksheet(DEMONSTRATIVO_SHEET_NAME)!;
 
-    // C14 = nome, O14 = cnpj, A16 = endereco, H51 = diretor
-    expect(wsDemA.getCell("C14").value).toBe("EDI CONEGO FERNANDES PINHEIRO");
-    expect(wsDemA.getCell("O14").value).toBe("12.345.678/0001-90");
-    expect(wsDemA.getCell("A16").value).toBe("RUA DA ESCOLA, 123");
-    expect(wsDemA.getCell("H51").value).toBe("MARIA DA SILVA");
+    for (const [key, address] of Object.entries(criticalMemoriaCells)) {
+      expectLiteralCellValue(
+        memoriaA,
+        address,
+        expectedCriticalValues(fixtureUnidade)[key as keyof ReturnType<typeof expectedCriticalValues>],
+      );
+      expectLiteralCellValue(
+        memoriaB,
+        address,
+        expectedCriticalValues(fixtureUnidadeB)[key as keyof ReturnType<typeof expectedCriticalValues>],
+      );
+    }
 
-    expect(wsDemB.getCell("C14").value).toBe("EM ALBINO SOUZA CRUZ");
-    expect(wsDemB.getCell("O14").value).toBe("04552825000170");
-    expect(wsDemB.getCell("A16").value).toBe("AV. DOS DEMOCRATICOS 268, MANGUINHOS");
-    expect(wsDemB.getCell("H51").value).toBe("ANDREA DOS SANTOS SIMOES");
-    
-    // Validar ausência de cache cruzado ou dados do template original
-    expect(wsDemB.getCell("C14").value).not.toBe("EDI CÔNEGO FERNANDES PINHEIRO");
-    expect(wsDemB.getCell("C14").value).not.toBe("EDI CONEGO FERNANDES PINHEIRO");
+    // Campos visíveis críticos: C14/O14/A16/H51 são fórmulas simples MEMORIA no template.
+    expectLiteralCellValue(wsDemA, visibleDemonstrativoCells.nome, fixtureUnidade.nome);
+    expectLiteralCellValue(wsDemA, visibleDemonstrativoCells.cnpj, fixtureUnidade.cnpj);
+    expectLiteralCellValue(wsDemA, visibleDemonstrativoCells.endereco, fixtureUnidade.endereco);
+    expectLiteralCellValue(wsDemA, visibleDemonstrativoCells.diretor, fixtureUnidade.diretor);
+
+    expectLiteralCellValue(wsDemB, visibleDemonstrativoCells.nome, fixtureUnidadeB.nome);
+    expectLiteralCellValue(wsDemB, visibleDemonstrativoCells.cnpj, fixtureUnidadeB.cnpj);
+    expectLiteralCellValue(wsDemB, visibleDemonstrativoCells.endereco, fixtureUnidadeB.endereco);
+    expectLiteralCellValue(wsDemB, visibleDemonstrativoCells.diretor, fixtureUnidadeB.diretor);
+
+    for (const workbook of [wbA, wbB]) {
+      expect(workbook.getWorksheet(BASE_SHEET_NAME)).toBeUndefined();
+      expect(collectForbiddenFormulas(workbook)).toEqual([]);
+    }
+
+    const workbookBValues = collectCellValues(wbB);
+    for (const leakedValue of Object.values(expectedCriticalValues(fixtureUnidade))) {
+      expect(workbookBValues).not.toContain(String(leakedValue));
+    }
+
+    expect(workbookBValues.join("\n")).not.toContain("EDI CÔNEGO FERNANDES PINHEIRO");
   });
 });
 
@@ -176,6 +264,7 @@ describe("extractMemoriaRef", () => {
 
   it.each([
     ["SUM(MEMORIA!B2)", "fórmula composta"],
+    ["=SUM(MEMORIA!B2)", "fórmula composta com sinal de igual"],
     ["OUTRA!B2", "outra aba"],
     ["BASE!A1", "aba BASE"],
     ["", "string vazia"],
