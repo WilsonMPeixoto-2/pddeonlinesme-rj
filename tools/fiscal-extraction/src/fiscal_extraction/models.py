@@ -7,7 +7,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 SourceType = Literal["xml", "pdf_text", "pdf_ocr", "image_ocr", "manual_text", "unknown"]
-ExtractionStatus = Literal["extraido", "requer_revisao", "confirmado", "rejeitado", "substituido"]
+ExtractionStatus = Literal["extraido", "requer_revisao"]
 
 
 class FiscalParty(BaseModel):

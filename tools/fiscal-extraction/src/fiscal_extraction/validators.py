@@ -18,6 +18,7 @@ CRITICAL_WARNING_FRAGMENTS = (
     "data de emissao ausente",
     "valor total ausente",
     "valor total nao positivo",
+    "total incoerente",
 )
 
 

@@ -1,7 +1,12 @@
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+from pydantic import ValidationError
+
 from fiscal_extraction.extract_pdf_text import parse_fiscal_text
+from fiscal_extraction.models import FiscalExtractionResult, FiscalItem
+from fiscal_extraction.validators import validate_result
 
 
 SAMPLES = Path(__file__).resolve().parents[1] / "samples"
@@ -93,3 +98,29 @@ def test_parse_invalid_access_key_requires_review():
     assert result.status == "requer_revisao"
     assert result.confidence < 1.0
     assert "chave de acesso com digito verificador invalido" in result.warnings
+
+
+def test_item_total_incoherence_requires_review():
+    result = FiscalExtractionResult(
+        document_type="Recibo",
+        document_number="999",
+        total_value=Decimal("10.00"),
+        items=[
+            FiscalItem(
+                description="Item ficticio",
+                quantity=Decimal("2"),
+                unit_value=Decimal("5.00"),
+                total_value=Decimal("9.00"),
+            )
+        ],
+    )
+
+    validated = validate_result(result)
+
+    assert validated.status == "requer_revisao"
+    assert "item 1: total incoerente" in validated.warnings
+
+
+def test_poc_status_rejects_human_review_states():
+    with pytest.raises(ValidationError):
+        FiscalExtractionResult(status="confirmado")

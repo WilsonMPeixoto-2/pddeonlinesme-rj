@@ -54,5 +54,5 @@ The POC validates extraction mechanics only:
 - PDF text extraction is attempted with PyMuPDF and pdfplumber.
 - Text parsing uses conservative heuristics.
 - `source_type` distinguishes `xml`, `pdf_text` and `manual_text`; `pdf_ocr` and `image_ocr` are reserved for future OCR work.
-- `status` is limited to `extraido` or `requer_revisao` in this POC. It never returns `confirmado`; confirmation requires future human review.
+- `status` is limited to `extraido` or `requer_revisao` in this POC model. Future human-review states are intentionally not accepted here.
 - All extracted values are suggestions that require human review before any official accounting use.
