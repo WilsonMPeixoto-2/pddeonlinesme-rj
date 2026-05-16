@@ -1,6 +1,6 @@
 # Protocolo de Validacao da Extracao Fiscal
 
-Atualizado em: 2026-05-15
+Atualizado em: 2026-05-16
 
 ## 1. Finalidade
 
@@ -14,6 +14,12 @@ Este documento e o gate de qualidade da frente de extracao fiscal. Ele e complem
 - `docs/reports/fiscal-extraction-governance-notes.md`, que descreve **riscos e controles institucionais**.
 
 Este protocolo nao cria infraestrutura, nao altera Supabase, nao altera UI, nao altera Auth/RLS, nao altera Vercel e nao toca o gerador do Demonstrativo Basico.
+
+### 1.1. Escopo arquitetural
+
+O PoC fiscal atual nao consolida arquitetura institucional definitiva. Bibliotecas, provedores, heuristicas, workers e formatos intermediarios usados em `tools/fiscal-extraction/` continuam substituiveis ate avaliacao posterior por Tech Radar e, quando houver impacto de arquitetura, por ADR.
+
+O objetivo deste PR documental e definir a regua de validacao, governanca e aceite da frente fiscal. Ele nao escolhe definitivamente ferramentas, nuvem, motor de OCR, provedor de Document AI, bibliotecas fiscais especializadas ou modelo de banco.
 
 ## 2. Regra central
 
@@ -97,7 +103,14 @@ A pontuacao por campo deve considerar:
 - presenca do valor (campo nao-vazio);
 - validade estrutural (formato, comprimento, digitos verificadores);
 - coerencia cruzada com outros campos (ex.: chave de acesso codifica CNPJ do emitente, data e numero);
-- metodo de extracao (XML estruturado > PDF textual > OCR);
+- metodo e confiabilidade da fonte. A ordem arquitetural inicial e:
+  1. XML oficial enviado diretamente;
+  2. XML/documento fiscal obtido por fonte estruturada confiavel;
+  3. NFS-e Nacional / Padrao DPS;
+  4. chave de acesso, DFe, consulta fiscal ou API terceirizada, conforme viabilidade juridica e tecnica;
+  5. PDF textual;
+  6. Vision LLM, Document AI ou OCR moderno como fallback;
+  7. OCR tradicional apenas quando fizer sentido tecnico e economico;
 - presenca de warnings emitidos pelo validador.
 
 Confianca **global** do documento, se reportada, deve ser a **media ponderada** dos campos criticos, nao a media simples.
@@ -151,7 +164,7 @@ O PoC tecnico em `tools/fiscal-extraction/` (Codex, PR #58) deve cumprir, antes 
 | Nao promete acerto total | README e relatorio devem listar limitacoes explicitas (ja feito em `docs/reports/fiscal-extraction-poc.md`) |
 | Nao grava em banco de dados | Codex confirmou em PR #58: nenhuma chamada Supabase no codigo |
 | Nao alimenta o Demonstrativo oficial | Codex confirmou em PR #58: gerador do Demonstrativo nao foi tocado |
-| Distingue formalmente os 3 metodos: XML, PDF textual, texto livre | CLI aceita extensoes `.xml`, `.pdf`, `.txt` separadamente |
+| Distingue formalmente origens da POC (`xml`, `pdf_text`, `manual_text`, reservando OCR/imagem para futuro) | CLI aceita extensoes `.xml`, `.pdf`, `.txt` separadamente e o modelo registra `source_type` granular |
 | Tem testes automatizados isolados | `pytest tools/fiscal-extraction/tests` deve passar (6 testes verificados em PR #58) |
 
 ## 9. Criterios de aceite para versao institucional futura
@@ -190,6 +203,28 @@ Antes de qualquer integracao com prestacao de contas oficial, a versao instituci
 - Alinhamento com formato de exportacao final (SiGPC/FNDE) verificado antes da implementacao do export.
 - Revisao humana obrigatoria para regras documentais oficiais (mantida do princípio geral do projeto, conforme `AGENTS.md`).
 
+### 9.6. Avaliacao tecnica antes da v1 institucional
+
+Antes da v1 institucional, escolhas feitas no PoC devem ser reavaliadas como decisao tecnica, nao herdadas automaticamente. Devem entrar em Tech Radar:
+
+- NFS-e Nacional / Padrao DPS como alvo principal de NFS-e, com periodo de transicao para formatos municipais legados;
+- Nota Carioca / NFS-e municipal do Rio como legado ou caso confirmado por fonte oficial, nao como padrao futuro assumido;
+- DFe, SEFAZ, distribuicao, consulta por chave e APIs terceirizadas;
+- bibliotecas fiscais especializadas versus parsing XML manual;
+- XML oficial como fonte preferencial;
+- Vision LLM, Document AI, OCR tradicional e extracao textual;
+- armazenamento de XML oficial e politica de retencao;
+- confidence ponderada por campo;
+- processamento em lote versus revisao unitaria.
+
+Devem virar ADR antes de implementacao institucional:
+
+- modelo de arquitetura do processador fiscal (worker, job, backend dedicado ou servico equivalente);
+- fronteiras de dados e LGPD para envio de documentos fiscais a servicos externos;
+- estrategia de Auth/RLS/Marco 6B para upload, revisao e confirmacao;
+- modelo de trilha de auditoria e imutabilidade dos dados confirmados;
+- criterio formal para quando um documento pode sair de `requer_revisao`.
+
 ## 10. Metricas minimas de avaliacao
 
 Para que o PoC justifique evolucao para versao institucional, deve produzir as seguintes metricas em um conjunto de pelo menos 20 amostras (sinteticas no PoC inicial; reais anonimizadas em fase posterior):
@@ -212,12 +247,13 @@ Apos o PoC, a decisao de avanco para fase institucional deve responder explicita
 
 1. **Acuracia atinge thresholds da secao 10?** Se nao, iterar.
 2. **Casos bloqueantes sao trataveis por revisao humana razoavel?** Se uma unidade precisar revisar mais de ~30% dos campos extraidos manualmente, o sistema agrega pouco valor; reconsiderar abordagem.
-3. **A captura via chave de acesso + consulta SEFAZ e factivel?** Se sim, ela substitui boa parte do esforco de OCR e melhora drasticamente os numeros das metricas.
-4. **Existe vincu lo claro com unidade, exercicio e programa?** Sem isso, a extracao nao tem destino.
-5. **A trilha de auditoria esta desenhada antes da implementacao?** Sem isso, qualquer extracao confirmada vira divida tecnica institucional.
-6. **A revisao humana obrigatoria pode ser operada pela equipe real da 4a CRE?** Carga de revisao deve ser sustentavel.
+3. **Fontes estruturadas oficiais foram priorizadas antes de PDF/OCR?** XML oficial, NFS-e Nacional/DPS, DFe/consulta fiscal e APIs confiaveis devem ser avaliados antes de ampliar parsing visual.
+4. **Captura via chave de acesso, DFe, consulta fiscal ou API terceirizada e factivel?** Se sim, ela pode substituir parte do esforco de OCR e melhorar as metricas; se nao, deve haver justificativa documentada.
+5. **Existe vinculo claro com unidade, exercicio e programa?** Sem isso, a extracao nao tem destino.
+6. **A trilha de auditoria esta desenhada antes da implementacao?** Sem isso, qualquer extracao confirmada vira divida tecnica institucional.
+7. **A revisao humana obrigatoria pode ser operada pela equipe real da 4a CRE?** Carga de revisao deve ser sustentavel.
 
-Apenas com **sim explicito** nestas 6 perguntas a frente avanca para implementacao de UI, Storage e Postgres.
+Apenas com **sim explicito** nestas 7 perguntas a frente avanca para implementacao de UI, Storage e Postgres.
 
 ## 12. Relacao com o restante do projeto
 
