@@ -140,7 +140,6 @@ export default function EscolaEditar() {
     try {
       await updateCadastro.mutateAsync({
         unidadeId: u.unidade_id,
-        bancoAtual: u.banco,
         values,
       });
       await refetch();

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import {
-  normalizeOptionalText,
+  toContasBancariasUpdate,
   toUnidadesEscolaresUpdate,
   type UnidadeCadastroFormValues,
 } from "@/lib/unidadeCadastro";
@@ -14,7 +14,6 @@ interface UseUpdateUnidadeCadastroParams {
 
 interface UpdateUnidadeCadastroInput {
   unidadeId: string;
-  bancoAtual?: string | null;
   values: UnidadeCadastroFormValues;
 }
 
@@ -30,7 +29,7 @@ export function useUpdateUnidadeCadastro({
   const exercicioNumber = Number.parseInt(exercicio, 10);
 
   return useMutation({
-    mutationFn: async ({ unidadeId, bancoAtual, values }: UpdateUnidadeCadastroInput) => {
+    mutationFn: async ({ unidadeId, values }: UpdateUnidadeCadastroInput) => {
       const unidadeUpdate = toUnidadesEscolaresUpdate(values);
 
       const { data: contaPrincipal, error: contaError } = await supabase
@@ -47,11 +46,8 @@ export function useUpdateUnidadeCadastro({
         throw new Error(contaError.message);
       }
 
-      const banco = normalizeOptionalText(bancoAtual ?? "");
       const contaUpdate: TablesUpdate<"contas_bancarias"> = {
-        banco,
-        agencia: unidadeUpdate.agencia,
-        conta_corrente: unidadeUpdate.conta_corrente,
+        ...toContasBancariasUpdate(values),
         principal: true,
       };
 
@@ -89,6 +85,9 @@ export function useUpdateUnidadeCadastro({
       if (unidadeError) {
         throw new Error(unidadeError.message);
       }
+
+      // TODO(Marco 6B): registrar alteracoes cadastrais em audit_logs quando
+      // houver identidade institucional do revisor e trilha de auditoria real.
     },
     onSuccess: async (_data, variables) => {
       await Promise.all([

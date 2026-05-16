@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { AlertCircle, Loader2, Save } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,7 @@ export function UnidadeCadastroEditDialog({
 
   const updateField =
     (field: keyof UnidadeCadastroFormValues) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setValues((current) => ({
         ...current,
         [field]: event.target.value,
@@ -64,6 +64,7 @@ export function UnidadeCadastroEditDialog({
 
     const nextErrors = validateUnidadeCadastro(values, {
       designacao: unidade.designacao,
+      diretorAtual: unidade.diretor,
     });
 
     setErrors(nextErrors);
@@ -149,6 +150,17 @@ export function UnidadeCadastroEditDialog({
               />
             </div>
 
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="cadastro-banco">Banco</Label>
+              <Input
+                id="cadastro-banco"
+                value={values.banco}
+                onChange={updateField("banco")}
+                disabled={isSaving}
+                maxLength={80}
+              />
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="cadastro-agencia">Agencia</Label>
               <Input
@@ -173,6 +185,25 @@ export function UnidadeCadastroEditDialog({
               />
             </div>
           </div>
+
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Impacto em novos documentos</AlertTitle>
+            <AlertDescription>
+              Alterar nome, diretor, endereco ou dados bancarios afeta novas consultas e
+              novos Demonstrativos/documentos gerados. Arquivos ja baixados nao sao
+              reprocessados.
+            </AlertDescription>
+          </Alert>
+
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Prototipo controlado</AlertTitle>
+            <AlertDescription>
+              Este fluxo grava em cadastro compartilhado. Confirme os dados antes de salvar
+              e use apenas em contexto autorizado.
+            </AlertDescription>
+          </Alert>
 
           <Alert>
             <AlertCircle className="h-4 w-4" />
