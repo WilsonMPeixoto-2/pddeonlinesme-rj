@@ -37,7 +37,6 @@ import {
 } from "@/hooks/useUnidadesLocalizador";
 import { useExercicio } from "@/hooks/useExercicio";
 import { cn } from "@/lib/utils";
-import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 /* ─── Types ─── */
@@ -215,23 +214,36 @@ export default function Escolas() {
     setDocsPanelOpen(true);
   };
 
-  const handleExportSelection = () => {
+  const handleExportSelection = async () => {
     try {
-      const exportData = lista.map(u => ({
-        "INEP": u.inep,
-        "CNPJ": u.cnpj,
-        "Designação": u.designacao,
-        "Nome": u.nome,
-        "Diretor(a)": u.diretor,
-        "Status": getStatus(u) === "completo" ? "Completo" : "Incompleto"
-      }));
+      // Lazy-import keeps exceljs out of the initial bundle.
+      const { default: ExcelJS } = await import("exceljs");
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Unidades");
+      worksheet.columns = [
+        { header: "INEP", key: "inep", width: 12 },
+        { header: "CNPJ", key: "cnpj", width: 20 },
+        { header: "Designação", key: "designacao", width: 40 },
+        { header: "Nome", key: "nome", width: 40 },
+        { header: "Diretor(a)", key: "diretor", width: 30 },
+        { header: "Status", key: "status", width: 14 },
+      ];
+      lista.forEach((u) => {
+        worksheet.addRow({
+          inep: u.inep ?? "",
+          cnpj: u.cnpj ?? "",
+          designacao: u.designacao ?? "",
+          nome: u.nome ?? "",
+          diretor: u.diretor ?? "",
+          status: getStatus(u) === "completo" ? "Completo" : "Incompleto",
+        });
+      });
+      worksheet.getRow(1).font = { bold: true };
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Unidades");
-      
-      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-      const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const buffer = await workbook.xlsx.writeBuffer();
+      const data = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
       saveAs(data, `PDDE_Selecao_4CRE_${exercicio}.xlsx`);
       toast.success("Seleção exportada com sucesso!");
     } catch (err) {
