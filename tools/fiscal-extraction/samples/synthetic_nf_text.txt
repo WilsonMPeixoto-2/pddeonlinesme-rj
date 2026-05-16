@@ -1,0 +1,20 @@
+NOTA FISCAL ELETRONICA - NF-e
+Amostra sintetica ficticia para testes locais. Nao representa escola, CEC, fornecedor, entidade publica ou nota fiscal real.
+
+Emitente / Fornecedor
+Razao Social: ALFA MATERIAIS PEDAGOGICOS LTDA
+CNPJ: 11.222.333/0001-81
+
+Destinatario
+Razao Social: ESCOLA MUNICIPAL TESTE PDDE
+CNPJ: 04.252.011/0001-10
+
+Numero da Nota: 1234
+Data de Emissao: 15/05/2026
+Chave de Acesso: 35260511222333000181550010000012341123456782
+
+Itens
+001 - Caderno universitario - Quantidade 10 - Valor 123,45
+002 - Caneta azul - Quantidade 20 - Valor 6,00
+
+Valor Total da Nota: R$ 1.234,56
