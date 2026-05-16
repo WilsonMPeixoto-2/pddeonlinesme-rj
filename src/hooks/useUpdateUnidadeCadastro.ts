@@ -1,7 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
+import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
+import type { UnidadeLocalizador } from "@/hooks/useUnidadesLocalizador";
 import {
+  normalizeOptionalText,
+  normalizeRequiredText,
   toContasBancariasUpdate,
   toUnidadesEscolaresUpdate,
   type UnidadeCadastroFormValues,
@@ -21,6 +25,12 @@ interface ContaPrincipal {
   id: string;
 }
 
+interface OptimisticSnapshot {
+  detalheKey: readonly [string, string, number, string];
+  detalheBefore: UnidadeDetalhe | null | undefined;
+  localizadorBefore: UnidadeLocalizador[] | undefined;
+}
+
 export function useUpdateUnidadeCadastro({
   exercicio,
   programa,
@@ -28,7 +38,61 @@ export function useUpdateUnidadeCadastro({
   const queryClient = useQueryClient();
   const exercicioNumber = Number.parseInt(exercicio, 10);
 
-  return useMutation({
+  return useMutation<void, Error, UpdateUnidadeCadastroInput, OptimisticSnapshot>({
+    // Optimistic UI: aplica novos valores no cache antes do servidor confirmar,
+    // melhorando a percepcao de velocidade na edicao cadastral. Se a mutacao
+    // falhar, onError restaura o snapshot anterior.
+    onMutate: async ({ unidadeId, values }) => {
+      const detalheKey = [
+        "unidade-detalhe",
+        unidadeId,
+        exercicioNumber,
+        programa,
+      ] as const;
+
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: detalheKey }),
+        queryClient.cancelQueries({ queryKey: ["unidades-localizador"] }),
+      ]);
+
+      const detalheBefore = queryClient.getQueryData<UnidadeDetalhe | null>(detalheKey);
+      const localizadorBefore = queryClient.getQueryData<UnidadeLocalizador[]>([
+        "unidades-localizador",
+      ]);
+
+      const nome = normalizeRequiredText(values.nome);
+      const diretor = normalizeOptionalText(values.diretor);
+      const endereco = normalizeOptionalText(values.endereco);
+      const banco = normalizeOptionalText(values.banco);
+      const agencia = normalizeOptionalText(values.agencia);
+      const contaCorrente = normalizeOptionalText(values.conta_corrente);
+
+      if (detalheBefore) {
+        queryClient.setQueryData<UnidadeDetalhe>(detalheKey, {
+          ...detalheBefore,
+          nome,
+          diretor,
+          endereco,
+          banco: banco ?? detalheBefore.banco,
+          agencia,
+          conta_corrente: contaCorrente,
+          updated_at: new Date().toISOString(),
+        });
+      }
+
+      if (localizadorBefore) {
+        queryClient.setQueryData<UnidadeLocalizador[]>(
+          ["unidades-localizador"],
+          localizadorBefore.map((row) =>
+            row.id === unidadeId
+              ? { ...row, nome, diretor }
+              : row,
+          ),
+        );
+      }
+
+      return { detalheKey, detalheBefore, localizadorBefore };
+    },
     mutationFn: async ({ unidadeId, values }: UpdateUnidadeCadastroInput) => {
       const unidadeUpdate = toUnidadesEscolaresUpdate(values);
 
@@ -111,7 +175,21 @@ export function useUpdateUnidadeCadastro({
       // TODO(Marco 6B): registrar alteracoes cadastrais em audit_logs quando
       // houver identidade institucional do revisor e trilha de auditoria real.
     },
-    onSuccess: async (_data, variables) => {
+    onError: (_error, _variables, context) => {
+      if (!context) return;
+      // Rollback do optimistic update: restaura snapshot anterior.
+      if (context.detalheBefore !== undefined) {
+        queryClient.setQueryData(context.detalheKey, context.detalheBefore);
+      }
+      if (context.localizadorBefore !== undefined) {
+        queryClient.setQueryData(
+          ["unidades-localizador"],
+          context.localizadorBefore,
+        );
+      }
+    },
+    onSettled: async (_data, _error, variables) => {
+      // Garante reconciliacao com o servidor apos sucesso ou rollback.
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["unidade-detalhe", variables.unidadeId, exercicioNumber, programa],
