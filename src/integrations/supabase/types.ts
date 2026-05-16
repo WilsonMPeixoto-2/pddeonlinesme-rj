@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       contas_bancarias: {
@@ -372,6 +397,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_unidade_cadastro_minima: {
+        Args: {
+          p_agencia: string | null
+          p_banco: string | null
+          p_conta_corrente: string | null
+          p_diretor: string | null
+          p_endereco: string | null
+          p_nome: string
+          p_unidade_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "operador"
@@ -500,6 +537,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "operador"],
