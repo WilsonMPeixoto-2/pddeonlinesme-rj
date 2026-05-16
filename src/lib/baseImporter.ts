@@ -9,7 +9,7 @@
  *
  * Mantém o frontend desacoplado: parsing fica nesta lib, UI consome o resultado.
  */
-import * as XLSX from "xlsx";
+import type ExcelJSType from "exceljs";
 import { supabase } from "@/integrations/supabase/client";
 
 /* ---------- Tipos públicos ---------- */
@@ -112,13 +112,41 @@ function buildDesignacao(codigo: string, nome: string): string {
   return `${c} — ${n}`;
 }
 
+/**
+ * Desempacota o `cell.value` do ExcelJS para um valor primitivo equivalente
+ * ao que `XLSX.utils.sheet_to_json` produzia. Mantém compatibilidade com a
+ * logica de validacao/normalizacao a jusante (que assume `string | number
+ * | Date | null`).
+ */
+function unwrapCellValue(value: ExcelJSType.CellValue | undefined): unknown {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "object") {
+    if ("result" in value && value.result !== undefined) {
+      return unwrapCellValue(value.result as ExcelJSType.CellValue);
+    }
+    if ("richText" in value && Array.isArray(value.richText)) {
+      return value.richText.map((r) => r.text).join("");
+    }
+    if (value instanceof Date) return value;
+    if ("text" in value && typeof value.text === "string") {
+      return value.text;
+    }
+  }
+  return value;
+}
+
 /* ---------- Parse ---------- */
 
 export async function parseBaseXlsx(file: File): Promise<ParseResult> {
+  // Dynamic import keeps exceljs out of the initial bundle.
+  // Same convention adopted by generateDemonstrativoBasico (PR #43).
+  const { default: ExcelJS } = await import("exceljs");
   const buffer = await file.arrayBuffer();
-  const wb = XLSX.read(buffer, { type: "array" });
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(buffer);
 
-  if (!wb.SheetNames.includes("BASE")) {
+  const ws = wb.getWorksheet("BASE");
+  if (!ws) {
     return {
       rows: [],
       errors: [
@@ -133,10 +161,27 @@ export async function parseBaseXlsx(file: File): Promise<ParseResult> {
     };
   }
 
-  const ws = wb.Sheets["BASE"];
-  const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, {
-    defval: null,
-    raw: true,
+  // Header row e headers visiveis
+  const headerRow = ws.getRow(1);
+  const headers: string[] = [];
+  headerRow.eachCell({ includeEmpty: false }, (cell, col) => {
+    const value = unwrapCellValue(cell.value);
+    headers[col] = value === null ? "" : String(value).trim();
+  });
+
+  // Constroi cada linha como Record<string, unknown> compativel com o codigo
+  // que esperava o formato de sheet_to_json.
+  const raw: Record<string, unknown>[] = [];
+  ws.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    if (rowNumber === 1) return; // pula header
+    const obj: Record<string, unknown> = {};
+    row.eachCell({ includeEmpty: false }, (cell, col) => {
+      const header = headers[col];
+      if (header) {
+        obj[header] = unwrapCellValue(cell.value);
+      }
+    });
+    if (Object.keys(obj).length > 0) raw.push(obj);
   });
 
   // Detect header keys present (case-insensitive contra HEADER_MAP)

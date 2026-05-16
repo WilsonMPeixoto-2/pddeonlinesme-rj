@@ -1,7 +1,22 @@
 import fs from "fs";
 import path from "path";
 import { createClient } from "@supabase/supabase-js";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+
+function unwrapCellValue(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "object") {
+    if ("result" in value && value.result !== undefined) {
+      return unwrapCellValue(value.result);
+    }
+    if (Array.isArray(value.richText)) {
+      return value.richText.map((r) => r.text).join("");
+    }
+    if (value instanceof Date) return value;
+    if (typeof value.text === "string") return value.text;
+  }
+  return value;
+}
 
 // 1. Carregar variáveis do .env.local manualmente
 const envPath = path.resolve(process.cwd(), ".env.local");
@@ -91,16 +106,36 @@ async function run() {
   });
 
   console.log(`📂 Lendo arquivo: ${filePath}`);
-  const buffer = fs.readFileSync(filePath);
-  const wb = XLSX.read(buffer, { type: "buffer" });
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.readFile(filePath);
 
-  if (!wb.SheetNames.includes("BASE")) {
+  const ws = wb.getWorksheet("BASE");
+  if (!ws) {
     console.error("❌ ERRO: Aba 'BASE' não encontrada na planilha.");
     process.exit(1);
   }
 
-  const ws = wb.Sheets["BASE"];
-  const raw = XLSX.utils.sheet_to_json(ws, { defval: null, raw: true });
+  // Header row + headers visiveis
+  const headerRow = ws.getRow(1);
+  const headers = [];
+  headerRow.eachCell({ includeEmpty: false }, (cell, col) => {
+    const value = unwrapCellValue(cell.value);
+    headers[col] = value === null ? "" : String(value).trim();
+  });
+
+  // Constroi cada linha como objeto compativel com a logica abaixo
+  const raw = [];
+  ws.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    if (rowNumber === 1) return; // pula header
+    const obj = {};
+    row.eachCell({ includeEmpty: false }, (cell, col) => {
+      const header = headers[col];
+      if (header) {
+        obj[header] = unwrapCellValue(cell.value);
+      }
+    });
+    if (Object.keys(obj).length > 0) raw.push(obj);
+  });
 
   const sample = raw[0] ?? {};
   const fieldByHeader = new Map();
