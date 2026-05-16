@@ -56,34 +56,56 @@ export function useUpdateUnidadeCadastro({
       );
 
       if (contaPrincipal?.id) {
-        const { error } = await supabase
+        const { data: contaAtualizada, error } = await supabase
           .from("contas_bancarias")
           .update(contaUpdate)
-          .eq("id", contaPrincipal.id);
+          .eq("id", contaPrincipal.id)
+          .select("id");
 
         if (error) {
           throw new Error(error.message);
         }
+        // RLS pode filtrar UPDATE silenciosamente (HTTP 200 com array vazio)
+        // se o usuario nao tiver role admin/operador em user_roles.
+        if (!contaAtualizada || contaAtualizada.length === 0) {
+          throw new Error(
+            "Conta bancaria nao pode ser atualizada. Verifique se sua sessao tem permissao (role operador ou admin).",
+          );
+        }
       } else if (hasContaData) {
-        const { error } = await supabase
+        const { data: contaCriada, error } = await supabase
           .from("contas_bancarias")
           .insert({
             ...contaUpdate,
             unidade_id: unidadeId,
-          });
+          })
+          .select("id");
 
         if (error) {
           throw new Error(error.message);
         }
+        if (!contaCriada || contaCriada.length === 0) {
+          throw new Error(
+            "Conta bancaria nao pode ser criada. Verifique se sua sessao tem permissao (role operador ou admin).",
+          );
+        }
       }
 
-      const { error: unidadeError } = await supabase
+      const { data: unidadeAtualizada, error: unidadeError } = await supabase
         .from("unidades_escolares")
         .update(unidadeUpdate)
-        .eq("id", unidadeId);
+        .eq("id", unidadeId)
+        .select("id");
 
       if (unidadeError) {
         throw new Error(unidadeError.message);
+      }
+      // RLS pode filtrar UPDATE silenciosamente. Sem essa verificacao,
+      // o frontend mostraria sucesso enquanto nada foi salvo.
+      if (!unidadeAtualizada || unidadeAtualizada.length === 0) {
+        throw new Error(
+          "Unidade escolar nao pode ser atualizada. Verifique se sua sessao tem permissao (role operador ou admin).",
+        );
       }
 
       // TODO(Marco 6B): registrar alteracoes cadastrais em audit_logs quando
