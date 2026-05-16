@@ -449,13 +449,32 @@ export default function Escolas() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {Array.from({ length: COLUMNS }).map((__, j) => (
-                        <TableCell key={j} className="py-3">
-                          <Skeleton className={`h-4 ${j === 0 ? "w-3/4" : "w-16 ml-auto"}`} />
-                        </TableCell>
-                      ))}
+                  // Refined skeleton — matches real column rhythm and gives a
+                  // sense of layout before data arrives, instead of generic bars.
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow
+                      key={i}
+                      className="border-b border-border/30"
+                      style={{ animationDelay: `${i * 40}ms` }}
+                    >
+                      <TableCell className="py-3.5">
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-3.5 w-3/4" />
+                          <Skeleton className="h-3 w-1/2 opacity-60" />
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <Skeleton className="h-3.5 w-2/3" />
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <Skeleton className="mx-auto h-3.5 w-24" />
+                      </TableCell>
+                      <TableCell className="py-3.5 text-right">
+                        <Skeleton className="ml-auto h-7 w-7 rounded-md" />
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : error ? (
