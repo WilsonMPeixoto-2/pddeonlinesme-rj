@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
+import { UnidadeCadastroEditDialog } from "@/components/UnidadeCadastroEditDialog";
 import { EmptyState } from "@/components/EmptyState";
 import {
   ArrowLeft,
@@ -18,14 +19,16 @@ import {
   Download,
   FileText,
   Loader2,
-  Save,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { saveAs } from "file-saver";
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
+import { useUpdateUnidadeCadastro } from "@/hooks/useUpdateUnidadeCadastro";
 import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
+import type { UnidadeCadastroFormValues } from "@/lib/unidadeCadastro";
 import { cn } from "@/lib/utils";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
@@ -87,6 +90,7 @@ export default function EscolaEditar() {
   const { exercicio } = useExercicio();
   const [activeSection, setActiveSection] = useState<string>("identificacao");
   const [docsOpen, setDocsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [isGeneratingDemonstrativo, setIsGeneratingDemonstrativo] = useState(false);
 
   const PROGRAMA_PADRAO = "basico";
@@ -99,6 +103,10 @@ export default function EscolaEditar() {
 
   const { data: u, isLoading, error, refetch, isFetching } = useUnidadeDetalhe({
     unidadeId: id,
+    exercicio,
+    programa: PROGRAMA_PADRAO,
+  });
+  const updateCadastro = useUpdateUnidadeCadastro({
     exercicio,
     programa: PROGRAMA_PADRAO,
   });
@@ -123,8 +131,28 @@ export default function EscolaEditar() {
     return () => observer.disconnect();
   }, [isLoading, u]);
 
-  const handleSaveClick = () => {
-    toast.info("Edição cadastral será tratada em etapa própria de governança de dados.");
+  const handleCadastroSubmit = async (values: UnidadeCadastroFormValues) => {
+    if (!u?.unidade_id) {
+      toast.error("Nao foi possivel identificar a unidade escolar.");
+      return;
+    }
+
+    try {
+      await updateCadastro.mutateAsync({
+        unidadeId: u.unidade_id,
+        values,
+      });
+      await refetch();
+      setEditOpen(false);
+      toast.success("Dados cadastrais salvos.");
+    } catch (err) {
+      toast.error("Erro ao salvar dados cadastrais.", {
+        description:
+          err instanceof Error
+            ? err.message
+            : "Verifique sua sessao, permissao ou conexao.",
+      });
+    }
   };
 
   const handleGenerateDemonstrativo = async () => {
@@ -240,6 +268,15 @@ export default function EscolaEditar() {
           </nav>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setEditOpen(true)}
+              disabled={updateCadastro.isPending}
+            >
+              <Pencil className="mr-2 h-4 w-4" aria-hidden="true" />
+              Editar dados cadastrais
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -498,14 +535,19 @@ export default function EscolaEditar() {
                 {/* STICKY ACTION BAR */}
                 <div className="sticky bottom-4 z-20 flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/90 p-3 shadow-lg backdrop-blur-md">
                   <p className="px-2 text-xs text-muted-foreground">
-                    Visão consolidada read-only.
+                    Alteracoes afetam novas consultas e novos documentos gerados.
                   </p>
                   <div className="flex gap-2">
                     <Button type="button" variant="ghost" onClick={() => navigate("/escolas")}>
                       Voltar
                     </Button>
-                    <Button type="button" variant="outline" onClick={handleSaveClick}>
-                      <Save className="mr-2 h-4 w-4" /> Edição em breve
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setEditOpen(true)}
+                      disabled={updateCadastro.isPending}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" /> Editar dados cadastrais
                     </Button>
                   </div>
                 </div>
@@ -694,14 +736,20 @@ export default function EscolaEditar() {
             {/* STICKY ACTION BAR */}
             <div className="sticky bottom-4 z-20 flex flex-col items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/90 p-3 shadow-lg backdrop-blur-md">
               <p className="px-2 text-xs text-center text-muted-foreground">
-                Visão consolidada read-only.
+                Alteracoes afetam novas consultas e novos documentos gerados.
               </p>
               <div className="flex w-full gap-2">
                 <Button type="button" variant="ghost" className="flex-1" onClick={() => navigate("/escolas")}>
                   Voltar
                 </Button>
-                <Button type="button" variant="outline" className="flex-1" onClick={handleSaveClick}>
-                  <Save className="mr-2 h-4 w-4" /> Edição em breve
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setEditOpen(true)}
+                  disabled={updateCadastro.isPending}
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Editar dados cadastrais
                 </Button>
               </div>
             </div>
@@ -716,6 +764,14 @@ export default function EscolaEditar() {
         schoolName={u.designacao || "Unidade Escolar"}
         exercicio={exercicio}
         programa={PROGRAMA_PADRAO}
+      />
+
+      <UnidadeCadastroEditDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        unidade={u}
+        isSaving={updateCadastro.isPending}
+        onSubmit={handleCadastroSubmit}
       />
     </AppLayout>
   );
