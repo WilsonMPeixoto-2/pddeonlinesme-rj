@@ -1,6 +1,6 @@
 # Protocolo de Corpus de Amostras para Extracao Fiscal
 
-Atualizado em: 2026-05-15
+Atualizado em: 2026-05-16
 
 ## Finalidade
 
@@ -51,16 +51,20 @@ Esta pasta:
 
 A pasta `tools/fiscal-extraction/samples/` (no PR #58 do Codex) e **diferente**: ela contem apenas amostras **sinteticas** versionadas com o codigo. Nao misturar os dois conjuntos.
 
+Todos os exemplos versionados devem declarar explicitamente que nomes, CNPJs, chaves, datas, valores e descricoes sao ficticios. Mesmo quando um CNPJ sintetico valida pelo algoritmo, ele nao deve ser tratado como escola, CEC, fornecedor ou entidade real.
+
 ## 3. Categorias minimas de amostras
 
 Para que o PoC e a versao institucional cubram a variedade real de documentos fiscais que escolas da 4a CRE recebem, o corpus deve conter pelo menos uma amostra de cada categoria abaixo. Idealmente 2-3 amostras por categoria para detectar variacao intra-categoria.
+
+Para NFS-e, o alvo futuro principal e NFS-e Nacional / Padrao DPS. Nota Carioca, NFS-e Rio e outros formatos municipais devem ser tratados como legado, transicao ou caso confirmado por fonte oficial. O corpus precisa admitir multiplos formatos durante esse periodo, sem assumir que um layout municipal especifico sera a arquitetura definitiva.
 
 | # | Categoria | Descricao | Por que e necessaria |
 |--:|---|---|---|
 | 1 | XML de NF-e (modelo 55) | Mercadoria/produto, com chave de acesso e protocolo de autorizacao | Fonte preferencial; valida o caminho XML estruturado |
 | 2 | PDF digital de NF-e (DANFE) | DANFE gerado com texto selecionavel | Caminho mais comum; valida extracao PyMuPDF/pdfplumber |
-| 3 | XML de NFS-e (servico, municipal) | Padrao da Prefeitura do Rio de Janeiro (Nota Carioca) ou padrao ABRASF | Servicos sao parte significativa das despesas escolares (manutencao, transporte) |
-| 4 | PDF de NFS-e | DANFE-NFS-e digital | Layouts variam por municipio; testar pelo menos o do Rio |
+| 3 | XML de NFS-e / DPS | NFS-e Nacional / Padrao DPS quando disponivel; legado municipal apenas quando confirmado | Servicos sao parte significativa das despesas escolares; valida caminho estruturado preferencial |
+| 4 | PDF de NFS-e | DANFE-NFS-e digital, incluindo transicao entre padrao nacional e legados municipais | Layouts variam; testa fallback textual sem definir municipio como padrao futuro |
 | 5 | PDF escaneado de NF-e/NFS-e | Documento que veio escaneado, sem camada de texto | Caso real comum quando escola recebe nota em papel; exige OCR |
 | 6 | Imagem/foto de nota (JPG/PNG) | Foto de celular de um cupom ou DANFE | Caso real quando nao ha PDF disponivel; pior qualidade |
 | 7 | Cupom fiscal simples | Cupom de mercado/papelaria sem chave de acesso | Caso de baixa estrutura; teste de heuristica textual |
@@ -86,13 +90,13 @@ Distribuicao por categoria sugerida para o PoC inicial (20 documentos):
 
 - 5x XML NF-e
 - 5x PDF digital NF-e (DANFE)
-- 3x PDF/XML NFS-e
+- 3x PDF/XML NFS-e, priorizando NFS-e Nacional/DPS e mantendo legado municipal apenas como transicao identificada
 - 3x PDF escaneado
 - 2x imagem
 - 1x cupom simples
 - 1x recibo simples
 
-Esta distribuicao reflete proporcao tipica de uma unidade escolar real (maioria NF-e formais com XML; minoria escaneados e cupons), mas pode ser ajustada conforme amostragem real disponivel.
+Esta distribuicao reflete uma hipotese inicial para desenvolvimento, nao uma verdade estatistica consolidada. Deve ser ajustada conforme amostragem real disponivel e conforme a transicao entre NFS-e Nacional/DPS e formatos municipais legados.
 
 ## 5. Manifesto local de amostras
 

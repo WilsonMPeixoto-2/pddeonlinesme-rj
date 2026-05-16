@@ -1,6 +1,6 @@
 # Notas de Governanca — Extracao Fiscal
 
-Atualizado em: 2026-05-15
+Atualizado em: 2026-05-16
 
 ## 1. O que esta frente representa
 
@@ -13,6 +13,8 @@ A distincao e operacional:
 - **Automacao final** significaria que documentos extraidos virariam dados oficiais sem revisao humana, alimentando demonstrativos e exportacoes ao FNDE/SiGPC automaticamente. **Este nao e o objetivo desta frente, agora nem no medio prazo.**
 
 A frente esta documentalmente alocada nos Marcos 11 e 12 (Motor documental v1 / Geracao individual real) do Plano Global v4.1, mas **e prerequisito tecnico** para que esses marcos consumam dados reais de despesas, em vez de dados de execucao financeira agregada importada da BASE.
+
+As escolhas da POC atual nao sao arquitetura institucional definitiva. Bibliotecas, OCR, Vision LLM, Document AI, provedor de processamento, modelo de worker e metodos fiscais estruturados devem ser avaliados por Tech Radar e, quando afetarem fronteiras de dados, seguranca, custo ou operacao, por ADR antes da v1 institucional.
 
 ### Estado atual da frente (2026-05-15)
 
@@ -73,7 +75,7 @@ Cada risco abaixo e classificado por **probabilidade** (baixa/media/alta) sem im
 - **Probabilidade sem controle:** alta para documentos escaneados.
 - **Impacto:** medio a critico (depende do campo).
 - **Cenario:** OCR retorna texto plausivel mas com numero errado; revisor confia na sugestao por causa de high confidence falso.
-- **Trigger especifico:** ausencia de threshold mais rigoroso para campos vindos de OCR; ausencia de comparacao entre PyMuPDF e Tesseract quando ambos sao aplicaveis.
+- **Trigger especifico:** ausencia de threshold mais rigoroso para campos vindos de fallback visual; ausencia de comparacao com fonte estruturada ou metodo independente quando ambos sao aplicaveis.
 
 ### R7. Falsa sensacao de automacao confiavel
 
@@ -96,12 +98,12 @@ Cada risco abaixo e classificado por **probabilidade** (baixa/media/alta) sem im
 - **Cenario:** TCM-RJ ou FNDE altera campos exigidos na prestacao; sistema precisa atualizar dicionario de campos.
 - **Trigger especifico:** ausencia de processo de revisao periodica do dicionario de campos.
 
-### R10. Cobertura desigual de NFS-e municipal
+### R10. Transicao de NFS-e Nacional/DPS e legados municipais
 
 - **Probabilidade sem controle:** alta para fora do Rio de Janeiro.
 - **Impacto:** baixo (escola pode digitar manualmente).
-- **Cenario:** escola compra servico de fornecedor sediado em municipio com layout NFS-e diferente; extracao falha; revisor digita.
-- **Trigger especifico:** estrategia que tenta extrair de todo XML/PDF sem identificar primeiro a municipalidade.
+- **Cenario:** escola recebe NFS-e em NFS-e Nacional/Padrao DPS, Nota Carioca legada, NFS-e Rio ou outro formato municipal; extracao assume um layout unico e falha.
+- **Trigger especifico:** estrategia que tenta extrair de todo XML/PDF sem identificar primeiro padrao nacional, DPS, municipalidade, legado ou fonte oficial aplicavel.
 
 ## 3. Controles recomendados
 
@@ -114,11 +116,11 @@ Mapeamento direto de riscos para controles. Implementacao detalhada em `fiscal-e
 | R3 (valor errado) | Armazenamento em `Decimal(14,2)`; parser brasileiro com tratamento posicional de separadores; conferencia `soma_itens == total_value` | Conferencia opcional com extrato bancario na conciliacao |
 | R4 (CNPJ errado) | Validacao de digitos verificadores (algoritmo oficial) em todo CNPJ extraido | Confirmacao via consulta SEFAZ por chave de acesso, quando disponivel |
 | R5 (fornecedor diferente) | Comparacao automatica entre CNPJ declarado e CNPJ extraido com bloqueio se divergente | Comparacao de razao social com base interna de fornecedores conhecidos |
-| R6 (OCR errado) | Threshold mais rigoroso para `extraction_method = ocr_*`; nunca confiar em "alta confianca" de OCR para campos criticos | Comparacao dual (PyMuPDF + Tesseract) com flag se divergirem; consulta SEFAZ quando chave existe |
+| R6 (OCR errado) | Threshold mais rigoroso para fontes visuais; nunca confiar em "alta confianca" de OCR para campos criticos | Preferir fonte estruturada; comparar metodos quando aplicavel; avaliar Document AI/Vision LLM/OCR tradicional por Tech Radar e LGPD |
 | R7 (falsa sensacao) | UI exige interacao ativa em campos criticos; auditoria interna periodica | Metricas continuas de correcao manual por revisor; alerta se revisor confirma sempre sem alterar |
 | R8 (vazamento) | `.gitignore` adequado; `tools/fiscal-extraction/samples/` apenas com sinteticos; `.local/fiscal-samples/` ignorado | Pre-commit hook que verifica padroes CNPJ/CPF/chave de acesso em arquivos staged; revisao humana obrigatoria em PRs da frente |
 | R9 (regulamentacao) | Revisao trimestral do dicionario de campos pela equipe da 4a CRE; campo `versao_dicionario` no schema futuro | Alinhamento direto com Setor de Prestacao de Contas da CRE para mudancas regulatorias |
-| R10 (NFS-e municipal) | Identificar municipalidade antes de tentar extracao; adapter por municipio (RJ primeiro) | Fallback para revisao manual com UI simplificada quando municipalidade nao suportada |
+| R10 (NFS-e Nacional/DPS e legados) | Identificar NFS-e Nacional/DPS, Nota Carioca legada, NFS-e Rio ou outro formato antes de extrair | Priorizar padrao nacional e fontes estruturadas; manter adapter municipal apenas quando fonte oficial confirmar necessidade |
 
 ## 4. Relacao com o PDDE Online
 
@@ -128,10 +130,10 @@ Mapeamento direto de riscos para controles. Implementacao detalhada em `fiscal-e
 operador autorizado
   |
   v
-upload de documento fiscal -> Supabase Storage
+upload de documento fiscal -> Storage a definir
   |
   v
-extracao automatica em Cloud Run/Edge Function/local backend
+extracao automatica por worker/backend a definir por ADR
   |
   v
 registro em extracoes_fiscais (status=extraido | requer_revisao)
@@ -180,7 +182,7 @@ Esta secao descreve **tabelas conceituais** para o esquema futuro. **Nao cria mi
 
 ### 5.1. `documentos_fiscais` (conceitual)
 
-Tabela canonica de documentos fiscais enviados.
+Tabela canonica conceitual de documentos fiscais enviados. Storage, naming e bucket definitivo dependem de ADR e revisao de LGPD; Supabase Storage e candidato natural no contexto atual, nao decisao final deste PR.
 
 ```txt
 documentos_fiscais
@@ -189,7 +191,7 @@ documentos_fiscais
   exercicio: integer
   programa: enum (basico | qualidade | equidade)
   tipo_documento: enum (NF-e | NFS-e | cupom | recibo | boleto | outro)
-  arquivo_path: text (referencia Supabase Storage)
+  arquivo_path: text (referencia a Storage institucional)
   file_hash: text (SHA-256 hex, UNIQUE com unidade_id+exercicio)
   file_size_bytes: bigint
   mime_type: text
@@ -210,7 +212,7 @@ extracoes_fiscais
   id: uuid PK
   documento_id: uuid FK -> documentos_fiscais.id
   versao: integer (1 = primeira tentativa; >1 = nova extracao apos correcao)
-  metodo: enum (xml | pdf_text_pymupdf | pdf_text_pdfplumber | ocr_tesseract | manual | sefaz_lookup)
+  metodo: enum conceitual (ex.: xml_official | nfse_dps | dfe_lookup | pdf_text | document_ai | vision_llm | ocr_traditional | manual)
   
   document_number: text
   access_key: text
@@ -311,6 +313,27 @@ Quando esta frente avancar para implementacao institucional:
 4. **Smoke read-only** antes de habilitar qualquer write em producao.
 5. **Senha service_role** deve ser rotacionada antes da primeira gravacao real.
 
+## 5.7. Tech Radar e ADR antes da v1
+
+Antes da v1 institucional, o projeto deve avaliar em Tech Radar:
+
+- NFS-e Nacional / Padrao DPS como alvo principal de NFS-e;
+- Nota Carioca, NFS-e Rio e demais formatos municipais como legado/transicao;
+- XML oficial como fonte preferencial;
+- DFe, SEFAZ, distribuicao, consulta por chave e APIs terceirizadas;
+- bibliotecas fiscais especializadas versus parsing XML manual;
+- PDF textual, Vision LLM, Document AI, OCR tradicional e extracao manual assistida;
+- confidence ponderada e metricas por campo;
+- batch versus revisao unitaria.
+
+Devem virar ADR antes de implementacao real:
+
+- decisao de processador fiscal (worker/backend/job/servico externo);
+- politica de envio de documentos fiscais a servicos externos, considerando LGPD, custo e retencao;
+- modelo de Storage, versionamento, hash e retencao;
+- Auth/RLS/Marco 6B para upload, revisao, confirmacao e auditoria;
+- schema final e trilha imutavel de auditoria.
+
 ## 6. Decisao recomendada
 
 A frente de extracao fiscal **so deve ser integrada ao fluxo oficial** quando todos os criterios abaixo forem atendidos. Antes disso, manter como PoC controlado em `tools/fiscal-extraction/` com documentacao de suporte (este conjunto de docs).
@@ -318,8 +341,9 @@ A frente de extracao fiscal **so deve ser integrada ao fluxo oficial** quando to
 ### 6.1. Pre-requisitos tecnicos
 
 - [ ] PoC atinge metricas minimas da secao 10 do protocolo de validacao em corpus de >= 20 amostras reais anonimizadas.
-- [ ] Captura via chave de acesso + consulta SEFAZ avaliada como factivel ou descartada com justificativa.
-- [ ] Estrategia de OCR (Tesseract local OU servico) definida e validada.
+- [ ] Fontes estruturadas priorizadas: XML oficial, NFS-e Nacional/DPS, DFe/consulta por chave/API confiavel avaliadas antes de fallback visual.
+- [ ] Captura via chave de acesso, DFe, consulta fiscal ou API terceirizada avaliada como factivel ou descartada com justificativa.
+- [ ] Estrategia de PDF textual, Vision LLM, Document AI e OCR tradicional definida por Tech Radar/ADR, com LGPD avaliada.
 - [ ] Schema conceitual da secao 5 revisado e aprovado.
 
 ### 6.2. Pre-requisitos institucionais
@@ -355,8 +379,8 @@ Ate la, a frente **permanece como PoC**. Demonstrativo Basico continua usando da
 ### 6.6. O que NAO recomendar
 
 - Nao recomendar ligacao direta extracao -> Demonstrativo oficial em nenhuma circunstancia ate todos os criterios acima serem atendidos.
-- Nao recomendar OCR como base unica (sempre como ultimo recurso, com tag explicita de `extraction_method = ocr_*` e threshold mais rigoroso).
-- Nao recomendar IA generativa para extracao primaria de campos criticos no curto prazo (uso futuro apenas como fallback para documentos que falham em todas as outras camadas, com revisao humana reforcada).
+- Nao recomendar OCR como base unica; fontes estruturadas e PDF textual devem vir antes de fallback visual.
+- Nao recomendar IA generativa, Vision LLM ou Document AI para confirmacao autonoma de campos criticos. Uso futuro so como fallback assistido, com revisao humana reforcada, LGPD avaliada e metodo auditavel.
 - Nao recomendar pular Marco 6B "porque a frente de extracao e prioritaria" - sem auth/RLS, nao ha como autorizar revisores; isso e nao-negociavel.
 
 ## 7. Politica de revisao destas notas

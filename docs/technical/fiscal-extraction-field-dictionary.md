@@ -1,6 +1,6 @@
 # Dicionario de Campos da Extracao Fiscal
 
-Atualizado em: 2026-05-15
+Atualizado em: 2026-05-16
 
 ## Finalidade
 
@@ -19,7 +19,9 @@ E complementar a:
 - **Obrigatorio na versao institucional** indica se o campo precisa estar presente para que uma extracao possa ser confirmada como dado oficial.
 - **Risco** descreve o impacto institucional/operacional se o campo for extraido errado e confirmado sem revisao adequada.
 - **Destino futuro** indica em qual tabela conceitual o campo deve aparecer no esquema institucional (definicao conceitual; nao cria migration).
-- **Exemplo sintetico** usa CNPJs que validam pelo algoritmo oficial mas nao correspondem a empresas reais conhecidas; razao social e descricoes sao ficticias.
+- **Exemplo sintetico** usa dados ficticios. CNPJs podem validar pelo algoritmo oficial para exercitar validadores, mas nao devem representar escola, CEC, fornecedor ou entidade real.
+
+Este dicionario define um alvo conceitual evolutivo. Ele nao congela as escolhas da POC: `source_type`, `extraction_method`, modelos Pydantic, bibliotecas e provedores podem ser substituidos ou complementados apos Tech Radar/ADR.
 
 ## Tabela de campos
 
@@ -35,16 +37,18 @@ E complementar a:
 | 8 | `recipient_name` | Razao social do destinatario | `"ESCOLA MUNICIPAL TESTE PDDE"` | `string` (1-255 chars) | Quando presente | Recomendado | Nao-vazio; comparar com `unidades_escolares.designacao` ou `nome` (similaridade) | Confusao entre unidades com nomes parecidos | `documentos_fiscais.destinatario_nome` |
 | 9 | `total_value` | Valor total do documento | `1234.56` (centavos: 123456) | `Decimal(14,2)` | Sim | Sim | `> 0`; coerencia com soma dos itens (tolerancia <= R$ 0,02 por arredondamento); alerta se diferir do extrato bancario na conciliacao | Valor errado na prestacao; demonstrativo errado; risco institucional alto | `documentos_fiscais.valor_total` + `despesas_confirmadas.valor` (apos confirmacao) |
 | 10 | `item_description` | Descricao textual do item | `"Caderno universitario"` | `string` (1-255 chars) | Parcial admitida no PoC | Recomendado | Nao-vazio quando item declarado; sem caracteres de controle | Classificacao de despesa errada; rubrica de demonstrativo errada | `documentos_fiscais_itens.descricao` |
-| 11 | `item_quantity` | Quantidade do item | `10.0000` | `Decimal(14,4)` | Quando presente no documento | Recomendado | `> 0` | Estoque/conferencia errada; auditoria dificultada | `documentos_fiscais_itens.quantidade` |
-| 12 | `item_unit_value` | Valor unitario do item | `12.3450` | `Decimal(14,4)` | Quando presente | Recomendado | `> 0`; `quantity * unit_value ~= item_total_value` (tolerancia de centavos) | Inconsistencia entre quantidade e total | `documentos_fiscais_itens.valor_unitario` |
-| 13 | `item_total_value` | Valor total do item (qtd * unit) | `123.45` | `Decimal(14,2)` | Quando presente | Recomendado | `> 0`; coerencia com unit*qtd; soma dos `item_total_value` ~= `total_value` documento | Valor de itemizacao errado | `documentos_fiscais_itens.valor_total` |
-| 14 | `source_file` | Caminho/identificador do arquivo de origem | `"tools/fiscal-extraction/samples/synthetic_nfe.xml"` (no PoC) ou `"documentos_fiscais/<unidade_id>/<exercicio>/<file_hash>.xml"` (no Storage institucional) | `string` | Sim | Sim | Caminho deve existir; no Storage institucional, deve seguir convencao `documentos_fiscais/<unidade_id>/<exercicio>/<file_hash>.<ext>` | Rastreabilidade do arquivo original perdida | `documentos_fiscais.arquivo_path` (referencia ao bucket Supabase Storage) |
-| 15 | `extraction_method` | Metodo usado para extrair os dados | `"xml"` \| `"pdf_text_pymupdf"` \| `"pdf_text_pdfplumber"` \| `"ocr_tesseract"` \| `"manual"` \| `"sefaz_lookup"` | enum | Sim | Sim | Aceitar apenas valores do enum; rejeitar `null` | Auditoria de qualidade impossivel; nao consegue priorizar melhorias por metodo | `extracoes_fiscais.metodo` |
-| 16 | `confidence` | Confianca global da extracao (media ponderada dos campos criticos) | `0.92` | `Decimal(4,3)` ou `float [0,1]` | Sim | Sim | `0 <= confidence <= 1`; campos com tolerancia exata pesam mais que descricoes textuais | Threshold de confirmacao automatica errado; falsa sensacao de qualidade | `extracoes_fiscais.confianca` |
-| 17 | `warnings` | Lista de alertas emitidos pela validacao | `["destinatario: CNPJ ausente", "valor total ausente"]` | `string[]` (cada item ate 200 chars) | Sim | Sim | Strings nao-vazias; sem duplicatas; ordenadas alfabeticamente | Bloqueios silenciosos; revisor nao ve motivo da baixa confianca | `extracoes_fiscais.warnings` (jsonb ou text[]) |
-| 18 | `reviewed_by` | Identificador do servidor que confirmou a extracao | `"auth.users.id::uuid"` (exemplo: `"a3f1c2d4-..."`) | `uuid` (FK conceitual a `auth.users`) | Nao (apenas institucional) | Sim quando `status = confirmado` | Deve corresponder a usuario com perfil autorizado para a unidade em questao | Confirmacao anonima; auditoria invalida; conformidade comprometida | `extracoes_fiscais.confirmado_por` |
-| 19 | `reviewed_at` | Timestamp da confirmacao | `"2026-05-15T14:30:00-03:00"` | `timestamp with time zone` | Nao | Sim quando `status = confirmado` | `reviewed_at >= created_at`; nao pode ser futuro | Trilha temporal invalida; auditoria comprometida | `extracoes_fiscais.confirmado_em` |
-| 20 | `status` | Estado atual da extracao | `"extraido"` | enum: `extraido` \| `requer_revisao` \| `confirmado` \| `rejeitado` \| `substituido` | Sim (ao menos `extraido` e `requer_revisao`) | Sim | Transicoes conforme protocolo (ver `fiscal-extraction-validation-protocol.md` secao 4); transicoes invalidas devem falhar atomicamente | Confirmacao indevida; rejeicao silenciosa; perda de versionamento | `extracoes_fiscais.status` |
+| 11 | `item_code` | Codigo do item no documento, quando existir | `"001"` ou `"7890000000000"` | `string` | Nao | Recomendado | Preservar como texto; nao assumir semantica sem identificar padrao do emissor | Perda de rastreabilidade da itemizacao; comparacao de itens fica mais fraca | `documentos_fiscais_itens.codigo` |
+| 12 | `item_quantity` | Quantidade do item | `10.0000` | `Decimal(14,4)` | Quando presente no documento | Recomendado | `> 0` | Estoque/conferencia errada; auditoria dificultada | `documentos_fiscais_itens.quantidade` |
+| 13 | `item_unit_value` | Valor unitario do item | `12.3450` | `Decimal(14,4)` | Quando presente | Recomendado | `> 0`; `quantity * unit_value ~= item_total_value` (tolerancia de centavos) | Inconsistencia entre quantidade e total | `documentos_fiscais_itens.valor_unitario` |
+| 14 | `item_total_value` | Valor total do item (qtd * unit) | `123.45` | `Decimal(14,2)` | Quando presente | Recomendado | `> 0`; coerencia com unit*qtd; soma dos `item_total_value` ~= `total_value` documento | Valor de itemizacao errado | `documentos_fiscais_itens.valor_total` |
+| 15 | `source_file` | Caminho/identificador do arquivo de origem | `"tools/fiscal-extraction/samples/synthetic_nfe.xml"` (no PoC) ou `"documentos_fiscais/<unidade_id>/<exercicio>/<file_hash>.xml"` (no Storage institucional) | `string` | Sim | Sim | Caminho deve existir; no Storage institucional, deve seguir convencao `documentos_fiscais/<unidade_id>/<exercicio>/<file_hash>.<ext>` | Rastreabilidade do arquivo original perdida | `documentos_fiscais.arquivo_path` (referencia ao Storage institucional definido por ADR) |
+| 16 | `raw_text` | Texto bruto extraido do documento, quando houver camada textual ou OCR | `"NOTA FISCAL ELETRONICA..."` | `text` | Sim para PDF/TXT; opcional para XML | Recomendado com politica de retencao | Pode ser `null` em XML oficial; quando armazenado, deve respeitar LGPD e retencao | Auditoria da extracao fica limitada; risco de armazenar PII sem necessidade | `extracoes_fiscais.raw_text` |
+| 17 | `extraction_method` | Metodo usado para extrair os dados | `"xml_official"` \| `"nfse_dps"` \| `"dfe_lookup"` \| `"pdf_text"` \| `"document_ai"` \| `"vision_llm"` \| `"ocr_traditional"` \| `"manual"` | enum conceitual | Sim | Sim | Valores finais devem ser definidos por Tech Radar/ADR; rejeitar `null` na versao institucional | Auditoria de qualidade impossivel; nao consegue priorizar melhorias por metodo | `extracoes_fiscais.metodo` |
+| 18 | `confidence` | Confianca global da extracao (media ponderada dos campos criticos) | `0.92` | `Decimal(4,3)` ou `float [0,1]` | Sim | Sim | `0 <= confidence <= 1`; campos com tolerancia exata pesam mais que descricoes textuais; nao decide confirmacao sem humano | Threshold de confirmacao automatica errado; falsa sensacao de qualidade | `extracoes_fiscais.confianca` |
+| 19 | `warnings` | Lista de alertas emitidos pela validacao | `["destinatario: CNPJ ausente", "valor total ausente"]` | `string[]` (cada item ate 200 chars) | Sim | Sim | Strings nao-vazias; sem duplicatas; ordenadas alfabeticamente; warnings criticos bloqueiam confirmacao automatica | Bloqueios silenciosos; revisor nao ve motivo da baixa confianca | `extracoes_fiscais.warnings` (jsonb ou text[]) |
+| 20 | `reviewed_by` | Identificador do servidor que confirmou a extracao | `"auth.users.id::uuid"` (exemplo: `"a3f1c2d4-..."`) | `uuid` (FK conceitual a `auth.users`) | Nao (apenas institucional) | Sim quando `status = confirmado` | Deve corresponder a usuario com perfil autorizado para a unidade em questao | Confirmacao anonima; auditoria invalida; conformidade comprometida | `extracoes_fiscais.confirmado_por` |
+| 21 | `reviewed_at` | Timestamp da confirmacao | `"2026-05-15T14:30:00-03:00"` | `timestamp with time zone` | Nao | Sim quando `status = confirmado` | `reviewed_at >= created_at`; nao pode ser futuro | Trilha temporal invalida; auditoria comprometida | `extracoes_fiscais.confirmado_em` |
+| 22 | `status` | Estado atual da extracao | `"extraido"` | enum institucional: `extraido` \| `requer_revisao` \| `confirmado` \| `rejeitado` \| `substituido` | Sim (subset `extraido` e `requer_revisao`) | Sim | Transicoes conforme protocolo (ver `fiscal-extraction-validation-protocol.md` secao 4); transicoes invalidas devem falhar atomicamente | Confirmacao indevida; rejeicao silenciosa; perda de versionamento | `extracoes_fiscais.status` |
 
 ## Campos derivados (calculados, nao extraidos)
 
@@ -105,7 +109,7 @@ O contrato Pydantic em `tools/fiscal-extraction/src/fiscal_extraction/models.py`
 ```python
 class FiscalExtractionResult(BaseModel):
     source_file: str | None
-    source_type: Literal["xml", "pdf", "text", "unknown"]
+    source_type: Literal["xml", "pdf_text", "pdf_ocr", "image_ocr", "manual_text", "unknown"]
     document_type: str | None
     document_number: str | None
     access_key: str | None
@@ -117,11 +121,14 @@ class FiscalExtractionResult(BaseModel):
     raw_text: str | None
     confidence: float
     warnings: list[str]
+    status: Literal["extraido", "requer_revisao"]
 ```
 
-Este dicionario e um **superconjunto** do modelo Pydantic. A POC atual cobre 14 dos 20 campos canonicos (1-17 parcialmente). Os 3 ultimos (`reviewed_by`, `reviewed_at`, `status`) sao explicitamente fase institucional e nao precisam aparecer no PoC.
+Este dicionario e um **superconjunto** do modelo Pydantic. A POC atual cobre um subconjunto tecnico dos campos canonicos, incluindo `raw_text`, `warnings`, `confidence` e o status minimo de extracao. Campos de revisao humana (`reviewed_by`, `reviewed_at`) permanecem fase institucional e nao devem aparecer como confirmacao no PoC.
 
-O campo `source_type` da POC equivale, mas nao e identico, a `extraction_method` deste dicionario. O dicionario distingue por metodo concreto (`pdf_text_pymupdf` vs `pdf_text_pdfplumber` vs `ocr_tesseract`); o PoC pode unificar como `pdf` neste momento, mas a versao institucional precisara da granularidade para auditar qualidade por metodo.
+O campo `source_type` da POC classifica a origem em granularidade operacional (`xml`, `pdf_text`, `pdf_ocr`, `image_ocr`, `manual_text`, `unknown`). O campo conceitual `extraction_method` deve ser mais auditavel na versao institucional e diferenciar fonte oficial, NFS-e Nacional/DPS, DFe/consulta, extracao textual, Document AI, Vision LLM, OCR tradicional e entrada manual. A lista final de metodos depende de Tech Radar/ADR.
+
+O enum institucional de `status` continua com cinco estados. A POC deve retornar apenas `extraido` ou `requer_revisao`; `confirmado`, `rejeitado` e `substituido` dependem de revisao humana, Auth/RLS, trilha de auditoria e schema institucional futuro.
 
 ## Politica de revisao
 
