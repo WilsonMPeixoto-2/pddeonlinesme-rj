@@ -372,6 +372,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_unidade_cadastro_minima: {
+        Args: {
+          p_unidade_id: string
+          p_nome: string
+          p_diretor: string | null
+          p_endereco: string | null
+          p_banco: string | null
+          p_agencia: string | null
+          p_conta_corrente: string | null
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "operador"

@@ -1,13 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { TablesUpdate } from "@/integrations/supabase/types";
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import type { UnidadeLocalizador } from "@/hooks/useUnidadesLocalizador";
 import {
   normalizeOptionalText,
   normalizeRequiredText,
-  toContasBancariasUpdate,
-  toUnidadesEscolaresUpdate,
   type UnidadeCadastroFormValues,
 } from "@/lib/unidadeCadastro";
 
@@ -19,10 +16,6 @@ interface UseUpdateUnidadeCadastroParams {
 interface UpdateUnidadeCadastroInput {
   unidadeId: string;
   values: UnidadeCadastroFormValues;
-}
-
-interface ContaPrincipal {
-  id: string;
 }
 
 interface OptimisticSnapshot {
@@ -38,7 +31,7 @@ export function useUpdateUnidadeCadastro({
   const queryClient = useQueryClient();
   const exercicioNumber = Number.parseInt(exercicio, 10);
 
-  return useMutation<void, Error, UpdateUnidadeCadastroInput, OptimisticSnapshot>({
+  return useMutation<string, Error, UpdateUnidadeCadastroInput, OptimisticSnapshot>({
     // Optimistic UI: aplica novos valores no cache antes do servidor confirmar,
     // melhorando a percepcao de velocidade na edicao cadastral. Se a mutacao
     // falhar, onError restaura o snapshot anterior.
@@ -93,87 +86,41 @@ export function useUpdateUnidadeCadastro({
 
       return { detalheKey, detalheBefore, localizadorBefore };
     },
+    // Salvamento atomico via RPC public.update_unidade_cadastro_minima
+    // (migration 20260516120000). A RPC atualiza unidades_escolares e
+    // contas_bancarias em uma unica transacao, eliminando o risco de estado
+    // parcial que existia no fluxo anterior de duas escritas sequenciais.
     mutationFn: async ({ unidadeId, values }: UpdateUnidadeCadastroInput) => {
-      const unidadeUpdate = toUnidadesEscolaresUpdate(values);
-
-      const { data: contaPrincipal, error: contaError } = await supabase
-        .from("contas_bancarias")
-        .select("id")
-        .eq("unidade_id", unidadeId)
-        .order("principal", { ascending: false })
-        .order("updated_at", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle<ContaPrincipal>();
-
-      if (contaError) {
-        throw new Error(contaError.message);
-      }
-
-      const contaUpdate: TablesUpdate<"contas_bancarias"> = {
-        ...toContasBancariasUpdate(values),
-        principal: true,
-      };
-
-      const hasContaData = Boolean(
-        contaUpdate.banco || contaUpdate.agencia || contaUpdate.conta_corrente,
+      const { data, error } = await supabase.rpc(
+        "update_unidade_cadastro_minima",
+        {
+          p_unidade_id: unidadeId,
+          p_nome: normalizeRequiredText(values.nome),
+          p_diretor: normalizeOptionalText(values.diretor),
+          p_endereco: normalizeOptionalText(values.endereco),
+          p_banco: normalizeOptionalText(values.banco),
+          p_agencia: normalizeOptionalText(values.agencia),
+          p_conta_corrente: normalizeOptionalText(values.conta_corrente),
+        },
       );
 
-      if (contaPrincipal?.id) {
-        const { data: contaAtualizada, error } = await supabase
-          .from("contas_bancarias")
-          .update(contaUpdate)
-          .eq("id", contaPrincipal.id)
-          .select("id");
-
-        if (error) {
-          throw new Error(error.message);
-        }
-        // RLS pode filtrar UPDATE silenciosamente (HTTP 200 com array vazio)
-        // se o usuario nao tiver role admin/operador em user_roles.
-        if (!contaAtualizada || contaAtualizada.length === 0) {
-          throw new Error(
-            "Conta bancaria nao pode ser atualizada. Verifique se sua sessao tem permissao (role operador ou admin).",
-          );
-        }
-      } else if (hasContaData) {
-        const { data: contaCriada, error } = await supabase
-          .from("contas_bancarias")
-          .insert({
-            ...contaUpdate,
-            unidade_id: unidadeId,
-          })
-          .select("id");
-
-        if (error) {
-          throw new Error(error.message);
-        }
-        if (!contaCriada || contaCriada.length === 0) {
-          throw new Error(
-            "Conta bancaria nao pode ser criada. Verifique se sua sessao tem permissao (role operador ou admin).",
-          );
-        }
+      if (error) {
+        // A RPC traduz cenarios de falha em mensagens claras:
+        // - 42501 (insufficient_privilege): role admin/operador ausente
+        // - P0002 (no_data_found): unidade nao encontrada
+        // - outras: rollback automatico pela transacao SQL
+        throw new Error(error.message);
       }
 
-      const { data: unidadeAtualizada, error: unidadeError } = await supabase
-        .from("unidades_escolares")
-        .update(unidadeUpdate)
-        .eq("id", unidadeId)
-        .select("id");
-
-      if (unidadeError) {
-        throw new Error(unidadeError.message);
-      }
-      // RLS pode filtrar UPDATE silenciosamente. Sem essa verificacao,
-      // o frontend mostraria sucesso enquanto nada foi salvo.
-      if (!unidadeAtualizada || unidadeAtualizada.length === 0) {
+      if (!data) {
+        // Defensivo: RPC bem-sucedida deve sempre retornar o unidade_id.
+        // Cobre o caso (improvavel) de RLS filtrar o retorno mesmo apos COMMIT.
         throw new Error(
-          "Unidade escolar nao pode ser atualizada. Verifique se sua sessao tem permissao (role operador ou admin).",
+          "Salvamento nao confirmado. Verifique sua sessao ou tente novamente.",
         );
       }
 
-      // TODO(Marco 6B): registrar alteracoes cadastrais em audit_logs quando
-      // houver identidade institucional do revisor e trilha de auditoria real.
+      return data;
     },
     onError: (_error, _variables, context) => {
       if (!context) return;
