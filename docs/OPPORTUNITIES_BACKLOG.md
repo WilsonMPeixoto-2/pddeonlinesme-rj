@@ -1,6 +1,6 @@
 # Backlog Adaptativo de Oportunidades - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (pós PR #72 v4.2 + PR #73 Painel GAD v1)
+Atualizado em: 2026-05-17 (pós PRs #72 → #76)
 
 Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, mas não autoriza execução sem PR próprio.
 
@@ -8,6 +8,9 @@ Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, ma
 
 | Item | Tipo | Referência |
 |---|---|---|
+| **Histórico de gerações no Painel** (Marco 9B v2) | produto/dados | PR #76, merge `5369ca1` |
+| **UI admin de papeis** (Marco 6B v0) | produto/segurança | PR #75, merge `a1ec353` |
+| **Reconciliação types + docs** | governança | PR #74, merge `a706751` |
 | **Painel Executivo-Operacional GAD v1 + Geração em Lote 163 Demonstrativos** | produto/dados | PR #73, merge `9f755ee` |
 | **Plano Global v4.2 + Radar de Inteligência Institucional** | governança | PR #72, merge `b552cb2` |
 | Demonstrativo Básico Individual via `MEMORIA` (Opção B) | documentos | PR #43, merge `4d97a9c` |
@@ -26,11 +29,10 @@ Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, ma
 
 | Prioridade | Item | Marco v4.2 | Status | Observação |
 |---:|---|---|---|---|
-| **1** | **UI admin para gerenciar usuários e roles** | **6B v0** | **Próximo PR funcional candidato** | Elimina necessidade de INSERT manual via service_role |
-| **1.alt** | **Relação de Bens Adquiridos (2º documento oficial)** | **11** | **Próximo PR funcional candidato** | Reaproveita motor documental |
-| 2 | Smoke UI operacional Fase 2B (login admin → editar → reload → confirmar) | 6B (parcial) | Pendente | Bloqueia "Fase 2B encerrada operacionalmente"; rápido |
-| 3 | Painel: histórico de `document_generation_runs` (timeline) | 9B v2 | Pendente | Aproveita base persistida em #73 |
-| 4 | `audit_logs` para mutações sensíveis | sub-6B | Pendente | Pré-requisito para Portal do Diretor |
+| **1** | **Relação de Bens Adquiridos (2º documento oficial)** | **11** | **Próximo PR funcional candidato** | Reaproveita motor documental; depende de template oficial real |
+| **2** | **`audit_logs` para mutações sensíveis** | **sub-6B** | **Próximo PR funcional candidato** | Pré-requisito para Portal do Diretor; usa padrão Postgres trigger |
+| 3 | Smoke UI operacional Fase 2B + Painel + Configurações | qualidade | Pendente | Validação humana autenticada em prod |
+| 4 | Painel histórico: filtros + página dedicada `/painel/historico` | 9B v3 | Pendente | Já temos card top 5; falta listagem completa |
 | 5 | Login público / cadastro / password recovery / MFA | 6B | Pendente | Sobe em prioridade pois sistema já escreve dados |
 | 6 | Importador institucional via interface (dry-run + diff + hash) | 10B | Pendente | Substitui upload simples; nunca service_role no browser |
 | 7 | Termo de Doação, Consolidação de Preços, Ata, Parecer | 11+12 | Pendente | Templates oficiais + revisão humana |
