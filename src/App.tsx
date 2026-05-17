@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -53,6 +53,8 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                {/* Alias: sidebar label is "Painel"; redirect direct URL hits to canonical /dashboard */}
+                <Route path="/painel" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/escolas" element={<ProtectedRoute><Escolas /></ProtectedRoute>} />
                 <Route path="/escolas/:id" element={<ProtectedRoute><EscolaEditar /></ProtectedRoute>} />
                 <Route path="/base" element={<ProtectedRoute><Base /></ProtectedRoute>} />
