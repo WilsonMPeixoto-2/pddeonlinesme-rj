@@ -4,7 +4,7 @@
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "5369ca1",
+    "base_commit": "fac1d9b",
     "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -12,9 +12,11 @@
     "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
     "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
     "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "Marco 6B v0 entregue (PR #75 — UI admin de papeis). Marco 9B v2 entregue (PR #76 — histórico de gerações no Painel). Próximas frentes: Relação de Bens (Marco 11), audit_logs (sub-Marco 6B), Importador via UI (Marco 10B) ou polimento visual do Painel."
+    "current_mode": "Sessão noturna 17/05/2026 fechada com 8 PRs mergeados (#72-#79). Próximo passo NÃO é nova frente funcional — é smoke operacional manual (login admin → Painel, Configurações, Escolas). Frentes funcionais candidatas pós-smoke: Relação de Bens (Marco 11), audit_logs (sub-6B), Importador via UI (Marco 10B), página dedicada de histórico (/painel/historico)."
   },
   "recent_pull_requests": [
+    { "number": 79, "title": "polish(painel): 10 refinamentos visuais sobrios sem redesign", "state": "merged", "merge_commit": "fac1d9b", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/79" },
+    { "number": 78, "title": "polish(escolas): replace misleading 'Em breve' with honest affordance", "state": "merged", "merge_commit": "381baff", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/78" },
     { "number": 76, "title": "feat(painel): historico de geracoes documentais em lote", "state": "merged", "merge_commit": "5369ca1", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/76" },
     { "number": 75, "title": "feat(roles): UI admin de papeis (Marco 6B v0)", "state": "merged", "merge_commit": "a1ec353", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/75" },
     { "number": 74, "title": "chore(reconcile): regenerate types + reconcile docs after PR #72 + #73", "state": "merged", "merge_commit": "a706751", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/74" },
@@ -35,6 +37,8 @@
     { "number": 57, "title": "test(documentos): harden workbook generation and prepare Fase 2B contract", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/57" }
   ],
   "delivered_state": {
+    "painel_visual_polish": "delivered in PR #79; 10 cirurgical refinements: removed font-light hero subtitle, removed empty 'Total' label in donut, replaced font-mono numerics with Inter+tabular-nums across all cards, CentralDocumental gets transition-shadow hover lift, TopReprogramados numbering becomes left rail (no truncate cutoff), bar gradient becomes solid, DistribuicaoDeRecursos pct color consistency, HistoricoGeracoes row meta becomes horizontal + hover affordance, TableHeader tracking adjusted to eyebrow institucional",
+    "escolas_microcopy_fix": "delivered in PR #78; 'Em breve' misleading label replaced with 'Demonstrativo Básico disponível' affordance",
     "admin_roles_ui": "delivered in PR #75 (Marco 6B v0); /configuracoes shows real users from auth.users JOIN user_roles via list_admin_users RPC; assign and revoke roles via UI; anti-self-lockout guardrail; migration 20260517130000 applied to prod",
     "painel_historico_runs": "delivered in PR #76; HistoricoGeracoesCard on Painel showing top 5 most recent document_generation_runs with status icons + relative time + totals; aproveita base persistida do PR #73",
     "painel_executivo_operacional_gad": "delivered in PR #73; page title 'Painel Executivo-Operacional · GAD · 4ª CRE'; sidebar 'Dashboard' renamed to 'Painel'; CentralDocumental + TopReprogramados + DistribuicaoDeRecursos cards added; index.html cleaned (Lovable references removed)",
@@ -48,14 +52,19 @@
     "governance_hygiene": "AGENTS.md, README, CI, lockfile, deps all hardened"
   },
   "next_priority": {
-    "current_pr": "docs/reconcile-post-pr75-pr76 (this PR — final reconciliation)",
-    "next_functional_pr_candidates": [
+    "current_pr": "docs/reconcile-post-pr78-pr79 (this PR — closes night session reconcile)",
+    "immediate_next_step": "smoke operacional manual (Wilson) — NÃO abrir nova frente funcional antes",
+    "smoke_checklist": [
+      "/painel: hero + 3 cards (TopReprogramados / DistribuicaoDeRecursos / HistoricoGeracoes) + CentralDocumental gera 163 demonstrativos com ZIP + entry no histórico",
+      "/configuracoes: lista real de usuários (admin Wilson + operador wilsonmp2) + assign/revoke role + bloqueio anti-self-lockout",
+      "/escolas: clicar 'Gerar documentos' em uma linha → DocumentsPanel com Demonstrativo Básico disponível"
+    ],
+    "next_functional_pr_candidates_pos_smoke": [
       "feat/documentos-relacao-bens (Marco 11 — 2º documento oficial, depende de template)",
       "feat/audit-logs (sub-Marco 6B — trilha de mutações sensíveis)",
       "feat/importador-via-ui (Marco 10B — substitui upload simples, dry-run/diff/hash)",
-      "polish/painel-visual (refinamento estético sóbrio do Painel)"
-    ],
-    "next_milestone": "Relação de Bens (Marco 11) ou audit_logs (sub-6B) — decisão pendente"
+      "feat/painel-historico-page (página dedicada /painel/historico se uso crescer)"
+    ]
   },
   "applied_migrations_post_main": [
     { "name": "20260517120000_document_generation_runs.sql", "applied_at": "2026-05-17T08:30:00-03:00", "method": "supabase db push --linked" },

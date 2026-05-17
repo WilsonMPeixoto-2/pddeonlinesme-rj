@@ -1,6 +1,6 @@
 # Backlog Adaptativo de Oportunidades - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (pós PRs #72 → #76)
+Atualizado em: 2026-05-17 (pós PRs #72 → #79 — sessão noturna fechada)
 
 Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, mas não autoriza execução sem PR próprio.
 
@@ -8,6 +8,8 @@ Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, ma
 
 | Item | Tipo | Referência |
 |---|---|---|
+| **10 refinamentos visuais sóbrios (Painel + Configurações)** | UX/estética | PR #79, merge `fac1d9b` |
+| **Fix microcopy "Em breve" misleading em /escolas** | UX | PR #78, merge `381baff` |
 | **Histórico de gerações no Painel** (Marco 9B v2) | produto/dados | PR #76, merge `5369ca1` |
 | **UI admin de papeis** (Marco 6B v0) | produto/segurança | PR #75, merge `a1ec353` |
 | **Reconciliação types + docs** | governança | PR #74, merge `a706751` |
