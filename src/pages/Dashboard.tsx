@@ -21,6 +21,7 @@ import { TiltCard } from "@/components/TiltCard";
 import { CentralDocumental } from "@/components/CentralDocumental";
 import { TopReprogramados } from "@/components/TopReprogramados";
 import { DistribuicaoDeRecursos } from "@/components/DistribuicaoDeRecursos";
+import { HistoricoGeracoesCard } from "@/components/HistoricoGeracoesCard";
 import { useDashboardBasico } from "@/hooks/useDashboardBasico";
 import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
 import { useExercicio } from "@/hooks/useExercicio";
@@ -370,10 +371,11 @@ export default function Dashboard() {
           })}
         </motion.div>
 
-        {/* INSIGHTS INSTITUCIONAIS — Top reprogramados + Distribuição de recursos */}
-        <div className="grid gap-4 lg:grid-cols-2">
+        {/* INSIGHTS INSTITUCIONAIS — Top reprogramados + Distribuição de recursos + Histórico */}
+        <div className="grid gap-4 lg:grid-cols-3">
           <TopReprogramados />
           <DistribuicaoDeRecursos />
+          <HistoricoGeracoesCard />
         </div>
 
         {/* RECENT ACTIVITY + ALERTS */}
