@@ -598,9 +598,9 @@ export default function Escolas() {
                                 <FileText className="h-3.5 w-3.5" />
                                 Gerar documentos
                               </Button>
-                              <div className="flex items-center justify-center text-[10px] text-muted-foreground">
-                                <span>Em breve</span>
-                              </div>
+                              <p className="text-center text-[10px] text-muted-foreground">
+                                Demonstrativo Básico disponível
+                              </p>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
