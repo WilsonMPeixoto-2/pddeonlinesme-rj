@@ -278,17 +278,17 @@ export function TeamMembersPanel() {
           <div className="overflow-hidden rounded-md border border-border/70">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/40 hover:bg-muted/40">
-                  <TableHead className="h-10 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
+                  <TableHead className="h-10 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Membro
                   </TableHead>
-                  <TableHead className="h-10 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-10 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Papeis
                   </TableHead>
-                  <TableHead className="h-10 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-10 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Ultima atividade
                   </TableHead>
-                  <TableHead className="h-10 w-[110px] text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <TableHead className="h-10 w-[110px] text-right text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                     Status
                   </TableHead>
                 </TableRow>

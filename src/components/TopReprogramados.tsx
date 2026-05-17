@@ -76,31 +76,33 @@ export function TopReprogramados() {
                     hidden: { opacity: 0, y: 6 },
                     show: { opacity: 1, y: 0 },
                   }}
-                  className="group space-y-1"
+                  className="group flex items-start gap-2.5"
                 >
-                  <div className="flex items-baseline justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => u.unidade_id && navigate(`/escolas/${u.unidade_id}`)}
-                      className="truncate text-left text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:underline"
-                      title={u.designacao ?? ""}
-                    >
-                      <span className="mr-1.5 inline-block w-4 text-right font-mono text-[10px] tabular-nums text-muted-foreground">
-                        {i + 1}.
+                  <span className="mt-0.5 inline-flex w-5 shrink-0 justify-end pt-px text-[10px] font-medium tabular-nums text-muted-foreground/70">
+                    {i + 1}.
+                  </span>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => u.unidade_id && navigate(`/escolas/${u.unidade_id}`)}
+                        className="truncate text-left text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:underline"
+                        title={u.designacao ?? ""}
+                      >
+                        {u.designacao}
+                      </button>
+                      <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground">
+                        {fmtBRL(value)}
                       </span>
-                      {u.designacao}
-                    </button>
-                    <span className="shrink-0 font-mono text-xs tabular-nums text-foreground">
-                      {fmtBRL(value)}
-                    </span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-muted/40">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${widthPct}%` }}
-                      transition={{ duration: 0.6, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                      className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary"
-                    />
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted/40">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${widthPct}%` }}
+                        transition={{ duration: 0.6, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                        className="h-full rounded-full bg-primary/80 transition-colors duration-300 group-hover:bg-primary"
+                      />
+                    </div>
                   </div>
                 </motion.li>
               );
