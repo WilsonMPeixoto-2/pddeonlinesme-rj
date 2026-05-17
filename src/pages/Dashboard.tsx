@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 import { NumberTicker } from "@/components/NumberTicker";
 import { TiltCard } from "@/components/TiltCard";
+import { CentralDocumental } from "@/components/CentralDocumental";
+import { TopReprogramados } from "@/components/TopReprogramados";
+import { DistribuicaoDeRecursos } from "@/components/DistribuicaoDeRecursos";
 import { useDashboardBasico } from "@/hooks/useDashboardBasico";
 import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
 import { useExercicio } from "@/hooks/useExercicio";
@@ -180,7 +183,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2">
                 <span className="ds-dot-success animate-pulse pulse-dot-success" />
                 <p className="ds-eyebrow">
-                  Painel operacional · Exercício {exercicio} · PDDE Básico
+                  Painel Executivo-Operacional · GAD · 4ª CRE · Exercício {exercicio}
                 </p>
               </div>
 
@@ -313,6 +316,9 @@ export default function Dashboard() {
           </div>
         </motion.section>
 
+        {/* CENTRAL DOCUMENTAL — Ação Executiva de Alto Valor (Marco 9B + Marco 15) */}
+        <CentralDocumental />
+
         {/* STAT GRID — staggered */}
         <motion.div
           variants={container}
@@ -363,6 +369,12 @@ export default function Dashboard() {
             );
           })}
         </motion.div>
+
+        {/* INSIGHTS INSTITUCIONAIS — Top reprogramados + Distribuição de recursos */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <TopReprogramados />
+          <DistribuicaoDeRecursos />
+        </div>
 
         {/* RECENT ACTIVITY + ALERTS */}
         <div className="grid gap-4 lg:grid-cols-3">
