@@ -1,6 +1,6 @@
 # Backlog Adaptativo de Oportunidades - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (Plano Global v4.2 + Radar de Inteligência Institucional)
+Atualizado em: 2026-05-17 (pós PR #72 v4.2 + PR #73 Painel GAD v1)
 
 Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, mas não autoriza execução sem PR próprio.
 
@@ -8,6 +8,8 @@ Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, ma
 
 | Item | Tipo | Referência |
 |---|---|---|
+| **Painel Executivo-Operacional GAD v1 + Geração em Lote 163 Demonstrativos** | produto/dados | PR #73, merge `9f755ee` |
+| **Plano Global v4.2 + Radar de Inteligência Institucional** | governança | PR #72, merge `b552cb2` |
 | Demonstrativo Básico Individual via `MEMORIA` (Opção B) | documentos | PR #43, merge `4d97a9c` |
 | Hardening do motor documental + contrato Fase 2B | qualidade | PR #57, merge `7baac702` |
 | **Fase 2B — Edição cadastral mínima** | dados/UI | PR #63, merge `e6fd8171` |
@@ -24,15 +26,14 @@ Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, ma
 
 | Prioridade | Item | Marco v4.2 | Status | Observação |
 |---:|---|---|---|---|
-| **1** | **Painel Executivo-Operacional GAD v1 + Geração em Lote 163 Demonstrativos** | **9B + 15 reclassificado** | **Próximo PR funcional** | Plano e radar consolidados; pronto para implementação |
+| **1** | **UI admin para gerenciar usuários e roles** | **6B v0** | **Próximo PR funcional candidato** | Elimina necessidade de INSERT manual via service_role |
+| **1.alt** | **Relação de Bens Adquiridos (2º documento oficial)** | **11** | **Próximo PR funcional candidato** | Reaproveita motor documental |
 | 2 | Smoke UI operacional Fase 2B (login admin → editar → reload → confirmar) | 6B (parcial) | Pendente | Bloqueia "Fase 2B encerrada operacionalmente"; rápido |
-| 3 | Histórico documental persistido (`document_generation_runs`) | 9B / 15 | Pendente | Migration + RLS + hook; entra no PR do Painel |
-| 4 | Card `DistribuicaoDeRecursos` no Painel (insight: 128/163 sem repasse) | 9B | Pendente | Valor institucional alto; baixo custo |
-| 5 | Cleanup `index.html` (remover Lovable author + TODOs) | 9B | Pendente | Substituir nos comentários a marca anterior |
-| 6 | UI admin para gerenciar usuários e roles | 6B | Pendente | Elimina necessidade de INSERT manual via service_role |
-| 7 | Login público / cadastro / password recovery / MFA | 6B | Pendente | Sobe em prioridade pois sistema já escreve dados |
-| 8 | Importador institucional via interface (dry-run + diff + hash) | 10B | Pendente | Substitui upload simples; nunca service_role no browser |
-| 9 | Outros documentos (Relação de Bens, Termo, Parecer Conclusivo) | 11+12 | Pendente | Templates oficiais + revisão humana |
+| 3 | Painel: histórico de `document_generation_runs` (timeline) | 9B v2 | Pendente | Aproveita base persistida em #73 |
+| 4 | `audit_logs` para mutações sensíveis | sub-6B | Pendente | Pré-requisito para Portal do Diretor |
+| 5 | Login público / cadastro / password recovery / MFA | 6B | Pendente | Sobe em prioridade pois sistema já escreve dados |
+| 6 | Importador institucional via interface (dry-run + diff + hash) | 10B | Pendente | Substitui upload simples; nunca service_role no browser |
+| 7 | Termo de Doação, Consolidação de Preços, Ata, Parecer | 11+12 | Pendente | Templates oficiais + revisão humana |
 | 10 | Portal do Diretor mobile-first | 13 | Pendente | Depende Marco 6B + diretor-escola link + RLS por escopo |
 | 11 | **Aquisição Fiscal Multicanal v1** (XML > chave > QR > URL > barcode > PDF textual > OCR > digitação) | Frente fiscal v1 | Pendente | Reposicionada de "OCR-first"; spike pós-MVP CRE |
 | 12 | Hardening pré-produção (WCAG 2.2, performance, logs, SLOs) | 14 | Contínuo | Inclui bundle, smoke, acessibilidade, logs e validações |

@@ -4,7 +4,7 @@
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077",
+    "base_commit": "9f755ee",
     "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -12,9 +12,11 @@
     "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
     "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
     "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "Fase 2B encerrada com hardening; próxima frente = Painel Executivo-Operacional GAD v1 incorporando geração em lote dos 163 Demonstrativos como Ação Executiva de Alto Valor"
+    "current_mode": "Painel Executivo-Operacional GAD v1 entregue (PR #73). Geração em lote dos 163 Demonstrativos como Ação Executiva de Alto Valor operacional. Próxima frente: UI admin de roles (Marco 6B) ou demais documentos oficiais (Marcos 11+12)."
   },
   "recent_pull_requests": [
+    { "number": 73, "title": "feat(painel): Painel Executivo-Operacional GAD v1 + geracao em lote dos 163 Demonstrativos", "state": "merged", "merge_commit": "9f755ee", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/73" },
+    { "number": 72, "title": "docs: adopt Plano Global v4.2 + Radar de Inteligência Institucional", "state": "merged", "merge_commit": "b552cb2", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/72" },
     { "number": 71, "title": "fix(unidades): make cadastro update atomic via SECURITY INVOKER RPC", "state": "merged", "merge_commit": "d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/71" },
     { "number": 70, "title": "style(unidades): polish UnidadeCadastroEditDialog + Escolas skeleton", "state": "merged", "merge_commit": "9629b21a2947540050b9d3965805a2dd34fbcdd3", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/70" },
     { "number": 69, "title": "chore(deps): remove xlsx (HIGH vuln) and migrate to exceljs", "state": "merged", "merge_commit": "c56adba56038e8c520e98bd3f088a9517b845732", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/69" },
@@ -30,6 +32,9 @@
     { "number": 57, "title": "test(documentos): harden workbook generation and prepare Fase 2B contract", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/57" }
   ],
   "delivered_state": {
+    "painel_executivo_operacional_gad": "delivered in PR #73; page title 'Painel Executivo-Operacional · GAD · 4ª CRE'; sidebar 'Dashboard' renamed to 'Painel'; CentralDocumental + TopReprogramados + DistribuicaoDeRecursos cards added; index.html cleaned (Lovable references removed)",
+    "geracao_em_lote_163_demonstrativos": "delivered in PR #73; library generateDemonstrativosLote + hook useGerarDemonstrativosLote; AbortSignal honored; batched (default 6); history persisted in document_generation_runs; migration 20260517120000 applied to prod via supabase db push; types regenerated",
+    "plano_global_v4_2": "adopted in PR #72; v4.1 preserved as historic; Radar de Inteligencia Institucional formalized as transversal directive",
     "demonstrativo_basico_individual": "concluded and merged; production deploy reported operationally; hardened with audits in PR #57",
     "fase_2b_edicao_cadastral_minima": "implemented (PR #63), polished (PR #70), atomic via RPC (PR #71); migration applied to prod; smoke UI pending",
     "stack_modernization": "React 19, Vite 7, Vitest 4, jsdom 29; xlsx removed; ExcelJS consolidated; 0 vulnerabilities; bundle reduced 21%",
@@ -38,10 +43,18 @@
     "governance_hygiene": "AGENTS.md, README, CI, lockfile, deps all hardened"
   },
   "next_priority": {
-    "current_pr": "docs/global-plan-v4-2-institutional-radar (this PR)",
-    "next_functional_pr": "feat/painel-gad-v1-lote-163 (Marco 9B + Marco 15 reclassificado)",
-    "next_milestone": "Marco 9B — Painel Executivo-Operacional GAD v1 + Geração em Lote dos 163 Demonstrativos como Ação Executiva de Alto Valor"
+    "current_pr": "docs/reconcile-post-pr72-pr73 (this PR — reconciliation)",
+    "next_functional_pr_candidates": [
+      "feat/admin-roles-ui (Marco 6B — UI admin para gerenciar usuários e roles)",
+      "feat/documentos-relacao-bens (Marco 11 — 2º documento oficial)",
+      "feat/audit-logs (sub-Marco 6B — trilha de alterações)",
+      "feat/painel-historico-runs (visualização de document_generation_runs no Painel)"
+    ],
+    "next_milestone": "Marco 6B (UI admin de roles) ou Marco 11 (Relação de Bens) — decisão pendente"
   },
+  "applied_migrations_post_main": [
+    { "name": "20260517120000_document_generation_runs.sql", "applied_at": "2026-05-17T08:30:00-03:00", "method": "supabase db push --linked" }
+  ],
   "planned_not_urgent": [
     { "item": "UI admin para gerenciar usuários e roles", "allocation": "Marco 6B", "note": "Elimina INSERT manual via service_role" },
     { "item": "Login público, cadastro, password recovery, MFA", "allocation": "Marco 6B", "note": "Sobe em prioridade pois sistema já escreve dados" },
