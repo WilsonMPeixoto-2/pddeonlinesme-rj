@@ -1,6 +1,6 @@
 # Roadmap Adaptativo - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (pós PRs #72 → #76)
+Atualizado em: 2026-05-17 (pós PRs #72 → #79 — sessão noturna fechada)
 
 ## Norte
 
@@ -12,7 +12,9 @@ Este roadmap adaptativo não substitui o plano. Ele organiza a fila curta e regi
 
 ## Estado atual
 
-- `main` é fonte oficial de continuidade, atualmente em `5369ca1` (merge PR #76).
+- `main` é fonte oficial de continuidade, atualmente em `fac1d9b` (merge PR #79).
+- **Polimento visual sóbrio** entregue no PR #79 — 10 ajustes cirúrgicos sem redesign (hero subtitle, donut, font-mono → tabular-nums, TopReprogramados rail, glow CentralDocumental, etc.).
+- **Polish microcopy** entregue no PR #78 — "Em breve" misleading em `/escolas` corrigido.
 - **UI admin de papeis** (Marco 6B v0) entregue no PR #75. Migration `20260517130000_admin_user_management` aplicada em produção. Configuracoes deixou de ser mock.
 - **Histórico de gerações documentais** (Marco 9B v2) entregue no PR #76 — card no Painel consumindo `document_generation_runs`.
 - **Painel Executivo-Operacional GAD v1** (Marco 9B) + **Geração em Lote dos 163 Demonstrativos** (Marco 15 reclassificado) entregues no PR #73. Migration `20260517120000_document_generation_runs` aplicada em produção. Types regenerados.
@@ -24,14 +26,18 @@ Este roadmap adaptativo não substitui o plano. Ele organiza a fila curta e regi
 - **POC fiscal isolada** com governança e validators (PRs #58, #59, #61, #62). Reposicionada como "Aquisição Fiscal Multicanal" — congelada até MVP CRE.
 - PR de reconciliação documental em andamento (este).
 
-## Próximas frentes funcionais candidatas
+## Próximo passo: smoke manual (não abrir nova frente)
 
-Marcos 9B + 15 (PR #73), 6B v0 (PR #75), 9B v2 (PR #76) entregues. Frentes candidatas, em ordem de impacto institucional:
+Antes de qualquer nova frente funcional, executar smoke real como usuário. Política consolidada com a auditoria externa (ChatGPT, 17/05): após 8 PRs e 2 migrations em produção, próximo movimento é **validação operacional**, não mais código.
+
+## Próximas frentes funcionais candidatas (pós-smoke)
+
+Marcos 9B + 15 (PR #73), 6B v0 (PR #75), 9B v2 (PR #76), polish visual (PR #79) entregues. Frentes candidatas, em ordem de impacto institucional:
 
 1. **Marco 11 — Relação de Bens Adquiridos**: 2º documento oficial. Reaproveita motor documental. Depende de template oficial real.
 2. **Sub-Marco 6B — `audit_logs`**: trilha de mutações sensíveis. Pré-requisito para Portal do Diretor.
 3. **Marco 10B — Importador via UI** (dry-run, diff, hash): substitui upload simples atual.
-4. **Polimento visual do Painel**: refinamento estético sóbrio sem redesign.
+4. **Página dedicada `/painel/historico`** (Marco 9B v3): filtros + paginação se uso do card top 5 crescer.
 8. Rename menu lateral: `Dashboard` → `Painel`. H1 da página: `Painel Executivo-Operacional · GAD · 4ª CRE`.
 9. Cleanup `index.html` (remover `<meta author="Lovable">`, comentários TODO residuais).
 10. Testes unitários da lib + smoke headless.

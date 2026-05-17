@@ -1,6 +1,6 @@
 # Handoff Operacional - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (pós PRs #72 → #76)
+Atualizado em: 2026-05-17 (pós PRs #72 → #79 — sessão noturna fechada)
 
 ## Regra de leitura
 
@@ -8,9 +8,11 @@ A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, con
 
 ## Contexto atual
 
-**main HEAD:** `5369ca1` (merge PR #76 — histórico de gerações no Painel)
+**main HEAD:** `fac1d9b` (merge PR #79 — polimento visual sóbrio)
 
-PRs #57 a #76 estão incorporados. Cronologia recente:
+PRs #57 a #79 estão incorporados. **Próximo passo NÃO é nova frente funcional — é smoke operacional manual.**
+
+Cronologia recente:
 
 - **PR #71** (16/05): RPC transacional Fase 2B com migration aplicada em produção.
 - **PR #72** (17/05): adoção formal do **Plano Global v4.2** + **Radar de Inteligência Institucional** como diretriz transversal.
@@ -18,6 +20,8 @@ PRs #57 a #76 estão incorporados. Cronologia recente:
 - **PR #74** (17/05): reconciliação documental + types regenerados pós #72/#73.
 - **PR #75** (17/05): **UI admin de papeis** (Marco 6B v0). Migration `20260517130000_admin_user_management` aplicada em produção. RPCs `list_admin_users`, `admin_assign_role`, `admin_revoke_role`. `Configuracoes.tsx` deixou de ser protótipo mock.
 - **PR #76** (17/05): **Histórico de gerações documentais** no Painel — card consumindo `document_generation_runs`.
+- **PR #78** (17/05): polish — substitui "Em breve" misleading em `/escolas` por "Demonstrativo Básico disponível".
+- **PR #79** (17/05): **10 refinamentos visuais sóbrios** no Painel + Configurações (sem redesign, sem trocar fonte/paleta/libs).
 
 Não há PR funcional aberto a ser continuado (apenas o presente PR de reconciliação documental).
 
@@ -90,6 +94,9 @@ Reposicionada como **Aquisição Fiscal Multicanal** (XML > chave > QR > URL > c
 
 | PR | Título | Merge |
 |---:|---|---|
+| #79 | polish(painel): 10 refinamentos visuais sobrios sem redesign | `fac1d9b` |
+| #78 | polish(escolas): replace misleading "Em breve" with honest affordance | `381baff` |
+| #77 | chore(reconcile): docs final pos PRs #75 + #76 | `c5b1cdb` |
 | #76 | feat(painel): historico de geracoes documentais em lote | `5369ca1` |
 | #75 | feat(roles): UI admin de papeis (Marco 6B v0) | `a1ec353` |
 | #74 | chore(reconcile): regenerate types + reconcile docs after PR #72 + #73 | `a706751` |
@@ -109,14 +116,22 @@ Reposicionada como **Aquisição Fiscal Multicanal** (XML > chave > QR > URL > c
 | #58 | spike(fiscal): add document extraction proof of concept | `bb1bb366` |
 | #57 | test(documentos): harden workbook generation and prepare Fase 2B contract | `7baac702` |
 
-## Próximas frentes funcionais candidatas (pós Marcos 6B v0 / 9B / 9B v2 / 15)
+## Próximo passo prioritário: smoke operacional manual
 
-Marcos 9B + 15 (PR #73), 6B v0 (PR #75) e 9B v2 (PR #76) entregues. Frentes candidatas, em ordem de impacto institucional:
+Antes de qualquer nova frente funcional, executar smoke como usuário real:
+
+1. **`/painel`**: hero + CentralDocumental (gerar 163 com progress + ZIP + entry no histórico) + 3 cards de insights (Top, Distribuição, Histórico).
+2. **`/configuracoes`**: lista real de usuários; atribuir papel a email teste; tentar revogar próprio admin (deve bloquear).
+3. **`/escolas`** linha qualquer: clicar "Gerar documentos" → DocumentsPanel mostra "Demonstrativo Básico disponível".
+
+## Próximas frentes funcionais candidatas (pós-smoke)
+
+Marcos 9B + 15 (PR #73), 6B v0 (PR #75), 9B v2 (PR #76), polish visual (PR #79) entregues. Frentes candidatas, em ordem de impacto institucional:
 
 1. **Marco 11 — Relação de Bens Adquiridos**: 2º documento oficial; consolida o catálogo do `DocumentsPanel`. Depende de template oficial (artefato externo) para virar realidade — sem ele, fica em-breve.
 2. **Sub-Marco 6B — `audit_logs`**: trilha de mutações sensíveis (cadastro, contas bancárias, runs documentais, papeis). Pré-requisito para Portal do Diretor.
 3. **Marco 10B — Importador via UI** (dry-run, diff, hash): substitui upload simples atual. Nunca service_role no browser.
-4. **Polimento visual do Painel**: refinamento estético sóbrio sem redesign (já permitido pelo plano v4.2).
+4. **Página dedicada `/painel/historico`**: filtros + paginação, se uso do card top 5 crescer.
 
 ## Pendências planejadas, não urgentes (v4.2)
 
