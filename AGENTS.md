@@ -1,6 +1,6 @@
 # AGENTS.md — PDDE Online 2026
 
-Atualizado em: 2026-05-11
+Atualizado em: 2026-05-17 (Plano Global v4.2 + Radar de Inteligência Institucional)
 
 ## Fonte de verdade tecnica
 
@@ -71,42 +71,42 @@ Para tarefas envolvendo dados financeiros, planilhas, importacao/exportacao, CNP
 | Mudanca substancial | `npx tsc --noEmit && npm run lint && npm test && npm run build` |
 | Documentacao pura | validar JSON se `.json`, `git diff --name-only` para confirmar escopo |
 
-## Estado atual do projeto
+## Estado atual do projeto (v4.2)
 
-**main HEAD verificado:** `c769d473170cca63ce6f4108b873ce12277e3072`
+**main HEAD verificado:** `d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077` (PR #71)
 
-> Este valor e snapshot operacional. Antes de qualquer decisao, verificar novamente o HEAD real da `main` no GitHub.
+> Este valor e snapshot operacional. Antes de qualquer decisao, verificar novamente o HEAD real da `main` no GitHub via `gh api repos/WilsonMPeixoto-2/pddeonlinesme-rj/branches/main`.
 
 ### Entregue e em producao
 
-- Demonstrativo Basico Individual (PR #43, merge em `4d97a9c`)
+- Demonstrativo Basico Individual (PR #43)
 - Dashboard com views reais do Supabase (PR #44)
 - Infraestrutura de continuidade agentic (PR #42)
-- Reconciliacao pos-PR43 (PR #45)
-- AGENTS.md realinhado (PR #46)
-- README real (PR #47)
-- CI minimo (PR #48)
-- Lockfile unico npm/package-lock (PR #49)
-- Remocao lovable-tagger (PR #50)
-- Cobertura de testes DocumentsPanel (PR #51)
-- Reconciliacao documental com a main pos-higiene (PR #52)
-- Atualizacoes seguras de patch em dependencias (PR #53)
+- AGENTS.md realinhado (PR #46), README real (PR #47), CI minimo (PR #48), lockfile unico (PR #49), remocao lovable-tagger (PR #50), cobertura DocumentsPanel (PR #51), reconciliacao documental (PRs #45, #52), patches seguros (PR #53)
+- Hardening do motor documental + contrato Fase 2B (PR #57)
+- POC fiscal Python isolada + governanca + validators (PRs #58, #59, #61, #62)
+- **Fase 2B — Edicao cadastral minima** (PR #63) com optimistic update (PR #66)
+- **Modernizacao da stack**: React 19 (PR #66), Vite 7 (PR #67), Vitest 4 + jsdom 29 (PR #68)
+- **Remocao xlsx + migracao para ExcelJS** com 0 vulnerabilities (PR #69)
+- Polimento visual do dialogo cadastral + skeleton (PR #70)
+- **RPC transacional para cadastro** com SECURITY INVOKER (PR #71) — migration aplicada em prod
 
-### Proxima fila
+### Proxima fila (v4.2)
 
-A fila curta de higiene inicial foi concluida. A proxima frente funcional recomendada e a **Fase 2B - edicao cadastral minima**, desde que iniciada por contrato tecnico de campos, permissoes, validacoes e auditoria.
+A Fase 2B foi implementada e endurecida; falta smoke UI operacional. A proxima frente funcional recomendada e o **Painel Executivo-Operacional GAD v1** (Marco 9B), que incorpora a **Geracao em Lote dos 163 Demonstrativos** (Marco 15 reclassificado como **Acao Executiva de Alto Valor**).
 
-### Frentes funcionais maiores planejadas
+### Frentes funcionais maiores planejadas (v4.2)
 
-Os itens abaixo ja pertencem ao Plano Global v4.1 e nao devem ser tratados como novas falhas urgentes enquanto o sistema permanecer em prototipo controlado usado pelo desenvolvedor:
+Os itens abaixo pertencem ao Plano Global v4.2 e nao devem ser tratados como falhas urgentes enquanto estiverem em sua etapa planejada:
 
-- Edicao cadastral minima (Fase 2B)
-- Login/cadastro publico, auth, roles, guards e RLS final (Marco 6B)
-- Configuracoes/Admin real (Marco 6B / fluxos administrativos)
-- Importador institucional via interface (Marco 10B)
-- Portal do Diretor (Marco 13)
-- Motor documental v1 / geracao em lote / ZIP (Marcos 11, 12 e 15)
-- Hardening, smoke/e2e, acessibilidade, logs e bundle (Marco 14 / melhoria continua)
+- **Painel Executivo-Operacional GAD v1** (Marco 9B — proxima frente)
+- **Geracao em lote dos 163 Demonstrativos** (Marco 15 — Acao Executiva de Alto Valor)
+- Camada de historico documental (`document_generation_runs`)
+- Auth/RLS/roles/audit_logs/storage final (Marco 6B — sobe em prioridade pois sistema ja escreve dados)
+- Importador institucional com dry-run/diff/hash (Marco 10B)
+- **Aquisicao Fiscal Multicanal** (substituiu "frente fiscal v1 OCR-first"; ordem: XML > chave > QR > URL oficial > codigo de barras > PDF textual > OCR > digitacao)
+- Portal do Diretor mobile-first (Marco 13 — depende Marco 6B)
+- Hardening, WCAG, observabilidade (Marco 14 — continuo)
 
 ### Criterio para reordenar o plano
 
@@ -138,17 +138,40 @@ Todo prompt operacional deve declarar:
 - criterio de aceite
 - validacoes minimas
 
+## Radar Transversal de Inteligencia Institucional (v4.2)
+
+A partir de v4.2, **toda tarefa** deve aplicar o Radar de Inteligencia Institucional documentado em `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`. Plano Global = o que. Radar = como.
+
+**Diretriz-mae v4.2:** toda funcionalidade relevante deve entregar valor operacional E valor institucional visivel. Nao basta funcionar: precisa reduzir trabalho, orientar acao, gerar evidencia, evitar erro, respeitar perfis, adotar solucao moderna e poder ser apresentada como modernizacao administrativa.
+
+**8 perguntas obrigatorias antes de propor implementacao:**
+
+1. Existe fonte estruturada antes de digitar ou fazer OCR?
+2. Existe padrao consolidado em sistemas publicos, ERPs, dashboards administrativos ou design systems?
+3. A tarefa pode virar alerta, status, historico, grafico, relatorio ou evidencia?
+4. A solucao reduz clique, memoria, retrabalho ou planilha paralela?
+5. A interface mostra o proximo passo ou apenas exibe dados?
+6. A entrega e segura para dados reais, perfis, RLS, arquivos e auditoria?
+7. O ganho pode ser demonstrado visualmente para chefia e Alta Administracao?
+8. A abordagem e adequada para 2026 ou apenas uma solucao provisoria?
+
+Antes de aprovar PR, executar checklist de revisao em `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md` §9.
+
 ## Regras antes de qualquer tarefa
 
 Ler:
 
-1. `AGENTS.md`
-2. `.continuity/current-state.json` como snapshot auxiliar
-3. `docs/HANDOFF.md` como snapshot auxiliar
-4. `docs/DECISIONS.md`
-5. `docs/ROADMAP_ADAPTIVE.md`
-6. `docs/OPPORTUNITIES_BACKLOG.md`
-7. GitHub `main`, PRs recentes e codigo real antes de decidir
+1. `AGENTS.md` (este arquivo)
+2. **`docs/PLANO_GLOBAL_V4_2.md`** (plano vigente)
+3. **`docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`** (diretriz transversal obrigatoria)
+4. `.continuity/current-state.json` como snapshot auxiliar
+5. `docs/HANDOFF.md` como snapshot auxiliar
+6. `docs/DECISIONS.md`
+7. `docs/ROADMAP_ADAPTIVE.md`
+8. `docs/OPPORTUNITIES_BACKLOG.md`
+9. GitHub `main`, PRs recentes e codigo real antes de decidir
+
+Versao anterior do plano (v4.1) preservada em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md` como referencia historica — nao foi revogada, apenas atualizada.
 
 ## Regras depois de qualquer tarefa
 

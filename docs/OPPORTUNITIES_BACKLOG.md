@@ -1,47 +1,73 @@
 # Backlog Adaptativo de Oportunidades - PDDE Online 2026
 
-Atualizado em: 2026-05-11
+Atualizado em: 2026-05-17 (Plano Global v4.2 + Radar de Inteligência Institucional)
 
-Este backlog e um radar. Ele registra oportunidades, riscos e proximas frentes, mas nao autoriza execucao sem PR proprio.
+Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, mas não autoriza execução sem PR próprio.
 
-| Prioridade | Item | Tipo | Status | Observacao |
+## Concluído
+
+| Item | Tipo | Referência |
+|---|---|---|
+| Demonstrativo Básico Individual via `MEMORIA` (Opção B) | documentos | PR #43, merge `4d97a9c` |
+| Hardening do motor documental + contrato Fase 2B | qualidade | PR #57, merge `7baac702` |
+| **Fase 2B — Edição cadastral mínima** | dados/UI | PR #63, merge `e6fd8171` |
+| **React 19 + optimistic update no cadastro** | stack/UX | PR #66, merge `9e8bce3b` |
+| **Vite 5 → 7 + esbuild vuln resolvida** | stack | PR #67, merge `496bdbc7` |
+| **Vitest 3 → 4 + jsdom 20 → 29** | stack/testes | PR #68, merge `194a309f` |
+| **xlsx removido (HIGH) + ExcelJS consolidado** | stack/segurança | PR #69, merge `c56adba5` |
+| Polimento visual UnidadeCadastroEditDialog + skeleton | UI | PR #70, merge `9629b21a` |
+| **RPC transacional cadastro com SECURITY INVOKER** | dados/segurança | PR #71, merge `d6b2d514` |
+| POC fiscal Python isolada + governança + validators | spike | PRs #58, #59, #61, #62 |
+| PRs históricos #40–#56 (Foundation v1 + higiene) | governança | Mergeados |
+
+## Em aberto
+
+| Prioridade | Item | Marco v4.2 | Status | Observação |
 |---:|---|---|---|---|
-| — | Demonstrativo Basico Individual via `MEMORIA` | documentos | **concluido** (PR #43, merge `4d97a9c`) | Entregue em producao. Opcao B. |
-| — | PRs #40, #41, #42, #44 | governanca GitHub | **concluido** | Todos mergeados em `main`. |
-| — | PRs historicos superados | governanca GitHub | **concluido** | Branches deletadas, PRs fechados. |
-| — | Reconciliacao pos-merge PR #43 | governanca/docs | **concluido** (PR #45, merge `88238ce`) | Drift corrigido. |
-| — | AGENTS.md realinhado | governanca | **concluido** (PR #46, merge `a34c3d0`) | Fonte de verdade estabelecida. |
-| — | README real | documentacao | **concluido** (PR #47, merge `6739dd6`) | Substituiu boilerplate Lovable. |
-| — | CI minimo | infraestrutura | **concluido** (PR #48, merge `8ec8b39`) | lint + typecheck em PRs adicionado. |
-| — | Lockfile unico | infraestrutura | **concluido** (PR #49, merge `308fade`) | `bun.lock` e `bun.lockb` removidos. |
-| — | Limpeza lovable-tagger | infraestrutura | **concluido** | Removido de devDependencies e `vite.config.ts`. |
-| — | Cobertura de testes DocumentsPanel | qualidade | **concluido** | Caminhos de erro e placeholders cobertos. |
-| 6 | Dashboard real/analitico | produto/dados | pendente | Pertence ao Marco 9; nao tratar como Foundation v1. |
-| 8 | Fase 2B edicao cadastral/bancaria | dados/UI | pendente | Exige contrato, permissao, auditoria e validacao. |
-| 9 | Importador institucional via interface | dados/documentos | pendente | Pertence ao Marco 10; carga administrativa inicial ja cumpriu seu papel. |
-| 10 | Auth/roles/guards/RLS final | seguranca | pendente | Revisao humana obrigatoria. |
-| 11 | Portal do Diretor | produto/seguranca | pendente | Depende de vinculo diretor-escola e escopo de acesso. |
-| 12 | Motor documental v1 | documentos | pendente | Deve respeitar templates oficiais e revisao humana. |
-| 13 | Hardening pre-producao | qualidade/seguranca | continuo | Incluir bundle, smoke, acessibilidade, logs e validacoes. |
-| 14 | Cobertura de teste | qualidade | continuo | Ampliar coverage do gerador e das views. |
-| 15 | Mobile responsiveness | UI | pendente | Validar telas em viewport mobile. |
-| 16 | Rotacao de senha Supabase | operacional | pendente | Automatizar ou documentar periodicidade. |
+| **1** | **Painel Executivo-Operacional GAD v1 + Geração em Lote 163 Demonstrativos** | **9B + 15 reclassificado** | **Próximo PR funcional** | Plano e radar consolidados; pronto para implementação |
+| 2 | Smoke UI operacional Fase 2B (login admin → editar → reload → confirmar) | 6B (parcial) | Pendente | Bloqueia "Fase 2B encerrada operacionalmente"; rápido |
+| 3 | Histórico documental persistido (`document_generation_runs`) | 9B / 15 | Pendente | Migration + RLS + hook; entra no PR do Painel |
+| 4 | Card `DistribuicaoDeRecursos` no Painel (insight: 128/163 sem repasse) | 9B | Pendente | Valor institucional alto; baixo custo |
+| 5 | Cleanup `index.html` (remover Lovable author + TODOs) | 9B | Pendente | Substituir nos comentários a marca anterior |
+| 6 | UI admin para gerenciar usuários e roles | 6B | Pendente | Elimina necessidade de INSERT manual via service_role |
+| 7 | Login público / cadastro / password recovery / MFA | 6B | Pendente | Sobe em prioridade pois sistema já escreve dados |
+| 8 | Importador institucional via interface (dry-run + diff + hash) | 10B | Pendente | Substitui upload simples; nunca service_role no browser |
+| 9 | Outros documentos (Relação de Bens, Termo, Parecer Conclusivo) | 11+12 | Pendente | Templates oficiais + revisão humana |
+| 10 | Portal do Diretor mobile-first | 13 | Pendente | Depende Marco 6B + diretor-escola link + RLS por escopo |
+| 11 | **Aquisição Fiscal Multicanal v1** (XML > chave > QR > URL > barcode > PDF textual > OCR > digitação) | Frente fiscal v1 | Pendente | Reposicionada de "OCR-first"; spike pós-MVP CRE |
+| 12 | Hardening pré-produção (WCAG 2.2, performance, logs, SLOs) | 14 | Contínuo | Inclui bundle, smoke, acessibilidade, logs e validações |
+| 13 | Mobile responsiveness das telas atuais | 13 (preparação) | Pendente | Validar 375px e 768px antes do Portal do Diretor |
+| 14 | Cobertura de teste do gerador e hooks | qualidade | Contínuo | Ampliar onde houve bug ou regressão |
+| 15 | Rotacionar credenciais Supabase antes de prod real | operacional | Pendente | Wilson.mpeixoto / wilsonmp2 são DEV; rotacionar antes |
+| 16 | Limpeza de branches locais já mergeadas | higiene | Pendente | Listar individualmente e confirmar (não em massa) |
 
-## Lessons learned recentes
+## Riscos rastreados (não bloqueantes)
 
-1. **Reconcile pos-merge:** documentos de continuidade divergem rapidamente. O PR de reconciliacao deve ser a primeira acao apos cada merge significativo.
+| Risco | Mitigação prevista | Marco |
+|---|---|---|
+| RLS silent failure (UPDATE/INSERT retorna 200 com 0 rows) | Padrão `.select("id")` + length check obrigatório em mutações sensíveis | Contínuo |
+| Geração em lote pode estourar memória do browser com 163 unidades + template | Batches controlados (5 a 10 por vez); pré-checagem; limite de fallback | 9B/15 |
+| Service_role acidentalmente no bundle do browser | Lint/CI específico + revisão humana obrigatória em qualquer mutação privilegiada | 6B / contínuo |
+| Documentos fiscais reais commitados | `.gitignore` + revisão humana + sanitização em testes | Frente fiscal |
+| Templates oficiais com dados consolidados em `public/` | Proibido por contrato técnico; sanitização automática | Sempre |
 
-2. **Smoke operacional necessario alem de checks tecnicos:** `tsc`, `lint`, `test` e `build` nao detectam bugs de integracao visual. Validacao visual autenticada complementa os checks automatizados.
+## Lessons learned recentes (v4.2)
 
-3. **Comments de PR vs blob atual:** ao retomar um PR, verificar o blob atual no GitHub, nao apenas comments de revisao que podem referir-se a um estado anterior do diff.
+1. **Reconcile pós-merge** continua obrigatório.
+2. **Smoke operacional** continua complementar aos checks técnicos.
+3. **Blob atual no head**, não comments de review, é fonte para auditoria.
+4. **RLS silencioso** pede `.select("id")` + length check; já é padrão no projeto.
+5. **Modernização por camada** (1 PR = 1 dependência grande) é mais segura que upgrade em bloco.
+6. **Documentação focada**: apenas abre PR documental quando a doc pode induzir o próximo agente ao erro ou alterar prioridade/escopo. Drift pequeno corrige-se no próximo PR funcional.
+7. **Inteligência institucional** entra como filtro obrigatório (Radar §3.1): valor visível, ação orientada, fluxo real, rastreabilidade, modernidade responsável, estética institucional.
 
-## Como promover um item
+## Como promover um item a PR
 
-Para promover um item a PR:
-
-1. Confirmar o marco do Plano Global v4.1.
-2. Definir ferramenta lider.
-3. Definir arquivos permitidos e proibidos.
-4. Registrar criterio de aceite.
-5. Registrar validacoes tecnicas.
-6. Atualizar `docs/HANDOFF.md` ao final.
+1. Confirmar o marco do Plano Global v4.2.
+2. Aplicar as 8 perguntas obrigatórias do Radar (`docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md` §3.1).
+3. Definir ferramenta líder (ou execução solo).
+4. Definir arquivos permitidos e proibidos.
+5. Registrar critério de aceite (operacional, não apenas técnico).
+6. Registrar validações técnicas (tsc, lint, test, build, audit).
+7. Definir smoke operacional quando aplicável.
+8. Atualizar `docs/HANDOFF.md`, `.continuity/current-state.json` ao final.
