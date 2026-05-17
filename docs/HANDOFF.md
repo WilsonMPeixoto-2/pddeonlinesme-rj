@@ -1,6 +1,6 @@
 # Handoff Operacional - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (pós PR #72 documental v4.2 + PR #73 Painel Executivo-Operacional GAD v1)
+Atualizado em: 2026-05-17 (pós PRs #72 → #76)
 
 ## Regra de leitura
 
@@ -8,13 +8,16 @@ A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, con
 
 ## Contexto atual
 
-**main HEAD:** `9f755ee` (merge PR #73 — Painel Executivo-Operacional GAD v1)
+**main HEAD:** `5369ca1` (merge PR #76 — histórico de gerações no Painel)
 
-PRs #57 a #73 estão incorporados. As últimas três entregas:
+PRs #57 a #76 estão incorporados. Cronologia recente:
 
 - **PR #71** (16/05): RPC transacional Fase 2B com migration aplicada em produção.
 - **PR #72** (17/05): adoção formal do **Plano Global v4.2** + **Radar de Inteligência Institucional** como diretriz transversal.
-- **PR #73** (17/05): **Painel Executivo-Operacional GAD v1** com **Geração em Lote dos 163 Demonstrativos** (Marco 9B + Marco 15 reclassificado). Migration `20260517120000_document_generation_runs` aplicada em produção via `supabase db push`. Types regenerados.
+- **PR #73** (17/05): **Painel Executivo-Operacional GAD v1** com **Geração em Lote dos 163 Demonstrativos** (Marco 9B + Marco 15 reclassificado). Migration `20260517120000_document_generation_runs` aplicada em produção.
+- **PR #74** (17/05): reconciliação documental + types regenerados pós #72/#73.
+- **PR #75** (17/05): **UI admin de papeis** (Marco 6B v0). Migration `20260517130000_admin_user_management` aplicada em produção. RPCs `list_admin_users`, `admin_assign_role`, `admin_revoke_role`. `Configuracoes.tsx` deixou de ser protótipo mock.
+- **PR #76** (17/05): **Histórico de gerações documentais** no Painel — card consumindo `document_generation_runs`.
 
 Não há PR funcional aberto a ser continuado (apenas o presente PR de reconciliação documental).
 
@@ -87,6 +90,9 @@ Reposicionada como **Aquisição Fiscal Multicanal** (XML > chave > QR > URL > c
 
 | PR | Título | Merge |
 |---:|---|---|
+| #76 | feat(painel): historico de geracoes documentais em lote | `5369ca1` |
+| #75 | feat(roles): UI admin de papeis (Marco 6B v0) | `a1ec353` |
+| #74 | chore(reconcile): regenerate types + reconcile docs after PR #72 + #73 | `a706751` |
 | #73 | feat(painel): Painel Executivo-Operacional GAD v1 + geracao em lote | `9f755ee` |
 | #72 | docs: adopt Plano Global v4.2 + Radar de Inteligência Institucional | `b552cb2` |
 | #71 | fix(unidades): make cadastro update atomic via SECURITY INVOKER RPC | `d6b2d514` |
@@ -103,14 +109,14 @@ Reposicionada como **Aquisição Fiscal Multicanal** (XML > chave > QR > URL > c
 | #58 | spike(fiscal): add document extraction proof of concept | `bb1bb366` |
 | #57 | test(documentos): harden workbook generation and prepare Fase 2B contract | `7baac702` |
 
-## Próximas frentes funcionais candidatas (pós Marco 9B+15)
+## Próximas frentes funcionais candidatas (pós Marcos 6B v0 / 9B / 9B v2 / 15)
 
-Marcos 9B e 15 entregues no PR #73. Próximas frentes em ordem de impacto institucional:
+Marcos 9B + 15 (PR #73), 6B v0 (PR #75) e 9B v2 (PR #76) entregues. Frentes candidatas, em ordem de impacto institucional:
 
-1. **Marco 6B — UI admin para gerenciar usuários e roles**: elimina necessidade de INSERT manual via service_role; viabiliza onboarding de operadores reais.
-2. **Marco 11 — Relação de Bens Adquiridos**: 2º documento oficial; consolida o catálogo do `DocumentsPanel` (hoje 1 disponível, 5 em-breve).
-3. **Sub-Marco 6B — `audit_logs`** para mutações sensíveis: pré-requisito para Portal do Diretor e prestação de contas formal.
-4. **Painel: histórico de `document_generation_runs`** (timeline de corridas com filtros), aproveitando a base persistida no PR #73.
+1. **Marco 11 — Relação de Bens Adquiridos**: 2º documento oficial; consolida o catálogo do `DocumentsPanel`. Depende de template oficial (artefato externo) para virar realidade — sem ele, fica em-breve.
+2. **Sub-Marco 6B — `audit_logs`**: trilha de mutações sensíveis (cadastro, contas bancárias, runs documentais, papeis). Pré-requisito para Portal do Diretor.
+3. **Marco 10B — Importador via UI** (dry-run, diff, hash): substitui upload simples atual. Nunca service_role no browser.
+4. **Polimento visual do Painel**: refinamento estético sóbrio sem redesign (já permitido pelo plano v4.2).
 
 ## Pendências planejadas, não urgentes (v4.2)
 

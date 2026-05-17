@@ -1,6 +1,6 @@
 # Roadmap Adaptativo - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (pós PR #72 v4.2 + PR #73 Painel GAD v1)
+Atualizado em: 2026-05-17 (pós PRs #72 → #76)
 
 ## Norte
 
@@ -12,7 +12,9 @@ Este roadmap adaptativo não substitui o plano. Ele organiza a fila curta e regi
 
 ## Estado atual
 
-- `main` é fonte oficial de continuidade, atualmente em `9f755ee` (merge PR #73).
+- `main` é fonte oficial de continuidade, atualmente em `5369ca1` (merge PR #76).
+- **UI admin de papeis** (Marco 6B v0) entregue no PR #75. Migration `20260517130000_admin_user_management` aplicada em produção. Configuracoes deixou de ser mock.
+- **Histórico de gerações documentais** (Marco 9B v2) entregue no PR #76 — card no Painel consumindo `document_generation_runs`.
 - **Painel Executivo-Operacional GAD v1** (Marco 9B) + **Geração em Lote dos 163 Demonstrativos** (Marco 15 reclassificado) entregues no PR #73. Migration `20260517120000_document_generation_runs` aplicada em produção. Types regenerados.
 - **Plano Global v4.2 + Radar de Inteligência Institucional** adotados no PR #72.
 - PR #43 (Demonstrativo Básico Individual) entregue, hardneado (PR #57) e em produção.
@@ -24,12 +26,12 @@ Este roadmap adaptativo não substitui o plano. Ele organiza a fila curta e regi
 
 ## Próximas frentes funcionais candidatas
 
-Marcos 9B e 15 entregues no PR #73. Frentes candidatas, em ordem de impacto institucional:
+Marcos 9B + 15 (PR #73), 6B v0 (PR #75), 9B v2 (PR #76) entregues. Frentes candidatas, em ordem de impacto institucional:
 
-1. **Marco 6B v0 — UI admin para gerenciar usuários e roles**: elimina necessidade de INSERT manual via service_role. Inclui página Configurações > Usuários, atribuição de role admin/operador, revogação.
-2. **Marco 11 — Relação de Bens Adquiridos**: 2º documento oficial. Reaproveita motor documental existente.
-3. **Sub-Marco 6B — `audit_logs`**: trilha de mutações sensíveis (cadastro, contas bancárias, runs documentais). Pré-requisito para Portal do Diretor.
-4. **Painel: visualização de `document_generation_runs`**: timeline de corridas com sucesso/falha por corrida.
+1. **Marco 11 — Relação de Bens Adquiridos**: 2º documento oficial. Reaproveita motor documental. Depende de template oficial real.
+2. **Sub-Marco 6B — `audit_logs`**: trilha de mutações sensíveis. Pré-requisito para Portal do Diretor.
+3. **Marco 10B — Importador via UI** (dry-run, diff, hash): substitui upload simples atual.
+4. **Polimento visual do Painel**: refinamento estético sóbrio sem redesign.
 8. Rename menu lateral: `Dashboard` → `Painel`. H1 da página: `Painel Executivo-Operacional · GAD · 4ª CRE`.
 9. Cleanup `index.html` (remover `<meta author="Lovable">`, comentários TODO residuais).
 10. Testes unitários da lib + smoke headless.
