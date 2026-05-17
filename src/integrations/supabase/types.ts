@@ -94,6 +94,60 @@ export type Database = {
           },
         ]
       }
+      document_generation_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          doc_type: string
+          exercicio: number
+          falhas: Json
+          id: string
+          metadata: Json | null
+          programa: string
+          started_at: string
+          status: string
+          total_alvo: number
+          total_falha: number
+          total_sucesso: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          doc_type: string
+          exercicio: number
+          falhas?: Json
+          id?: string
+          metadata?: Json | null
+          programa?: string
+          started_at?: string
+          status?: string
+          total_alvo: number
+          total_falha?: number
+          total_sucesso?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          doc_type?: string
+          exercicio?: number
+          falhas?: Json
+          id?: string
+          metadata?: Json | null
+          programa?: string
+          started_at?: string
+          status?: string
+          total_alvo?: number
+          total_falha?: number
+          total_sucesso?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       execucao_financeira: {
         Row: {
           created_at: string
@@ -399,11 +453,11 @@ export type Database = {
       }
       update_unidade_cadastro_minima: {
         Args: {
-          p_agencia: string | null
-          p_banco: string | null
-          p_conta_corrente: string | null
-          p_diretor: string | null
-          p_endereco: string | null
+          p_agencia: string
+          p_banco: string
+          p_conta_corrente: string
+          p_diretor: string
+          p_endereco: string
           p_nome: string
           p_unidade_id: string
         }

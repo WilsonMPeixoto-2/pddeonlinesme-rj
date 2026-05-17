@@ -1,6 +1,6 @@
 # Roadmap Adaptativo - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (Plano Global v4.2 + Radar de Inteligência Institucional)
+Atualizado em: 2026-05-17 (pós PR #72 v4.2 + PR #73 Painel GAD v1)
 
 ## Norte
 
@@ -12,27 +12,24 @@ Este roadmap adaptativo não substitui o plano. Ele organiza a fila curta e regi
 
 ## Estado atual
 
-- `main` é fonte oficial de continuidade, atualmente em `d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077` (merge PR #71).
+- `main` é fonte oficial de continuidade, atualmente em `9f755ee` (merge PR #73).
+- **Painel Executivo-Operacional GAD v1** (Marco 9B) + **Geração em Lote dos 163 Demonstrativos** (Marco 15 reclassificado) entregues no PR #73. Migration `20260517120000_document_generation_runs` aplicada em produção. Types regenerados.
+- **Plano Global v4.2 + Radar de Inteligência Institucional** adotados no PR #72.
 - PR #43 (Demonstrativo Básico Individual) entregue, hardneado (PR #57) e em produção.
 - **Fase 2B (edição cadastral mínima) implementada e endurecida**: PRs #63 (motor), #66 (optimistic + React 19), #70 (polimento), #71 (RPC transacional). Migration aplicada em produção. Falta apenas smoke UI operacional.
 - **Stack modernizada**: React 19, Vite 7, Vitest 4, jsdom 29 (PRs #65–#68).
 - **xlsx removido, ExcelJS consolidado** (PR #69). `npm audit` zerado. Bundle inicial reduzido em 21%.
 - **POC fiscal isolada** com governança e validators (PRs #58, #59, #61, #62). Reposicionada como "Aquisição Fiscal Multicanal" — congelada até MVP CRE.
-- Nenhum PR funcional aberto no momento (apenas o presente PR documental v4.2).
+- PR de reconciliação documental em andamento (este).
 
-## Próxima frente funcional recomendada (v4.2)
+## Próximas frentes funcionais candidatas
 
-**Marco 9B — Painel Executivo-Operacional GAD v1**, incorporando **Marco 15 reclassificado como Ação Executiva de Alto Valor — Geração em Lote dos 163 Demonstrativos**.
+Marcos 9B e 15 entregues no PR #73. Frentes candidatas, em ordem de impacto institucional:
 
-Escopo proposto para o próximo PR funcional:
-
-1. Lib + hook de geração em lote (browser-side, batches controlados, JSZip + file-saver, sem service_role).
-2. Pré-checagem antes de iniciar (quantas unidades aptas vs sem dados; barrar geração massiva sem dados consolidados).
-3. Migration `document_generation_runs` (histórico persistido: usuário, timestamp, status, falhas por unidade).
-4. Card `CentralDocumental` no Painel — entre hero e stat cards, destaque visual.
-5. Card `TopReprogramados` — top 5 unidades por valor reprogramado, com barras (insight de concentração).
-6. Card `DistribuicaoDeRecursos` — insight institucional (% unidades sem repasse, com repasse).
-7. Substituir botão "Gerar resumos (.zip)" placeholder em `/escolas` pela lib real.
+1. **Marco 6B v0 — UI admin para gerenciar usuários e roles**: elimina necessidade de INSERT manual via service_role. Inclui página Configurações > Usuários, atribuição de role admin/operador, revogação.
+2. **Marco 11 — Relação de Bens Adquiridos**: 2º documento oficial. Reaproveita motor documental existente.
+3. **Sub-Marco 6B — `audit_logs`**: trilha de mutações sensíveis (cadastro, contas bancárias, runs documentais). Pré-requisito para Portal do Diretor.
+4. **Painel: visualização de `document_generation_runs`**: timeline de corridas com sucesso/falha por corrida.
 8. Rename menu lateral: `Dashboard` → `Painel`. H1 da página: `Painel Executivo-Operacional · GAD · 4ª CRE`.
 9. Cleanup `index.html` (remover `<meta author="Lovable">`, comentários TODO residuais).
 10. Testes unitários da lib + smoke headless.

@@ -1,6 +1,6 @@
 # Handoff Operacional - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (Plano Global v4.2 + Radar de Inteligência Institucional)
+Atualizado em: 2026-05-17 (pós PR #72 documental v4.2 + PR #73 Painel Executivo-Operacional GAD v1)
 
 ## Regra de leitura
 
@@ -8,11 +8,15 @@ A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, con
 
 ## Contexto atual
 
-**main HEAD:** `d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077` (merge PR #71)
+**main HEAD:** `9f755ee` (merge PR #73 — Painel Executivo-Operacional GAD v1)
 
-PRs #57 a #71 estão incorporados. PR #71 (RPC transacional Fase 2B) foi mergeado e a migration aplicada em produção via `supabase db push`. Falta apenas smoke UI operacional pela revisão humana.
+PRs #57 a #73 estão incorporados. As últimas três entregas:
 
-Não há indicação, neste snapshot, de PR funcional aberto a ser continuado (exceto o presente PR documental v4.2).
+- **PR #71** (16/05): RPC transacional Fase 2B com migration aplicada em produção.
+- **PR #72** (17/05): adoção formal do **Plano Global v4.2** + **Radar de Inteligência Institucional** como diretriz transversal.
+- **PR #73** (17/05): **Painel Executivo-Operacional GAD v1** com **Geração em Lote dos 163 Demonstrativos** (Marco 9B + Marco 15 reclassificado). Migration `20260517120000_document_generation_runs` aplicada em produção via `supabase db push`. Types regenerados.
+
+Não há PR funcional aberto a ser continuado (apenas o presente PR de reconciliação documental).
 
 ## Norte operacional (v4.2)
 
@@ -83,6 +87,8 @@ Reposicionada como **Aquisição Fiscal Multicanal** (XML > chave > QR > URL > c
 
 | PR | Título | Merge |
 |---:|---|---|
+| #73 | feat(painel): Painel Executivo-Operacional GAD v1 + geracao em lote | `9f755ee` |
+| #72 | docs: adopt Plano Global v4.2 + Radar de Inteligência Institucional | `b552cb2` |
 | #71 | fix(unidades): make cadastro update atomic via SECURITY INVOKER RPC | `d6b2d514` |
 | #70 | style(unidades): polish UnidadeCadastroEditDialog + Escolas skeleton | `9629b21a` |
 | #69 | chore(deps): remove xlsx (HIGH vuln) and migrate to exceljs | `c56adba5` |
@@ -97,22 +103,14 @@ Reposicionada como **Aquisição Fiscal Multicanal** (XML > chave > QR > URL > c
 | #58 | spike(fiscal): add document extraction proof of concept | `bb1bb366` |
 | #57 | test(documentos): harden workbook generation and prepare Fase 2B contract | `7baac702` |
 
-## Próxima frente funcional recomendada (v4.2)
+## Próximas frentes funcionais candidatas (pós Marco 9B+15)
 
-**Marco 9B — Painel Executivo-Operacional GAD v1**, incorporando **Marco 15 reclassificado — Geração em Lote dos 163 Demonstrativos como Ação Executiva de Alto Valor**.
+Marcos 9B e 15 entregues no PR #73. Próximas frentes em ordem de impacto institucional:
 
-Escopo proposto para próximo PR funcional:
-
-- Lib + hook de geração em lote (browser-side, batches controlados, JSZip, file-saver)
-- Pré-checagem antes de iniciar (quantas unidades aptas vs sem dados)
-- Migration `document_generation_runs` (histórico persistido: usuário, timestamp, status, falhas)
-- Card `CentralDocumental` no Painel (entre hero e stat cards, destaque)
-- Card `TopReprogramados` (top 5 por valor reprogramado — destaca concentração real)
-- Card `DistribuicaoDeRecursos` (insight: % unidades sem repasse, com repasse, concentração)
-- Substituir botão "Gerar resumos (.zip)" placeholder em `/escolas` pela lib real
-- Rename menu lateral: `Dashboard` → `Painel`; h1 da página: `Painel Executivo-Operacional · GAD · 4ª CRE`
-- Cleanup `index.html` (remover `<meta author="Lovable">`, comentários TODO residuais)
-- Testes unitários da lib + smoke headless
+1. **Marco 6B — UI admin para gerenciar usuários e roles**: elimina necessidade de INSERT manual via service_role; viabiliza onboarding de operadores reais.
+2. **Marco 11 — Relação de Bens Adquiridos**: 2º documento oficial; consolida o catálogo do `DocumentsPanel` (hoje 1 disponível, 5 em-breve).
+3. **Sub-Marco 6B — `audit_logs`** para mutações sensíveis: pré-requisito para Portal do Diretor e prestação de contas formal.
+4. **Painel: histórico de `document_generation_runs`** (timeline de corridas com filtros), aproveitando a base persistida no PR #73.
 
 ## Pendências planejadas, não urgentes (v4.2)
 

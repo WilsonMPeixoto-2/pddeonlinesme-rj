@@ -9,14 +9,7 @@ import {
   type LoteProgress,
 } from "@/lib/demonstrativo/generateDemonstrativosLote";
 
-// Transitional cast: types ainda nao regenerados ate Wilson aplicar a
-// migration 20260517120000. Quando aplicada, `supabase gen types typescript`
-// vai materializar `document_generation_runs` em Database["public"]["Tables"].
-const docGenClient = supabase as unknown as {
-  from: (table: "document_generation_runs") => ReturnType<typeof supabase.from>;
-};
-
-const DOC_GEN_RUNS = "document_generation_runs";
+const DOC_GEN_RUNS = "document_generation_runs" as const;
 
 type RunStatus = "em_execucao" | "concluido" | "falha" | "cancelado";
 
@@ -84,7 +77,7 @@ export function useGerarDemonstrativosLote() {
     }: StartParams): Promise<{ id: string } | null> => {
       try {
         const exercicioInt = Number.parseInt(exercicio, 10);
-        const { data, error } = await docGenClient
+        const { data, error } = await supabase
           .from(DOC_GEN_RUNS)
           .insert([
             {
@@ -137,7 +130,7 @@ export function useGerarDemonstrativosLote() {
       },
     ) => {
       try {
-        const { error } = await docGenClient
+        const { error } = await supabase
           .from(DOC_GEN_RUNS)
           .update(patch)
           .eq("id", runId);
