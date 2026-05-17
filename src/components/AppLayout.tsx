@@ -26,7 +26,7 @@ import BrandMark from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const tabs = [
-  { to: "/dashboard", label: "Dashboard" },
+  { to: "/dashboard", label: "Painel" },
   { to: "/escolas", label: "Unidades Escolares" },
   { to: "/base", label: "Importar/Exportar" },
   { to: "/configuracoes", label: "Configurações" },

@@ -36,9 +36,12 @@ import {
   type UnidadeLocalizador,
 } from "@/hooks/useUnidadesLocalizador";
 import { useExercicio } from "@/hooks/useExercicio";
+import { useUnidadesDetalheLista } from "@/hooks/useUnidadesDetalheLista";
+import { useGerarDemonstrativosLote } from "@/hooks/useGerarDemonstrativosLote";
 import { cn } from "@/lib/utils";
-import JSZip from "jszip";
 import { saveAs } from "file-saver";
+
+const PROGRAMA = "basico";
 /* ─── Types ─── */
 
 // Foundation v1: /escolas opera como localizador a partir de vw_unidades_localizador.
@@ -143,6 +146,13 @@ export default function Escolas() {
   const { data, isLoading, error, refetch, isFetching } = useUnidadesLocalizador();
   const unidades: Unidade[] = useMemo(() => data ?? [], [data]);
   const loading = isLoading;
+
+  // Lote (Marco 9B + Marco 15): dados financeiros + hook de geracao real.
+  const { data: unidadesDetalhe } = useUnidadesDetalheLista({
+    exercicio,
+    programa: PROGRAMA,
+  });
+  const lote = useGerarDemonstrativosLote();
 
   useEffect(() => {
     if (error) toast.error(error.message ?? "Erro ao carregar unidades.");
@@ -252,39 +262,37 @@ export default function Escolas() {
     }
   };
 
-  const handleGenerateZip = async () => {
-    try {
-      setConfirmLote(false);
-      const zip = new JSZip();
-      
-      const resumos = zip.folder(`Resumos_Cadastrais_Preliminares_${exercicio}`);
-      if (!resumos) return;
+  // Elegiveis para o lote: somente unidades da lista filtrada que tem dados
+  // financeiros lancados (disponivel inicial, reprogramado ou parcelas).
+  // Demonstrativo sem dados financeiros sai como zerado e nao agrega valor.
+  const unidadesElegiveisLote = useMemo(() => {
+    if (!unidadesDetalhe) return [];
+    const idsFiltrados = new Set(lista.map((u) => u.id));
+    return unidadesDetalhe
+      .filter((u) => u.unidade_id && idsFiltrados.has(u.unidade_id))
+      .filter(
+        (u) =>
+          (u.total_disponivel_inicial ?? 0) > 0 ||
+          (u.total_reprogramado ?? 0) > 0 ||
+          (u.total_parcelas ?? 0) > 0,
+      );
+  }, [unidadesDetalhe, lista]);
 
-      lista.forEach(u => {
-        const textContent = [
-          "RESUMO CADASTRAL PRELIMINAR",
-          "",
-          "Artefato técnico preliminar, sem valor de documento oficial.",
-          "Não substitui prestação de contas, demonstrativo oficial, assinatura, validação humana ou conferência documental.",
-          "",
-          `Unidade: ${u.designacao}`,
-          `Nome: ${u.nome || "Não informado"}`,
-          `INEP: ${u.inep || "N/A"}`,
-          `CNPJ: ${u.cnpj || "N/A"}`,
-          `Diretor(a): ${u.diretor || "N/A"}`,
-          `Exercício: ${exercicio}`,
-          "",
-        ].join("\n");
-        resumos.file(`Resumo_Cadastral_${u.inep || u.id}.txt`, textContent);
+  const handleGenerateLote = () => {
+    setConfirmLote(false);
+    if (unidadesElegiveisLote.length === 0) {
+      toast.warning("Nenhuma unidade elegivel encontrada nos filtros atuais.", {
+        description: "Selecione unidades que ja tenham dados financeiros lancados.",
       });
-
-      const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, `Resumos_Cadastrais_Preliminares_4CRE_${exercicio}.zip`);
-      toast.success("Resumos cadastrais preliminares gerados com sucesso!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao gerar os resumos preliminares.");
+      return;
     }
+
+    void lote.start({
+      unidades: unidadesElegiveisLote,
+      exercicio,
+      programa: PROGRAMA,
+      totalCadastrado: unidades.length,
+    });
   };
 
   return (
@@ -407,9 +415,12 @@ export default function Escolas() {
               size="sm"
               className="h-10"
               onClick={() => setConfirmLote(true)}
-              disabled={unidades.length === 0}
+              disabled={unidades.length === 0 || lote.phase === "running"}
             >
-              <FileSpreadsheet className="mr-2 h-4 w-4" /> Gerar resumos (.zip)
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              {lote.phase === "running"
+                ? `Gerando ${lote.progress.done}/${lote.progress.total}`
+                : "Gerar demonstrativos (.zip)"}
             </Button>
           </div>
         </div>
@@ -628,16 +639,17 @@ export default function Escolas() {
         open={confirmLote}
         onOpenChange={setConfirmLote}
         tone="primary"
-        title="Gerar resumos cadastrais preliminares"
+        title={`Gerar ${unidadesElegiveisLote.length} demonstrativos das unidades filtradas?`}
         description={
           <>
-            Será gerado um arquivo <strong>.zip</strong> com resumos cadastrais preliminares
-            das unidades filtradas. Estes arquivos são artefatos técnicos preliminares e não têm valor de documento oficial.
+            Sera gerado um arquivo <strong>.zip</strong> contendo um Demonstrativo Basico individual
+            para cada unidade filtrada que ja tem dados financeiros lancados no exercicio{" "}
+            <strong>{exercicio}</strong>. A corrida e registrada no historico institucional.
           </>
         }
-        highlight={`${lista.length} unidades filtradas serão processadas`}
-        confirmLabel="Gerar resumos"
-        onConfirm={handleGenerateZip}
+        highlight={`${unidadesElegiveisLote.length} de ${lista.length} unidades filtradas serao processadas`}
+        confirmLabel="Iniciar geracao"
+        onConfirm={handleGenerateLote}
       />
 
       <DocumentsPanel
