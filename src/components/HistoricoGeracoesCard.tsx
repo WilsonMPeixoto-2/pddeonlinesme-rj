@@ -92,7 +92,7 @@ function HistoricoRow({ run }: HistoricoRowProps) {
   const running = status === "em_execucao";
 
   return (
-    <li className="group flex items-start justify-between gap-3 border-t border-border/40 py-2.5 first:border-t-0 first:pt-1 last:pb-1">
+    <li className="group -mx-1 flex items-start justify-between gap-3 rounded-md border-t border-border/40 px-1 py-3 transition-colors duration-200 first:border-t-0 first:pt-1.5 last:pb-1.5 hover:bg-muted/30">
       <div className="flex min-w-0 items-start gap-2.5">
         <span
           className={cn(
@@ -117,13 +117,13 @@ function HistoricoRow({ run }: HistoricoRowProps) {
           </p>
         </div>
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <Badge variant="outline" className={cn("h-5 px-1.5 text-[10px]", meta.tone)}>
-          {meta.label}
-        </Badge>
+      <div className="flex shrink-0 items-center gap-2 pt-0.5">
         <span className="text-[10px] text-muted-foreground tabular-nums">
           {relativeFrom(run.started_at)}
         </span>
+        <Badge variant="outline" className={cn("h-5 px-1.5 text-[10px]", meta.tone)}>
+          {meta.label}
+        </Badge>
       </div>
     </li>
   );

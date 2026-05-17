@@ -96,10 +96,10 @@ export function DistribuicaoDeRecursos() {
                 <div className="h-full w-full rounded-full border-4 border-muted/30" />
               )}
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-mono text-lg font-semibold tabular-nums text-foreground">
+                <span className="text-lg font-semibold tabular-nums text-foreground">
                   {pctComDados}%
                 </span>
-                <span className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
                   com repasse
                 </span>
               </div>
@@ -111,8 +111,8 @@ export function DistribuicaoDeRecursos() {
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                   <span className="text-xs text-muted-foreground">Com repasse</span>
                 </div>
-                <span className="font-mono text-sm tabular-nums text-foreground">
-                  {comDados} <span className="text-muted-foreground">· {pctComDados}%</span>
+                <span className="text-sm font-semibold tabular-nums text-foreground">
+                  {comDados} <span className="font-normal text-muted-foreground">· {pctComDados}%</span>
                 </span>
               </div>
               <div className="flex items-baseline justify-between gap-3">
@@ -120,8 +120,8 @@ export function DistribuicaoDeRecursos() {
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
                   <span className="text-xs text-muted-foreground">Sem repasse</span>
                 </div>
-                <span className="font-mono text-sm tabular-nums text-muted-foreground">
-                  {semDados} <span>· {pctSemDados}%</span>
+                <span className="text-sm font-semibold tabular-nums text-muted-foreground">
+                  {semDados} <span className="font-normal">· {pctSemDados}%</span>
                 </span>
               </div>
             </div>

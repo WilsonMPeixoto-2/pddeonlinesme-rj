@@ -91,7 +91,7 @@ export function CentralDocumental() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Card className="relative overflow-hidden border-primary/25 bg-gradient-to-br from-primary/[0.07] via-card to-card shadow-[0_0_30px_hsl(var(--primary)/0.08)]">
+      <Card className="relative overflow-hidden border-primary/25 bg-gradient-to-br from-primary/[0.07] via-card to-card shadow-[0_0_30px_hsl(var(--primary)/0.08)] transition-shadow duration-500 hover:shadow-[0_0_40px_hsl(var(--primary)/0.14)]">
         {/* Decorative glow */}
         <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/15 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
@@ -181,7 +181,7 @@ export function CentralDocumental() {
                     <span className="truncate pr-2">
                       {lote.progress.currentLabel ?? "Preparando..."}
                     </span>
-                    <span className="font-mono tabular-nums">{progressPct}%</span>
+                    <span className="font-semibold tabular-nums">{progressPct}%</span>
                   </div>
                 </motion.div>
               )}
@@ -254,19 +254,19 @@ export function CentralDocumental() {
             <div className="space-y-3">
               <div className="flex items-baseline justify-between gap-3">
                 <span className="text-sm">Unidades cadastradas</span>
-                <span className="font-mono text-base font-semibold tabular-nums text-foreground">
+                <span className="text-base font-semibold tabular-nums text-foreground">
                   {totalUnidades}
                 </span>
               </div>
               <div className="flex items-baseline justify-between gap-3">
                 <span className="text-sm">Com dados financeiros</span>
-                <span className="font-mono text-base font-semibold tabular-nums text-primary">
+                <span className="text-base font-semibold tabular-nums text-primary">
                   {elegiveisCount}
                 </span>
               </div>
               <div className="flex items-baseline justify-between gap-3">
                 <span className="text-sm">Sem dados financeiros</span>
-                <span className="font-mono text-base font-semibold tabular-nums text-muted-foreground">
+                <span className="text-base font-semibold tabular-nums text-muted-foreground">
                   {semDados}
                 </span>
               </div>

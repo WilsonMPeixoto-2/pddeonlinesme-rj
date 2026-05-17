@@ -204,7 +204,7 @@ export default function Dashboard() {
                     </span>
                   )}
                 </h1>
-                <p className="mt-3 text-sm font-light tracking-wide text-muted-foreground sm:text-base">
+                <p className="mt-3 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
                   Disponibilidade inicial identificada na BASE para{" "}
                   <span className="font-medium text-foreground">{totalUnidades ?? "—"}</span>{" "}
                   unidades escolares da 4ª Coordenadoria Regional de Educação.
@@ -265,10 +265,6 @@ export default function Dashboard() {
                       <div className="h-24 w-24 rounded-full border-4 border-muted/30" />
                     </div>
                   )}
-                  {/* Central Label */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[10px] uppercase text-muted-foreground font-medium tracking-widest">Total</span>
-                  </div>
                 </div>
 
                 {/* Legend & Details Area */}
@@ -283,7 +279,7 @@ export default function Dashboard() {
                         Custeio {fmtBRLOrDash(reprogramadoCusteio)} · Capital {fmtBRLOrDash(reprogramadoCapital)}
                       </span>
                     </div>
-                    <span className="font-mono text-sm tabular-nums text-foreground">
+                    <span className="text-sm font-semibold tabular-nums text-foreground">
                       {loading ? "—" : fmtBRLOrDash(totalReprogramado)}
                     </span>
                   </div>
@@ -300,14 +296,14 @@ export default function Dashboard() {
                         </span>
                       )}
                     </div>
-                    <span className="font-mono text-sm tabular-nums text-foreground">
+                    <span className="text-sm font-semibold tabular-nums text-foreground">
                       {loading ? "—" : fmtBRLOrDash(totalParcelas)}
                     </span>
                   </div>
 
                   <div className="border-t border-border/40 pt-2 flex items-baseline justify-between gap-4">
                     <span className="text-sm font-semibold ml-4">Disponível inicial</span>
-                    <span className="font-mono text-base font-semibold tabular-nums text-primary">
+                    <span className="text-base font-semibold tabular-nums text-primary">
                       {loading ? "—" : fmtBRLOrDash(totalDisponivelInicial)}
                     </span>
                   </div>
