@@ -1,6 +1,6 @@
 # Handoff Operacional - PDDE Online 2026
 
-Atualizado em: 2026-05-11
+Atualizado em: 2026-05-17 (Plano Global v4.2 + Radar de Inteligência Institucional)
 
 ## Regra de leitura
 
@@ -8,135 +8,171 @@ A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, con
 
 ## Contexto atual
 
-Fonte de verdade a verificar: GitHub `main`.
+**main HEAD:** `d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077` (merge PR #71)
 
-Snapshot operacional desta atualização: `main` em `c769d473170cca63ce6f4108b873ce12277e3072`.
+PRs #57 a #71 estão incorporados. PR #71 (RPC transacional Fase 2B) foi mergeado e a migration aplicada em produção via `supabase db push`. Falta apenas smoke UI operacional pela revisão humana.
 
-PRs #40 a #53 foram incorporados a `main`. Não há indicação, neste snapshot, de PR funcional aberto a ser continuado.
+Não há indicação, neste snapshot, de PR funcional aberto a ser continuado (exceto o presente PR documental v4.2).
+
+## Norte operacional (v4.2)
+
+**Plano vigente:** `docs/PLANO_GLOBAL_V4_2.md`.
+
+**Diretriz transversal obrigatória:** `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`.
+
+Versão anterior do plano (v4.1) preservada em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md` como referência histórica — não foi revogada, apenas atualizada.
 
 ## Estado consolidado entregue
 
 ### Demonstrativo Básico Individual
 
-Status: **concluído e mergeado; validação/deploy em produção reportados operacionalmente, sem artefato versionado no repositório**.
+Status: concluído, em produção e robustecido.
 
 ```txt
-#43 - https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43
-Merge commit: 4d97a9cba09fcfe155402f4c6b6679087fc3d19e
-Merged at: 2026-05-11T01:37:40Z
-Merged by: WilsonMPeixoto-2 (admin bypass)
+PR #43 (motor inicial) → merge 4d97a9c
+PR #57 (hardening + contrato Fase 2B) → merge 7baac702
 ```
 
-Decisão técnica vigente:
+Decisão técnica vigente: Opção B (preencher aba MEMORIA diretamente com dados do Supabase).
+
+Restrições vigentes:
+- Não depender da aba `BASE`
+- Não depender de `XLOOKUP`
+- Não publicar template com dados reais consolidados em `public/`
+- Remover aba `BASE` do workbook em memória antes de salvar
+- Preservar layout, fórmulas, bordas e mesclagens do template
+- Manter revisão humana para regras documentais oficiais
+
+### Fase 2B — Edição Cadastral Mínima
+
+Status: implementada, endurecida e em produção.
 
 ```txt
-Opção B: preencher a aba MEMORIA diretamente com dados do Supabase.
+PR #63 (implementação) → merge e6fd8171
+PR #66 (optimistic update + React 19) → merge 9e8bce3b
+PR #70 (polimento visual) → merge 9629b21a
+PR #71 (RPC transacional SECURITY INVOKER) → merge d6b2d514
+Migration 20260516120000 aplicada em produção via supabase db push
 ```
 
-Restrições vigentes para qualquer alteração futura:
+Pendente: smoke UI operacional (login admin → editar diretor/endereço → validar optimistic update → recarregar página → confirmar persistência).
 
-- não depender da aba `BASE` para o arquivo individual;
-- não depender de `XLOOKUP` para o arquivo individual;
-- não publicar template com dados reais consolidados de unidades em `public/`;
-- remover a aba `BASE` do workbook em memória antes de salvar o arquivo final, se ela existir;
-- preservar layout, fórmulas, bordas e mesclagens do template;
-- manter revisão humana para regras documentais oficiais.
+### Stack modernizada
 
-### Correções de UI entregues no PR #43
+```txt
+React 18 → 19 (PR #66)
+Vite 5 → 7 (PR #67)
+Vitest 3 → 4 + jsdom 20 → 29 (PR #68)
+xlsx removido → ExcelJS consolidado (PR #69)
+npm audit: 0 vulnerabilities
+Bundle inicial reduzido em 21%
+```
 
-1. **Tabela `/escolas`:** substituição de `motion.tr` + `row-accent` por `TableRow` nativo, `table-fixed` e `colgroup`, para evitar desalinhamento de colunas.
-2. **DocumentsPanel:** integração com `useUnidadeDetalhe`, `generateDemonstrativoBasico` e `file-saver/saveAs`, eliminando o antigo sucesso falso sem download.
+### POC fiscal (isolada, congelada até MVP CRE)
 
-Arquivo real do componente: `src/components/DocumentsPanel.tsx`.
+```txt
+PR #58 — POC Python isolada
+PR #59, #62 — governança + alinhamento 2026
+PR #61 — testes de validators
+PR #64 (DRAFT, não mergeado) — ADR preliminar
+```
 
-## PRs recentes incorporados
+Reposicionada como **Aquisição Fiscal Multicanal** (XML > chave > QR > URL > código de barras > PDF textual > OCR > digitação). Detalhe arquitetural em `reference_pdde_fiscal_acquisition_layer_idea` (memória auxiliar).
 
-| PR | Título | Estado |
+## PRs recentes incorporados (cronologia)
+
+| PR | Título | Merge |
 |---:|---|---|
-| #53 | chore(deps): safe patch updates | mergeado em `c769d47` |
-| #52 | docs(state): reconcile documentation with current main state | mergeado em `3152aec` |
-| #51 | test(documents): cover DocumentsPanel error and placeholder flows | mergeado em `a1d04a9` |
-| #50 | chore(cleanup): remove unused lovable-tagger residue | mergeado em `41e7cc4` |
-| #49 | chore(deps): standardize on npm lockfile | mergeado em `308fade` |
-| #48 | ci: add minimal pull request validation workflow | mergeado em `8ec8b39` |
-| #47 | docs(readme): replace Lovable placeholder with project overview | mergeado em `6739dd6` |
-| #46 | docs(governance): realign AGENTS with source-of-truth protocol | mergeado em `a34c3d0` |
-| #45 | docs(state): reconcile continuity after PR 43 merge | mergeado em `88238ce` |
-| #43 | feat(documentos): generate Demonstrativo Basico from school detail | mergeado em `4d97a9c` |
-| #44 | Feat/dashboard real vw dashboard basico | mergeado em `9c47ed9` |
-| #42 | ops(agentic): add Codex continuity and workflow infrastructure | mergeado em `d7061ed` |
-| #41 | feat: dashboard B/C paths | mergeado em `89d2306` |
-| #40 | feat: integrate tech stack updates (preview) | mergeado em `502dbeb` |
+| #71 | fix(unidades): make cadastro update atomic via SECURITY INVOKER RPC | `d6b2d514` |
+| #70 | style(unidades): polish UnidadeCadastroEditDialog + Escolas skeleton | `9629b21a` |
+| #69 | chore(deps): remove xlsx (HIGH vuln) and migrate to exceljs | `c56adba5` |
+| #68 | chore(deps): upgrade jsdom 20 → 29 and vitest 3 → 4 | `194a309f` |
+| #67 | chore(deps): upgrade Vite 5 → 7 and resolve esbuild vuln | `496bdbc7` |
+| #66 | chore(deps): upgrade React 18 → 19 + optimistic cadastro updates | `9e8bce3b` |
+| #65 | chore(deps): safe patch updates 2026-05-16 | `510702a4` |
+| #63 | feat(unidades): implement minimal cadastro editing flow | `e6fd8171` |
+| #62 | docs(fiscal): align validation protocol with 2026 architecture policy | `2acf6cb1` |
+| #61 | test(fiscal): cover extraction validators | `cf80fa3d` |
+| #59 | docs(fiscal): define validation protocol for fiscal extraction POC | `87e41a4c` |
+| #58 | spike(fiscal): add document extraction proof of concept | `bb1bb366` |
+| #57 | test(documentos): harden workbook generation and prepare Fase 2B contract | `7baac702` |
 
-## Validações e limites da evidência
+## Próxima frente funcional recomendada (v4.2)
 
-- O código e os testes versionados são a evidência primária.
-- Smoke autenticado em produção foi reportado em sessão operacional, mas não há artefato versionado no repositório para esse smoke.
-- Qualquer agente deve validar novamente no código antes de afirmar estado funcional.
+**Marco 9B — Painel Executivo-Operacional GAD v1**, incorporando **Marco 15 reclassificado — Geração em Lote dos 163 Demonstrativos como Ação Executiva de Alto Valor**.
 
-## Norte operacional
+Escopo proposto para próximo PR funcional:
 
-O norte atual é o Plano Global v4.1 registrado em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`.
+- Lib + hook de geração em lote (browser-side, batches controlados, JSZip, file-saver)
+- Pré-checagem antes de iniciar (quantas unidades aptas vs sem dados)
+- Migration `document_generation_runs` (histórico persistido: usuário, timestamp, status, falhas)
+- Card `CentralDocumental` no Painel (entre hero e stat cards, destaque)
+- Card `TopReprogramados` (top 5 por valor reprogramado — destaca concentração real)
+- Card `DistribuicaoDeRecursos` (insight: % unidades sem repasse, com repasse, concentração)
+- Substituir botão "Gerar resumos (.zip)" placeholder em `/escolas` pela lib real
+- Rename menu lateral: `Dashboard` → `Painel`; h1 da página: `Painel Executivo-Operacional · GAD · 4ª CRE`
+- Cleanup `index.html` (remover `<meta author="Lovable">`, comentários TODO residuais)
+- Testes unitários da lib + smoke headless
 
-Itens como login definitivo, roles, RLS, Portal do Diretor, importador institucional, motor documental em lote, configurações reais e hardening **já estão alocados no Plano Global**. Não devem ser tratados como novas falhas urgentes apenas por ainda não estarem implementados no protótipo.
+## Pendências planejadas, não urgentes (v4.2)
 
-## Próxima frente funcional recomendada
-
-**Fase 2B — Edição cadastral mínima**, iniciando por contrato técnico antes de UI:
-
-- campos editáveis;
-- quem pode editar;
-- se a alteração será direta ou por solicitação;
-- validação;
-- trilha de auditoria;
-- impacto em documentos já gerados.
-
-## Pendências planejadas, não urgentes
-
-| Tema | Alocação planejada | Observação |
+| Tema | Marco | Observação |
 |---|---|---|
-| Login, cadastro público, roles, guards e RLS final | Marco 6B | Protótipo usado pelo desenvolvedor; não tratar como urgência sem risco real. |
-| Configurações/Admin real | Marco 6B / fluxos administrativos | A tela atual pode conter placeholders. |
-| Importador institucional final | Marco 10B | Diferenciar importador técnico atual de fluxo institucional final. |
-| Portal do Diretor | Marco 13 | Depende de papéis e vínculo diretor-escola. |
-| Motor documental em lote / ZIP | Marcos 11, 12 e 15 | Avançar após contratos documentais. |
-| Hardening, smoke/e2e, acessibilidade, logs e bundle | Marco 14 / contínuo | Não bloquear protótipo salvo regressão concreta. |
+| Login, cadastro público, roles, guards, RLS final | 6B | Sobe em prioridade pois sistema já escreve dados |
+| UI admin para gerenciar usuários e roles | 6B / fluxos administrativos | Elimina INSERT manual via service_role |
+| Importador institucional final (dry-run, diff, hash) | 10B | Substitui upload simples; nunca service_role no browser |
+| Portal do Diretor mobile-first | 13 | Depende Marco 6B + diretor-escola link + RLS |
+| Outros documentos além do Demonstrativo Básico | 11+12 | Templates oficiais + revisão humana de regras |
+| Aquisição Fiscal Multicanal (XML/chave/QR/URL/OCR) | Frente fiscal v1 | Spike pós-MVP da 4ª CRE |
+| Hardening pré-produção (WCAG, performance, logs, SLOs) | 14 | Contínuo |
 
-## Implementação entregue pelo PR #43
+## Implementação entregue pelos PRs recentes (referência rápida)
 
-Arquivos principais:
+- Demonstrativo Básico: `src/lib/demonstrativo/`, `src/components/DocumentsPanel.tsx`, template em `public/templates/`
+- Edição cadastral: `src/components/UnidadeCadastroEditDialog.tsx`, `src/hooks/useUpdateUnidadeCadastro.ts`, `src/lib/unidadeCadastro.ts`, RPC `public.update_unidade_cadastro_minima` (migration `20260516120000`)
+- Stack/deps: `package.json`, `package-lock.json`, configs Vite/Vitest/ESLint atualizadas
+- Visual: Dashboard atual já com hero institucional, donut Recharts, stat cards com TiltCard, stagger animation Framer Motion, Recent activity, Atenção operacional
 
-- `public/templates/demonstrativo-basico-4cre-template.xlsx`
-- `src/lib/demonstrativo/templateCells.ts`
-- `src/lib/demonstrativo/mapUnidadeToMemoria.ts`
-- `src/lib/demonstrativo/generateDemonstrativoBasico.ts`
-- `src/lib/demonstrativo/generateDemonstrativoBasico.test.ts`
-- `src/pages/EscolaEditar.tsx`
-- `src/pages/Escolas.tsx`
-- `src/components/DocumentsPanel.tsx`
-- `src/components/DocumentsPanel.test.tsx`
-- `package.json`
-- `package-lock.json`
+## Regras antes de qualquer tarefa (v4.2)
 
-## Regras antes de qualquer tarefa
-
-Ler como orientação, não como fonte absoluta:
+Ler como orientação obrigatória, não como fonte absoluta:
 
 1. `AGENTS.md`
-2. `.continuity/current-state.json`
-3. `docs/HANDOFF.md`
-4. `docs/DECISIONS.md`
-5. `docs/ROADMAP_ADAPTIVE.md`
-6. `docs/OPPORTUNITIES_BACKLOG.md`
-7. `docs/PROJECT_STATE.md`
-8. `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`
+2. **`docs/PLANO_GLOBAL_V4_2.md`** (plano vigente)
+3. **`docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`** (diretriz transversal)
+4. `.continuity/current-state.json`
+5. `docs/HANDOFF.md` (este arquivo)
+6. `docs/DECISIONS.md`
+7. `docs/ROADMAP_ADAPTIVE.md`
+8. `docs/OPPORTUNITIES_BACKLOG.md`
 
 Depois, verificar diretamente o código, branch, commit e diff reais no GitHub.
 
 ## Política de atualização documental
 
-Documentação deve servir ao desenvolvimento, não capturá-lo.
+Documentação deve servir ao desenvolvimento, não capturá-lo em ciclos de reconciliação.
 
-Abrir PR exclusivamente documental apenas quando o documento puder induzir a próxima tarefa ao erro, marcar trabalho concluído como pendente, marcar pendência planejada como falha urgente ou alterar prioridade/escopo de forma relevante.
+Abrir PR exclusivamente documental apenas quando:
+
+- A documentação pode induzir a próxima tarefa ao erro
+- Marca trabalho concluído como pendente ou pendente como concluído
+- Marca pendência planejada como falha urgente
+- Altera prioridade/escopo de forma relevante
 
 Drift pequeno de SHA ou metadado histórico deve ser corrigido no próximo PR funcional, salvo se afetar decisão operacional imediata.
+
+## Política de prompts para agentes (v4.2)
+
+Todo prompt para Codex/Claude Code/outros deve incluir:
+
+```
+Antes de implementar, aplicar Radar de Inteligência Institucional:
+- Existe fonte estruturada antes de OCR/digitação?
+- A solução reduz clique, retrabalho ou memória?
+- Há caminho para detalhe/ação no indicador?
+- A entrega respeita perfis, RLS e auditoria?
+- O ganho é demonstrável visualmente para Alta Administração?
+- A abordagem é adequada para 2026?
+
+Cumprir Plano Global v4.2.
+```
