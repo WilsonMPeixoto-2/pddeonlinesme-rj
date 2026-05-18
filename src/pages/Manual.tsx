@@ -21,13 +21,15 @@ import {
 const secoes = [
   {
     icon: LayoutDashboard,
-    titulo: "Dashboard",
-    resumo: "Visão geral do ciclo de prestação de contas.",
+    titulo: "Painel",
+    resumo: "Painel Executivo-Operacional · GAD · 4ª CRE.",
     conteudo: (
       <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
-        <li><strong>Cards superiores:</strong> totais de unidades, demonstrativos gerados, pendências e a última geração em lote.</li>
-        <li><strong>Gerações recentes:</strong> histórico das últimas ações, com data, usuário responsável e quantidade de arquivos.</li>
-        <li><strong>Unidades com pendência:</strong> escolas cuja BASE precisa ser revisada antes da próxima geração.</li>
+        <li><strong>Hero institucional:</strong> exibe o total disponível inicial e a composição (reprogramado + parcelas) do exercício.</li>
+        <li><strong>Central documental:</strong> ação executiva para gerar em lote os demonstrativos das unidades com dados financeiros lançados.</li>
+        <li><strong>KPIs:</strong> unidades cadastradas, total reprogramado, parcelas lançadas e disponível inicial.</li>
+        <li><strong>Insights:</strong> top 5 reprogramados, distribuição de recursos (com vs sem repasse) e histórico das últimas gerações.</li>
+        <li><strong>Atividade e atenção operacional:</strong> últimas atualizações e indicadores que exigem revisão.</li>
       </ul>
     ),
   },
