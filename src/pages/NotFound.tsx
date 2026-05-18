@@ -33,7 +33,7 @@ const NotFound = () => {
               </p>
             </div>
             <Button onClick={() => navigate("/dashboard")} className="mt-2">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar ao Dashboard
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar ao Painel
             </Button>
           </CardContent>
         </Card>

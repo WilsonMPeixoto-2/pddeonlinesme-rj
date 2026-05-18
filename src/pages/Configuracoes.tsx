@@ -10,8 +10,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { TeamMembersPanel } from "@/components/TeamMembersPanel";
+import { useExercicio } from "@/hooks/useExercicio";
 
 export default function Configuracoes() {
+  const { exercicio, setExercicio } = useExercicio();
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -65,12 +67,17 @@ export default function Configuracoes() {
                   </Label>
                   <Input
                     id="param-exercicio"
-                    defaultValue="2025"
+                    value={exercicio}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      if (v.length === 4) setExercicio(v);
+                    }}
                     inputMode="numeric"
+                    maxLength={4}
                     className="h-10 tabular-nums"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Ano de referência usado nas gerações de demonstrativos.
+                    Ano de referência sincronizado com o seletor do cabeçalho. Aplicado em todas as gerações de demonstrativos.
                   </p>
                 </div>
               </div>
