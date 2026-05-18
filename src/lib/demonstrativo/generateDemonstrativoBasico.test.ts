@@ -4,6 +4,7 @@ import ExcelJS from "exceljs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { extractMemoriaRef, generateDemonstrativoBasico } from "./generateDemonstrativoBasico";
+import { EMPTY_FIELD_PLACEHOLDER } from "./mapUnidadeToMemoria";
 import {
   BASE_SHEET_NAME,
   DEMONSTRATIVO_SHEET_NAME,
@@ -57,6 +58,27 @@ const fixtureUnidadeB: UnidadeDetalhe = {
   parcela_1_capital: 40,
   parcela_2_custeio: 50,
   parcela_2_capital: 60,
+};
+
+const fixtureSemFinanceiro: UnidadeDetalhe = {
+  ...fixtureUnidadeB,
+  unidade_id: "fixture-sem-financeiro",
+  designacao: "04.10.099",
+  nome: "EM SEM EXECUCAO FINANCEIRA",
+  cnpj: "11.111.111/0001-11",
+  endereco: "RUA SEM FINANCEIRO, 100",
+  diretor: "DIRETOR SEM FINANCEIRO",
+  exercicio: null,
+  programa: null,
+  reprogramado_custeio: null,
+  reprogramado_capital: null,
+  parcela_1_custeio: null,
+  parcela_1_capital: null,
+  parcela_2_custeio: null,
+  parcela_2_capital: null,
+  total_reprogramado: null,
+  total_parcelas: null,
+  total_disponivel_inicial: null,
 };
 
 const formulaText = (value: ExcelJS.CellValue) => {
@@ -145,7 +167,7 @@ const collectCellValues = (workbook: ExcelJS.Workbook) => {
 };
 
 const collectForbiddenFormulas = (workbook: ExcelJS.Workbook) => {
-  const forbiddenFormulaPattern = /BASE!|BASE\[|XLOOKUP/i;
+  const forbiddenFormulaPattern = /BASE!|BASE\[|XLOOKUP|MEMORIA!/i;
   const forbiddenFormulas: string[] = [];
 
   workbook.eachSheet((worksheet) => {
@@ -244,6 +266,110 @@ describe("generateDemonstrativoBasico", () => {
     }
 
     expect(workbookBValues.join("\n")).not.toContain("EDI CÔNEGO FERNANDES PINHEIRO");
+  });
+
+  it("gera com cadastro essencial mesmo quando dados fiscais ou financeiros ainda nao existem", async () => {
+    const templateBuffer = await readFile(templatePath);
+    const fetchMock = vi.fn(async () => new Response(templateBuffer));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const generated = await generateDemonstrativoBasico(fixtureSemFinanceiro, "2026");
+    const workbook = await loadGeneratedWorkbook(generated.blob);
+    const memoria = workbook.getWorksheet(MEMORIA_SHEET_NAME)!;
+    const demonstrativo = workbook.getWorksheet(DEMONSTRATIVO_SHEET_NAME)!;
+
+    expect(generated.memoria.reprogramadoCusteio).toBe(EMPTY_FIELD_PLACEHOLDER);
+    expect(generated.memoria.reprogramadoCapital).toBe(EMPTY_FIELD_PLACEHOLDER);
+    expect(generated.memoria.parcela1Custeio).toBe(EMPTY_FIELD_PLACEHOLDER);
+    expect(generated.memoria.parcela1Capital).toBe(EMPTY_FIELD_PLACEHOLDER);
+    expect(generated.memoria.parcela2Custeio).toBe(EMPTY_FIELD_PLACEHOLDER);
+    expect(generated.memoria.parcela2Capital).toBe(EMPTY_FIELD_PLACEHOLDER);
+
+    expectLiteralCellValue(memoria, criticalMemoriaCells.nome, fixtureSemFinanceiro.nome);
+    expectLiteralCellValue(memoria, criticalMemoriaCells.cnpj, fixtureSemFinanceiro.cnpj);
+    expectLiteralCellValue(memoria, criticalMemoriaCells.endereco, fixtureSemFinanceiro.endereco);
+    expectLiteralCellValue(memoria, criticalMemoriaCells.diretor, fixtureSemFinanceiro.diretor);
+    expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.nome, fixtureSemFinanceiro.nome);
+    expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.cnpj, fixtureSemFinanceiro.cnpj);
+    expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.endereco, fixtureSemFinanceiro.endereco);
+    expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.diretor, fixtureSemFinanceiro.diretor);
+  });
+
+  it("gera para unidade com cadastro parcial usando placeholder nos campos faltantes", async () => {
+    const templateBuffer = await readFile(templatePath);
+    const fetchMock = vi.fn(async () => new Response(templateBuffer));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const generated = await generateDemonstrativoBasico(
+      {
+        ...fixtureUnidade,
+        cnpj: null,
+        endereco: null,
+        diretor: null,
+        agencia: null,
+        conta_corrente: null,
+      },
+      "2026",
+    );
+    const workbook = await loadGeneratedWorkbook(generated.blob);
+    const memoria = workbook.getWorksheet(MEMORIA_SHEET_NAME)!;
+    const demonstrativo = workbook.getWorksheet(DEMONSTRATIVO_SHEET_NAME)!;
+
+    expect(generated.memoria.cnpj).toBe(EMPTY_FIELD_PLACEHOLDER);
+    expect(generated.memoria.endereco).toBe(EMPTY_FIELD_PLACEHOLDER);
+    expect(generated.memoria.agencia).toBe(EMPTY_FIELD_PLACEHOLDER);
+    expect(generated.memoria.contaCorrente).toBe(EMPTY_FIELD_PLACEHOLDER);
+    expect(generated.memoria.diretor).toBe(EMPTY_FIELD_PLACEHOLDER);
+
+    expectLiteralCellValue(memoria, criticalMemoriaCells.cnpj, EMPTY_FIELD_PLACEHOLDER);
+    expectLiteralCellValue(memoria, criticalMemoriaCells.endereco, EMPTY_FIELD_PLACEHOLDER);
+    expectLiteralCellValue(memoria, criticalMemoriaCells.agencia, EMPTY_FIELD_PLACEHOLDER);
+    expectLiteralCellValue(memoria, criticalMemoriaCells.contaCorrente, EMPTY_FIELD_PLACEHOLDER);
+    expectLiteralCellValue(memoria, criticalMemoriaCells.diretor, EMPTY_FIELD_PLACEHOLDER);
+    expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.cnpj, EMPTY_FIELD_PLACEHOLDER);
+    expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.endereco, EMPTY_FIELD_PLACEHOLDER);
+    expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.diretor, EMPTY_FIELD_PLACEHOLDER);
+  });
+
+  it("isola dados em geracoes paralelas sem vazamento entre unidades", async () => {
+    const templateBuffer = await readFile(templatePath);
+    const fetchMock = vi.fn(async () => new Response(templateBuffer));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const unidades = Array.from({ length: 12 }, (_, index) => {
+      const token = String(index).padStart(2, "0");
+      return {
+        ...fixtureUnidade,
+        unidade_id: `fixture-paralela-${token}`,
+        designacao: `04.10.${token}`,
+        nome: `EM PARALELA X${token}X`,
+        cnpj: `CNPJ-X${token}X`,
+        endereco: `RUA PARALELA X${token}X`,
+        diretor: `DIRETOR PARALELO X${token}X`,
+      };
+    });
+
+    const generated = await Promise.all(
+      unidades.map((unidade) => generateDemonstrativoBasico(unidade, "2026")),
+    );
+    const workbooks = await Promise.all(generated.map((g) => loadGeneratedWorkbook(g.blob)));
+
+    for (const [index, workbook] of workbooks.entries()) {
+      const demonstrativo = workbook.getWorksheet(DEMONSTRATIVO_SHEET_NAME)!;
+      expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.nome, unidades[index].nome);
+      expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.cnpj, unidades[index].cnpj);
+      expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.endereco, unidades[index].endereco);
+      expectLiteralCellValue(demonstrativo, visibleDemonstrativoCells.diretor, unidades[index].diretor);
+
+      const values = collectCellValues(workbook).join("\n");
+      for (const [otherIndex, other] of unidades.entries()) {
+        if (otherIndex === index) continue;
+        expect(values).not.toContain(other.nome);
+        expect(values).not.toContain(other.cnpj);
+        expect(values).not.toContain(other.endereco);
+        expect(values).not.toContain(other.diretor);
+      }
+    }
   });
 });
 

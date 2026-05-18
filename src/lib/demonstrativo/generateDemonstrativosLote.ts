@@ -3,11 +3,21 @@ import { saveAs } from "file-saver";
 
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { generateDemonstrativoBasico } from "./generateDemonstrativoBasico";
+import {
+  getCamposCadastraisPendentes,
+  type CampoCadastroEssencial,
+} from "./mapUnidadeToMemoria";
 
 export type LoteFailure = {
   unidadeId: string;
   designacao: string;
   message: string;
+};
+
+export type CadastroPendente = {
+  unidadeId: string;
+  designacao: string;
+  camposFaltantes: CampoCadastroEssencial[];
 };
 
 export type LoteProgress = {
@@ -24,6 +34,7 @@ export type LoteResult = {
   totalSucesso: number;
   totalFalha: number;
   failures: LoteFailure[];
+  pendenciasCadastrais: CadastroPendente[];
 };
 
 export interface GenerateDemonstrativosLoteOptions {
@@ -61,6 +72,46 @@ function chunk<T>(items: T[], size: number): T[][] {
   return out;
 }
 
+function getUnidadeLabel(unidade: UnidadeDetalhe) {
+  return unidade.designacao ?? unidade.nome ?? unidade.unidade_id ?? "Unidade";
+}
+
+function collectPendenciasCadastrais(unidades: UnidadeDetalhe[]): CadastroPendente[] {
+  return unidades.flatMap((unidade) => {
+    const camposFaltantes = getCamposCadastraisPendentes(unidade);
+    if (camposFaltantes.length === 0) return [];
+
+    return [
+      {
+        unidadeId: unidade.unidade_id ?? "desconhecido",
+        designacao: getUnidadeLabel(unidade),
+        camposFaltantes,
+      },
+    ];
+  });
+}
+
+function buildPendenciasReport(
+  exercicio: string,
+  total: number,
+  pendencias: CadastroPendente[],
+) {
+  return [
+    "Relatorio de pendencias cadastrais",
+    `Exercicio: ${exercicio}`,
+    `Total alvo: ${total}`,
+    `Unidades com pendencia cadastral: ${pendencias.length}`,
+    "",
+    "Campos essenciais avaliados: designacao, cnpj, endereco, diretor, agencia, conta_corrente",
+    "",
+    "Detalhes das pendencias:",
+    ...pendencias.map(
+      (p, i) =>
+        `${i + 1}. ${p.designacao} (id: ${p.unidadeId}) — campos faltantes: ${p.camposFaltantes.join(", ")}`,
+    ),
+  ].join("\n");
+}
+
 export async function generateDemonstrativosLote({
   unidades,
   exercicio,
@@ -73,7 +124,7 @@ export async function generateDemonstrativosLote({
 
   const total = unidades.length;
   if (total === 0) {
-    throw new Error("Nenhuma unidade elegivel para geracao em lote.");
+    throw new Error("Nenhuma unidade para geracao em lote.");
   }
 
   const zip = new JSZip();
@@ -84,6 +135,7 @@ export async function generateDemonstrativosLote({
   }
 
   const failures: LoteFailure[] = [];
+  const pendenciasCadastrais = collectPendenciasCadastrais(unidades);
   let done = 0;
 
   onProgress?.({ done, total, currentLabel: null, failures });
@@ -97,7 +149,7 @@ export async function generateDemonstrativosLote({
       batch.map(async (unidade) => {
         if (signal?.aborted) return;
 
-        const label = unidade.designacao ?? unidade.nome ?? unidade.unidade_id ?? "Unidade";
+        const label = getUnidadeLabel(unidade);
 
         try {
           const { blob, fileName } = await generateDemonstrativoBasico(unidade, exercicio);
@@ -138,6 +190,13 @@ export async function generateDemonstrativosLote({
     folder.file("_relatorio_falhas.txt", summary);
   }
 
+  if (pendenciasCadastrais.length > 0) {
+    folder.file(
+      "_relatorio_pendencias_cadastrais.txt",
+      buildPendenciasReport(exercicio, total, pendenciasCadastrais),
+    );
+  }
+
   const zipBlob = await zip.generateAsync({ type: "blob" });
   const zipFileName = zipFileNameOverride ?? buildZipFileName(exercicio);
 
@@ -148,6 +207,7 @@ export async function generateDemonstrativosLote({
     totalSucesso: total - failures.length,
     totalFalha: failures.length,
     failures,
+    pendenciasCadastrais,
   };
 }
 
@@ -155,4 +215,10 @@ export async function saveLoteResult(result: LoteResult): Promise<void> {
   saveAs(result.zipBlob, result.zipFileName);
 }
 
-export const __internals = { LoteAbortError, buildZipFileName, chunk };
+export const __internals = {
+  LoteAbortError,
+  buildZipFileName,
+  chunk,
+  collectPendenciasCadastrais,
+  buildPendenciasReport,
+};

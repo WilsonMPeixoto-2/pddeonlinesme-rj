@@ -5,6 +5,7 @@ import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import {
   generateDemonstrativosLote,
   saveLoteResult,
+  type CadastroPendente,
   type LoteFailure,
   type LoteProgress,
 } from "@/lib/demonstrativo/generateDemonstrativosLote";
@@ -36,6 +37,7 @@ export type LoteState =
         totalSucesso: number;
         totalFalha: number;
         failures: LoteFailure[];
+        pendenciasCadastrais: CadastroPendente[];
         zipFileName: string;
       };
       error: null;
@@ -205,7 +207,10 @@ export function useGerarDemonstrativosLote() {
             status: "concluido",
             total_sucesso: result.totalSucesso,
             total_falha: result.totalFalha,
-            falhas: result.failures,
+            falhas: {
+              errosGeracao: result.failures,
+              pendenciasCadastrais: result.pendenciasCadastrais,
+            },
             completed_at: new Date().toISOString(),
           });
         }
@@ -223,6 +228,7 @@ export function useGerarDemonstrativosLote() {
             totalSucesso: result.totalSucesso,
             totalFalha: result.totalFalha,
             failures: result.failures,
+            pendenciasCadastrais: result.pendenciasCadastrais,
             zipFileName: result.zipFileName,
           },
           error: null,

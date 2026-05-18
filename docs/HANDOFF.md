@@ -12,6 +12,12 @@ A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, con
 
 PRs #57 a #79 estão incorporados. **Próximo passo NÃO é nova frente funcional — é smoke operacional manual.**
 
+## Regra de negócio — geração documental
+
+Nesta fase, a geração do Demonstrativo Básico depende dos dados cadastrais essenciais, mas não depende da completude fiscal/financeira.
+
+Campos cadastrais ou financeiros ausentes devem sair como `—` no arquivo gerado. Pendências cadastrais não bloqueiam geração individual nem lote; devem ser registradas como pendências da corrida.
+
 Cronologia recente:
 
 - **PR #71** (16/05): RPC transacional Fase 2B com migration aplicada em produção.
@@ -53,6 +59,9 @@ Restrições vigentes:
 - Remover aba `BASE` do workbook em memória antes de salvar
 - Preservar layout, fórmulas, bordas e mesclagens do template
 - Manter revisão humana para regras documentais oficiais
+- Não bloquear geração por ausência de notas, despesas, saldos detalhados ou extração fiscal ainda pendente
+- Não inventar dados cadastrais nem valores financeiros quando a fonte não existir; usar `—`
+- Acompanhar pendências cadastrais essenciais: exercício, designação, CNPJ, endereço, diretor(a), agência e conta corrente
 
 ### Fase 2B — Edição Cadastral Mínima
 

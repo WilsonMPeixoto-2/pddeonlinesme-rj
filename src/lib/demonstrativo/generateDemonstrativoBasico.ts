@@ -102,6 +102,61 @@ const fillMemoria = (worksheet: Worksheet, data: DemonstrativoMemoriaData) => {
   setCell(worksheet, MEMORIA_CELLS.diretor, data.diretor);
 };
 
+const isFormulaValue = (value: unknown): value is CellFormulaValue =>
+  Boolean(value && typeof value === "object" && "formula" in value);
+
+const resolveMemoriaCellValue = (
+  worksheet: Worksheet,
+  address: string,
+  seen = new Set<string>(),
+): Cell["value"] => {
+  const normalizedAddress = address.toUpperCase();
+  if (seen.has(normalizedAddress)) return "";
+  seen.add(normalizedAddress);
+
+  const value = worksheet.getCell(normalizedAddress).value;
+  if (!isFormulaValue(value)) return value ?? "";
+
+  const parts = value.formula.split("+").map((part) => part.trim().toUpperCase());
+  if (parts.length === 0 || parts.some((part) => !/^\$?[A-Z]+\$?\d+$/.test(part))) {
+    return "";
+  }
+
+  let total = 0;
+  for (const part of parts) {
+    const ref = part.replace(/\$/g, "");
+    const resolved = resolveMemoriaCellValue(worksheet, ref, seen);
+
+    if (resolved === "—") return "—";
+    if (typeof resolved !== "number" || !Number.isFinite(resolved)) return "";
+
+    total += resolved;
+  }
+
+  return total;
+};
+
+const materializeSimpleMemoriaRefs = (
+  workbook: Workbook,
+  memoriaWorksheet: Worksheet,
+) => {
+  workbook.eachSheet((worksheet) => {
+    if (worksheet.name === MEMORIA_SHEET_NAME) return;
+
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        const formula = getCellFormula(cell);
+        if (!formula) return;
+
+        const memRef = extractMemoriaRef(formula);
+        if (!memRef) return;
+
+        cell.value = resolveMemoriaCellValue(memoriaWorksheet, memRef);
+      });
+    });
+  });
+};
+
 export async function generateDemonstrativoBasico(
   unidade: UnidadeDetalhe,
   exercicio: string,
@@ -137,19 +192,8 @@ export async function generateDemonstrativoBasico(
   }
 
   // Workaround para falhas de recálculo (cache) em visualizadores web/Google Sheets:
-  // Substituímos as fórmulas simples que buscam na MEMORIA pelos valores literais.
-  demonstrativoWorksheet.eachRow((row) => {
-    row.eachCell((cell) => {
-      const formula = getCellFormula(cell);
-      if (!formula) return;
-
-      const memRef = extractMemoriaRef(formula);
-      if (!memRef) return;
-
-      const memVal = memoriaWorksheet.getCell(memRef).value;
-      cell.value = memVal ?? "";
-    });
-  });
+  // Substituímos fórmulas simples que buscam na MEMORIA por valores literais.
+  materializeSimpleMemoriaRefs(workbook, memoriaWorksheet);
 
   const outputBuffer = await workbook.xlsx.writeBuffer();
 

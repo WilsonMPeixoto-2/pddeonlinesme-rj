@@ -26,7 +26,7 @@ const secoes = [
     conteudo: (
       <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
         <li><strong>Hero institucional:</strong> exibe o total disponível inicial e a composição (reprogramado + parcelas) do exercício.</li>
-        <li><strong>Central documental:</strong> ação executiva para gerar em lote os demonstrativos das unidades com dados financeiros lançados.</li>
+        <li><strong>Central documental:</strong> ação executiva para gerar em lote os demonstrativos das unidades com cadastro essencial preenchido.</li>
         <li><strong>KPIs:</strong> unidades cadastradas, total reprogramado, parcelas lançadas e disponível inicial.</li>
         <li><strong>Insights:</strong> top 5 reprogramados, distribuição de recursos (com vs sem repasse) e histórico das últimas gerações.</li>
         <li><strong>Atividade e atenção operacional:</strong> últimas atualizações e indicadores que exigem revisão.</li>
@@ -77,20 +77,19 @@ const secoes = [
     conteudo: (
       <div className="space-y-3 text-sm text-muted-foreground">
         <p>
+          Nesta fase, a geração do Demonstrativo Básico depende dos dados cadastrais essenciais, mas não depende da completude fiscal/financeira.
+        </p>
+        <p>
           O sistema usa o <strong>template oficial</strong> mantido pela 4ª CRE
           como esqueleto. Para cada unidade escolar, o motor:
         </p>
         <ol className="space-y-1 list-decimal pl-5">
           <li>Abre uma cópia do template.</li>
-          <li>Injeta o nome da unidade na célula de gatilho da aba <code>MEMORIA</code>.</li>
-          <li>As fórmulas <code>XLOOKUP</code> existentes puxam os dados da aba <code>BASE</code>.</li>
+          <li>Preenche a aba <code>MEMORIA</code> com os dados daquela unidade escolar.</li>
+          <li>Remove dependências da aba <code>BASE</code> e materializa os campos críticos do cabeçalho.</li>
           <li>Aplica proteção com a senha <code>ANA</code> nas áreas amarelas (campos editáveis pela diretoria).</li>
           <li>Salva o arquivo nomeado como <code>DEMONSTRATIVO BÁSICO - &lt;designação&gt;.xlsx</code>.</li>
         </ol>
-        <p className="pt-1">
-          O layout, fórmulas e formatação <strong>nunca</strong> são reescritos —
-          apenas dados são preenchidos.
-        </p>
       </div>
     ),
   },
