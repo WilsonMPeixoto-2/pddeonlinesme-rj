@@ -25,12 +25,12 @@ const fakeUnidade = (id: string, designacao: string): UnidadeDetalhe =>
     designacao,
     nome: designacao,
     inep: null,
-    cnpj: null,
-    diretor: null,
-    endereco: null,
+    cnpj: `CNPJ-${id}`,
+    diretor: `Diretor ${id}`,
+    endereco: `Endereco ${id}`,
     banco: null,
-    agencia: null,
-    conta_corrente: null,
+    agencia: `Agencia ${id}`,
+    conta_corrente: `Conta ${id}`,
     exercicio: 2026,
     programa: "basico",
     reprogramado_custeio: 100,
@@ -67,6 +67,7 @@ describe("generateDemonstrativosLote", () => {
     expect(result.totalSucesso).toBe(2);
     expect(result.totalFalha).toBe(0);
     expect(result.failures).toEqual([]);
+    expect(result.pendenciasCadastrais).toEqual([]);
     expect(generateDemonstrativoBasico).toHaveBeenCalledTimes(2);
 
     const zip = await JSZip.loadAsync(result.zipBlob);
@@ -101,6 +102,53 @@ describe("generateDemonstrativosLote", () => {
     const content = await relatorio!.async("text");
     expect(content).toMatch(/Falhas: 1/);
     expect(content).toMatch(/EM com falha/);
+  });
+
+  it("gera todos os arquivos e registra pendencias cadastrais sem tratar como falha", async () => {
+    const unidades = [
+      fakeUnidade("u1", "EM completa"),
+      { ...fakeUnidade("u2", "EM sem cnpj"), cnpj: null },
+      {
+        ...fakeUnidade("u3", "EM sem banco"),
+        agencia: null,
+        conta_corrente: null,
+      },
+    ];
+
+    const result = await generateDemonstrativosLote({
+      unidades,
+      exercicio: "2026",
+    });
+
+    expect(result.totalAlvo).toBe(3);
+    expect(result.totalSucesso).toBe(3);
+    expect(result.totalFalha).toBe(0);
+    expect(result.failures).toEqual([]);
+    expect(result.pendenciasCadastrais).toEqual([
+      {
+        unidadeId: "u2",
+        designacao: "EM sem cnpj",
+        camposFaltantes: ["cnpj"],
+      },
+      {
+        unidadeId: "u3",
+        designacao: "EM sem banco",
+        camposFaltantes: ["agencia", "conta_corrente"],
+      },
+    ]);
+
+    const zip = await JSZip.loadAsync(result.zipBlob);
+    const files = Object.keys(zip.files).filter((p) => !zip.files[p].dir);
+    expect(files.filter((f) => f.endsWith(".xlsx"))).toHaveLength(3);
+
+    const relatorio = zip.file("Demonstrativos_Basicos_2026/_relatorio_pendencias_cadastrais.txt");
+    expect(relatorio).not.toBeNull();
+    const content = await relatorio!.async("text");
+    expect(content).toMatch(/Unidades com pendencia cadastral: 2/);
+    expect(content).toMatch(/EM sem cnpj/);
+    expect(content).toMatch(/cnpj/);
+    expect(content).toMatch(/EM sem banco/);
+    expect(content).toMatch(/agencia, conta_corrente/);
   });
 
   it("invoca onProgress em cada unidade processada", async () => {

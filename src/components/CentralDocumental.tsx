@@ -18,6 +18,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadesDetalheLista } from "@/hooks/useUnidadesDetalheLista";
 import { useGerarDemonstrativosLote } from "@/hooks/useGerarDemonstrativosLote";
+import { hasCadastroEssencialCompleto } from "@/lib/demonstrativo/mapUnidadeToMemoria";
 
 const PROGRAMA = "basico";
 
@@ -34,16 +35,13 @@ export function CentralDocumental() {
   });
   const lote = useGerarDemonstrativosLote();
 
-  const elegiveis = (data ?? []).filter(
-    (u) =>
-      (u.total_disponivel_inicial ?? 0) > 0 ||
-      (u.total_reprogramado ?? 0) > 0 ||
-      (u.total_parcelas ?? 0) > 0,
-  );
-
-  const elegiveisCount = elegiveis.length;
+  const unidadesAlvo = data ?? [];
+  const unidadesAlvoCount = unidadesAlvo.length;
+  const cadastroEssencialOk = unidadesAlvo.filter((u) =>
+    hasCadastroEssencialCompleto(u),
+  ).length;
   const totalUnidades = stats?.total ?? data?.length ?? 0;
-  const semDados = stats?.semDadosFinanceiros ?? 0;
+  const pendenciasCadastrais = Math.max(unidadesAlvoCount - cadastroEssencialOk, 0);
 
   const running = lote.phase === "running";
   const done = lote.phase === "done";
@@ -54,15 +52,15 @@ export function CentralDocumental() {
       : 0;
 
   const handleConfirm = () => {
-    if (elegiveisCount === 0) {
-      toast.warning("Nenhuma unidade com dados financeiros para gerar.");
+    if (unidadesAlvoCount === 0) {
+      toast.warning("Nenhuma unidade cadastrada para gerar.");
       setConfirmOpen(false);
       return;
     }
     setConfirmOpen(false);
     lote
       .start({
-        unidades: elegiveis,
+        unidades: unidadesAlvo,
         exercicio,
         programa: PROGRAMA,
         totalCadastrado: totalUnidades,
@@ -112,11 +110,14 @@ export function CentralDocumental() {
               <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
                 Gerar Demonstrativo Basico de todas as unidades
               </h2>
+              <p className="max-w-prose text-xs text-muted-foreground">
+                Nesta fase, a geração do Demonstrativo Básico depende dos dados cadastrais essenciais, mas não depende da completude fiscal/financeira.
+              </p>
               <p className="max-w-prose text-sm text-muted-foreground">
-                Produz, em uma unica acao, os <strong className="text-foreground">{elegiveisCount}</strong>{" "}
-                demonstrativos individuais das unidades com dados financeiros lancados, entrega
-                um arquivo <span className="font-mono">.zip</span> consolidado pronto para revisao e
-                registra a corrida no historico institucional.
+                Produz, em uma unica acao, os <strong className="text-foreground">{unidadesAlvoCount}</strong>{" "}
+                demonstrativos individuais das unidades cadastradas. A ausencia de dados
+                fiscais ou financeiros nao bloqueia esta fase; inconsistencias cadastrais
+                entram no relatorio do lote.
               </p>
             </div>
 
@@ -125,7 +126,7 @@ export function CentralDocumental() {
                 size="lg"
                 className="h-11 shadow-[0_0_20px_hsl(var(--primary)/0.25)] hover:shadow-[0_0_28px_hsl(var(--primary)/0.4)]"
                 onClick={() => setConfirmOpen(true)}
-                disabled={isLoading || running || elegiveisCount === 0}
+                disabled={isLoading || running || unidadesAlvoCount === 0}
               >
                 {running ? (
                   <>
@@ -135,9 +136,9 @@ export function CentralDocumental() {
                 ) : (
                   <>
                     <FileSpreadsheet className="mr-2 h-4 w-4" />
-                    {elegiveisCount > 0
-                      ? `Gerar ${elegiveisCount} demonstrativos`
-                      : "Sem unidades elegiveis"}
+                    {unidadesAlvoCount > 0
+                      ? `Gerar ${unidadesAlvoCount} demonstrativos`
+                      : "Sem unidades cadastradas"}
                   </>
                 )}
               </Button>
@@ -165,6 +166,12 @@ export function CentralDocumental() {
                 </Button>
               )}
             </div>
+
+            {pendenciasCadastrais > 0 && (
+              <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-xs text-warning">
+                {pendenciasCadastrais} unidades serão geradas com "—" em campos cadastrais pendentes — revisar e completar.
+              </div>
+            )}
 
             <AnimatePresence mode="wait">
               {running && (
@@ -204,6 +211,14 @@ export function CentralDocumental() {
                       className="border-warning/40 bg-warning/10 text-warning"
                     >
                       {lote.result.totalFalha} falhas
+                    </Badge>
+                  )}
+                  {lote.result.pendenciasCadastrais.length > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="border-warning/40 bg-warning/10 text-warning"
+                    >
+                      {lote.result.pendenciasCadastrais.length} pendências cadastrais
                     </Badge>
                   )}
                   <span className="text-muted-foreground">
@@ -259,15 +274,15 @@ export function CentralDocumental() {
                 </span>
               </div>
               <div className="flex items-baseline justify-between gap-3">
-                <span className="text-sm">Com dados financeiros</span>
+                <span className="text-sm">Cadastrais essenciais completos</span>
                 <span className="text-base font-semibold tabular-nums text-primary">
-                  {elegiveisCount}
+                  {cadastroEssencialOk}
                 </span>
               </div>
               <div className="flex items-baseline justify-between gap-3">
-                <span className="text-sm">Sem dados financeiros</span>
-                <span className="text-base font-semibold tabular-nums text-muted-foreground">
-                  {semDados}
+                <span className="text-sm">Cadastrais essenciais com pendência</span>
+                <span className="text-base font-semibold tabular-nums text-warning">
+                  {pendenciasCadastrais}
                 </span>
               </div>
 
@@ -276,12 +291,12 @@ export function CentralDocumental() {
                   value={
                     totalUnidades === 0
                       ? 0
-                      : Math.round((elegiveisCount / totalUnidades) * 100)
+                      : Math.round((cadastroEssencialOk / totalUnidades) * 100)
                   }
                   className="h-1.5"
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  {fmtPct(elegiveisCount, totalUnidades)} das unidades aptas a gerar demonstrativos no exercicio {exercicio}.
+                  {fmtPct(cadastroEssencialOk, totalUnidades)} das unidades com cadastro essencial completo para o Demonstrativo no exercicio {exercicio}.
                 </p>
               </div>
             </div>
@@ -293,16 +308,17 @@ export function CentralDocumental() {
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         tone="primary"
-        title={`Gerar ${elegiveisCount} demonstrativos em lote?`}
+        title={`Gerar ${unidadesAlvoCount} demonstrativos em lote?`}
         description={
           <>
             Sera produzido um arquivo <strong>.zip</strong> contendo um Demonstrativo Basico
-            individual para cada unidade com dados financeiros lancados no exercicio{" "}
-            <strong>{exercicio}</strong>. A corrida e registrada no historico
-            institucional para auditoria.
+            individual para cada unidade cadastrada no exercicio <strong>{exercicio}</strong>.
+            A ausencia de notas, despesas ou valores financeiros nao bloqueia esta fase. Se
+            houver cadastro essencial incompleto, a unidade sera gerada com "—" nos campos
+            pendentes e entrara no relatorio de pendencias cadastrais.
           </>
         }
-        highlight={`${elegiveisCount} de ${totalUnidades} unidades serao processadas`}
+        highlight={`${unidadesAlvoCount} de ${totalUnidades} unidades serao processadas · ${cadastroEssencialOk} com cadastro essencial OK`}
         confirmLabel="Iniciar geracao"
         onConfirm={handleConfirm}
       />

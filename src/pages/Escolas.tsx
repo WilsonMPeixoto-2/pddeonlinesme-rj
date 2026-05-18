@@ -38,6 +38,8 @@ import {
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadesDetalheLista } from "@/hooks/useUnidadesDetalheLista";
 import { useGerarDemonstrativosLote } from "@/hooks/useGerarDemonstrativosLote";
+import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
+import { hasCadastroEssencialCompleto } from "@/lib/demonstrativo/mapUnidadeToMemoria";
 import { cn } from "@/lib/utils";
 import { saveAs } from "file-saver";
 
@@ -52,15 +54,19 @@ type StatusFilter = "todas" | "completo" | "incompleto";
 
 /* ─── Helpers ─── */
 
-// Foundation v1: status reflete somente completude de identidade (INEP, CNPJ, diretor).
-// Dados financeiros vivem na pagina individual via vw_unidade_detalhe.
-function getStatus(e: Unidade) {
-  const identityFields = [e.inep, e.cnpj, e.diretor];
-  const filled = identityFields.filter(
-    (f) => Boolean(f && String(f).trim()),
-  ).length;
-  if (filled === identityFields.length) return "completo" as const;
-  return "incompleto" as const;
+// Status reflete os campos cadastrais essenciais do Demonstrativo.
+// INEP nao entra porque nao compoe o template atual.
+function getStatus(e: Unidade, detalhe?: UnidadeDetalhe) {
+  const cadastro = {
+    designacao: detalhe?.designacao ?? e.designacao,
+    cnpj: detalhe?.cnpj ?? e.cnpj,
+    endereco: detalhe?.endereco,
+    diretor: detalhe?.diretor ?? e.diretor,
+    agencia: detalhe?.agencia,
+    conta_corrente: detalhe?.conta_corrente,
+  };
+
+  return hasCadastroEssencialCompleto(cadastro) ? "completo" as const : "incompleto" as const;
 }
 
 
@@ -147,12 +153,20 @@ export default function Escolas() {
   const unidades: Unidade[] = useMemo(() => data ?? [], [data]);
   const loading = isLoading;
 
-  // Lote (Marco 9B + Marco 15): dados financeiros + hook de geracao real.
-  const { data: unidadesDetalhe } = useUnidadesDetalheLista({
+  // Lote (Marco 9B + Marco 15): dados cadastrais essenciais + hook de geracao real.
+  const { data: unidadesDetalhe, isLoading: loadingDetalheLista } = useUnidadesDetalheLista({
     exercicio,
     programa: PROGRAMA,
   });
   const lote = useGerarDemonstrativosLote();
+
+  const detalheByUnidadeId = useMemo(() => {
+    const entries = (unidadesDetalhe ?? [])
+      .filter((u) => Boolean(u.unidade_id))
+      .map((u) => [u.unidade_id, u] as const);
+
+    return new Map(entries);
+  }, [unidadesDetalhe]);
 
   useEffect(() => {
     if (error) toast.error(error.message ?? "Erro ao carregar unidades.");
@@ -194,10 +208,10 @@ export default function Escolas() {
       });
     }
     if (statusFilter !== "todas") {
-      filtered = filtered.filter((e) => getStatus(e) === statusFilter);
+      filtered = filtered.filter((e) => getStatus(e, detalheByUnidadeId.get(e.id)) === statusFilter);
     }
     return filtered;
-  }, [q, statusFilter, unidades]);
+  }, [detalheByUnidadeId, q, statusFilter, unidades]);
 
   const isSearching =
     q.trim().length > 0 || statusFilter !== "todas";
@@ -210,10 +224,10 @@ export default function Escolas() {
   const statusCounts = useMemo(() => {
     const counts = { completo: 0, incompleto: 0 };
     unidades.forEach((e) => {
-      counts[getStatus(e)]++;
+      counts[getStatus(e, detalheByUnidadeId.get(e.id))]++;
     });
     return counts;
-  }, [unidades]);
+  }, [detalheByUnidadeId, unidades]);
 
 
 
@@ -245,7 +259,7 @@ export default function Escolas() {
           designacao: u.designacao ?? "",
           nome: u.nome ?? "",
           diretor: u.diretor ?? "",
-          status: getStatus(u) === "completo" ? "Completo" : "Incompleto",
+          status: getStatus(u, detalheByUnidadeId.get(u.id)) === "completo" ? "Completo" : "Incompleto",
         });
       });
       worksheet.getRow(1).font = { bold: true };
@@ -262,33 +276,31 @@ export default function Escolas() {
     }
   };
 
-  // Elegiveis para o lote: somente unidades da lista filtrada que tem dados
-  // financeiros lancados (disponivel inicial, reprogramado ou parcelas).
-  // Demonstrativo sem dados financeiros sai como zerado e nao agrega valor.
-  const unidadesElegiveisLote = useMemo(() => {
+  const unidadesAlvoLote = useMemo(() => {
     if (!unidadesDetalhe) return [];
     const idsFiltrados = new Set(lista.map((u) => u.id));
-    return unidadesDetalhe
-      .filter((u) => u.unidade_id && idsFiltrados.has(u.unidade_id))
-      .filter(
-        (u) =>
-          (u.total_disponivel_inicial ?? 0) > 0 ||
-          (u.total_reprogramado ?? 0) > 0 ||
-          (u.total_parcelas ?? 0) > 0,
-      );
+    return unidadesDetalhe.filter((u) => u.unidade_id && idsFiltrados.has(u.unidade_id));
   }, [unidadesDetalhe, lista]);
+
+  const cadastroEssencialOkLote = useMemo(
+    () =>
+      unidadesAlvoLote.filter((u) =>
+        hasCadastroEssencialCompleto(u),
+      ).length,
+    [unidadesAlvoLote],
+  );
 
   const handleGenerateLote = () => {
     setConfirmLote(false);
-    if (unidadesElegiveisLote.length === 0) {
-      toast.warning("Nenhuma unidade elegivel encontrada nos filtros atuais.", {
-        description: "Selecione unidades que ja tenham dados financeiros lancados.",
+    if (unidadesAlvoLote.length === 0) {
+      toast.warning("Nenhuma unidade encontrada nos filtros atuais.", {
+        description: "Aguarde o carregamento dos dados completos ou ajuste os filtros.",
       });
       return;
     }
 
     void lote.start({
-      unidades: unidadesElegiveisLote,
+      unidades: unidadesAlvoLote,
       exercicio,
       programa: PROGRAMA,
       totalCadastrado: unidades.length,
@@ -415,7 +427,7 @@ export default function Escolas() {
               size="sm"
               className="h-10"
               onClick={() => setConfirmLote(true)}
-              disabled={unidades.length === 0 || lote.phase === "running"}
+              disabled={unidades.length === 0 || loadingDetalheLista || lote.phase === "running"}
             >
               <FileSpreadsheet className="mr-2 h-4 w-4" />
               {lote.phase === "running"
@@ -542,7 +554,7 @@ export default function Escolas() {
                 ) : (
                   <>
                     {lista.map((e) => {
-                      const st = getStatus(e);
+                      const st = getStatus(e, detalheByUnidadeId.get(e.id));
                       const cfg = statusConfig[st];
                       return (
                         // Keep rows native: row-accent/motion.tr already caused column drift in this table.
@@ -639,15 +651,16 @@ export default function Escolas() {
         open={confirmLote}
         onOpenChange={setConfirmLote}
         tone="primary"
-        title={`Gerar ${unidadesElegiveisLote.length} demonstrativos das unidades filtradas?`}
+        title={`Gerar ${unidadesAlvoLote.length} demonstrativos das unidades filtradas?`}
         description={
           <>
             Sera gerado um arquivo <strong>.zip</strong> contendo um Demonstrativo Basico individual
-            para cada unidade filtrada que ja tem dados financeiros lancados no exercicio{" "}
-            <strong>{exercicio}</strong>. A corrida e registrada no historico institucional.
+            para cada unidade filtrada no exercicio <strong>{exercicio}</strong>. Dados fiscais
+            ou financeiros ausentes nao bloqueiam esta fase; inconsistencias cadastrais entram
+            no relatorio de pendencias cadastrais.
           </>
         }
-        highlight={`${unidadesElegiveisLote.length} de ${lista.length} unidades filtradas serao processadas`}
+        highlight={`${unidadesAlvoLote.length} de ${lista.length} unidades filtradas serao processadas · ${cadastroEssencialOkLote} com cadastro essencial OK`}
         confirmLabel="Iniciar geracao"
         onConfirm={handleGenerateLote}
       />

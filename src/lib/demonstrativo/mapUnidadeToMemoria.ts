@@ -1,5 +1,22 @@
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 
+export const EMPTY_FIELD_PLACEHOLDER = "—" as const;
+
+export type CampoCadastroEssencial =
+  | "designacao"
+  | "cnpj"
+  | "endereco"
+  | "diretor"
+  | "agencia"
+  | "conta_corrente";
+
+type DemonstrativoMoneyValue = number | typeof EMPTY_FIELD_PLACEHOLDER;
+
+type CadastroEssencialLike = Pick<
+  UnidadeDetalhe,
+  "designacao" | "cnpj" | "endereco" | "diretor" | "agencia" | "conta_corrente"
+>;
+
 export interface DemonstrativoMemoriaData {
   nome: string;
   cnpj: string;
@@ -7,12 +24,12 @@ export interface DemonstrativoMemoriaData {
   agencia: string;
   contaCorrente: string;
   diretor: string;
-  reprogramadoCusteio: number;
-  reprogramadoCapital: number;
-  parcela1Custeio: number;
-  parcela1Capital: number;
-  parcela2Custeio: number;
-  parcela2Capital: number;
+  reprogramadoCusteio: DemonstrativoMoneyValue;
+  reprogramadoCapital: DemonstrativoMoneyValue;
+  parcela1Custeio: DemonstrativoMoneyValue;
+  parcela1Capital: DemonstrativoMoneyValue;
+  parcela2Custeio: DemonstrativoMoneyValue;
+  parcela2Capital: DemonstrativoMoneyValue;
 }
 
 export interface DemonstrativoWorkbookData {
@@ -26,15 +43,27 @@ interface DemonstrativoFileNameData {
   exercicio: string;
 }
 
-const toText = (value: string | number | null | undefined, fallback = "") => {
+const toText = (
+  value: string | number | null | undefined,
+  fallback = EMPTY_FIELD_PLACEHOLDER,
+) => {
   if (value === null || value === undefined) return fallback;
   const text = String(value).trim();
   return text || fallback;
 };
 
-const toMoneyNumber = (value: number | string | null | undefined) => {
+const hasText = (value: string | number | null | undefined) =>
+  value !== null &&
+  value !== undefined &&
+  String(value).trim().length > 0 &&
+  String(value).trim() !== EMPTY_FIELD_PLACEHOLDER;
+
+const toMoneyCellValue = (
+  value: number | string | null | undefined,
+): DemonstrativoMoneyValue => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value !== "string") return 0;
+  if (typeof value !== "string") return EMPTY_FIELD_PLACEHOLDER;
+  if (!value.trim()) return EMPTY_FIELD_PLACEHOLDER;
 
   const numericText = value
     .replace(/\s/g, "")
@@ -48,7 +77,7 @@ const toMoneyNumber = (value: number | string | null | undefined) => {
       : numericText.replace(/,/g, "");
   const parsed = Number.parseFloat(normalized);
 
-  return Number.isFinite(parsed) ? parsed : 0;
+  return Number.isFinite(parsed) ? parsed : EMPTY_FIELD_PLACEHOLDER;
 };
 
 const normalizeFilePart = (value: string) => {
@@ -78,14 +107,33 @@ export function mapUnidadeToMemoria(
       agencia: toText(unidade.agencia),
       contaCorrente: toText(unidade.conta_corrente),
       diretor: toText(unidade.diretor),
-      reprogramadoCusteio: toMoneyNumber(unidade.reprogramado_custeio),
-      reprogramadoCapital: toMoneyNumber(unidade.reprogramado_capital),
-      parcela1Custeio: toMoneyNumber(unidade.parcela_1_custeio),
-      parcela1Capital: toMoneyNumber(unidade.parcela_1_capital),
-      parcela2Custeio: toMoneyNumber(unidade.parcela_2_custeio),
-      parcela2Capital: toMoneyNumber(unidade.parcela_2_capital),
+      reprogramadoCusteio: toMoneyCellValue(unidade.reprogramado_custeio),
+      reprogramadoCapital: toMoneyCellValue(unidade.reprogramado_capital),
+      parcela1Custeio: toMoneyCellValue(unidade.parcela_1_custeio),
+      parcela1Capital: toMoneyCellValue(unidade.parcela_1_capital),
+      parcela2Custeio: toMoneyCellValue(unidade.parcela_2_custeio),
+      parcela2Capital: toMoneyCellValue(unidade.parcela_2_capital),
     },
   };
+}
+
+export function getCamposCadastraisPendentes(
+  unidade: Partial<CadastroEssencialLike>,
+): CampoCadastroEssencial[] {
+  const fields: CampoCadastroEssencial[] = [
+    "designacao",
+    "cnpj",
+    "endereco",
+    "diretor",
+    "agencia",
+    "conta_corrente",
+  ];
+
+  return fields.filter((field) => !hasText(unidade[field]));
+}
+
+export function hasCadastroEssencialCompleto(unidade: Partial<CadastroEssencialLike>) {
+  return getCamposCadastraisPendentes(unidade).length === 0;
 }
 
 export function buildDemonstrativoFileName(data: DemonstrativoFileNameData) {
