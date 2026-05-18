@@ -1,6 +1,6 @@
 # Handoff Operacional - PDDE Online 2026
 
-Atualizado em: 2026-05-17 (pós PRs #72 → #79 — sessão noturna fechada)
+Atualizado em: 2026-05-18 (pós PR #83 + PR Marco 10B v2 em vôo)
 
 ## Regra de leitura
 
@@ -8,15 +8,19 @@ A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, con
 
 ## Contexto atual
 
-**main HEAD:** `fac1d9b` (merge PR #79 — polimento visual sóbrio)
+**main HEAD:** `d30ca39` (merge PR #83 — flexibilização Marco 11 v2 + 15 v2)
 
-PRs #57 a #79 estão incorporados. **Próximo passo NÃO é nova frente funcional — é smoke operacional manual.**
+PRs #57 a #83 estão incorporados. PR em vôo: **Marco 10B v2 — Atualização Parcial Assistida da BASE**.
 
 ## Regra de negócio — geração documental
 
 Nesta fase, a geração do Demonstrativo Básico depende dos dados cadastrais essenciais, mas não depende da completude fiscal/financeira.
 
 Campos cadastrais ou financeiros ausentes devem sair como `—` no arquivo gerado. Pendências cadastrais não bloqueiam geração individual nem lote; devem ser registradas como pendências da corrida.
+
+## Regra de negócio — atualização parcial da BASE (Marco 10B v2)
+
+A atualização parcial assistida permite envio de planilhas enxutas, contendo apenas chave da unidade e campos a alterar, sem exigir reenvio da BASE completa. A ausência de coluna não apaga nem sobrescreve dados existentes. **Na v1, somente o campo `diretor` é alterável.** Detalhes operacionais em `docs/BULK_UPDATE_PARTIAL_BASE.md`.
 
 Cronologia recente:
 
@@ -28,8 +32,8 @@ Cronologia recente:
 - **PR #76** (17/05): **Histórico de gerações documentais** no Painel — card consumindo `document_generation_runs`.
 - **PR #78** (17/05): polish — substitui "Em breve" misleading em `/escolas` por "Demonstrativo Básico disponível".
 - **PR #79** (17/05): **10 refinamentos visuais sóbrios** no Painel + Configurações (sem redesign, sem trocar fonte/paleta/libs).
-
-Não há PR funcional aberto a ser continuado (apenas o presente PR de reconciliação documental).
+- **PR #83** (18/05): **flexibilização da geração do Demonstrativo Básico** — desacopla de completude fiscal/financeira (Marco 11 v2 + 15 v2). Permite gerar 163 demonstrativos para todas as unidades com cadastrais essenciais; valores ausentes saem como `—`.
+- **PR Marco 10B v2** (18/05, em vôo): **Atualização Parcial Assistida da BASE** — feature de mass update cadastral cirúrgico em `/base`. Migration `20260518060000_bulk_update_audit` aplicada em produção (audit_logs + bulk_update_runs + bulk_update_items + RPC `apply_partial_bulk_update`). UI em `BulkUpdatePanel`. Whitelist v1: apenas `diretor`. Limite 200 linhas. Aceita .xlsx e .csv (UTF-8/Latin-1, `;` ou `,`, BOM tolerado). Hash SHA-256 do arquivo persistido.
 
 ## Norte operacional (v4.2)
 

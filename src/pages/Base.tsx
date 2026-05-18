@@ -31,6 +31,7 @@ import {
   type ParseResult,
   type ImportResult,
 } from "@/lib/baseImporter";
+import { BulkUpdatePanel } from "@/components/BulkUpdatePanel";
 
 /* ─── Tipos ─── */
 
@@ -237,6 +238,9 @@ export default function Base() {
         ) : (
           <ImportResultsPanel state="idle" />
         )}
+
+        {/* Marco 10B v2 — Atualização Parcial Assistida da BASE */}
+        <BulkUpdatePanel />
 
         {/* Import History */}
         <Card className="border-border/70">
