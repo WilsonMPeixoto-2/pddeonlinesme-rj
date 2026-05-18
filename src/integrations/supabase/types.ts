@@ -39,6 +39,179 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          field_name: string | null
+          id: string
+          metadata: Json | null
+          new_value: Json | null
+          old_value: Json | null
+          record_id: string | null
+          source: string | null
+          source_run_id: string | null
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          field_name?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          record_id?: string | null
+          source?: string | null
+          source_run_id?: string | null
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          field_name?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          record_id?: string | null
+          source?: string | null
+          source_run_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
+      bulk_update_items: {
+        Row: {
+          created_at: string
+          field_name: string
+          id: string
+          key_type: string
+          key_value: string
+          message: string | null
+          new_value: string | null
+          old_value: string | null
+          raw_payload: Json | null
+          row_number: number
+          run_id: string
+          status: string
+          unidade_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          field_name: string
+          id?: string
+          key_type: string
+          key_value: string
+          message?: string | null
+          new_value?: string | null
+          old_value?: string | null
+          raw_payload?: Json | null
+          row_number: number
+          run_id: string
+          status: string
+          unidade_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          field_name?: string
+          id?: string
+          key_type?: string
+          key_value?: string
+          message?: string | null
+          new_value?: string | null
+          old_value?: string | null
+          raw_payload?: Json | null
+          row_number?: number
+          run_id?: string
+          status?: string
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_update_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_update_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_update_items_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades_escolares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_update_items_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidade_detalhe"
+            referencedColumns: ["unidade_id"]
+          },
+          {
+            foreignKeyName: "bulk_update_items_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidades_localizador"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_update_runs: {
+        Row: {
+          applied_count: number
+          created_at: string
+          created_by: string
+          error_count: number
+          file_hash: string
+          file_name: string
+          id: string
+          metadata: Json | null
+          mode: string
+          skipped_count: number
+          status: string
+          target_table: string
+          total_rows: number
+          updated_at: string
+        }
+        Insert: {
+          applied_count?: number
+          created_at?: string
+          created_by?: string
+          error_count?: number
+          file_hash: string
+          file_name: string
+          id?: string
+          metadata?: Json | null
+          mode?: string
+          skipped_count?: number
+          status?: string
+          target_table?: string
+          total_rows: number
+          updated_at?: string
+        }
+        Update: {
+          applied_count?: number
+          created_at?: string
+          created_by?: string
+          error_count?: number
+          file_hash?: string
+          file_name?: string
+          id?: string
+          metadata?: Json | null
+          mode?: string
+          skipped_count?: number
+          status?: string
+          target_table?: string
+          total_rows?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contas_bancarias: {
         Row: {
           agencia: string | null
@@ -457,6 +630,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      apply_partial_bulk_update: {
+        Args: { p_file_hash: string; p_file_name: string; p_items: Json }
+        Returns: Json
       }
       has_role: {
         Args: {

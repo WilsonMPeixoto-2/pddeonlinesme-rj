@@ -4,7 +4,7 @@
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "fac1d9b",
+    "base_commit": "d30ca39",
     "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -12,9 +12,10 @@
     "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
     "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
     "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "Sessão noturna 17/05/2026 fechada com 8 PRs mergeados (#72-#79). Próximo passo NÃO é nova frente funcional — é smoke operacional manual (login admin → Painel, Configurações, Escolas). Frentes funcionais candidatas pós-smoke: Relação de Bens (Marco 11), audit_logs (sub-6B), Importador via UI (Marco 10B), página dedicada de histórico (/painel/historico)."
+    "current_mode": "PR #83 (flexibilização Marco 11 v2 + 15 v2) mergeado em 18/05. PR atual em vôo: Marco 10B v2 — Atualização Parcial Assistida da BASE (audit_logs + bulk_update_runs + bulk_update_items + RPC + UI em /base + papaparse). Próximas frentes candidatas após Marco 10B v2: Relação de Bens (Marco 11 — bloqueado por template), expansão da whitelist (v2: endereço, banco, agência, conta, email), Portal Diretor (Marco 13 — depende de Marco 6B audit já entregue parcial)."
   },
   "recent_pull_requests": [
+    { "number": 83, "title": "fix: gerar 163 demonstrativos sem gate financeiro (Marco 11 v2 + 15 v2)", "state": "merged", "merge_commit": "d30ca39", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/83" },
     { "number": 79, "title": "polish(painel): 10 refinamentos visuais sobrios sem redesign", "state": "merged", "merge_commit": "fac1d9b", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/79" },
     { "number": 78, "title": "polish(escolas): replace misleading 'Em breve' with honest affordance", "state": "merged", "merge_commit": "381baff", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/78" },
     { "number": 76, "title": "feat(painel): historico de geracoes documentais em lote", "state": "merged", "merge_commit": "5369ca1", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/76" },
@@ -68,7 +69,8 @@
   },
   "applied_migrations_post_main": [
     { "name": "20260517120000_document_generation_runs.sql", "applied_at": "2026-05-17T08:30:00-03:00", "method": "supabase db push --linked" },
-    { "name": "20260517130000_admin_user_management.sql", "applied_at": "2026-05-17T12:00:00-03:00", "method": "supabase db push --linked" }
+    { "name": "20260517130000_admin_user_management.sql", "applied_at": "2026-05-17T12:00:00-03:00", "method": "supabase db push --linked" },
+    { "name": "20260518060000_bulk_update_audit.sql", "applied_at": "2026-05-18T06:50:00-03:00", "method": "supabase db push --linked" }
   ],
   "planned_not_urgent": [
     { "item": "UI admin para gerenciar usuários e roles", "allocation": "Marco 6B", "note": "Elimina INSERT manual via service_role" },
