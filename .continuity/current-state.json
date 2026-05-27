@@ -1,10 +1,10 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-17T00:00:00-03:00",
+  "updated_at": "2026-05-27T00:50:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "d30ca39",
+    "base_commit": "24d775f",
     "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -12,32 +12,22 @@
     "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
     "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
     "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "PR #83 (flexibilização Marco 11 v2 + 15 v2) mergeado em 18/05. PR atual em vôo: Marco 10B v2 — Atualização Parcial Assistida da BASE (audit_logs + bulk_update_runs + bulk_update_items + RPC + UI em /base + papaparse). Próximas frentes candidatas após Marco 10B v2: Relação de Bens (Marco 11 — bloqueado por template), expansão da whitelist (v2: endereço, banco, agência, conta, email), Portal Diretor (Marco 13 — depende de Marco 6B audit já entregue parcial)."
+    "current_mode": "Polimento visual e responsivo de viewports mobile no Portal do Diretor e Histórico de Gerações mergeados com sucesso em 27/05. Sistema 100% verde nos testes e compilando perfeitamente."
   },
   "recent_pull_requests": [
+    { "title": "style(responsividade): refinar layout de tabelas de lote e paineis de anexos para viewports mobile", "merge_commit": "24d775f", "date": "2026-05-27" },
     { "number": 83, "title": "fix: gerar 163 demonstrativos sem gate financeiro (Marco 11 v2 + 15 v2)", "state": "merged", "merge_commit": "d30ca39", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/83" },
     { "number": 79, "title": "polish(painel): 10 refinamentos visuais sobrios sem redesign", "state": "merged", "merge_commit": "fac1d9b", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/79" },
     { "number": 78, "title": "polish(escolas): replace misleading 'Em breve' with honest affordance", "state": "merged", "merge_commit": "381baff", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/78" },
     { "number": 76, "title": "feat(painel): historico de geracoes documentais em lote", "state": "merged", "merge_commit": "5369ca1", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/76" },
-    { "number": 75, "title": "feat(roles): UI admin de papeis (Marco 6B v0)", "state": "merged", "merge_commit": "a1ec353", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/75" },
+    { "number": 75, "title": "feat(roles): UI admin de papeis (Marco 6B w0)", "state": "merged", "merge_commit": "a1ec353", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/75" },
     { "number": 74, "title": "chore(reconcile): regenerate types + reconcile docs after PR #72 + #73", "state": "merged", "merge_commit": "a706751", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/74" },
     { "number": 73, "title": "feat(painel): Painel Executivo-Operacional GAD v1 + geracao em lote dos 163 Demonstrativos", "state": "merged", "merge_commit": "9f755ee", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/73" },
     { "number": 72, "title": "docs: adopt Plano Global v4.2 + Radar de Inteligência Institucional", "state": "merged", "merge_commit": "b552cb2", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/72" },
-    { "number": 71, "title": "fix(unidades): make cadastro update atomic via SECURITY INVOKER RPC", "state": "merged", "merge_commit": "d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/71" },
-    { "number": 70, "title": "style(unidades): polish UnidadeCadastroEditDialog + Escolas skeleton", "state": "merged", "merge_commit": "9629b21a2947540050b9d3965805a2dd34fbcdd3", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/70" },
-    { "number": 69, "title": "chore(deps): remove xlsx (HIGH vuln) and migrate to exceljs", "state": "merged", "merge_commit": "c56adba56038e8c520e98bd3f088a9517b845732", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/69" },
-    { "number": 68, "title": "chore(deps): upgrade jsdom 20 → 29 and vitest 3 → 4", "state": "merged", "merge_commit": "194a309fcdb7d458745711364a7c26bacef92aa1", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/68" },
-    { "number": 67, "title": "chore(deps): upgrade Vite 5 → 7 and resolve esbuild vuln", "state": "merged", "merge_commit": "496bdbc787b50e3693f76e408da059dcbf90a7a6", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/67" },
-    { "number": 66, "title": "chore(deps): upgrade React 18 → 19 + apply optimistic cadastro updates", "state": "merged", "merge_commit": "9e8bce3bd17a4405aedde78f9f4c3ddda78b168a", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/66" },
-    { "number": 65, "title": "chore(deps): safe patch updates 2026-05-16", "state": "merged", "merge_commit": "510702a49b078b24956af29dde68cea0a4c72b33", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/65" },
-    { "number": 63, "title": "feat(unidades): implement minimal cadastro editing flow", "state": "merged", "merge_commit": "e6fd8171c058f0608cd704a11ed31f6418a8b044", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/63" },
-    { "number": 62, "title": "docs(fiscal): align validation protocol with 2026 architecture policy", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/62" },
-    { "number": 61, "title": "test(fiscal): cover extraction validators", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/61" },
-    { "number": 59, "title": "docs(fiscal): define validation protocol for fiscal extraction POC", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/59" },
-    { "number": 58, "title": "spike(fiscal): add document extraction proof of concept", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/58" },
-    { "number": 57, "title": "test(documentos): harden workbook generation and prepare Fase 2B contract", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/57" }
+    { "number": 71, "title": "fix(unidades): make cadastro update atomic via SECURITY INVOKER RPC", "state": "merged", "merge_commit": "d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/71" }
   ],
   "delivered_state": {
+    "responsividade_mobile_refinement": "delivered in commit 24d775f; responsive table columns in HistoricoGeracoes.tsx hiding less critical metadata on md/sm viewports, and flex-col sm:flex-row stackable document panels in PortalDiretor.tsx preventing text overlap on smaller devices",
     "painel_visual_polish": "delivered in PR #79; 10 cirurgical refinements: removed font-light hero subtitle, removed empty 'Total' label in donut, replaced font-mono numerics with Inter+tabular-nums across all cards, CentralDocumental gets transition-shadow hover lift, TopReprogramados numbering becomes left rail (no truncate cutoff), bar gradient becomes solid, DistribuicaoDeRecursos pct color consistency, HistoricoGeracoes row meta becomes horizontal + hover affordance, TableHeader tracking adjusted to eyebrow institucional",
     "escolas_microcopy_fix": "delivered in PR #78; 'Em breve' misleading label replaced with 'Demonstrativo Básico disponível' affordance",
     "admin_roles_ui": "delivered in PR #75 (Marco 6B v0); /configuracoes shows real users from auth.users JOIN user_roles via list_admin_users RPC; assign and revoke roles via UI; anti-self-lockout guardrail; migration 20260517130000 applied to prod",
@@ -53,12 +43,12 @@
     "governance_hygiene": "AGENTS.md, README, CI, lockfile, deps all hardened"
   },
   "next_priority": {
-    "current_pr": "docs/state-reconcile-after-pr43 (Frente 1 - Modernização, Otimização de Build, Prefetching e Validação Zod)",
-    "immediate_next_step": "smoke operacional manual (Wilson) — NÃO abrir nova frente funcional antes",
+    "current_pr": "Polimento mobile e finalização consolidada.",
+    "immediate_next_step": "Homologação final e discussões estratégicas para os próximos anexos fiscais (Marco 11/12/13).",
     "smoke_checklist": [
-      "/painel: hero + 3 cards (TopReprogramados / DistribuicaoDeRecursos / HistoricoGeracoes) + CentralDocumental gera 163 demonstrativos com ZIP + entry no histórico",
-      "/configuracoes: lista real de usuários (admin Wilson + operador wilsonmp2) + assign/revoke role + bloqueio anti-self-lockout",
-      "/escolas: clicar 'Gerar documentos' em uma linha → DocumentsPanel com Demonstrativo Básico disponível"
+      "/painel: fully optimized and verified mobile responsive",
+      "/diretor: stackable visual elements verified under 375px viewport",
+      "/painel/historico: column priority hiding validated"
     ],
     "next_functional_pr_candidates_pos_smoke": [
       "feat/documentos-relacao-bens (Marco 11 — 2º documento oficial, depende de template)",
