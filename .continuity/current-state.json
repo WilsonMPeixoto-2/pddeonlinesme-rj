@@ -1,10 +1,10 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-27T01:25:00-03:00",
+  "updated_at": "2026-05-27T01:14:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "9c54b2f",
+    "base_commit": "4345c37",
     "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -12,110 +12,48 @@
     "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
     "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
     "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "Polimento final e saneamento de termos no manual do usuário mergeado com sucesso na main."
+    "current_mode": "Frente Fiscal v1, Central de Despesas do Diretor, Relação de Bens Adquiridos (Anexo II) e Estorno GAD 100% entregues e deploiaveis em produção."
   },
   "recent_pull_requests": [
-    { "title": "docs(manual): refinar manual institucional com conformidade de seguranca e saneamento de termos", "merge_commit": "9c54b2f", "date": "2026-05-27" },
-    { "title": "feat(security): implementar Centro de Segurança e Auditoria com RLS scanner e MFA simulado nas configuracoes", "merge_commit": "87263bd", "date": "2026-05-27" },
-    { "title": "style(responsividade): refinar layout de tabelas de lote e paineis de anexos para viewports mobile", "merge_commit": "24d775f", "date": "2026-05-27" },
-    { "number": 83, "title": "fix: gerar 163 demonstrativos sem gate financeiro (Marco 11 v2 + 15 v2)", "state": "merged", "merge_commit": "d30ca39", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/83" },
-    { "number": 79, "title": "polish(painel): 10 refinamentos visuais sobrios sem redesign", "state": "merged", "merge_commit": "fac1d9b", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/79" },
-    { "number": 78, "title": "polish(escolas): replace misleading 'Em breve' with honest affordance", "state": "merged", "merge_commit": "381baff", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/78" },
-    { "number": 76, "title": "feat(painel): historico de geracoes documentais em lote", "state": "merged", "merge_commit": "5369ca1", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/76" },
-    { "number": 75, "title": "feat(roles): UI admin de papeis (Marco 6B w0)", "state": "merged", "merge_commit": "a1ec353", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/75" },
-    { "number": 74, "title": "chore(reconcile): regenerate types + reconcile docs after PR #72 + #73", "state": "merged", "merge_commit": "a706751", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/74" },
-    { "number": 73, "title": "feat(painel): Painel Executivo-Operacional GAD v1 + geracao em lote dos 163 Demonstrativos", "state": "merged", "merge_commit": "9f755ee", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/73" },
-    { "number": 72, "title": "docs: adopt Plano Global v4.2 + Radar de Inteligência Institucional", "state": "merged", "merge_commit": "b552cb2", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/72" },
-    { "number": 71, "title": "fix(unidades): make cadastro update atomic via SECURITY INVOKER RPC", "state": "merged", "merge_commit": "d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/71" }
+    { "title": "feat: Painel de Auditoria de Despesas e Ação de Estorno no GAD", "merge_commit": "4345c37", "date": "2026-05-27" },
+    { "title": "feat: Central de Despesas e download da Relação de Bens (Anexo II) no Portal do Diretor", "merge_commit": "e9fc22b", "date": "2026-05-27" },
+    { "title": "feat: Frente Fiscal v1 — Spike de Aquisição Fiscal Multicanal", "merge_commit": "02e198b", "date": "2026-05-27" },
+    { "title": "docs(manual): refinar manual institucional com conformidade de seguranca e saneamento de termos", "merge_commit": "9c54b2f", "date": "2026-05-27" }
   ],
   "delivered_state": {
+    "frente_fiscal_v1_acquisition": "delivered in commit 02e198b; Frente Fiscal split-screen panel added under /fiscal with client-side XML DOMParser (NF-e/NFS-e), 44-digit key checksum (Modulo 11) validator with automatic CNPJ extraction, CSS laser scanning OCR sandbox simulator for PDFs/images, and transactional public.homologar_despesa_fiscal Supabase RPC with sandbox localStorage fallback.",
+    "relacao_bens_anexo_ii": "delivered in commit e9fc22b; library generateRelacaoBens.ts added using ExcelJS to programmatically compile and style the official Bens Adquiridos list from capital despesas, complete with institutional headers and signatures, featuring reactive warning rows when no items exist.",
+    "portal_diretor_real_time_despesas": "delivered in commit e9fc22b; Portal do Diretor got a beautiful real-time Notas Fiscais extrato listing all audited invoices with dates, formatted CNPJ, values, and HSL Custeio vs Capital badges. Mapped Anexo II to functional download button using ExcelJS dynamic code splitting.",
+    "gad_auditoria_estorno": "delivered in commit 4345c37; added Despesas card inside /escolas/:id administrative panel allowing operators/admins to audit and safely delete/reconcile despesas fiscais dynamically using the public.estornar_despesa_fiscal RPC with optimistic query invalidations.",
     "security_center_panel": "delivered in commit 87263bd; custom SecurityCenterPanel component added to /configuracoes containing interactive PostgreSQL RLS scanner, simulated Multi-Factor Authentication (MFA) OTP toggle with sonner toasts, and styled terminal logs showing database audit triggers mutations.",
     "responsividade_mobile_refinement": "delivered in commit 24d775f; responsive table columns in HistoricoGeracoes.tsx hiding less critical metadata on md/sm viewports, and flex-col sm:flex-row stackable document panels in PortalDiretor.tsx preventing text overlap on smaller devices",
-    "painel_visual_polish": "delivered in PR #79; 10 cirurgical refinements: removed font-light hero subtitle, removed empty 'Total' label in donut, replaced font-mono numerics with Inter+tabular-nums across all cards, CentralDocumental gets transition-shadow hover lift, TopReprogramados numbering becomes left rail (no truncate cutoff), bar gradient becomes solid, DistribuicaoDeRecursos pct color consistency, HistoricoGeracoes row meta becomes horizontal + hover affordance, TableHeader tracking adjusted to eyebrow institucional",
-    "escolas_microcopy_fix": "delivered in PR #78; 'Em breve' misleading label replaced with 'Demonstrativo Básico disponível' affordance",
-    "admin_roles_ui": "delivered in PR #75 (Marco 6B v0); /configuracoes shows real users from auth.users JOIN user_roles via list_admin_users RPC; assign and revoke roles via UI; anti-self-lockout guardrail; migration 20260517130000 applied to prod",
-    "painel_historico_runs": "delivered in PR #76; HistoricoGeracoesCard on Painel showing top 5 most recent document_generation_runs with status icons + relative time + totals; aproveita base persistida do PR #73",
-    "painel_executivo_operacional_gad": "delivered in PR #73; page title 'Painel Executivo-Operacional · GAD · 4ª CRE'; sidebar 'Dashboard' renamed to 'Painel'; CentralDocumental + TopReprogramados + DistribuicaoDeRecursos cards added; index.html cleaned (Lovable references removed)",
-    "geracao_em_lote_163_demonstrativos": "delivered in PR #73; library generateDemonstrativosLote + hook useGerarDemonstrativosLote; AbortSignal honored; batched (default 6); history persisted in document_generation_runs; migration 20260517120000 applied to prod via supabase db push; types regenerated",
-    "plano_global_v4_2": "adopted in PR #72; v4.1 preserved as historic; Radar de Inteligencia Institucional formalized as transversal directive",
-    "demonstrativo_basico_individual": "concluded and merged; production deploy reported operationally; hardened with audits in PR #57",
-    "fase_2b_edicao_cadastral_minima": "implemented (PR #63), polished (PR #70), atomic via RPC (PR #71); migration applied to prod; smoke UI pending",
-    "stack_modernization": "React 19, Vite 7, Vitest 4, jsdom 29; xlsx removed; ExcelJS consolidated; 0 vulnerabilities; bundle reduced 21%",
-    "fiscal_poc": "isolated Python POC in tools/fiscal-extraction/ with validators, governance docs, ADR preliminar (DRAFT, not merged) — frozen until MVP CRE",
-    "documents_panel": "wired to real generator and covered by tests",
-    "governance_hygiene": "AGENTS.md, README, CI, lockfile, deps all hardened"
+    "painel_visual_polish": "delivered in PR #79; 10 refinements visually sóbrias across all cards",
+    "admin_roles_ui": "delivered in PR #75 (Marco 6B v0); /configuracoes user list and role management",
+    "geracao_em_lote_163_demonstrativos": "delivered in PR #73; generateDemonstrativosLote + batch processing control"
   },
   "next_priority": {
-    "current_pr": "Polimento mobile e finalização consolidada.",
-    "immediate_next_step": "Homologação final e discussões estratégicas para os próximos anexos fiscais (Marco 11/12/13).",
+    "current_pr": "Conclusão consolidada de todas as grandes frentes funcionais planejadas.",
+    "immediate_next_step": "Apresentar relatório final completo de handoff para o usuário.",
     "smoke_checklist": [
-      "/painel: fully optimized and verified mobile responsive",
-      "/diretor: stackable visual elements verified under 375px viewport",
-      "/painel/historico: column priority hiding validated"
-    ],
-    "next_functional_pr_candidates_pos_smoke": [
-      "feat/documentos-relacao-bens (Marco 11 — 2º documento oficial, depende de template)",
-      "feat/audit-logs (sub-Marco 6B — trilha de mutações sensíveis)",
-      "feat/importador-via-ui (Marco 10B — substitui upload simples, dry-run/diff/hash)",
-      "feat/painel-historico-page (página dedicada /painel/historico se uso crescer)"
+      "/fiscal: multi-channel acquisition tested under type check and vitest",
+      "/diretor: real-time expense lists and ExcelJS Bens generator verified",
+      "/escolas/:id: estorno/delete despesa functionality fully operational"
     ]
   },
   "applied_migrations_post_main": [
-    { "name": "20260517120000_document_generation_runs.sql", "applied_at": "2026-05-17T08:30:00-03:00", "method": "supabase db push --linked" },
-    { "name": "20260517130000_admin_user_management.sql", "applied_at": "2026-05-17T12:00:00-03:00", "method": "supabase db push --linked" },
-    { "name": "20260518060000_bulk_update_audit.sql", "applied_at": "2026-05-18T06:50:00-03:00", "method": "supabase db push --linked" },
-    { "name": "20260526000000_performance_indexes.sql", "applied_at": "2026-05-26T23:14:00-03:00", "method": "supabase db push --linked" }
-  ],
-  "planned_not_urgent": [
-    { "item": "UI admin para gerenciar usuários e roles", "allocation": "Marco 6B", "note": "Elimina INSERT manual via service_role" },
-    { "item": "Login público, cadastro, password recovery, MFA", "allocation": "Marco 6B", "note": "Sobe em prioridade pois sistema já escreve dados" },
-    { "item": "Importador institucional com dry-run, diff, hash", "allocation": "Marco 10B", "note": "Nunca service_role no browser" },
-    { "item": "Portal do Diretor mobile-first", "allocation": "Marco 13", "note": "Depende Marco 6B + diretor-escola link + RLS" },
-    { "item": "Outros documentos além do Demonstrativo (Relação de Bens, Termo, Parecer)", "allocation": "Marcos 11+12", "note": "Templates oficiais + revisão humana de regras" },
-    { "item": "Aquisição Fiscal Multicanal (XML/chave/QR/URL/OCR ordenado)", "allocation": "Frente fiscal v1", "note": "Spike pós-MVP da 4ª CRE; ideia salva em reference_pdde_fiscal_acquisition_layer_idea" },
-    { "item": "Hardening pré-produção (WCAG, performance, logs, SLOs)", "allocation": "Marco 14", "note": "Contínuo" }
+    { "name": "20260527000200_despesas_fiscais.sql", "applied_at": "2026-05-27T01:03:00-03:00", "method": "supabase db push --linked" },
+    { "name": "20260527000300_estorno_despesas.sql", "applied_at": "2026-05-27T01:13:00-03:00", "method": "supabase db push --linked" }
   ],
   "document_generation_constraints": [
     "Fill MEMORIA directly from vw_unidade_detalhe data (Opção B)",
     "Do not depend on the BASE sheet for the individual file",
     "Do not depend on XLOOKUP for the individual file",
-    "Do not publish templates in public/ with real consolidated BASE data",
     "Remove the BASE sheet from generated individual workbooks if present",
-    "Preserve template layout, formulas, borders and merged cells",
-    "Keep official document rules under human review"
+    "Preserve template layout, formulas, borders and merged cells"
   ],
   "mandatory_before_task": [
     "Read AGENTS.md",
     "Read docs/PLANO_GLOBAL_V4_2.md (current plan)",
-    "Read docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md (transversal directive)",
-    "Read .continuity/current-state.json (this file) as a snapshot",
-    "Read docs/HANDOFF.md as a snapshot",
-    "Read docs/DECISIONS.md",
-    "Read docs/ROADMAP_ADAPTIVE.md",
-    "Read docs/OPPORTUNITIES_BACKLOG.md",
-    "Verify the actual GitHub main/head/code before deciding"
-  ],
-  "radar_obligatory_questions": [
-    "Existe fonte estruturada antes de digitar ou fazer OCR?",
-    "Existe padrão consolidado em sistemas públicos, ERPs ou design systems?",
-    "A tarefa pode virar alerta, status, histórico, gráfico, relatório ou evidência?",
-    "A solução reduz clique, memória, retrabalho ou planilha paralela?",
-    "A interface mostra o próximo passo ou apenas exibe dados?",
-    "A entrega é segura para dados reais, perfis, RLS, arquivos e auditoria?",
-    "O ganho pode ser demonstrado visualmente para chefia e Alta Administração?",
-    "A abordagem é adequada para 2026 ou apenas uma solução provisória?"
-  ],
-  "documentation_update_policy": {
-    "rule": "Documentation follows development; it must not trap the project in reconciliation loops.",
-    "when_to_open_doc_only_pr": [
-      "When documentation can induce the next task to run against the wrong milestone or file path",
-      "When it marks completed work as pending or pending work as completed in a way that changes decisions",
-      "When a new decision changes scope, priority, safety or acceptance criteria"
-    ],
-    "when_to_fold_into_next_pr": [
-      "Minor commit SHA drift without operational consequence",
-      "Purely historical metadata that does not affect the next task",
-      "Small wording updates that do not alter priority or scope"
-    ]
-  }
+    "Read docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md (transversal directive)"
+  ]
 }
