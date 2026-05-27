@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { TeamMembersPanel } from "@/components/TeamMembersPanel";
+import { SecurityCenterPanel } from "@/components/SecurityCenterPanel";
 import { useExercicio } from "@/hooks/useExercicio";
 
 export default function Configuracoes() {
@@ -30,6 +31,9 @@ export default function Configuracoes() {
 
         {/* Team management (Marco 6B v0 — dados reais via list_admin_users + admin_assign_role + admin_revoke_role) */}
         <TeamMembersPanel />
+
+        {/* Security and database compliance panel (Marco 6B) */}
+        <SecurityCenterPanel />
 
           {/* System parameters */}
           <Card className="border-border/70">
