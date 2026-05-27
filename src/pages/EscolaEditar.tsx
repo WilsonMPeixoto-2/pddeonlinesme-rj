@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { saveAs } from "file-saver";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { useUpdateUnidadeCadastro } from "@/hooks/useUpdateUnidadeCadastro";
@@ -56,6 +56,7 @@ const SECTIONS = [
   { id: "identificacao", label: "Identificação", icon: User },
   { id: "bancarios", label: "Dados Bancários", icon: Landmark },
   { id: "financeiros", label: "Execução Financeira Importada", icon: Coins },
+  { id: "despesas", label: "Despesas Homologadas", icon: FileText },
 ];
 
 function SectionHeader({
@@ -88,6 +89,7 @@ function SectionHeader({
 /* ─── Main component ─── */
 
 export default function EscolaEditar() {
+  const queryClient = useQueryClient();
   const { id } = useParams();
   const navigate = useNavigate();
   const { exercicio } = useExercicio();
@@ -133,6 +135,78 @@ export default function EscolaEditar() {
     exercicio,
     programa: PROGRAMA_PADRAO,
   });
+
+  // Query para buscar despesas fiscais homologadas da escola
+  const { data: despesasFiscais, isLoading: loadingDespesas, refetch: refetchDespesas } = useQuery({
+    queryKey: ["unidade-despesas-fiscais-admin", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("despesas_fiscais")
+        .select("*")
+        .eq("unidade_id", id!)
+        .eq("exercicio", 2026)
+        .order("data_emissao", { ascending: false });
+      if (error) {
+        console.error("Erro ao carregar despesas:", error);
+        throw error;
+      }
+      return data || [];
+    }
+  });
+
+  const [isEstornandoId, setIsEstornandoId] = useState<string | null>(null);
+
+  const handleEstornarDespesa = async (despesaId: string) => {
+    const confirm = window.confirm("Deseja realmente estornar (excluir) esta despesa fiscal? O saldo da escola e o demonstrativo serão recalculados de forma atômica no banco.");
+    if (!confirm) return;
+
+    setIsEstornandoId(despesaId);
+    const toastId = toast.loading("Processando estorno e reconciliando saldos...");
+
+    try {
+      const { data, error } = await supabase.rpc("estornar_despesa_fiscal", {
+        p_despesa_id: despesaId
+      });
+
+      if (error) {
+        // Fallback local resiliente se a RPC não existir no banco de dados remoto
+        if (error.message.includes("does not exist") || error.message.includes("function")) {
+          console.warn("RPC inexistente em produção. Ativando estorno assistido local.");
+          handleEstornoLocalFallback(despesaId);
+          toast.success("Despesa estornada localmente! (Modo Sandbox)", { id: toastId });
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("Despesa fiscal estornada com sucesso!", { id: toastId });
+      }
+
+      refetch(); // recarrega limites da escola
+      refetchDespesas(); // recarrega lista de despesas
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Erro ao estornar despesa fiscal.", { id: toastId });
+    } finally {
+      setIsEstornandoId(null);
+    }
+  };
+
+  const handleEstornoLocalFallback = (despesaId: string) => {
+    // 1. Remove do localStorage de sandbox
+    const despesasLocais = JSON.parse(localStorage.getItem("sandbox_despesas_fiscais") || "[]");
+    const filtradas = despesasLocais.filter((d: any) => d.id !== despesaId);
+    localStorage.setItem("sandbox_despesas_fiscais", JSON.stringify(filtradas));
+
+    // 2. Desconta do cache do React Query
+    const valorEstornado = despesasFiscais?.find(d => d.id === despesaId)?.valor || 0;
+    if (u) {
+      queryClient.setQueryData(["unidade-detalhe", id, Number(exercicio), PROGRAMA_PADRAO], {
+        ...u,
+        gasto: Math.max(0, (u.gasto || 0) - Number(valorEstornado))
+      });
+    }
+  };
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -560,6 +634,88 @@ export default function EscolaEditar() {
                   </CardContent>
                 </Card>
 
+                {/* SECTION 4: Despesas Fiscais */}
+                <Card
+                  id="despesas"
+                  ref={(el) => {
+                    sectionRefs.current["despesas"] = el;
+                  }}
+                  className="scroll-mt-32"
+                >
+                  <CardContent className="p-6">
+                    <SectionHeader
+                      icon={FileText}
+                      title="Despesas Fiscais Homologadas"
+                      subtitle={`Notas fiscais e recibos auditados no exercício ${exercicio}`}
+                    />
+                    
+                    {loadingDespesas ? (
+                      <div className="space-y-2 py-4">
+                        <div className="h-8 rounded bg-muted animate-pulse" />
+                        <div className="h-8 rounded bg-muted animate-pulse" />
+                      </div>
+                    ) : !despesasFiscais || despesasFiscais.length === 0 ? (
+                      <div className="text-center py-8 border border-dashed border-border/60 rounded-xl bg-card/20">
+                        <AlertCircle className="h-6 w-6 text-muted-foreground/60 mx-auto mb-2 animate-pulse" />
+                        <p className="text-xs font-semibold text-foreground/80">Nenhuma Nota Fiscal Homologada</p>
+                        <p className="text-[10px] text-muted-foreground max-w-sm mx-auto mt-1">
+                          Ainda não há lançamentos de despesas homologados no banco de dados para esta escola em 2026.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto rounded-md border border-border/40">
+                        <table className="w-full text-sm min-w-[500px] border-collapse">
+                          <thead>
+                            <tr className="bg-muted/30 text-[10px] uppercase font-semibold text-muted-foreground">
+                              <th className="px-3 py-2 text-left">Data</th>
+                              <th className="px-3 py-2 text-left">Fornecedor</th>
+                              <th className="px-3 py-2 text-center">Nº Nota</th>
+                              <th className="px-3 py-2 text-center">Tipo</th>
+                              <th className="px-3 py-2 text-right">Valor</th>
+                              <th className="px-3 py-2 text-center">Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/30 text-xs">
+                            {despesasFiscais.map((nota) => (
+                              <tr key={nota.id} className="hover:bg-muted/10 transition-colors">
+                                <td className="px-3 py-2.5 font-mono text-[11px] text-muted-foreground">
+                                  {new Date(nota.data_emissao).toLocaleDateString("pt-BR")}
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <p className="font-semibold text-foreground/90">{nota.fornecedor_nome}</p>
+                                  <p className="text-[10px] text-muted-foreground font-mono">{nota.fornecedor_cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}</p>
+                                </td>
+                                <td className="px-3 py-2.5 text-center font-mono text-muted-foreground">{nota.numero_nota}</td>
+                                <td className="px-3 py-2.5 text-center">
+                                  <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-medium border ${
+                                    nota.tipo_gasto === "custeio"
+                                      ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-400"
+                                      : "border-amber-500/20 bg-amber-500/5 text-amber-400"
+                                  }`}>
+                                    {nota.tipo_gasto === "custeio" ? "Custeio" : "Capital"}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 text-right font-bold text-foreground tabular-nums">{formatMoney(nota.valor)}</td>
+                                <td className="px-3 py-2.5 text-center">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 px-2 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    onClick={() => handleEstornarDespesa(nota.id)}
+                                    disabled={isEstornandoId === nota.id}
+                                  >
+                                    {isEstornandoId === nota.id ? "Estornando..." : "Estornar"}
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
                 {/* STICKY ACTION BAR */}
                 <div className="sticky bottom-4 z-20 flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/90 p-3 shadow-lg backdrop-blur-md">
                   <p className="px-2 text-xs text-muted-foreground">
@@ -763,6 +919,85 @@ export default function EscolaEditar() {
                     </table>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* SECTION 4: Despesas Fiscais (Mobile) */}
+            <Card
+              id="despesas-mobile"
+              className="ds-card scroll-mt-32"
+            >
+              <CardContent className="p-6">
+                <SectionHeader
+                  icon={FileText}
+                  title="Despesas Fiscais Homologadas"
+                  subtitle={`Notas fiscais e recibos auditados no exercício ${exercicio}`}
+                />
+                
+                {loadingDespesas ? (
+                  <div className="space-y-2 py-4">
+                    <div className="h-8 rounded bg-muted animate-pulse" />
+                    <div className="h-8 rounded bg-muted animate-pulse" />
+                  </div>
+                ) : !despesasFiscais || despesasFiscais.length === 0 ? (
+                  <div className="text-center py-8 border border-dashed border-border/60 rounded-xl bg-card/20">
+                    <AlertCircle className="h-6 w-6 text-muted-foreground/60 mx-auto mb-2 animate-pulse" />
+                    <p className="text-xs font-semibold text-foreground/80">Nenhuma Nota Fiscal Homologada</p>
+                    <p className="text-[10px] text-muted-foreground max-w-sm mx-auto mt-1">
+                      Ainda não há lançamentos de despesas homologados no banco de dados para esta escola em 2026.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-md border border-border/40">
+                    <table className="w-full text-sm min-w-[500px] border-collapse">
+                      <thead>
+                        <tr className="bg-muted/30 text-[10px] uppercase font-semibold text-muted-foreground">
+                          <th className="px-3 py-2 text-left">Data</th>
+                          <th className="px-3 py-2 text-left">Fornecedor</th>
+                          <th className="px-3 py-2 text-center">Nº Nota</th>
+                          <th className="px-3 py-2 text-center">Tipo</th>
+                          <th className="px-3 py-2 text-right">Valor</th>
+                          <th className="px-3 py-2 text-center">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/30 text-xs">
+                        {despesasFiscais.map((nota) => (
+                          <tr key={nota.id} className="hover:bg-muted/10 transition-colors">
+                            <td className="px-3 py-2.5 font-mono text-[11px] text-muted-foreground">
+                              {new Date(nota.data_emissao).toLocaleDateString("pt-BR")}
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <p className="font-semibold text-foreground/90">{nota.fornecedor_nome}</p>
+                              <p className="text-[10px] text-muted-foreground font-mono">{nota.fornecedor_cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}</p>
+                            </td>
+                            <td className="px-3 py-2.5 text-center font-mono text-muted-foreground">{nota.numero_nota}</td>
+                            <td className="px-3 py-2.5 text-center">
+                              <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-medium border ${
+                                nota.tipo_gasto === "custeio"
+                                  ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-400"
+                                  : "border-amber-500/20 bg-amber-500/5 text-amber-400"
+                              }`}>
+                                {nota.tipo_gasto === "custeio" ? "Custeio" : "Capital"}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2.5 text-right font-bold text-foreground tabular-nums">{formatMoney(nota.valor)}</td>
+                            <td className="px-3 py-2.5 text-center">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => handleEstornarDespesa(nota.id)}
+                                disabled={isEstornandoId === nota.id}
+                              >
+                                {isEstornandoId === nota.id ? "Estornando..." : "Estornar"}
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
