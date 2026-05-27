@@ -20,13 +20,14 @@ import {
   type UnidadeCadastroFormValues,
 } from "@/lib/unidadeCadastro";
 import { cn } from "@/lib/utils";
-import { isValidCNPJ } from "@/schemas/unidadeSchema";
+import { isValidCNPJ, unidadeSchema } from "@/schemas/unidadeSchema";
 
 
 interface UnidadeCadastroEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   unidade: UnidadeDetalhe;
+  emailAtual?: string;
   isSaving: boolean;
   onSubmit: (values: UnidadeCadastroFormValues) => Promise<void>;
 }
@@ -69,11 +70,12 @@ export function UnidadeCadastroEditDialog({
   open,
   onOpenChange,
   unidade,
+  emailAtual,
   isSaving,
   onSubmit,
 }: UnidadeCadastroEditDialogProps) {
   const [values, setValues] = useState<UnidadeCadastroFormValues>(() =>
-    toUnidadeCadastroFormValues(unidade),
+    toUnidadeCadastroFormValues(unidade, emailAtual),
   );
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -82,9 +84,9 @@ export function UnidadeCadastroEditDialog({
 
   useEffect(() => {
     if (!open) return;
-    setValues(toUnidadeCadastroFormValues(unidade));
+    setValues(toUnidadeCadastroFormValues(unidade, emailAtual));
     setErrors([]);
-  }, [open, unidade]);
+  }, [open, unidade, emailAtual]);
 
   const updateField =
     (field: keyof UnidadeCadastroFormValues) =>
@@ -100,10 +102,33 @@ export function UnidadeCadastroEditDialog({
     event.preventDefault();
     if (isSaving) return;
 
+    // 1. Validar limites básicos e de formato bancário tradicionais
     const nextErrors = validateUnidadeCadastro(values, {
       designacao: unidade.designacao,
       diretorAtual: unidade.diretor,
     });
+
+    // 2. Blindagem adicional: Validar via Zod Schema para integridade e formato de e-mail
+    const parseResult = unidadeSchema.safeParse({
+      designacao: unidade.designacao ?? "00.00.000",
+      nome: values.nome,
+      inep: unidade.inep ?? "00000000",
+      cnpj: unidade.cnpj ?? "00.000.000/0000-00",
+      diretor: values.diretor,
+      endereco: values.endereco,
+      email: values.email,
+    });
+
+    if (!parseResult.success) {
+      parseResult.error.errors.forEach((err) => {
+        // Ignora erros de CNPJ/INEP/Designação se esses campos forem somente leitura (não modificados) e já estiverem vazios por padrão na base legado.
+        // Focamos nas entradas editáveis na UI: nome, diretor, e-mail e limites do endereço.
+        const path = err.path[0];
+        if (path === "nome" || path === "diretor" || path === "email" || path === "endereco") {
+          nextErrors.push(err.message);
+        }
+      });
+    }
 
     setErrors(nextErrors);
     if (nextErrors.length > 0) return;
@@ -240,6 +265,22 @@ export function UnidadeCadastroEditDialog({
                 onChange={updateField("diretor")}
                 disabled={isSaving}
                 maxLength={160}
+                className={editableInputClass}
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="cadastro-email" className="text-xs font-medium">
+                E-mail institucional de contato
+              </Label>
+              <Input
+                id="cadastro-email"
+                type="email"
+                value={values.email}
+                onChange={updateField("email")}
+                disabled={isSaving}
+                placeholder="exemplo@sme.rio"
+                maxLength={255}
                 className={editableInputClass}
               />
             </div>

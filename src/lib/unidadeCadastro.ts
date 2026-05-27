@@ -7,6 +7,7 @@ export interface UnidadeCadastroFormValues {
   banco: string;
   agencia: string;
   conta_corrente: string;
+  email: string;
 }
 
 export interface UnidadeCadastroValidationContext {
@@ -21,6 +22,7 @@ export const UNIDADE_CADASTRO_LIMITS = {
   banco: 80,
   agencia: 20,
   conta_corrente: 30,
+  email: 255,
 } as const;
 
 const AGENCY_PATTERN = /^[0-9xX-]+$/;
@@ -34,11 +36,13 @@ export function emptyUnidadeCadastroFormValues(): UnidadeCadastroFormValues {
     banco: "",
     agencia: "",
     conta_corrente: "",
+    email: "",
   };
 }
 
 export function toUnidadeCadastroFormValues(
   unidade: UnidadeDetalhe | null | undefined,
+  emailOverride?: string,
 ): UnidadeCadastroFormValues {
   if (!unidade) return emptyUnidadeCadastroFormValues();
 
@@ -49,6 +53,7 @@ export function toUnidadeCadastroFormValues(
     banco: unidade.banco ?? "",
     agencia: unidade.agencia ?? "",
     conta_corrente: unidade.conta_corrente ?? "",
+    email: emailOverride ?? "",
   };
 }
 

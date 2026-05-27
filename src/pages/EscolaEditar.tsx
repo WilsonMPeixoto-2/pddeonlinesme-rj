@@ -20,13 +20,16 @@ import {
   FileText,
   Loader2,
   Pencil,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { saveAs } from "file-saver";
+import { useQuery } from "@tanstack/react-query";
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { useUpdateUnidadeCadastro } from "@/hooks/useUpdateUnidadeCadastro";
+import { supabase } from "@/integrations/supabase/client";
 import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
 import type { UnidadeCadastroFormValues } from "@/lib/unidadeCadastro";
 import { cn } from "@/lib/utils";
@@ -106,6 +109,26 @@ export default function EscolaEditar() {
     exercicio,
     programa: PROGRAMA_PADRAO,
   });
+
+  // Query para buscar o email institucional da escola diretamente de unidades_escolares
+  const { data: escolaCadastral, isLoading: loadingCadastral } = useQuery({
+    queryKey: ["unidade-escolar-cadastral", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("unidades_escolares")
+        .select("email")
+        .eq("id", id!)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Erro ao buscar email cadastral:", error);
+        throw error;
+      }
+      return data;
+    },
+  });
+
   const updateCadastro = useUpdateUnidadeCadastro({
     exercicio,
     programa: PROGRAMA_PADRAO,
@@ -423,6 +446,11 @@ export default function EscolaEditar() {
                       </div>
 
                       <div className="space-y-1.5 sm:col-span-2">
+                        <Label>E-mail Institucional</Label>
+                        <Input readOnly value={formatText(escolaCadastral?.email)} className={readOnlyInputClass} />
+                      </div>
+
+                      <div className="space-y-1.5 sm:col-span-2">
                         <Label>Endereço</Label>
                         <Input readOnly value={formatText(u.endereco)} className={readOnlyInputClass} />
                       </div>
@@ -630,6 +658,11 @@ export default function EscolaEditar() {
                   </div>
 
                   <div className="space-y-1.5">
+                    <Label>E-mail Institucional</Label>
+                    <Input readOnly value={formatText(escolaCadastral?.email)} className={readOnlyInputClass} />
+                  </div>
+
+                  <div className="space-y-1.5">
                     <Label>Endereço</Label>
                     <Input readOnly value={formatText(u.endereco)} className={readOnlyInputClass} />
                   </div>
@@ -770,6 +803,7 @@ export default function EscolaEditar() {
         open={editOpen}
         onOpenChange={setEditOpen}
         unidade={u}
+        emailAtual={escolaCadastral?.email ?? ""}
         isSaving={updateCadastro.isPending}
         onSubmit={handleCadastroSubmit}
       />

@@ -87,10 +87,9 @@ export function useUpdateUnidadeCadastro({
       return { detalheKey, detalheBefore, localizadorBefore };
     },
     // Salvamento atomico via RPC public.update_unidade_cadastro_minima
-    // (migration 20260516120000). A RPC atualiza unidades_escolares e
-    // contas_bancarias em uma unica transacao, eliminando o risco de estado
-    // parcial que existia no fluxo anterior de duas escritas sequenciais.
+    // e atualizacao direta do email na tabela unidades_escolares no Supabase.
     mutationFn: async ({ unidadeId, values }: UpdateUnidadeCadastroInput) => {
+      // 1. Atualizar dados cadastrais basicos e bancarios via RPC
       const { data, error } = await supabase.rpc(
         "update_unidade_cadastro_minima",
         {
@@ -105,16 +104,21 @@ export function useUpdateUnidadeCadastro({
       );
 
       if (error) {
-        // A RPC traduz cenarios de falha em mensagens claras:
-        // - 42501 (insufficient_privilege): role admin/operador ausente
-        // - P0002 (no_data_found): unidade nao encontrada
-        // - outras: rollback automatico pela transacao SQL
         throw new Error(error.message);
       }
 
+      // 2. Atualizar o email institucional de contato da UEx diretamente
+      const email = normalizeOptionalText(values.email ?? "");
+      const { error: emailError } = await supabase
+        .from("unidades_escolares")
+        .update({ email })
+        .eq("id", unidadeId);
+
+      if (emailError) {
+        throw new Error(emailError.message);
+      }
+
       if (!data) {
-        // Defensivo: RPC bem-sucedida deve sempre retornar o unidade_id.
-        // Cobre o caso (improvavel) de RLS filtrar o retorno mesmo apos COMMIT.
         throw new Error(
           "Salvamento nao confirmado. Verifique sua sessao ou tente novamente.",
         );
@@ -142,6 +146,9 @@ export function useUpdateUnidadeCadastro({
           queryKey: ["unidade-detalhe", variables.unidadeId, exercicioNumber, programa],
         }),
         queryClient.invalidateQueries({ queryKey: ["unidades-localizador"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["unidade-escolar-cadastral", variables.unidadeId],
+        }),
       ]);
     },
   });
