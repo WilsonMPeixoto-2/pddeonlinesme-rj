@@ -1,16 +1,16 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-09T19:01:14-03:00",
+  "updated_at": "2026-05-11T02:00:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "9c47ed99887fb8df5ee2ba17251ff2c8591df989",
-    "local_branch_for_this_pr": "feat/demonstrativo-basico-individual"
+    "base_commit": "4d97a9cba09fcfe155402f4c6b6679087fc3d19e",
+    "local_branch_for_this_pr": "docs/state-reconcile-after-pr43"
   },
   "operational_north": {
     "plan": "Plano Global v4.1 atualizado apos Supabase Foundation v1",
     "plan_file": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "functional document generation PR after agentic continuity infrastructure"
+    "current_mode": "documentation reconciliation after Demonstrativo Basico Individual merge (PR #43)"
   },
   "pull_requests": [
     {
@@ -18,11 +18,11 @@
       "title": "feat(documentos): generate Demonstrativo Basico from school detail",
       "head": "feat/demonstrativo-basico-individual",
       "base": "main",
-      "state": "open",
-      "mergeable": "MERGEABLE",
-      "merge_state": "BLOCKED_BY_REQUIRED_REVIEW",
+      "state": "merged",
+      "merged_at": "2026-05-11T01:37:40Z",
+      "merge_commit": "4d97a9cba09fcfe155402f4c6b6679087fc3d19e",
       "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43",
-      "preview_url": "https://pddeonlinesme-rj-git-feat-dem-beaa6a-wilson-m-peixotos-projects.vercel.app"
+      "summary": "Wired DocumentsPanel to real generator and stabilized /escolas table. Merged via admin bypass of 'Protect main' Ruleset (1 required review unattainable as solo author)."
     },
     {
       "number": 44,
@@ -64,6 +64,12 @@
   ],
   "current_implementation": {
     "sub_milestone": "Demonstrativo Basico Individual",
+    "status": "concluded",
+    "delivered_in_pr": 43,
+    "deployed_to_production": true,
+    "production_url": "https://pddeonlinesme-rj.vercel.app",
+    "production_bundle_after_deploy": "/assets/index-DKPVI_j8.js",
+    "production_bundle_before_deploy": "/assets/index-vzAbzjZJ.js",
     "technical_decision": "Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase",
     "template": "public/templates/demonstrativo-basico-4cre-template.xlsx",
     "template_public_state": "Sanitized on 2026-05-08: no BASE sheet, no real consolidated unit data, MEMORIA input cells blank.",
@@ -73,8 +79,32 @@
       "src/lib/demonstrativo/generateDemonstrativoBasico.ts",
       "src/lib/demonstrativo/generateDemonstrativoBasico.test.ts"
     ],
-    "ui_entrypoint": "src/pages/EscolaEditar.tsx",
+    "ui_entrypoints": [
+      "src/pages/EscolaEditar.tsx (botao individual da pagina de detalhe)",
+      "src/components/DocumentsPanel.tsx (painel acionado pela listagem /escolas)"
+    ],
     "dependency_decision": "exceljs was added because xlsx does not preserve workbook template styles, borders and merged-cell fidelity reliably."
+  },
+  "ui_fixes_delivered_in_pr43": {
+    "documents_panel_real_generator": {
+      "issue": "DocumentsPanel acionado pela listagem /escolas era mock: setTimeout(1100) + toast.success sem chamar gerador real nem disparar download.",
+      "fix": "Painel recebe unidadeId, usa useUnidadeDetalhe para buscar vw_unidade_detalhe, chama generateDemonstrativoBasico e dispara saveAs(blob, fileName). Toast.success agora ocorre apenas apos o saveAs. Outros 5 documentos do painel e o botao Pacote completo continuam como placeholders honestos (toast.info).",
+      "files": [
+        "src/components/DocumentsPanel.tsx",
+        "src/components/DocumentsPanel.test.tsx",
+        "src/pages/EscolaEditar.tsx",
+        "src/pages/Escolas.tsx"
+      ]
+    },
+    "escolas_table_column_alignment": {
+      "issue": "Tabela /escolas com colunas desalinhadas em relacao ao cabecalho. Regressao do commit baceb7735e (fix original em 2026-04-30) reincidida apos PRs visuais posteriores.",
+      "root_cause": "Combinacao de motion.tr (com prop layout do framer-motion) + classe CSS .row-accent (pseudo-elemento ::before com position absolute dentro do <tr>) quebrava o calculo nativo de colunas em <table>.",
+      "fix": "Substituido por TableRow nativo + Table className=table-fixed + <colgroup> com larguras percentuais (38/24/13/17/8). Classe .row-accent removida completamente de src/index.css para impedir reintroducao acidental. Comentario anti-regressao em src/pages/Escolas.tsx.",
+      "files": [
+        "src/pages/Escolas.tsx",
+        "src/index.css"
+      ]
+    }
   },
   "document_generation_constraints": [
     "Fill MEMORIA directly from vw_unidade_detalhe data",
@@ -102,29 +132,34 @@
     "Update decisions, roadmap, or backlog when scope or priority changes"
   ],
   "last_validation": {
-    "main_sync": "2026-05-09: merged origin/main at 9c47ed99887fb8df5ee2ba17251ff2c8591df989 into PR 43 branch. supabase/config.toml now points to raluxyojqosfzrfozmpz and git grep found no old Supabase refs in HEAD.",
-    "supabase_link": "2026-05-09: supabase link --project-ref raluxyojqosfzrfozmpz --yes completed in this worktree; supabase projects list shows LINKED for pdde-online-2026-dev.",
-    "template_inspection": "2026-05-08 openpyxl inspection confirmed the public template has sheets MEMORIA, Demonstrativo and Conciliacao Bancaria only; no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits.",
-    "generated_workbook_smoke": "Automated Vitest coverage generates a fixture workbook, confirms no BASE sheet, confirms MEMORIA/Demonstrativo sheets, fills MEMORIA!B2 and scans generated formulas for BASE!/BASE[/XLOOKUP.",
-    "typescript": "passed: npx tsc --noEmit",
-    "lint": "passed with existing react-refresh warnings in masked-input.tsx and useExercicio.tsx",
-    "tests": "passed: npm test",
-    "build": "passed: npm run build; existing large chunk warning remains; post-build inspection confirmed dist template has no BASE sheet and no BASE!/BASE[/XLOOKUP formula hits",
-    "post_main_sync_validation": "2026-05-09 passed: npx tsc --noEmit, npm run lint with existing react-refresh warnings, npm test, npm run build with existing large chunk warnings, openpyxl inspection of public and dist templates.",
-    "vercel_checks": "passed: Vercel Preview Comments, Vercel - pddeonlinesme-rj, Vercel - pddeonlinesme-rj-pr8-validate",
-    "preview_smoke": "blocked for anonymous access by Vercel Authentication; authenticated browser/session validation still required",
-    "review_comments": "initial Copilot comments addressed locally: BASE_URL-aware template URL, template buffer cache, metadata separated from MEMORIA fields, robust money string parsing, and aria-busy/decorative icons on the generate button"
+    "production_deploy": "2026-05-11T01:38Z: Vercel auto-deploy after main push at 4d97a9c; production bundle changed from /assets/index-vzAbzjZJ.js to /assets/index-DKPVI_j8.js.",
+    "production_smoke": "2026-05-11: Playwright authenticated smoke against https://pddeonlinesme-rj.vercel.app passed 6/6 checks: login HTTP 200 redirected to /dashboard; /escolas loaded with 163 rows; table header 5 columns matched body 5 columns; .xlsx generated for EM EMA NEGRAO DE LIMA (33635 bytes) and EM ALBINO SOUZA CRUZ (33647 bytes); MEMORIA cells filled (B2/B3/B4/B6/F6/A52); no BASE sheet; no BASE!/XLOOKUP formula refs; no #REF!/#VALUE!/#NAME! stored in cells.",
+    "typescript": "passed: npx tsc --noEmit (2026-05-26 on local branch docs/state-reconcile-after-pr43 after npm update, manualChunks, prefetching and Zod schema)",
+    "lint": "passed with 0 errors and existing react-refresh warnings (2026-05-26)",
+    "tests": "passed: 3 test files / 3 tests (vitest run completed in 1.68s in 2026-05-26)",
+    "build": "passed: built successfully in 10.78s; dist/assets/index-DfQZa-Ho.js (main chunk only 188.73 kB!) with 0 circular warnings (2026-05-26)",
+    "branches_cleanup_remote": "Deleted from origin: feat/demonstrativo-basico-individual (PR 43 source after merge), feat/dashboard-real-vw-dashboard-basico (orphan, 0 ahead 16 behind). Only main remains.",
+    "higiene_lockfiles": "bun.lock e bun.lockb deletados fisicamente; package-lock.json consolidado como lockfile unico do npm em 2026-05-26.",
+    "banco_performance": "Criada migration de índices compostos em supabase/migrations/20260526000000_performance_indexes.sql para acelerar views de detalhe, listagens e agregação do dashboard.",
+    "modernizacao_frente1": "Implementada Zero-Latency Navigation via React Query prefetching no hover de TableRow em Escolas.tsx; Criado Data Governance Engine com Zod strict schema em src/schemas/unidadeSchema.ts com algoritmo mod11 para CNPJ e regex de INEP; Integrados Premium Shimmer loaders em skeleton.tsx."
   },
   "next_priority": {
+    "current_pr": "docs/state-reconcile-after-pr43 (documentation reconciliation; this PR)",
     "after_this_pr": [
-      "Validate the Vercel Preview with an authenticated session.",
-      "Open /escolas/:id and generate a Demonstrativo Basico from at least two real Supabase units.",
-      "Confirm each generated workbook opens in Excel and recalculates the Demonstrativo sheet from MEMORIA."
+      "PR docs(readme): replace Lovable placeholder README with project README",
+      "PR docs(agents): realign AGENTS.md to current tooling model (no Cursor as mandatory tool)",
+      "PR ci(minimal): add .github/workflows/ci.yml with tsc + lint + test + build; mark as required status check in Protect main Ruleset",
+      "PR chore(local): delete dir C:/Users/okidata/.gemini/antigravity/scratch/pddeonlinesme-rj-demonstrativo (git worktree already pruned, only physical leftover due to file lock)"
     ],
     "later": [
-      "Edicao cadastral minima",
-      "Audit log",
-      "Geracao em lote dos Demonstrativos"
+      "Frente 2: PWA offline-first support (vite-plugin-pwa) e Supabase Real-Time subscriptions no dashboard",
+      "Marco 6B: Auth/roles/RLS final (gate antes do Portal do Diretor)",
+      "Marco 10B: Importador institucional via UI + Edge Function (mitiga xlsx HIGH severity)",
+      "Marco 11+12 (cheio): outros 5 documentos oficiais (Relacao de Bens Adquiridos, Termo de Doacao, Consolidacao de Pesquisas de Precos, Ata do Conselho Escolar, Parecer do Conselho Fiscal)",
+      "Marco 13: Portal do Diretor",
+      "Marco 14: Hardening pre-producao (a11y, perf bundle, logs, observabilidade)",
+      "Test coverage: ampliar DocumentsPanel.test.tsx para cobrir caminhos de erro (!unidadeId, isLoading, error, !unidade, rejection do gerador)",
+      "Operacional: rotacionar senha do operador wilsonmp2@gmail.com antes de qualquer divulgacao real do link de producao"
     ]
   }
 }

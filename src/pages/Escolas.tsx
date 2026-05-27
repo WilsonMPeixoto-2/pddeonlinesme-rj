@@ -31,6 +31,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   useUnidadesLocalizador,
   type UnidadeLocalizador,
@@ -139,6 +141,32 @@ export default function Escolas() {
   const [docsPanelOpen, setDocsPanelOpen] = useState(false);
   const [selectedEscola, setSelectedEscola] = useState<Unidade | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  const queryClient = useQueryClient();
+  const prefetchUnidade = (unidadeId: string) => {
+    const exercicioNumber = Number.parseInt(exercicio, 10);
+    queryClient.prefetchQuery({
+      queryKey: ["unidade-detalhe", unidadeId, exercicioNumber, "basico"],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("vw_unidade_detalhe")
+          .select(
+            "unidade_id, designacao, nome, inep, cnpj, diretor, endereco, banco, agencia, conta_corrente, exercicio, programa, reprogramado_custeio, reprogramado_capital, parcela_1_custeio, parcela_1_capital, parcela_2_custeio, parcela_2_capital, total_reprogramado, total_parcelas, total_disponivel_inicial, updated_at"
+          )
+          .eq("unidade_id", unidadeId)
+          .eq("exercicio", exercicioNumber)
+          .eq("programa", "basico")
+          .maybeSingle();
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        return data ?? null;
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
 
   // Foundation v1: dados vem da view via React Query.
   const { data, isLoading, error, refetch, isFetching } = useUnidadesLocalizador();
@@ -506,6 +534,7 @@ export default function Escolas() {
                         <TableRow
                           key={e.id}
                           className="group border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
+                          onMouseEnter={() => prefetchUnidade(e.id)}
                         >
                           <TableCell className="ds-td py-3">
                             <div className="flex flex-col gap-1">

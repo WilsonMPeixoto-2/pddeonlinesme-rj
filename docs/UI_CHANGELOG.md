@@ -2,6 +2,44 @@
 
 Registro de decisões e entregas visuais/transversais já presentes no app.
 
+## 2026-05-11 — Demonstrativo Básico real no DocumentsPanel + fix estrutural da tabela /escolas
+
+Entrega final do PR #43 (merge commit `4d97a9c`). Dois fixes de UI integration aplicados ao mesmo commit (`5202313`):
+
+### Fix 1 — Tabela /escolas: regressão de alinhamento de colunas
+
+Causa: combinação `motion.tr` (com prop `layout` do framer-motion) + classe CSS `.row-accent` (pseudo-elemento `::before` com `position: absolute` dentro do `<tr>`) quebrava o cálculo nativo de colunas em `<table>`. Esse era o terceiro retorno do mesmo bug visual, originalmente corrigido pelo commit `baceb7735e` (2026-04-30) e reincidido em PRs visuais posteriores.
+
+Fix estrutural:
+
+- substituído `motion.tr` por `TableRow` nativo;
+- removido `<AnimatePresence>` wrapper do `<TableBody>`;
+- adicionado `Table className="table-fixed"`;
+- adicionado `<colgroup>` com larguras percentuais (38% Unidade escolar / 24% Diretor(a) / 13% Status / 17% Documentos / 8% Ações);
+- classe `.row-accent` **removida completamente** de `src/index.css` para impedir reintroduções acidentais;
+- comentário anti-regressão em `src/pages/Escolas.tsx`: `// Keep rows native: row-accent/motion.tr already caused column drift in this table.`
+
+### Fix 2 — DocumentsPanel integrado ao gerador real (Opção B na listagem)
+
+Causa: o `DocumentsPanel` (painel lateral acionado pelo botão "Gerar documentos" na listagem `/escolas`) era um stub com `setTimeout(1100) + toast.success`. Mostrava o toast verde de sucesso, mas nenhum `.xlsx` era de fato baixado. O gerador real existia no PR #43 mas estava conectado apenas ao botão individual em `/escolas/:id`.
+
+Fix funcional:
+
+- `DocumentsPanel` recebe `unidadeId` e `programa` como props;
+- usa `useUnidadeDetalhe` para buscar `vw_unidade_detalhe` quando o painel está aberto;
+- chama `generateDemonstrativoBasico(unidade, exercicio)` e dispara `saveAs(blob, fileName)` no fluxo real;
+- `toast.success` ocorre apenas após o `saveAs` retornar;
+- erros viram `toast.error` com mensagem específica;
+- `aria-busy` propagado no botão durante `isGenerating` ou `isPreparing` (busca do detalhe);
+- outros 5 documentos do painel continuam como `toast.info("em desenvolvimento")` (placeholders honestos);
+- botão "Pacote completo (.zip)" virou placeholder honesto até que os outros documentos existam.
+
+Teste novo: `src/components/DocumentsPanel.test.tsx` cobre o caminho feliz com mocks de `saveAs`, `toast`, `useUnidadeDetalhe` e `generateDemonstrativoBasico` — verifica que o clique no Demonstrativo Básico dentro do painel chama o gerador real, dispara `saveAs` e mostra `toast.success` com o nome do arquivo.
+
+### Validação em produção
+
+Playwright autenticado contra `https://pddeonlinesme-rj.vercel.app` passou 6/6 em 2026-05-11: login HTTP 200, /escolas 163 linhas, header 5 colunas == body 5 colunas, 2 `.xlsx` gerados (33635 e 33647 bytes), `MEMORIA` preenchida, aba `BASE` ausente, sem `#REF!`/`#VALUE!`/`#NAME?`, sem refs `BASE!`/`XLOOKUP` nas fórmulas.
+
 ## 2026-05-02 — Light Mode institucional premium
 
 O projeto incorporou um Light Mode institucional premium, mantendo o Dark Mode atmosférico como experiência preservada.
@@ -83,3 +121,4 @@ Esta entrega foi incorporada pelo PR #30.
 * Não tratar Light Mode, ThemeToggle ou Premium UI Kit como pendências da migração Supabase.
 * A próxima frente de acesso deve integrar os papéis reais do banco ao frontend, sem redefinir a base RBAC já criada em migrations.
 * Alterações em auth, guards, RLS, roles ou dados reais continuam exigindo revisão humana de segurança.
+* `motion.tr` + `framer-motion layout` + pseudo-elementos absolutos dentro de `<tr>` são padrões a evitar em tabelas HTML nativas (regressão histórica documentada em 2026-05-11; fix estrutural com `table-fixed` + `colgroup` no PR #43).
