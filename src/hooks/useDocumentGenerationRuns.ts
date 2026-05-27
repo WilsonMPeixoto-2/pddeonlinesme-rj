@@ -11,10 +11,16 @@ export type DocumentGenerationRunStatus = "em_execucao" | "concluido" | "falha" 
 
 interface UseDocumentGenerationRunsParams {
   limit?: number;
+  page?: number;
+  status?: string;
+  exercicio?: string | number;
 }
 
 export function useDocumentGenerationRuns({
   limit = 10,
+  page = 1,
+  status,
+  exercicio,
 }: UseDocumentGenerationRunsParams = {}) {
   const queryClient = useQueryClient();
 
@@ -35,16 +41,36 @@ export function useDocumentGenerationRuns({
     };
   }, [queryClient]);
 
-  return useQuery<DocumentGenerationRun[], Error>({
-    queryKey: ["document-generation-runs", limit],
+  return useQuery<{ runs: DocumentGenerationRun[]; count: number }, Error>({
+    queryKey: ["document-generation-runs", limit, page, status, exercicio],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("document_generation_runs")
-        .select("*")
-        .order("started_at", { ascending: false })
-        .limit(limit);
+        .select("*", { count: "exact" })
+        .order("started_at", { ascending: false });
+
+      if (status && status !== "all") {
+        query = query.eq("status", status);
+      }
+
+      if (exercicio && exercicio !== "all") {
+        const exVal = typeof exercicio === "string" ? parseInt(exercicio, 10) : exercicio;
+        if (!isNaN(exVal)) {
+          query = query.eq("exercicio", exVal);
+        }
+      }
+
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
       if (error) throw new Error(error.message);
-      return (data as DocumentGenerationRun[] | null) ?? [];
+
+      return {
+        runs: (data as DocumentGenerationRun[] | null) ?? [],
+        count: count ?? 0,
+      };
     },
   });
 }

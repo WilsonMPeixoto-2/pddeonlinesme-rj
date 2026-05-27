@@ -17,6 +17,7 @@ import Manual from "./pages/Manual.tsx";
 import StyleGuide from "./pages/StyleGuide.tsx";
 import AccessDenied from "./pages/AccessDenied.tsx";
 import PortalDiretor from "./pages/PortalDiretor.tsx";
+import HistoricoGeracoes from "./pages/HistoricoGeracoes.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { TopLoadingBar } from "./components/TopLoadingBar.tsx";
 import { CommandPalette } from "./components/CommandPalette.tsx";
@@ -55,6 +56,7 @@ const App = () => (
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 {/* Alias: sidebar label is "Painel"; redirect direct URL hits to canonical /dashboard */}
                 <Route path="/painel" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/painel/historico" element={<ProtectedRoute><HistoricoGeracoes /></ProtectedRoute>} />
                 <Route path="/escolas" element={<ProtectedRoute><Escolas /></ProtectedRoute>} />
                 <Route path="/escolas/:id" element={<ProtectedRoute><EscolaEditar /></ProtectedRoute>} />
                 <Route path="/base" element={<ProtectedRoute><Base /></ProtectedRoute>} />

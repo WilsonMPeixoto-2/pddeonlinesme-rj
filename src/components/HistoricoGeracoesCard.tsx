@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -131,7 +132,7 @@ function HistoricoRow({ run }: HistoricoRowProps) {
 
 export function HistoricoGeracoesCard() {
   const { data, isLoading, error } = useDocumentGenerationRuns({ limit: 5 });
-  const runs = useMemo(() => data ?? [], [data]);
+  const runs = useMemo(() => data?.runs ?? [], [data]);
 
   return (
     <Card className="ds-card">
@@ -200,6 +201,18 @@ export function HistoricoGeracoesCard() {
               </motion.div>
             ))}
           </motion.ul>
+        )}
+
+        {runs.length > 0 && (
+          <div className="mt-4 border-t border-border/40 pt-3 flex justify-end">
+            <Link
+              to="/painel/historico"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+            >
+              <span>Ver histórico completo</span>
+              <History className="h-3 w-3" />
+            </Link>
+          </div>
         )}
       </CardContent>
     </Card>
