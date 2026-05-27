@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -9,21 +10,29 @@ interface UseDashboardBasicoParams {
   programa?: string;
 }
 
-/**
- * Marco 9B: indicadores agregados do Dashboard a partir de public.vw_dashboard_basico.
- *
- * Retorna totais de unidades, reprogramado (custeio/capital), parcelas e
- * disponível inicial do exercício/programa selecionado. Não consulta
- * unidades_escolares diretamente.
- *
- * Observação institucional: total_parcelas pode legitimamente ser 0 quando
- * a BASE importada não traz valores lançados nas colunas de parcelas.
- */
 export function useDashboardBasico({
   exercicio,
   programa = "basico",
 }: UseDashboardBasicoParams) {
   const exercicioNumber = Number.parseInt(exercicio, 10);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("dashboard-finance-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "execucao_financeira" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["dashboard-basico", exercicioNumber, programa] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient, exercicioNumber, programa]);
 
   return useQuery<DashboardBasico | null, Error>({
     queryKey: ["dashboard-basico", exercicioNumber, programa],

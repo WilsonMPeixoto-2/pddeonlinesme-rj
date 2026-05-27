@@ -20,6 +20,8 @@ import {
   type UnidadeCadastroFormValues,
 } from "@/lib/unidadeCadastro";
 import { cn } from "@/lib/utils";
+import { isValidCNPJ } from "@/schemas/unidadeSchema";
+
 
 interface UnidadeCadastroEditDialogProps {
   open: boolean;
@@ -74,6 +76,9 @@ export function UnidadeCadastroEditDialog({
     toUnidadeCadastroFormValues(unidade),
   );
   const [errors, setErrors] = useState<string[]>([]);
+
+  const cnpjValido = unidade.cnpj ? isValidCNPJ(unidade.cnpj) : false;
+  const inepValido = unidade.inep ? /^\d{8}$/.test(unidade.inep) : false;
 
   useEffect(() => {
     if (!open) return;
@@ -156,9 +161,21 @@ export function UnidadeCadastroEditDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="cadastro-inep" className="text-xs font-medium">
-                INEP
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="cadastro-inep" className="text-xs font-medium">
+                  INEP
+                </Label>
+                {unidade.inep && (
+                  <span className={cn(
+                    "text-[10px] px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1",
+                    inepValido 
+                      ? "bg-success/10 text-success border border-success/20" 
+                      : "bg-destructive/10 text-destructive border border-destructive/20"
+                  )}>
+                    {inepValido ? "✓ Válido (8d)" : "✗ Inválido"}
+                  </span>
+                )}
+              </div>
               <Input
                 id="cadastro-inep"
                 value={unidade.inep ?? ""}
@@ -169,9 +186,21 @@ export function UnidadeCadastroEditDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="cadastro-cnpj" className="text-xs font-medium">
-                CNPJ
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="cadastro-cnpj" className="text-xs font-medium">
+                  CNPJ
+                </Label>
+                {unidade.cnpj && (
+                  <span className={cn(
+                    "text-[10px] px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1",
+                    cnpjValido 
+                      ? "bg-success/10 text-success border border-success/20" 
+                      : "bg-destructive/10 text-destructive border border-destructive/20"
+                  )}>
+                    {cnpjValido ? "✓ Válido (Mod 11)" : "✗ Inconsistente"}
+                  </span>
+                )}
+              </div>
               <Input
                 id="cadastro-cnpj"
                 value={unidade.cnpj ?? ""}

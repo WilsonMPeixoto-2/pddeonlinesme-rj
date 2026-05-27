@@ -231,6 +231,8 @@
 @layer base {
   * {
     @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border) / 0.8) transparent;
   }
 
   html, body {
@@ -291,13 +293,12 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
+  background: hsl(var(--border) / 0.8);
   border-radius: 9999px;
-  border: 2px solid hsl(var(--background));
-  transition: background-color var(--duration-fast) var(--ease-out);
+  border: 3px solid hsl(var(--background));
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--border-strong));
+  background: hsl(var(--primary) / 0.6);
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -550,6 +551,26 @@
   .animate-ds-fade-in   { animation: fade-in var(--duration-base) var(--ease-out); }
   .animate-ds-scale-in  { animation: scale-in var(--duration-base) var(--ease-out); }
   .animate-ds-slide-up  { animation: slide-up var(--duration-base) var(--ease-out); }
+
+  /* Glow Card Premium HSL Glow borders utility */
+  .ds-glow-card {
+    position: relative;
+    transition: box-shadow var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
+  }
+  .ds-glow-card::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.18), transparent, hsl(var(--primary) / 0.05));
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-out);
+    pointer-events: none;
+  }
+  .ds-glow-card:hover::after {
+    opacity: 1;
+  }
 }
 
 /* Slide-up suave para entradas de cards/painéis */

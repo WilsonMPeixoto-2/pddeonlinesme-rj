@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -15,6 +16,25 @@ interface UseDocumentGenerationRunsParams {
 export function useDocumentGenerationRuns({
   limit = 10,
 }: UseDocumentGenerationRunsParams = {}) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("document-runs-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "document_generation_runs" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["document-generation-runs"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery<DocumentGenerationRun[], Error>({
     queryKey: ["document-generation-runs", limit],
     queryFn: async () => {

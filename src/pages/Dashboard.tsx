@@ -329,7 +329,7 @@ export default function Dashboard() {
             return (
               <motion.div key={s.label} variants={item}>
                 <TiltCard className="h-full">
-                  <Card className="ds-card-interactive ds-lift group relative h-full overflow-hidden">
+                  <Card className="ds-card-interactive ds-lift ds-glow-card group relative h-full overflow-hidden">
                   <CardContent className="flex h-full flex-col gap-4 p-5">
                     <div className="flex items-start justify-between gap-3">
                       <p className="ds-label">
