@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Local fiscal document samples (never commit real fiscal artifacts)
+.local/
+.local/fiscal-samples/
+*.local.pdf
+*.local.xml
+*.local.jpg
+*.local.jpeg
+*.local.png
+
 # Environment files
 .env
 .env.*

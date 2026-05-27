@@ -1,44 +1,78 @@
 # Backlog Adaptativo de Oportunidades - PDDE Online 2026
 
-Atualizado em: 2026-05-11
+Atualizado em: 2026-05-17 (pós PRs #72 → #79 — sessão noturna fechada)
 
-Este backlog e um radar. Ele registra oportunidades, riscos e proximas frentes, mas nao autoriza execucao sem PR proprio.
+Este backlog é um radar. Registra oportunidades, riscos e próximas frentes, mas não autoriza execução sem PR próprio.
 
-| Prioridade | Item | Tipo | Status | Observacao |
+## Concluído
+
+| Item | Tipo | Referência |
+|---|---|---|
+| **10 refinamentos visuais sóbrios (Painel + Configurações)** | UX/estética | PR #79, merge `fac1d9b` |
+| **Fix microcopy "Em breve" misleading em /escolas** | UX | PR #78, merge `381baff` |
+| **Histórico de gerações no Painel** (Marco 9B v2) | produto/dados | PR #76, merge `5369ca1` |
+| **UI admin de papeis** (Marco 6B v0) | produto/segurança | PR #75, merge `a1ec353` |
+| **Reconciliação types + docs** | governança | PR #74, merge `a706751` |
+| **Painel Executivo-Operacional GAD v1 + Geração em Lote 163 Demonstrativos** | produto/dados | PR #73, merge `9f755ee` |
+| **Plano Global v4.2 + Radar de Inteligência Institucional** | governança | PR #72, merge `b552cb2` |
+| Demonstrativo Básico Individual via `MEMORIA` (Opção B) | documentos | PR #43, merge `4d97a9c` |
+| Hardening do motor documental + contrato Fase 2B | qualidade | PR #57, merge `7baac702` |
+| **Fase 2B — Edição cadastral mínima** | dados/UI | PR #63, merge `e6fd8171` |
+| **React 19 + optimistic update no cadastro** | stack/UX | PR #66, merge `9e8bce3b` |
+| **Vite 5 → 7 + esbuild vuln resolvida** | stack | PR #67, merge `496bdbc7` |
+| **Vitest 3 → 4 + jsdom 20 → 29** | stack/testes | PR #68, merge `194a309f` |
+| **xlsx removido (HIGH) + ExcelJS consolidado** | stack/segurança | PR #69, merge `c56adba5` |
+| Polimento visual UnidadeCadastroEditDialog + skeleton | UI | PR #70, merge `9629b21a` |
+| **RPC transacional cadastro com SECURITY INVOKER** | dados/segurança | PR #71, merge `d6b2d514` |
+| POC fiscal Python isolada + governança + validators | spike | PRs #58, #59, #61, #62 |
+| PRs históricos #40–#56 (Foundation v1 + higiene) | governança | Mergeados |
+
+## Em aberto
+
+| Prioridade | Item | Marco v4.2 | Status | Observação |
 |---:|---|---|---|---|
-| - | Demonstrativo Basico Individual via `MEMORIA` | documentos | concluido | Entregue pelo PR #43 (merge `4d97a9c`, 2026-05-11). Validado em producao via Playwright smoke autenticado. Painel `DocumentsPanel` e botao individual em `/escolas/:id` ambos chamam o gerador real. |
-| - | PRs #40 e #41 | governanca GitHub | incorporado | Ambos ja foram mergeados na `main`. |
-| - | Fechamento de PRs historicos superados | governanca GitHub | concluido | Branches remotas antigas foram deletadas; apenas `main` permanece no remoto. |
-| 1 | Reconciliacao documental pos-PR #43 | governanca | em curso | `docs/state-reconcile-after-pr43` (este PR) atualiza `.continuity`, `HANDOFF`, `DECISIONS`, `ROADMAP`, este `BACKLOG` e `UI_CHANGELOG`. |
-| 2 | README real | documentacao | pendente | Substituir placeholder Lovable por README institucional/tecnico com stack, setup, envs, deploy URL e links. PR proprio: `docs/readme-real`. |
-| 3 | AGENTS.md realign | governanca | pendente | Documento atual descreve modelo Cursor/Codex que nao corresponde a pratica (Claude Code + Codex + Copilot + Antigravity). PR proprio: `docs/agents-md-realign`. |
-| 4 | CI minimo no GitHub Actions | qualidade | pendente | Adicionar `.github/workflows/ci.yml` com `tsc + lint + test + build`; marcar como `required_status_check` no Ruleset. PR proprio: `ci/minimal-checks`. |
-| 5 | Lockfile unico | dependencias | pendente | `bun.lock` (205 KB) + `bun.lockb` (245 KB) + `package-lock.json` (356 KB) coexistem. Decidir gerenciador unico apos confirmar o usado pela Vercel build. PR proprio: `chore/single-lockfile`. |
-| 6 | Remover `lovable-tagger` | dependencias | pendente | Verificar se `lovable-tagger` ainda e usado em `vite.config.ts` (provavelmente apenas em `mode === 'development'`); se nao, remover de devDependencies. PR proprio: `chore/drop-lovable-tagger`. |
-| 7 | Ampliar cobertura do `DocumentsPanel.test.tsx` | qualidade | pendente | Teste atual cobre apenas happy path. Adicionar casos: `!unidadeId`, `isLoadingDetalhe`, `detalheError`, `!unidadeDetalhe`, rejection de `generateDemonstrativoBasico`, clique em documento "em-breve". |
-| 8 | Marco 9B — Dashboard real (analitico) | produto/dados | concluido (parcial) | Marco 9B basico entregue pelos PRs #37 e #41 (vw_dashboard_basico). Refinamento analitico futuro fica como subprioridade. |
-| 9 | Fase 2B edicao cadastral/bancaria | dados/UI | pendente | Exige contrato, permissao, auditoria e validacao. Pertence ao Marco 9C/10. |
-| 10 | Importador institucional via interface | dados/documentos | pendente | Marco 10B. Considerar Edge Function para mitigar `xlsx` HIGH severity. |
-| 11 | Auth/roles/guards/RLS final | seguranca | pendente | Marco 6B. Revisao humana obrigatoria. Gate antes do Portal do Diretor. |
-| 12 | Portal do Diretor | produto/seguranca | pendente | Marco 13. Depende de vinculo diretor-escola e escopo de acesso. |
-| 13 | Motor documental v1 (outros 5 documentos) | documentos | pendente | Marco 11+12 cheio. Relacao de Bens, Termo de Doacao, Consolidacao de Precos, Ata, Parecer. |
-| 14 | Hardening pre-producao | qualidade/seguranca | continuo | Marco 14. Bundle splitting, smoke automatizado, a11y, logs, observabilidade. |
-| 15 | Rotacionar senha do operador DEV | seguranca operacional | pendente | `wilsonmp2@gmail.com` esta documentada e foi usada em smoke. Rotacionar antes de qualquer divulgacao do link de producao. |
-| 16 | Deletar dir fisico `pddeonlinesme-rj-demonstrativo` no scratch | local | pendente | Git worktree ja prunada. File lock impediu remocao automatica. Deletar manualmente quando locks soltarem. |
+| **1** | **Relação de Bens Adquiridos (2º documento oficial)** | **11** | **Próximo PR funcional candidato** | Reaproveita motor documental; depende de template oficial real |
+| **2** | **`audit_logs` para mutações sensíveis** | **sub-6B** | **Próximo PR funcional candidato** | Pré-requisito para Portal do Diretor; usa padrão Postgres trigger |
+| 3 | Smoke UI operacional Fase 2B + Painel + Configurações | qualidade | Pendente | Validação humana autenticada em prod |
+| 4 | Painel histórico: filtros + página dedicada `/painel/historico` | 9B v3 | Pendente | Já temos card top 5; falta listagem completa |
+| 5 | Login público / cadastro / password recovery / MFA | 6B | Pendente | Sobe em prioridade pois sistema já escreve dados |
+| 6 | Importador institucional via interface (dry-run + diff + hash) | 10B | Pendente | Substitui upload simples; nunca service_role no browser |
+| 7 | Termo de Doação, Consolidação de Preços, Ata, Parecer | 11+12 | Pendente | Templates oficiais + revisão humana |
+| 10 | Portal do Diretor mobile-first | 13 | Pendente | Depende Marco 6B + diretor-escola link + RLS por escopo |
+| 11 | **Aquisição Fiscal Multicanal v1** (XML > chave > QR > URL > barcode > PDF textual > OCR > digitação) | Frente fiscal v1 | Pendente | Reposicionada de "OCR-first"; spike pós-MVP CRE |
+| 12 | Hardening pré-produção (WCAG 2.2, performance, logs, SLOs) | 14 | Contínuo | Inclui bundle, smoke, acessibilidade, logs e validações |
+| 13 | Mobile responsiveness das telas atuais | 13 (preparação) | Pendente | Validar 375px e 768px antes do Portal do Diretor |
+| 14 | Cobertura de teste do gerador e hooks | qualidade | Contínuo | Ampliar onde houve bug ou regressão |
+| 15 | Rotacionar credenciais Supabase antes de prod real | operacional | Pendente | Wilson.mpeixoto / wilsonmp2 são DEV; rotacionar antes |
+| 16 | Limpeza de branches locais já mergeadas | higiene | Pendente | Listar individualmente e confirmar (não em massa) |
 
-## Como promover um item
+## Riscos rastreados (não bloqueantes)
 
-Para promover um item a PR:
+| Risco | Mitigação prevista | Marco |
+|---|---|---|
+| RLS silent failure (UPDATE/INSERT retorna 200 com 0 rows) | Padrão `.select("id")` + length check obrigatório em mutações sensíveis | Contínuo |
+| Geração em lote pode estourar memória do browser com 163 unidades + template | Batches controlados (5 a 10 por vez); pré-checagem; limite de fallback | 9B/15 |
+| Service_role acidentalmente no bundle do browser | Lint/CI específico + revisão humana obrigatória em qualquer mutação privilegiada | 6B / contínuo |
+| Documentos fiscais reais commitados | `.gitignore` + revisão humana + sanitização em testes | Frente fiscal |
+| Templates oficiais com dados consolidados em `public/` | Proibido por contrato técnico; sanitização automática | Sempre |
 
-1. Confirmar o marco do Plano Global v4.1.
-2. Definir ferramenta lider.
-3. Definir arquivos permitidos e proibidos.
-4. Registrar criterio de aceite.
-5. Registrar validacoes tecnicas.
-6. Atualizar `docs/HANDOFF.md` ao final.
+## Lessons learned recentes (v4.2)
 
-## Lessons learned recentes
+1. **Reconcile pós-merge** continua obrigatório.
+2. **Smoke operacional** continua complementar aos checks técnicos.
+3. **Blob atual no head**, não comments de review, é fonte para auditoria.
+4. **RLS silencioso** pede `.select("id")` + length check; já é padrão no projeto.
+5. **Modernização por camada** (1 PR = 1 dependência grande) é mais segura que upgrade em bloco.
+6. **Documentação focada**: apenas abre PR documental quando a doc pode induzir o próximo agente ao erro ou alterar prioridade/escopo. Drift pequeno corrige-se no próximo PR funcional.
+7. **Inteligência institucional** entra como filtro obrigatório (Radar §3.1): valor visível, ação orientada, fluxo real, rastreabilidade, modernidade responsável, estética institucional.
 
-- **Documentacao operacional precisa de PR de reconciliacao pos-merge**: o PR #43 mergeou em 2026-05-11 mas deixou `.continuity/current-state.json` e `docs/HANDOFF.md` apontando para o estado pre-merge (PR #43 como "open", `base_commit` antigo). Considerar hook `post-merge` ou GitHub Action que falhe se `base_commit` divergir do HEAD.
-- **Codigo passar em `tsc + test + lint + build` nao garante UX correta**: o PR #43 passou em todos os checks tecnicos com `DocumentsPanel` ainda mockado e tabela com regressao visual. Apenas o smoke autenticado em browser revelou ambos os bugs. Validacao final humana ou via Playwright headless e gate informal essencial.
-- **Comentarios de review (Copilot/humano) ficam permanentes no PR mesmo apos correcao**: ao auditar um PR aberto, ler o blob atual da branch via `gh api ...?ref=<head>`, nao tratar `gh api .../pulls/N/comments` como pendencias vivas.
+## Como promover um item a PR
+
+1. Confirmar o marco do Plano Global v4.2.
+2. Aplicar as 8 perguntas obrigatórias do Radar (`docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md` §3.1).
+3. Definir ferramenta líder (ou execução solo).
+4. Definir arquivos permitidos e proibidos.
+5. Registrar critério de aceite (operacional, não apenas técnico).
+6. Registrar validações técnicas (tsc, lint, test, build, audit).
+7. Definir smoke operacional quando aplicável.
+8. Atualizar `docs/HANDOFF.md`, `.continuity/current-state.json` ao final.

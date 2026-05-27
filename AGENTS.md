@@ -1,165 +1,132 @@
-# PDDE Online 2026 - AGENTS.md
+# AGENTS.md — PDDE Online 2026
 
-## Finalidade
+Atualizado em: 2026-05-17 (Plano Global v4.2 + Radar de Inteligência Institucional)
 
-Este arquivo define a politica operacional de uso de ferramentas no projeto.
-O objetivo e reduzir retrabalho, evitar conflitos de responsabilidade e manter clareza sobre quem desenha, quem implementa e quem integra cada tarefa.
+## Fonte de verdade tecnica
 
-## Continuidade agentic obrigatoria
+A fonte de verdade primaria do projeto e a verificacao direta do codigo-fonte, branch, commit, diff, configuracao versionada e testes reais no GitHub.
 
-Antes de qualquer tarefa neste repositorio, o agente deve ler, nesta ordem:
+Relatorios de ferramentas, handoffs, `current-state.json`, roadmap, backlog, comentarios de PR e memorias sao **snapshots auxiliares**. Podem orientar investigacao, mas nao sustentam conclusao sem conferencia na fonte primaria.
 
-1. `AGENTS.md`
-2. `.continuity/current-state.json`
-3. `docs/HANDOFF.md`
-4. `docs/DECISIONS.md`
-5. `docs/ROADMAP_ADAPTIVE.md`
-6. `docs/OPPORTUNITIES_BACKLOG.md`
-7. `docs/PROJECT_STATE.md`
-8. `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`
+### Classificacao obrigatoria
 
-Depois de qualquer tarefa relevante, o agente deve atualizar:
+Ao reportar informacoes, todo agente deve classificar cada afirmacao como:
 
-1. `.continuity/current-state.json`
-2. `.continuity/session-log.jsonl`
-3. `docs/HANDOFF.md`
+- **FATO VERIFICADO NO CODIGO** — confirmado por leitura direta de arquivo, commit, diff ou teste no repositorio.
+- **HIPOTESE** — inferencia logica ainda nao confirmada na fonte.
+- **RELATO DE OUTRA FERRAMENTA** — informacao proveniente de documento, handoff, log ou memoria de sessao anterior.
+- **PENDENCIA A CONFIRMAR** — item que requer verificacao antes de ser tratado como fato.
 
-Se a tarefa alterar rumo, decisao tecnica, prioridade ou criterio de aceite, tambem atualizar:
+### Regra pratica
 
-1. `docs/DECISIONS.md`
-2. `docs/ROADMAP_ADAPTIVE.md`
-3. `docs/OPPORTUNITIES_BACKLOG.md`
+Nenhuma ferramenta e fonte de verdade. Nenhum relatorio substitui a leitura do codigo. Se houver conflito entre um documento e o codigo real, o codigo prevalece.
 
-O Plano Global v4.1, em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`, e o norte operacional atual. O backlog adaptativo e radar de oportunidades; ele nao autoriza mudancas funcionais sem PR proprio.
+## Ferramentas e modelo de trabalho
 
-O proximo sub-marco prioritario registrado e o **Demonstrativo Basico Individual**. A decisao tecnica vigente e **Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase**. O arquivo individual nao deve depender da aba BASE nem de XLOOKUP. Essa decisao orienta o proximo PR funcional, mas este arquivo nao autoriza alteracao de codigo, Supabase, migrations ou UI fora de escopo.
+Este projeto pode ser mantido por diferentes ferramentas (Claude Code, Codex, Copilot, Cursor, Antigravity, entre outras). Nenhuma ferramenta tem exclusividade sobre camadas do sistema.
 
-## Regra-mae
+### Principio de escopo
 
-Cursor define contrato, boundaries e impacto sistemico.
-Codex implementa o nucleo tecnico ou a execucao mecanica dentro do contrato aprovado.
-Cursor integra, revisa impacto e fecha a costura final.
-Humano aprova seguranca, regras financeiras e regras documentais oficiais.
+A ferramenta que lidera uma tarefa e determinada pelo **escopo da tarefa**, nao por uma hierarquia fixa:
 
-## Regra obrigatoria durante a execucao das tarefas
+- Se a tarefa tem entrada clara, saida clara e teste claro, qualquer ferramenta pode executa-la.
+- Se a tarefa exige decisao arquitetural ou integracao entre multiplas camadas, deve ser tratada com revisao humana.
+- Se a tarefa envolve seguranca, auth, RLS, roles, dados sensiveis ou regras financeiras/documentais oficiais, a revisao humana e **obrigatoria**.
 
-Sempre explicitar antes de iniciar uma tarefa:
+### Divisao por tipo de trabalho
 
-- ferramenta lider
-- motivo tecnico
-- momento de handoff para a outra ferramenta, quando houver
+| Tipo de trabalho | Quem pode liderar | Revisao humana |
+|---|---|---|
+| Implementacao funcional isolada | Qualquer ferramenta | Recomendada |
+| Integracao entre camadas | Qualquer ferramenta | Obrigatoria |
+| Arquitetura, contratos, schemas | Qualquer ferramenta | Obrigatoria |
+| Auth, RLS, roles, policies | Qualquer ferramenta | **Obrigatoria** |
+| Segredos, .env, credenciais | Qualquer ferramenta | **Obrigatoria** |
+| Templates oficiais, regras financeiras | Qualquer ferramenta | **Obrigatoria** |
+| Documentacao e governanca | Qualquer ferramenta | Recomendada |
+| Testes, linting, CI | Qualquer ferramenta | Nao obrigatoria |
+| Limpeza, refactor mecanico | Qualquer ferramenta | Nao obrigatoria |
 
-Se a tarefa estiver atribuida a ferramenta errada, isso deve ser apontado explicitamente antes da execucao.
+### Regra de bloqueio
 
-## Papeis oficiais
+Se uma ferramenta descobrir que a implementacao exige mudar contrato, arquitetura, boundary ou decisao de seguranca, ela **nao deve improvisar**. Deve parar, registrar o bloqueio e devolver a decisao para revisao humana.
 
-- Cursor e o arquiteto-integrador.
-- Codex e o executor tecnico de blocos delimitados.
-- Lovable e Antigravity atuam na camada visual e de prototipacao.
-- Humano e revisor obrigatorio nas areas criticas.
+## Camada de dados e financeiro
 
-## Quando Cursor lidera
+Para tarefas envolvendo dados financeiros, planilhas, importacao/exportacao, CNPJ, INEP, demonstrativos ou prestacao de contas:
 
-- decisao arquitetural
-- contratos entre web, api, schemas e docs
-- desenho do monorepo
-- Fastify integrado ao frontend
-- autenticacao
-- papeis de usuario
-- permissoes
-- RLS, policies e boundaries de acesso
-- migracao frontend -> backend
-- refactor cross-package
-- hardening pre-producao
-- integracao final do motor documental ao sistema
+- Primeiro inventariar a fonte de dados e o contrato esperado antes de alterar codigo.
+- Preservar rastreabilidade entre valor bruto importado, valor normalizado e erro/warning gerado.
+- Nao inventar regra financeira, documental, de acesso ou de identidade de escola. Se a regra nao estiver documentada, devolver para revisao humana.
+- Tratar producao Supabase como somente leitura salvo autorizacao explicita.
 
-## Quando Codex lidera
+## Validacoes minimas por tipo de alteracao
 
-- clone e inventario do repositorio
-- saneamento mecanico de arquivos
-- remocao de residuos do Lovable
-- criacao mecanica da estrutura do monorepo, apos desenho aprovado
-- scripts
-- parsers
-- importacao da BASE.xlsx, no nucleo tecnico
-- normalizacao de dados
-- validacoes repetitivas
-- motor documental isolado
-- geracao individual de documentos, no nucleo gerador
-- testes unitarios
-- Dockerfile
-- scripts de deploy
-- benchmarks
-- utilitarios de linha de comando
-- correcoes mecanicas em massa
-- diagnostico inicial terminal-first
+| Tipo de alteracao | Validacoes |
+|---|---|
+| Codigo TypeScript | `npx tsc --noEmit` |
+| UI ou fluxo React | `npx tsc --noEmit`, `npm run lint`, `npm run build`, verificacao visual |
+| Parser/importador/motor documental | `npx tsc --noEmit`, `npm test`, fixtures representativas |
+| Supabase/RLS/auth | migration/types local + revisao humana obrigatoria |
+| Mudanca substancial | `npx tsc --noEmit && npm run lint && npm test && npm run build` |
+| Documentacao pura | validar JSON se `.json`, `git diff --name-only` para confirmar escopo |
 
-## Regra pratica de decisao
+## Estado atual do projeto (v4.2)
 
-- Se a tarefa exigir decisao de contrato, arquitetura ou coerencia entre multiplas camadas, Cursor lidera.
-- Se a tarefa tiver entrada clara, saida clara e teste claro, Codex lidera.
-- Se a tarefa cruzar varias camadas, mas o contrato ja estiver fechado e a execucao for principalmente mecanica, Codex pode liderar.
+**main HEAD verificado:** `d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077` (PR #71)
 
-## Casos hibridos obrigatorios
+> Este valor e snapshot operacional. Antes de qualquer decisao, verificar novamente o HEAD real da `main` no GitHub via `gh api repos/WilsonMPeixoto-2/pddeonlinesme-rj/branches/main`.
 
-### Migracao Supabase
+### Entregue e em producao
 
-- Cursor lidera schema alvo, roles, RLS e storage policies.
-- Codex executa migracoes mecanicas, scripts, dump/restore e verificacao local.
-- Revisao final e humana + Cursor.
+- Demonstrativo Basico Individual (PR #43)
+- Dashboard com views reais do Supabase (PR #44)
+- Infraestrutura de continuidade agentic (PR #42)
+- AGENTS.md realinhado (PR #46), README real (PR #47), CI minimo (PR #48), lockfile unico (PR #49), remocao lovable-tagger (PR #50), cobertura DocumentsPanel (PR #51), reconciliacao documental (PRs #45, #52), patches seguros (PR #53)
+- Hardening do motor documental + contrato Fase 2B (PR #57)
+- POC fiscal Python isolada + governanca + validators (PRs #58, #59, #61, #62)
+- **Fase 2B — Edicao cadastral minima** (PR #63) com optimistic update (PR #66)
+- **Modernizacao da stack**: React 19 (PR #66), Vite 7 (PR #67), Vitest 4 + jsdom 29 (PR #68)
+- **Remocao xlsx + migracao para ExcelJS** com 0 vulnerabilities (PR #69)
+- Polimento visual do dialogo cadastral + skeleton (PR #70)
+- **RPC transacional para cadastro** com SECURITY INVOKER (PR #71) — migration aplicada em prod
 
-### Monorepo
+### Proxima fila (v4.2)
 
-- Cursor define a separacao entre apps/ e packages/.
-- Codex cria a estrutura, configura workspaces e ajusta arquivos.
-- Cursor revisa boundaries e contratos.
+A Fase 2B foi implementada e endurecida; falta smoke UI operacional. A proxima frente funcional recomendada e o **Painel Executivo-Operacional GAD v1** (Marco 9B), que incorpora a **Geracao em Lote dos 163 Demonstrativos** (Marco 15 reclassificado como **Acao Executiva de Alto Valor**).
 
-### Importacao da BASE.xlsx
+### Frentes funcionais maiores planejadas (v4.2)
 
-- Codex lidera parser, validacao e normalizacao.
-- Cursor integra com API, permissoes, banco e UX.
-- Lovable/Antigravity podem liderar apenas a experiencia visual da tela.
+Os itens abaixo pertencem ao Plano Global v4.2 e nao devem ser tratados como falhas urgentes enquanto estiverem em sua etapa planejada:
 
-### Geracao individual
+- **Painel Executivo-Operacional GAD v1** (Marco 9B — proxima frente)
+- **Geracao em lote dos 163 Demonstrativos** (Marco 15 — Acao Executiva de Alto Valor)
+- Camada de historico documental (`document_generation_runs`)
+- Auth/RLS/roles/audit_logs/storage final (Marco 6B — sobe em prioridade pois sistema ja escreve dados)
+- Importador institucional com dry-run/diff/hash (Marco 10B)
+- **Aquisicao Fiscal Multicanal** (substituiu "frente fiscal v1 OCR-first"; ordem: XML > chave > QR > URL oficial > codigo de barras > PDF textual > OCR > digitacao)
+- Portal do Diretor mobile-first (Marco 13 — depende Marco 6B)
+- Hardening, WCAG, observabilidade (Marco 14 — continuo)
 
-- Codex lidera o nucleo gerador e seus testes.
-- Cursor integra rota, fluxo, permissoes, download e tratamento de erro.
+### Criterio para reordenar o plano
 
-### Motor documental
+Alterar a ordem do Plano Global somente com justificativa tecnica explicita e ganho real para o projeto, como reducao de retrabalho, dependencia bloqueadora, risco real de seguranca ou melhoria estrutural comprovada.
 
-- Cursor define interface publica, local do pacote e contrato com a API.
-- Codex implementa leitura de template, preenchimento, protecao e testes.
-- Cursor integra o motor ao sistema.
+## Politica de documentacao
 
-## Revisao humana obrigatoria
+Documentacao deve apoiar o desenvolvimento, nao captura-lo em ciclos de reconciliacao.
 
-- auth
-- roles
-- RLS e policies
-- segredos e .env
-- templates oficiais
-- regras financeiras
-- regras que alterem geracao documental oficial
-- regras que impactem prestacao de contas ou acesso a dados sensiveis
+Abrir PR exclusivamente documental apenas quando a documentacao:
 
-## Regra de bloqueio e retorno de contrato
+- induzir o proximo agente a executar tarefa errada;
+- listar como pendente algo ja concluido de forma que altere decisao operacional;
+- apontar caminho de arquivo incorreto que possa causar erro;
+- registrar prioridade incompativel com o Plano Global;
+- criar risco real de replanejamento equivocado.
 
-Se Codex descobrir que a implementacao exige mudar contrato, arquitetura, boundary ou decisao de seguranca, ele nao deve improvisar.
+Drift pequeno de SHA, sem consequencia operacional, deve preferencialmente ser corrigido junto ao proximo PR funcional.
 
-Nesse caso:
-
-- Codex para
-- registra o bloqueio
-- devolve a decisao para Cursor ou para revisao humana
-
-## Fluxo padrao de execucao
-
-- Cursor desenha.
-- Codex implementa.
-- Cursor integra e valida impacto.
-- Humano aprova o que for critico.
-
-## Formato obrigatorio dos prompts de trabalho
+## Formato de prompt operacional
 
 Todo prompt operacional deve declarar:
 
@@ -169,64 +136,49 @@ Todo prompt operacional deve declarar:
 - arquivos que pode alterar
 - arquivos que nao deve alterar
 - criterio de aceite
-- momento de handoff
+- validacoes minimas
 
-## Exemplo de prompt Codex-first
+## Radar Transversal de Inteligencia Institucional (v4.2)
 
-- Ferramenta lider: Codex
-- Tarefa: implementar parser isolado da BASE.xlsx
-- Nao mexer: frontend, auth, RLS, layout
-- Entregar: parser testado, validacao, relatorio de campos reconhecidos
-- Handoff: depois disso, Cursor integra com Fastify e UI
+A partir de v4.2, **toda tarefa** deve aplicar o Radar de Inteligencia Institucional documentado em `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`. Plano Global = o que. Radar = como.
 
-## Exemplo de prompt Cursor-first
+**Diretriz-mae v4.2:** toda funcionalidade relevante deve entregar valor operacional E valor institucional visivel. Nao basta funcionar: precisa reduzir trabalho, orientar acao, gerar evidencia, evitar erro, respeitar perfis, adotar solucao moderna e poder ser apresentada como modernizacao administrativa.
 
-- Ferramenta lider: Cursor
-- Tarefa: integrar o parser da BASE ao backend e a tela de importacao
-- Nao mexer: nucleo tecnico do parser, salvo correcao delimitada
-- Entregar: contrato da API, tratamento de erro, permissoes, feedback visual
-- Handoff: se houver necessidade de ajuste tecnico no parser, devolver tarefa delimitada ao Codex
+**8 perguntas obrigatorias antes de propor implementacao:**
 
-## Regra adicional desta fase do projeto
+1. Existe fonte estruturada antes de digitar ou fazer OCR?
+2. Existe padrao consolidado em sistemas publicos, ERPs, dashboards administrativos ou design systems?
+3. A tarefa pode virar alerta, status, historico, grafico, relatorio ou evidencia?
+4. A solucao reduz clique, memoria, retrabalho ou planilha paralela?
+5. A interface mostra o proximo passo ou apenas exibe dados?
+6. A entrega e segura para dados reais, perfis, RLS, arquivos e auditoria?
+7. O ganho pode ser demonstrado visualmente para chefia e Alta Administracao?
+8. A abordagem e adequada para 2026 ou apenas uma solucao provisoria?
 
-Enquanto o projeto estiver em fase de prototipacao e refinamento visual, Lovable e Antigravity podem se revezar por questoes de credito, cota ou conveniencia operacional.
-Essa flexibilidade visual nao altera a divisao estrutural principal entre Cursor e Codex.
+Antes de aprovar PR, executar checklist de revisao em `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md` §9.
 
-## Camada Codex - ferramentas padrao
+## Regras antes de qualquer tarefa
 
-Quando o Codex for usado neste repositorio, acionar a skill `pdde-online` e aplicar os roteamentos abaixo:
+Ler:
 
-- Acionar tambem a skill `pdde-finance-data` para analise de dados, planilhas, Excel, `.xlsx`, BASE.xlsx, importacao/exportacao, saldo, recebido, gasto, demonstrativos, prestacao de contas, CNPJ, INEP, dashboards e relatorios.
-- Supabase skill/MCP para Auth, roles, RLS, policies, migrations, generated types e acesso a dados. Producao e somente leitura salvo autorizacao explicita.
-- Spreadsheet/Excel skill para BASE.xlsx, importacao, exportacao, validacao de colunas, normalizacao e relatorios tabulares.
-- Doc/PDF skills para templates oficiais, motor documental, preenchimento, protecao e geracao de arquivos.
-- Playwright/browser tooling para UI, responsividade, login, rotas protegidas, regressao visual e smoke test de fluxos.
-- GitHub skills/tools para branch, PR, review, issues, CI e publicacao de mudancas locais.
-- Vercel skills/tools para deploy, preview, production check, logs, dominios e variaveis de ambiente.
-- Security skills para qualquer tarefa de auth, permissoes, RLS, secrets, dados sensiveis ou limites de acesso.
+1. `AGENTS.md` (este arquivo)
+2. **`docs/PLANO_GLOBAL_V4_2.md`** (plano vigente)
+3. **`docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`** (diretriz transversal obrigatoria)
+4. `.continuity/current-state.json` como snapshot auxiliar
+5. `docs/HANDOFF.md` como snapshot auxiliar
+6. `docs/DECISIONS.md`
+7. `docs/ROADMAP_ADAPTIVE.md`
+8. `docs/OPPORTUNITIES_BACKLOG.md`
+9. GitHub `main`, PRs recentes e codigo real antes de decidir
 
-### Gatilhos automaticos de dados, planilhas e financeiro
+Versao anterior do plano (v4.1) preservada em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md` como referencia historica — nao foi revogada, apenas atualizada.
 
-Para demandas com qualquer um dos termos abaixo, Codex deve carregar `pdde-online` + `pdde-finance-data` e, conforme o caso, `spreadsheet`, `Excel`, `supabase`, `supabase-postgres-best-practices`, `doc`, `pdf` e `security-best-practices`:
+## Regras depois de qualquer tarefa
 
-- BASE.xlsx, planilha, Excel, CSV, importacao, exportacao, carga, parser, normalizacao, validacao de colunas, duplicidades, INEP, CNPJ, email, unidade escolar ou diretor.
-- financeiro, prestacao de contas, saldo anterior, recebido, gasto, saldo disponivel, percentual de execucao, demonstrativo, conciliacao, relatorio financeiro, dashboard financeiro ou indicadores.
-- documento oficial, modelo, template, declaracao, oficio, PDF, DOCX, motor documental, preenchimento de campos ou geracao individual.
-- banco de dados, Supabase, tabela, migration, types, RLS, policies, Auth, roles, permissoes, dados sensiveis ou segregacao GAD/Diretor.
+Atualizar:
 
-Padrao de execucao para essas tarefas:
+1. `.continuity/current-state.json`
+2. `.continuity/session-log.jsonl`
+3. `docs/HANDOFF.md`
 
-- Primeiro inventariar a fonte de dados e o contrato esperado antes de alterar codigo.
-- Preservar rastreabilidade entre valor bruto importado, valor normalizado e erro/warning gerado.
-- Nao inventar regra financeira, documental, de acesso ou de identidade de escola. Se a regra nao estiver documentada, devolver para Cursor/humano.
-- Tratar producao Supabase como somente leitura salvo autorizacao explicita.
-- Quando houver artefato `.xlsx`, produzir resumo executivo, dados de origem, validacoes e detalhes auditaveis sempre que fizer sentido.
-- Quando houver impacto visual em dashboard, importacao ou portal, validar com browser/Playwright depois da verificacao tecnica.
-
-Validacao minima recomendada por tipo de alteracao:
-
-- Codigo TypeScript: `npx tsc --noEmit`.
-- UI ou fluxo React: `npx tsc --noEmit`, `npm run lint`, `npm run build` e verificacao visual quando houver impacto de tela.
-- Parser/importador/motor documental: `npx tsc --noEmit`, `npm test` e casos de fixture representativos.
-- Supabase/RLS/auth: validar migration/types localmente e exigir revisao humana antes de concluir.
-- Mudanca substancial: `npx tsc --noEmit && npm run lint && npm test && npm run build`.
+Se houver nova decisao ou mudanca de prioridade, atualizar tambem `docs/DECISIONS.md`, `docs/ROADMAP_ADAPTIVE.md` e `docs/OPPORTUNITIES_BACKLOG.md`.

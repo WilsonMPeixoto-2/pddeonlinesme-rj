@@ -38,10 +38,14 @@ import {
   type UnidadeLocalizador,
 } from "@/hooks/useUnidadesLocalizador";
 import { useExercicio } from "@/hooks/useExercicio";
+import { useUnidadesDetalheLista } from "@/hooks/useUnidadesDetalheLista";
+import { useGerarDemonstrativosLote } from "@/hooks/useGerarDemonstrativosLote";
+import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
+import { hasCadastroEssencialCompleto } from "@/lib/demonstrativo/mapUnidadeToMemoria";
 import { cn } from "@/lib/utils";
-import * as XLSX from "xlsx";
-import JSZip from "jszip";
 import { saveAs } from "file-saver";
+
+const PROGRAMA = "basico";
 /* ─── Types ─── */
 
 // Foundation v1: /escolas opera como localizador a partir de vw_unidades_localizador.
@@ -52,15 +56,19 @@ type StatusFilter = "todas" | "completo" | "incompleto";
 
 /* ─── Helpers ─── */
 
-// Foundation v1: status reflete somente completude de identidade (INEP, CNPJ, diretor).
-// Dados financeiros vivem na pagina individual via vw_unidade_detalhe.
-function getStatus(e: Unidade) {
-  const identityFields = [e.inep, e.cnpj, e.diretor];
-  const filled = identityFields.filter(
-    (f) => Boolean(f && String(f).trim()),
-  ).length;
-  if (filled === identityFields.length) return "completo" as const;
-  return "incompleto" as const;
+// Status reflete os campos cadastrais essenciais do Demonstrativo.
+// INEP nao entra porque nao compoe o template atual.
+function getStatus(e: Unidade, detalhe?: UnidadeDetalhe) {
+  const cadastro = {
+    designacao: detalhe?.designacao ?? e.designacao,
+    cnpj: detalhe?.cnpj ?? e.cnpj,
+    endereco: detalhe?.endereco,
+    diretor: detalhe?.diretor ?? e.diretor,
+    agencia: detalhe?.agencia,
+    conta_corrente: detalhe?.conta_corrente,
+  };
+
+  return hasCadastroEssencialCompleto(cadastro) ? "completo" as const : "incompleto" as const;
 }
 
 
@@ -173,6 +181,21 @@ export default function Escolas() {
   const unidades: Unidade[] = useMemo(() => data ?? [], [data]);
   const loading = isLoading;
 
+  // Lote (Marco 9B + Marco 15): dados cadastrais essenciais + hook de geracao real.
+  const { data: unidadesDetalhe, isLoading: loadingDetalheLista } = useUnidadesDetalheLista({
+    exercicio,
+    programa: PROGRAMA,
+  });
+  const lote = useGerarDemonstrativosLote();
+
+  const detalheByUnidadeId = useMemo(() => {
+    const entries = (unidadesDetalhe ?? [])
+      .filter((u) => Boolean(u.unidade_id))
+      .map((u) => [u.unidade_id, u] as const);
+
+    return new Map(entries);
+  }, [unidadesDetalhe]);
+
   useEffect(() => {
     if (error) toast.error(error.message ?? "Erro ao carregar unidades.");
   }, [error]);
@@ -213,10 +236,10 @@ export default function Escolas() {
       });
     }
     if (statusFilter !== "todas") {
-      filtered = filtered.filter((e) => getStatus(e) === statusFilter);
+      filtered = filtered.filter((e) => getStatus(e, detalheByUnidadeId.get(e.id)) === statusFilter);
     }
     return filtered;
-  }, [q, statusFilter, unidades]);
+  }, [detalheByUnidadeId, q, statusFilter, unidades]);
 
   const isSearching =
     q.trim().length > 0 || statusFilter !== "todas";
@@ -229,10 +252,10 @@ export default function Escolas() {
   const statusCounts = useMemo(() => {
     const counts = { completo: 0, incompleto: 0 };
     unidades.forEach((e) => {
-      counts[getStatus(e)]++;
+      counts[getStatus(e, detalheByUnidadeId.get(e.id))]++;
     });
     return counts;
-  }, [unidades]);
+  }, [detalheByUnidadeId, unidades]);
 
 
 
@@ -243,23 +266,36 @@ export default function Escolas() {
     setDocsPanelOpen(true);
   };
 
-  const handleExportSelection = () => {
+  const handleExportSelection = async () => {
     try {
-      const exportData = lista.map(u => ({
-        "INEP": u.inep,
-        "CNPJ": u.cnpj,
-        "Designação": u.designacao,
-        "Nome": u.nome,
-        "Diretor(a)": u.diretor,
-        "Status": getStatus(u) === "completo" ? "Completo" : "Incompleto"
-      }));
+      // Lazy-import keeps exceljs out of the initial bundle.
+      const { default: ExcelJS } = await import("exceljs");
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Unidades");
+      worksheet.columns = [
+        { header: "INEP", key: "inep", width: 12 },
+        { header: "CNPJ", key: "cnpj", width: 20 },
+        { header: "Designação", key: "designacao", width: 40 },
+        { header: "Nome", key: "nome", width: 40 },
+        { header: "Diretor(a)", key: "diretor", width: 30 },
+        { header: "Status", key: "status", width: 14 },
+      ];
+      lista.forEach((u) => {
+        worksheet.addRow({
+          inep: u.inep ?? "",
+          cnpj: u.cnpj ?? "",
+          designacao: u.designacao ?? "",
+          nome: u.nome ?? "",
+          diretor: u.diretor ?? "",
+          status: getStatus(u, detalheByUnidadeId.get(u.id)) === "completo" ? "Completo" : "Incompleto",
+        });
+      });
+      worksheet.getRow(1).font = { bold: true };
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Unidades");
-      
-      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-      const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const buffer = await workbook.xlsx.writeBuffer();
+      const data = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
       saveAs(data, `PDDE_Selecao_4CRE_${exercicio}.xlsx`);
       toast.success("Seleção exportada com sucesso!");
     } catch (err) {
@@ -268,39 +304,35 @@ export default function Escolas() {
     }
   };
 
-  const handleGenerateZip = async () => {
-    try {
-      setConfirmLote(false);
-      const zip = new JSZip();
-      
-      const resumos = zip.folder(`Resumos_Cadastrais_Preliminares_${exercicio}`);
-      if (!resumos) return;
+  const unidadesAlvoLote = useMemo(() => {
+    if (!unidadesDetalhe) return [];
+    const idsFiltrados = new Set(lista.map((u) => u.id));
+    return unidadesDetalhe.filter((u) => u.unidade_id && idsFiltrados.has(u.unidade_id));
+  }, [unidadesDetalhe, lista]);
 
-      lista.forEach(u => {
-        const textContent = [
-          "RESUMO CADASTRAL PRELIMINAR",
-          "",
-          "Artefato técnico preliminar, sem valor de documento oficial.",
-          "Não substitui prestação de contas, demonstrativo oficial, assinatura, validação humana ou conferência documental.",
-          "",
-          `Unidade: ${u.designacao}`,
-          `Nome: ${u.nome || "Não informado"}`,
-          `INEP: ${u.inep || "N/A"}`,
-          `CNPJ: ${u.cnpj || "N/A"}`,
-          `Diretor(a): ${u.diretor || "N/A"}`,
-          `Exercício: ${exercicio}`,
-          "",
-        ].join("\n");
-        resumos.file(`Resumo_Cadastral_${u.inep || u.id}.txt`, textContent);
+  const cadastroEssencialOkLote = useMemo(
+    () =>
+      unidadesAlvoLote.filter((u) =>
+        hasCadastroEssencialCompleto(u),
+      ).length,
+    [unidadesAlvoLote],
+  );
+
+  const handleGenerateLote = () => {
+    setConfirmLote(false);
+    if (unidadesAlvoLote.length === 0) {
+      toast.warning("Nenhuma unidade encontrada nos filtros atuais.", {
+        description: "Aguarde o carregamento dos dados completos ou ajuste os filtros.",
       });
-
-      const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, `Resumos_Cadastrais_Preliminares_4CRE_${exercicio}.zip`);
-      toast.success("Resumos cadastrais preliminares gerados com sucesso!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao gerar os resumos preliminares.");
+      return;
     }
+
+    void lote.start({
+      unidades: unidadesAlvoLote,
+      exercicio,
+      programa: PROGRAMA,
+      totalCadastrado: unidades.length,
+    });
   };
 
   return (
@@ -423,16 +455,20 @@ export default function Escolas() {
               size="sm"
               className="h-10"
               onClick={() => setConfirmLote(true)}
-              disabled={unidades.length === 0}
+              disabled={unidades.length === 0 || loadingDetalheLista || lote.phase === "running"}
             >
-              <FileSpreadsheet className="mr-2 h-4 w-4" /> Gerar resumos (.zip)
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              {lote.phase === "running"
+                ? `Gerando ${lote.progress.done}/${lote.progress.total}`
+                : "Gerar demonstrativos (.zip)"}
             </Button>
           </div>
         </div>
 
         {/* Table */}
         <Card className="ds-card overflow-hidden">
-          <Table className="table-fixed">
+          <div className="overflow-x-auto">
+            <Table className="table-fixed min-w-[800px]">
               <colgroup>
                 <col className="w-[38%]" />
                 <col className="w-[24%]" />
@@ -464,13 +500,32 @@ export default function Escolas() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {Array.from({ length: COLUMNS }).map((__, j) => (
-                        <TableCell key={j} className="py-3">
-                          <Skeleton className={`h-4 ${j === 0 ? "w-3/4" : "w-16 ml-auto"}`} />
-                        </TableCell>
-                      ))}
+                  // Refined skeleton — matches real column rhythm and gives a
+                  // sense of layout before data arrives, instead of generic bars.
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow
+                      key={i}
+                      className="border-b border-border/30"
+                      style={{ animationDelay: `${i * 40}ms` }}
+                    >
+                      <TableCell className="py-3.5">
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-3.5 w-3/4" />
+                          <Skeleton className="h-3 w-1/2 opacity-60" />
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <Skeleton className="h-3.5 w-2/3" />
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <Skeleton className="mx-auto h-3.5 w-24" />
+                      </TableCell>
+                      <TableCell className="py-3.5 text-right">
+                        <Skeleton className="ml-auto h-7 w-7 rounded-md" />
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : error ? (
@@ -527,7 +582,7 @@ export default function Escolas() {
                 ) : (
                   <>
                     {lista.map((e) => {
-                      const st = getStatus(e);
+                      const st = getStatus(e, detalheByUnidadeId.get(e.id));
                       const cfg = statusConfig[st];
                       return (
                         // Keep rows native: row-accent/motion.tr already caused column drift in this table.
@@ -584,9 +639,9 @@ export default function Escolas() {
                                 <FileText className="h-3.5 w-3.5" />
                                 Gerar documentos
                               </Button>
-                              <div className="flex items-center justify-center text-[10px] text-muted-foreground">
-                                <span>Em breve</span>
-                              </div>
+                              <p className="text-center text-[10px] text-muted-foreground">
+                                Demonstrativo Básico disponível
+                              </p>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
@@ -604,7 +659,8 @@ export default function Escolas() {
                   </>
                 )}
               </TableBody>
-          </Table>
+            </Table>
+          </div>
         </Card>
 
         {/* Footer */}
@@ -624,16 +680,18 @@ export default function Escolas() {
         open={confirmLote}
         onOpenChange={setConfirmLote}
         tone="primary"
-        title="Gerar resumos cadastrais preliminares"
+        title={`Gerar ${unidadesAlvoLote.length} demonstrativos das unidades filtradas?`}
         description={
           <>
-            Será gerado um arquivo <strong>.zip</strong> com resumos cadastrais preliminares
-            das unidades filtradas. Estes arquivos são artefatos técnicos preliminares e não têm valor de documento oficial.
+            Sera gerado um arquivo <strong>.zip</strong> contendo um Demonstrativo Basico individual
+            para cada unidade filtrada no exercicio <strong>{exercicio}</strong>. Dados fiscais
+            ou financeiros ausentes nao bloqueiam esta fase; inconsistencias cadastrais entram
+            no relatorio de pendencias cadastrais.
           </>
         }
-        highlight={`${lista.length} unidades filtradas serão processadas`}
-        confirmLabel="Gerar resumos"
-        onConfirm={handleGenerateZip}
+        highlight={`${unidadesAlvoLote.length} de ${lista.length} unidades filtradas serao processadas · ${cadastroEssencialOkLote} com cadastro essencial OK`}
+        confirmLabel="Iniciar geracao"
+        onConfirm={handleGenerateLote}
       />
 
       <DocumentsPanel

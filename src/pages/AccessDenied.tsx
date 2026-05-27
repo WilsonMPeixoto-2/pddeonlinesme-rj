@@ -54,7 +54,7 @@ export default function AccessDenied() {
               className="mt-2"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar ao Dashboard
+              Voltar ao Painel
             </Button>
           </CardContent>
         </Card>

@@ -2,43 +2,40 @@
 
 Registro de decisões e entregas visuais/transversais já presentes no app.
 
-## 2026-05-11 — Demonstrativo Básico real no DocumentsPanel + fix estrutural da tabela /escolas
+## 2026-05-26 — Modernização Tecnológica, Performance & Governança (Frente 1)
 
-Entrega final do PR #43 (merge commit `4d97a9c`). Dois fixes de UI integration aplicados ao mesmo commit (`5202313`):
+O PR `docs/state-reconcile-after-pr43` entregou otimizações cruciais de performance e arquitetura robusta de validação:
 
-### Fix 1 — Tabela /escolas: regressão de alinhamento de colunas
+- **Zero-Latency Navigation:** React Query prefetching no hover (`onMouseEnter`) de TableRow em `/escolas` pré-carrega a ficha da unidade em background.
+- **Governança Cadastral (Zod Schema):** Validador Zod aritmético de CNPJ (Módulo 11), regex de INEP (8 dígitos) e e-mail institucional estrito em `src/schemas/unidadeSchema.ts`.
+- **Otimização do Build (Vite/Rollup):** Divisão manual de bundle (`manualChunks`) em `vite.config.ts` isolando recharts e framer-motion, reduzindo o chunk principal de 1.96 MB para 188 kB.
+- **Premium Loading (Shimmer):** Loading skeletons com efeito cintilante (Shimmer wave) integrado globalmente via `skeleton.tsx`.
+- **Performance de Banco:** Adicionados índices compostos inteligentes (`idx_execucao_financeira_unidade_exercicio_prog` e `idx_contas_bancarias_unidade_principal`) via migração para acelerar consultas.
 
-Causa: combinação `motion.tr` (com prop `layout` do framer-motion) + classe CSS `.row-accent` (pseudo-elemento `::before` com `position: absolute` dentro do `<tr>`) quebrava o cálculo nativo de colunas em `<table>`. Esse era o terceiro retorno do mesmo bug visual, originalmente corrigido pelo commit `baceb7735e` (2026-04-30) e reincidido em PRs visuais posteriores.
+## 2026-05-11 — Fixes de integracao UI entregues no PR #43
 
-Fix estrutural:
+O commit final do PR #43 (`5202313`) corrigiu dois bugs de integracao visual detectados durante smoke operacional autenticado (validacao local por agente, sem artefato versionado no repo).
 
-- substituído `motion.tr` por `TableRow` nativo;
-- removido `<AnimatePresence>` wrapper do `<TableBody>`;
-- adicionado `Table className="table-fixed"`;
-- adicionado `<colgroup>` com larguras percentuais (38% Unidade escolar / 24% Diretor(a) / 13% Status / 17% Documentos / 8% Ações);
-- classe `.row-accent` **removida completamente** de `src/index.css` para impedir reintroduções acidentais;
-- comentário anti-regressão em `src/pages/Escolas.tsx`: `// Keep rows native: row-accent/motion.tr already caused column drift in this table.`
+### Fix 1 — Tabela /escolas: desalinhamento de colunas
 
-### Fix 2 — DocumentsPanel integrado ao gerador real (Opção B na listagem)
+**Causa:** `motion.tr` do Framer Motion, combinado com a classe `row-accent`, interferia no calculo de largura das colunas, causando desalinhamento visual entre `thead` e `tbody`.
 
-Causa: o `DocumentsPanel` (painel lateral acionado pelo botão "Gerar documentos" na listagem `/escolas`) era um stub com `setTimeout(1100) + toast.success`. Mostrava o toast verde de sucesso, mas nenhum `.xlsx` era de fato baixado. O gerador real existia no PR #43 mas estava conectado apenas ao botão individual em `/escolas/:id`.
+**Fix estrutural:** substituido `motion.tr` por `TableRow` nativo. Aplicado `table-fixed` no `<table>` e `<colgroup>` com larguras percentuais explicitas para cada coluna.
 
-Fix funcional:
+**Arquivo:** `src/pages/Escolas.tsx`
 
-- `DocumentsPanel` recebe `unidadeId` e `programa` como props;
-- usa `useUnidadeDetalhe` para buscar `vw_unidade_detalhe` quando o painel está aberto;
-- chama `generateDemonstrativoBasico(unidade, exercicio)` e dispara `saveAs(blob, fileName)` no fluxo real;
-- `toast.success` ocorre apenas após o `saveAs` retornar;
-- erros viram `toast.error` com mensagem específica;
-- `aria-busy` propagado no botão durante `isGenerating` ou `isPreparing` (busca do detalhe);
-- outros 5 documentos do painel continuam como `toast.info("em desenvolvimento")` (placeholders honestos);
-- botão "Pacote completo (.zip)" virou placeholder honesto até que os outros documentos existam.
+### Fix 2 — DocumentsPanel: mock substituido por gerador real
 
-Teste novo: `src/components/DocumentsPanel.test.tsx` cobre o caminho feliz com mocks de `saveAs`, `toast`, `useUnidadeDetalhe` e `generateDemonstrativoBasico` — verifica que o clique no Demonstrativo Básico dentro do painel chama o gerador real, dispara `saveAs` e mostra `toast.success` com o nome do arquivo.
+**Causa:** o `DocumentsPanel` em `EscolaEditar.tsx` exibia cards mockados com dados hardcoded, sem conexao ao gerador `generateDemonstrativoBasico`.
 
-### Validação em produção
+**Fix funcional:** integrado o painel com `useUnidadeDetalhe` (hook React Query para `vw_unidade_detalhe`), `generateDemonstrativoBasico` (gerador ExcelJS) e `file-saver saveAs` para download direto do `.xlsx`.
 
-Playwright autenticado contra `https://pddeonlinesme-rj.vercel.app` passou 6/6 em 2026-05-11: login HTTP 200, /escolas 163 linhas, header 5 colunas == body 5 colunas, 2 `.xlsx` gerados (33635 e 33647 bytes), `MEMORIA` preenchida, aba `BASE` ausente, sem `#REF!`/`#VALUE!`/`#NAME?`, sem refs `BASE!`/`XLOOKUP` nas fórmulas.
+**Arquivos:** `src/pages/EscolaEditar.tsx`, `src/components/escola/DocumentsPanel.tsx`
+
+### Validacao em producao
+
+Smoke autenticado executado localmente por agente apos merge do PR #43. Rotas autenticadas verificadas operacionalmente em producao. Este smoke nao possui artefato versionado no repositorio.
+
 
 ## 2026-05-02 — Light Mode institucional premium
 
@@ -121,4 +118,3 @@ Esta entrega foi incorporada pelo PR #30.
 * Não tratar Light Mode, ThemeToggle ou Premium UI Kit como pendências da migração Supabase.
 * A próxima frente de acesso deve integrar os papéis reais do banco ao frontend, sem redefinir a base RBAC já criada em migrations.
 * Alterações em auth, guards, RLS, roles ou dados reais continuam exigindo revisão humana de segurança.
-* `motion.tr` + `framer-motion layout` + pseudo-elementos absolutos dentro de `<tr>` são padrões a evitar em tabelas HTML nativas (regressão histórica documentada em 2026-05-11; fix estrutural com `table-fixed` + `colgroup` no PR #43).

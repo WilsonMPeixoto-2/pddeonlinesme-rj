@@ -17,8 +17,11 @@ description: Use para iniciar ou encerrar tarefas no PDDE Online 2026 com leitur
 
 ## Depois de agir
 
-1. Atualize `.continuity/current-state.json`.
-2. Acrescente uma linha em `.continuity/session-log.jsonl`.
-3. Atualize `docs/HANDOFF.md`.
-4. Atualize `docs/DECISIONS.md`, `docs/ROADMAP_ADAPTIVE.md` ou `docs/OPPORTUNITIES_BACKLOG.md` quando houver mudanca de rumo.
+Depois de agir, avalie se houve mudanca operacional relevante.
+
+Atualize `.continuity/current-state.json`, `.continuity/session-log.jsonl` e `docs/HANDOFF.md` apenas quando a tarefa alterar estado, escopo, prioridade, decisao, risco, marco atual ou informacao necessaria para a proxima retomada.
+
+Atualize `docs/DECISIONS.md`, `docs/ROADMAP_ADAPTIVE.md` ou `docs/OPPORTUNITIES_BACKLOG.md` somente quando houver mudanca real de rumo, prioridade, criterio de aceite ou alocacao no Plano Global.
+
+Nao abrir PR exclusivamente documental por drift pequeno de SHA ou metadado historico sem impacto operacional.
 

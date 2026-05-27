@@ -1,0 +1,9 @@
+pymupdf
+pdfplumber
+pydantic
+python-dateutil
+pytest
+rich
+typer
+lxml
+xmltodict

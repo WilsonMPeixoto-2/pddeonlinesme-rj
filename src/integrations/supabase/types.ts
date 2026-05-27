@@ -12,8 +12,206 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          field_name: string | null
+          id: string
+          metadata: Json | null
+          new_value: Json | null
+          old_value: Json | null
+          record_id: string | null
+          source: string | null
+          source_run_id: string | null
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          field_name?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          record_id?: string | null
+          source?: string | null
+          source_run_id?: string | null
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          field_name?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          record_id?: string | null
+          source?: string | null
+          source_run_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
+      bulk_update_items: {
+        Row: {
+          created_at: string
+          field_name: string
+          id: string
+          key_type: string
+          key_value: string
+          message: string | null
+          new_value: string | null
+          old_value: string | null
+          raw_payload: Json | null
+          row_number: number
+          run_id: string
+          status: string
+          unidade_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          field_name: string
+          id?: string
+          key_type: string
+          key_value: string
+          message?: string | null
+          new_value?: string | null
+          old_value?: string | null
+          raw_payload?: Json | null
+          row_number: number
+          run_id: string
+          status: string
+          unidade_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          field_name?: string
+          id?: string
+          key_type?: string
+          key_value?: string
+          message?: string | null
+          new_value?: string | null
+          old_value?: string | null
+          raw_payload?: Json | null
+          row_number?: number
+          run_id?: string
+          status?: string
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_update_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_update_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_update_items_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades_escolares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_update_items_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidade_detalhe"
+            referencedColumns: ["unidade_id"]
+          },
+          {
+            foreignKeyName: "bulk_update_items_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidades_localizador"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_update_runs: {
+        Row: {
+          applied_count: number
+          created_at: string
+          created_by: string
+          error_count: number
+          file_hash: string
+          file_name: string
+          id: string
+          metadata: Json | null
+          mode: string
+          skipped_count: number
+          status: string
+          target_table: string
+          total_rows: number
+          updated_at: string
+        }
+        Insert: {
+          applied_count?: number
+          created_at?: string
+          created_by?: string
+          error_count?: number
+          file_hash: string
+          file_name: string
+          id?: string
+          metadata?: Json | null
+          mode?: string
+          skipped_count?: number
+          status?: string
+          target_table?: string
+          total_rows: number
+          updated_at?: string
+        }
+        Update: {
+          applied_count?: number
+          created_at?: string
+          created_by?: string
+          error_count?: number
+          file_hash?: string
+          file_name?: string
+          id?: string
+          metadata?: Json | null
+          mode?: string
+          skipped_count?: number
+          status?: string
+          target_table?: string
+          total_rows?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contas_bancarias: {
         Row: {
           agencia: string | null
@@ -68,6 +266,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      document_generation_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          doc_type: string
+          exercicio: number
+          falhas: Json
+          id: string
+          metadata: Json | null
+          programa: string
+          started_at: string
+          status: string
+          total_alvo: number
+          total_falha: number
+          total_sucesso: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          doc_type: string
+          exercicio: number
+          falhas?: Json
+          id?: string
+          metadata?: Json | null
+          programa?: string
+          started_at?: string
+          status?: string
+          total_alvo: number
+          total_falha?: number
+          total_sucesso?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          doc_type?: string
+          exercicio?: number
+          falhas?: Json
+          id?: string
+          metadata?: Json | null
+          programa?: string
+          started_at?: string
+          status?: string
+          total_alvo?: number
+          total_falha?: number
+          total_sucesso?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       execucao_financeira: {
         Row: {
@@ -365,12 +617,53 @@ export type Database = {
       }
     }
     Functions: {
+      admin_assign_role: {
+        Args: {
+          p_email: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: string
+      }
+      admin_revoke_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      apply_partial_bulk_update: {
+        Args: { p_file_hash: string; p_file_name: string; p_items: Json }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      list_admin_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          email_confirmed_at: string
+          last_sign_in_at: string
+          roles: string[]
+          user_id: string
+        }[]
+      }
+      update_unidade_cadastro_minima: {
+        Args: {
+          p_agencia: string
+          p_banco: string
+          p_conta_corrente: string
+          p_diretor: string
+          p_endereco: string
+          p_nome: string
+          p_unidade_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
@@ -500,6 +793,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "operador"],

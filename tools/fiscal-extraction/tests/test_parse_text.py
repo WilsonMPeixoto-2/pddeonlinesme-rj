@@ -1,0 +1,126 @@
+from decimal import Decimal
+from pathlib import Path
+
+import pytest
+from pydantic import ValidationError
+
+from fiscal_extraction.extract_pdf_text import parse_fiscal_text
+from fiscal_extraction.models import FiscalExtractionResult, FiscalItem
+from fiscal_extraction.validators import validate_result
+
+
+SAMPLES = Path(__file__).resolve().parents[1] / "samples"
+
+
+def test_parse_synthetic_nf_text():
+    sample_path = SAMPLES / "synthetic_nf_text.txt"
+    result = parse_fiscal_text(sample_path.read_text(encoding="utf-8"), source_file=sample_path)
+
+    assert result.source_type == "manual_text"
+    assert result.document_type == "NF-e"
+    assert result.document_number == "1234"
+    assert result.access_key == "35260511222333000181550010000012341123456782"
+    assert result.issue_date.isoformat() == "2026-05-15"
+    assert result.supplier.cnpj == "11222333000181"
+    assert result.supplier.name == "ALFA MATERIAIS PEDAGOGICOS LTDA"
+    assert result.recipient.cnpj == "04252011000110"
+    assert result.recipient.name == "ESCOLA MUNICIPAL TESTE PDDE"
+    assert result.total_value == Decimal("1234.56")
+    assert result.confidence == 1.0
+    assert result.status == "extraido"
+    assert result.warnings == []
+
+
+def test_parse_pdf_text_source_type_without_pdf_binary():
+    result = parse_fiscal_text(
+        (SAMPLES / "synthetic_nf_text.txt").read_text(encoding="utf-8"),
+        source_file="synthetic.local.pdf",
+    )
+
+    assert result.source_type == "pdf_text"
+
+
+def test_parse_incomplete_text_requires_review():
+    raw_text = """
+    NOTA FISCAL ELETRONICA - NF-e
+    Emitente / Fornecedor
+    Razao Social: FORNECEDOR FICTICIO INVALIDO LTDA
+    CNPJ: 11.222.333/0001-82
+    Destinatario
+    CNPJ: 00.000.000/0000-00
+    Data de Emissao: 15/05/2026
+    """
+
+    result = parse_fiscal_text(raw_text, source_file="incomplete.local.txt")
+
+    assert result.source_type == "manual_text"
+    assert result.status == "requer_revisao"
+    assert result.confidence < 0.5
+    assert "emitente: CNPJ invalido" in result.warnings
+    assert "destinatario: CNPJ invalido" in result.warnings
+    assert "numero do documento ausente" in result.warnings
+    assert "valor total ausente" in result.warnings
+
+
+def test_parse_missing_cnpj_warns_and_requires_review():
+    raw_text = """
+    Nota Fiscal
+    Emitente / Fornecedor
+    Razao Social: FORNECEDOR FICTICIO SEM CNPJ LTDA
+    Numero da Nota: 4321
+    Data de Emissao: 15/05/2026
+    Valor Total da Nota: R$ 10,00
+    """
+
+    result = parse_fiscal_text(raw_text, source_file="missing-cnpj.local.txt")
+
+    assert result.status == "requer_revisao"
+    assert "emitente: CNPJ ausente" in result.warnings
+
+
+def test_parse_invalid_access_key_requires_review():
+    raw_text = """
+    NOTA FISCAL ELETRONICA - NF-e
+    Emitente / Fornecedor
+    Razao Social: FORNECEDOR FICTICIO LTDA
+    CNPJ: 11.222.333/0001-81
+    Destinatario
+    Razao Social: ESCOLA MUNICIPAL TESTE PDDE
+    CNPJ: 04.252.011/0001-10
+    Numero da Nota: 1234
+    Data de Emissao: 15/05/2026
+    Chave de Acesso: 35260511222333000181550010000012341123456789
+    Valor Total da Nota: R$ 1.234,56
+    """
+
+    result = parse_fiscal_text(raw_text, source_file="invalid-key.local.txt")
+
+    assert result.status == "requer_revisao"
+    assert result.confidence < 1.0
+    assert "chave de acesso com digito verificador invalido" in result.warnings
+
+
+def test_item_total_incoherence_requires_review():
+    result = FiscalExtractionResult(
+        document_type="Recibo",
+        document_number="999",
+        total_value=Decimal("10.00"),
+        items=[
+            FiscalItem(
+                description="Item ficticio",
+                quantity=Decimal("2"),
+                unit_value=Decimal("5.00"),
+                total_value=Decimal("9.00"),
+            )
+        ],
+    )
+
+    validated = validate_result(result)
+
+    assert validated.status == "requer_revisao"
+    assert "item 1: total incoerente" in validated.warnings
+
+
+def test_poc_status_rejects_human_review_states():
+    with pytest.raises(ValidationError):
+        FiscalExtractionResult(status="confirmado")

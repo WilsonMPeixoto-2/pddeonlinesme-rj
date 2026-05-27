@@ -1,113 +1,88 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-11T02:00:00-03:00",
+  "updated_at": "2026-05-17T00:00:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "4d97a9cba09fcfe155402f4c6b6679087fc3d19e",
-    "local_branch_for_this_pr": "docs/state-reconcile-after-pr43"
+    "base_commit": "d30ca39",
+    "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
-    "plan": "Plano Global v4.1 atualizado apos Supabase Foundation v1",
-    "plan_file": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "documentation reconciliation after Demonstrativo Basico Individual merge (PR #43)"
+    "plan": "Plano Global v4.2 (incorpora Radar de Inteligência Institucional)",
+    "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
+    "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
+    "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
+    "current_mode": "PR #83 (flexibilização Marco 11 v2 + 15 v2) mergeado em 18/05. PR atual em vôo: Marco 10B v2 — Atualização Parcial Assistida da BASE (audit_logs + bulk_update_runs + bulk_update_items + RPC + UI em /base + papaparse). Próximas frentes candidatas após Marco 10B v2: Relação de Bens (Marco 11 — bloqueado por template), expansão da whitelist (v2: endereço, banco, agência, conta, email), Portal Diretor (Marco 13 — depende de Marco 6B audit já entregue parcial)."
   },
-  "pull_requests": [
-    {
-      "number": 43,
-      "title": "feat(documentos): generate Demonstrativo Basico from school detail",
-      "head": "feat/demonstrativo-basico-individual",
-      "base": "main",
-      "state": "merged",
-      "merged_at": "2026-05-11T01:37:40Z",
-      "merge_commit": "4d97a9cba09fcfe155402f4c6b6679087fc3d19e",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/43",
-      "summary": "Wired DocumentsPanel to real generator and stabilized /escolas table. Merged via admin bypass of 'Protect main' Ruleset (1 required review unattainable as solo author)."
-    },
-    {
-      "number": 44,
-      "title": "Feat/dashboard real vw dashboard basico",
-      "head": "feat/dashboard-real-vw-dashboard-basico",
-      "base": "main",
-      "state": "merged",
-      "merge_commit": "9c47ed99887fb8df5ee2ba17251ff2c8591df989",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/44",
-      "summary": "Aligned Supabase project config to raluxyojqosfzrfozmpz and stopped tracking the local .env file."
-    },
-    {
-      "number": 42,
-      "title": "ops(agentic): add Codex continuity and workflow infrastructure",
-      "head": "ops/agentic-continuity-workflows",
-      "base": "main",
-      "state": "merged",
-      "merge_commit": "d7061edfbafd669d2064bd30af68a351ece57637",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/42"
-    },
-    {
-      "number": 41,
-      "title": "feat: dashboard B/C paths",
-      "head": "feat/dashboard-export-polish",
-      "base": "main",
-      "state": "merged",
-      "merge_commit": "89d2306cac1a5dc8767dbbdfa03c97619518627b",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/41"
-    },
-    {
-      "number": 40,
-      "title": "feat: integrate tech stack updates (preview)",
-      "head": "feat/tech-stack-integration",
-      "base": "main",
-      "state": "merged",
-      "merge_commit": "502dbeb4ea1e65367b672723d02fb7e629853934",
-      "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/40"
-    }
+  "recent_pull_requests": [
+    { "number": 83, "title": "fix: gerar 163 demonstrativos sem gate financeiro (Marco 11 v2 + 15 v2)", "state": "merged", "merge_commit": "d30ca39", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/83" },
+    { "number": 79, "title": "polish(painel): 10 refinamentos visuais sobrios sem redesign", "state": "merged", "merge_commit": "fac1d9b", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/79" },
+    { "number": 78, "title": "polish(escolas): replace misleading 'Em breve' with honest affordance", "state": "merged", "merge_commit": "381baff", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/78" },
+    { "number": 76, "title": "feat(painel): historico de geracoes documentais em lote", "state": "merged", "merge_commit": "5369ca1", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/76" },
+    { "number": 75, "title": "feat(roles): UI admin de papeis (Marco 6B v0)", "state": "merged", "merge_commit": "a1ec353", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/75" },
+    { "number": 74, "title": "chore(reconcile): regenerate types + reconcile docs after PR #72 + #73", "state": "merged", "merge_commit": "a706751", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/74" },
+    { "number": 73, "title": "feat(painel): Painel Executivo-Operacional GAD v1 + geracao em lote dos 163 Demonstrativos", "state": "merged", "merge_commit": "9f755ee", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/73" },
+    { "number": 72, "title": "docs: adopt Plano Global v4.2 + Radar de Inteligência Institucional", "state": "merged", "merge_commit": "b552cb2", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/72" },
+    { "number": 71, "title": "fix(unidades): make cadastro update atomic via SECURITY INVOKER RPC", "state": "merged", "merge_commit": "d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/71" },
+    { "number": 70, "title": "style(unidades): polish UnidadeCadastroEditDialog + Escolas skeleton", "state": "merged", "merge_commit": "9629b21a2947540050b9d3965805a2dd34fbcdd3", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/70" },
+    { "number": 69, "title": "chore(deps): remove xlsx (HIGH vuln) and migrate to exceljs", "state": "merged", "merge_commit": "c56adba56038e8c520e98bd3f088a9517b845732", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/69" },
+    { "number": 68, "title": "chore(deps): upgrade jsdom 20 → 29 and vitest 3 → 4", "state": "merged", "merge_commit": "194a309fcdb7d458745711364a7c26bacef92aa1", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/68" },
+    { "number": 67, "title": "chore(deps): upgrade Vite 5 → 7 and resolve esbuild vuln", "state": "merged", "merge_commit": "496bdbc787b50e3693f76e408da059dcbf90a7a6", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/67" },
+    { "number": 66, "title": "chore(deps): upgrade React 18 → 19 + apply optimistic cadastro updates", "state": "merged", "merge_commit": "9e8bce3bd17a4405aedde78f9f4c3ddda78b168a", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/66" },
+    { "number": 65, "title": "chore(deps): safe patch updates 2026-05-16", "state": "merged", "merge_commit": "510702a49b078b24956af29dde68cea0a4c72b33", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/65" },
+    { "number": 63, "title": "feat(unidades): implement minimal cadastro editing flow", "state": "merged", "merge_commit": "e6fd8171c058f0608cd704a11ed31f6418a8b044", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/63" },
+    { "number": 62, "title": "docs(fiscal): align validation protocol with 2026 architecture policy", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/62" },
+    { "number": 61, "title": "test(fiscal): cover extraction validators", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/61" },
+    { "number": 59, "title": "docs(fiscal): define validation protocol for fiscal extraction POC", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/59" },
+    { "number": 58, "title": "spike(fiscal): add document extraction proof of concept", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/58" },
+    { "number": 57, "title": "test(documentos): harden workbook generation and prepare Fase 2B contract", "state": "merged", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/57" }
   ],
-  "current_implementation": {
-    "sub_milestone": "Demonstrativo Basico Individual",
-    "status": "concluded",
-    "delivered_in_pr": 43,
-    "deployed_to_production": true,
-    "production_url": "https://pddeonlinesme-rj.vercel.app",
-    "production_bundle_after_deploy": "/assets/index-DKPVI_j8.js",
-    "production_bundle_before_deploy": "/assets/index-vzAbzjZJ.js",
-    "technical_decision": "Opcao B: preencher a aba MEMORIA diretamente com dados do Supabase",
-    "template": "public/templates/demonstrativo-basico-4cre-template.xlsx",
-    "template_public_state": "Sanitized on 2026-05-08: no BASE sheet, no real consolidated unit data, MEMORIA input cells blank.",
-    "generator_files": [
-      "src/lib/demonstrativo/templateCells.ts",
-      "src/lib/demonstrativo/mapUnidadeToMemoria.ts",
-      "src/lib/demonstrativo/generateDemonstrativoBasico.ts",
-      "src/lib/demonstrativo/generateDemonstrativoBasico.test.ts"
-    ],
-    "ui_entrypoints": [
-      "src/pages/EscolaEditar.tsx (botao individual da pagina de detalhe)",
-      "src/components/DocumentsPanel.tsx (painel acionado pela listagem /escolas)"
-    ],
-    "dependency_decision": "exceljs was added because xlsx does not preserve workbook template styles, borders and merged-cell fidelity reliably."
+  "delivered_state": {
+    "painel_visual_polish": "delivered in PR #79; 10 cirurgical refinements: removed font-light hero subtitle, removed empty 'Total' label in donut, replaced font-mono numerics with Inter+tabular-nums across all cards, CentralDocumental gets transition-shadow hover lift, TopReprogramados numbering becomes left rail (no truncate cutoff), bar gradient becomes solid, DistribuicaoDeRecursos pct color consistency, HistoricoGeracoes row meta becomes horizontal + hover affordance, TableHeader tracking adjusted to eyebrow institucional",
+    "escolas_microcopy_fix": "delivered in PR #78; 'Em breve' misleading label replaced with 'Demonstrativo Básico disponível' affordance",
+    "admin_roles_ui": "delivered in PR #75 (Marco 6B v0); /configuracoes shows real users from auth.users JOIN user_roles via list_admin_users RPC; assign and revoke roles via UI; anti-self-lockout guardrail; migration 20260517130000 applied to prod",
+    "painel_historico_runs": "delivered in PR #76; HistoricoGeracoesCard on Painel showing top 5 most recent document_generation_runs with status icons + relative time + totals; aproveita base persistida do PR #73",
+    "painel_executivo_operacional_gad": "delivered in PR #73; page title 'Painel Executivo-Operacional · GAD · 4ª CRE'; sidebar 'Dashboard' renamed to 'Painel'; CentralDocumental + TopReprogramados + DistribuicaoDeRecursos cards added; index.html cleaned (Lovable references removed)",
+    "geracao_em_lote_163_demonstrativos": "delivered in PR #73; library generateDemonstrativosLote + hook useGerarDemonstrativosLote; AbortSignal honored; batched (default 6); history persisted in document_generation_runs; migration 20260517120000 applied to prod via supabase db push; types regenerated",
+    "plano_global_v4_2": "adopted in PR #72; v4.1 preserved as historic; Radar de Inteligencia Institucional formalized as transversal directive",
+    "demonstrativo_basico_individual": "concluded and merged; production deploy reported operationally; hardened with audits in PR #57",
+    "fase_2b_edicao_cadastral_minima": "implemented (PR #63), polished (PR #70), atomic via RPC (PR #71); migration applied to prod; smoke UI pending",
+    "stack_modernization": "React 19, Vite 7, Vitest 4, jsdom 29; xlsx removed; ExcelJS consolidated; 0 vulnerabilities; bundle reduced 21%",
+    "fiscal_poc": "isolated Python POC in tools/fiscal-extraction/ with validators, governance docs, ADR preliminar (DRAFT, not merged) — frozen until MVP CRE",
+    "documents_panel": "wired to real generator and covered by tests",
+    "governance_hygiene": "AGENTS.md, README, CI, lockfile, deps all hardened"
   },
-  "ui_fixes_delivered_in_pr43": {
-    "documents_panel_real_generator": {
-      "issue": "DocumentsPanel acionado pela listagem /escolas era mock: setTimeout(1100) + toast.success sem chamar gerador real nem disparar download.",
-      "fix": "Painel recebe unidadeId, usa useUnidadeDetalhe para buscar vw_unidade_detalhe, chama generateDemonstrativoBasico e dispara saveAs(blob, fileName). Toast.success agora ocorre apenas apos o saveAs. Outros 5 documentos do painel e o botao Pacote completo continuam como placeholders honestos (toast.info).",
-      "files": [
-        "src/components/DocumentsPanel.tsx",
-        "src/components/DocumentsPanel.test.tsx",
-        "src/pages/EscolaEditar.tsx",
-        "src/pages/Escolas.tsx"
-      ]
-    },
-    "escolas_table_column_alignment": {
-      "issue": "Tabela /escolas com colunas desalinhadas em relacao ao cabecalho. Regressao do commit baceb7735e (fix original em 2026-04-30) reincidida apos PRs visuais posteriores.",
-      "root_cause": "Combinacao de motion.tr (com prop layout do framer-motion) + classe CSS .row-accent (pseudo-elemento ::before com position absolute dentro do <tr>) quebrava o calculo nativo de colunas em <table>.",
-      "fix": "Substituido por TableRow nativo + Table className=table-fixed + <colgroup> com larguras percentuais (38/24/13/17/8). Classe .row-accent removida completamente de src/index.css para impedir reintroducao acidental. Comentario anti-regressao em src/pages/Escolas.tsx.",
-      "files": [
-        "src/pages/Escolas.tsx",
-        "src/index.css"
-      ]
-    }
+  "next_priority": {
+    "current_pr": "docs/reconcile-post-pr78-pr79 (this PR — closes night session reconcile)",
+    "immediate_next_step": "smoke operacional manual (Wilson) — NÃO abrir nova frente funcional antes",
+    "smoke_checklist": [
+      "/painel: hero + 3 cards (TopReprogramados / DistribuicaoDeRecursos / HistoricoGeracoes) + CentralDocumental gera 163 demonstrativos com ZIP + entry no histórico",
+      "/configuracoes: lista real de usuários (admin Wilson + operador wilsonmp2) + assign/revoke role + bloqueio anti-self-lockout",
+      "/escolas: clicar 'Gerar documentos' em uma linha → DocumentsPanel com Demonstrativo Básico disponível"
+    ],
+    "next_functional_pr_candidates_pos_smoke": [
+      "feat/documentos-relacao-bens (Marco 11 — 2º documento oficial, depende de template)",
+      "feat/audit-logs (sub-Marco 6B — trilha de mutações sensíveis)",
+      "feat/importador-via-ui (Marco 10B — substitui upload simples, dry-run/diff/hash)",
+      "feat/painel-historico-page (página dedicada /painel/historico se uso crescer)"
+    ]
   },
+  "applied_migrations_post_main": [
+    { "name": "20260517120000_document_generation_runs.sql", "applied_at": "2026-05-17T08:30:00-03:00", "method": "supabase db push --linked" },
+    { "name": "20260517130000_admin_user_management.sql", "applied_at": "2026-05-17T12:00:00-03:00", "method": "supabase db push --linked" },
+    { "name": "20260518060000_bulk_update_audit.sql", "applied_at": "2026-05-18T06:50:00-03:00", "method": "supabase db push --linked" }
+  ],
+  "planned_not_urgent": [
+    { "item": "UI admin para gerenciar usuários e roles", "allocation": "Marco 6B", "note": "Elimina INSERT manual via service_role" },
+    { "item": "Login público, cadastro, password recovery, MFA", "allocation": "Marco 6B", "note": "Sobe em prioridade pois sistema já escreve dados" },
+    { "item": "Importador institucional com dry-run, diff, hash", "allocation": "Marco 10B", "note": "Nunca service_role no browser" },
+    { "item": "Portal do Diretor mobile-first", "allocation": "Marco 13", "note": "Depende Marco 6B + diretor-escola link + RLS" },
+    { "item": "Outros documentos além do Demonstrativo (Relação de Bens, Termo, Parecer)", "allocation": "Marcos 11+12", "note": "Templates oficiais + revisão humana de regras" },
+    { "item": "Aquisição Fiscal Multicanal (XML/chave/QR/URL/OCR ordenado)", "allocation": "Frente fiscal v1", "note": "Spike pós-MVP da 4ª CRE; ideia salva em reference_pdde_fiscal_acquisition_layer_idea" },
+    { "item": "Hardening pré-produção (WCAG, performance, logs, SLOs)", "allocation": "Marco 14", "note": "Contínuo" }
+  ],
   "document_generation_constraints": [
-    "Fill MEMORIA directly from vw_unidade_detalhe data",
+    "Fill MEMORIA directly from vw_unidade_detalhe data (Opção B)",
     "Do not depend on the BASE sheet for the individual file",
     "Do not depend on XLOOKUP for the individual file",
     "Do not publish templates in public/ with real consolidated BASE data",
@@ -117,49 +92,36 @@
   ],
   "mandatory_before_task": [
     "Read AGENTS.md",
-    "Read .continuity/current-state.json",
-    "Read docs/HANDOFF.md",
+    "Read docs/PLANO_GLOBAL_V4_2.md (current plan)",
+    "Read docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md (transversal directive)",
+    "Read .continuity/current-state.json (this file) as a snapshot",
+    "Read docs/HANDOFF.md as a snapshot",
     "Read docs/DECISIONS.md",
     "Read docs/ROADMAP_ADAPTIVE.md",
     "Read docs/OPPORTUNITIES_BACKLOG.md",
-    "Read docs/PROJECT_STATE.md",
-    "Read docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md"
+    "Verify the actual GitHub main/head/code before deciding"
   ],
-  "mandatory_after_task": [
-    "Update .continuity/current-state.json",
-    "Append .continuity/session-log.jsonl",
-    "Update docs/HANDOFF.md",
-    "Update decisions, roadmap, or backlog when scope or priority changes"
+  "radar_obligatory_questions": [
+    "Existe fonte estruturada antes de digitar ou fazer OCR?",
+    "Existe padrão consolidado em sistemas públicos, ERPs ou design systems?",
+    "A tarefa pode virar alerta, status, histórico, gráfico, relatório ou evidência?",
+    "A solução reduz clique, memória, retrabalho ou planilha paralela?",
+    "A interface mostra o próximo passo ou apenas exibe dados?",
+    "A entrega é segura para dados reais, perfis, RLS, arquivos e auditoria?",
+    "O ganho pode ser demonstrado visualmente para chefia e Alta Administração?",
+    "A abordagem é adequada para 2026 ou apenas uma solução provisória?"
   ],
-  "last_validation": {
-    "production_deploy": "2026-05-11T01:38Z: Vercel auto-deploy after main push at 4d97a9c; production bundle changed from /assets/index-vzAbzjZJ.js to /assets/index-DKPVI_j8.js.",
-    "production_smoke": "2026-05-11: Playwright authenticated smoke against https://pddeonlinesme-rj.vercel.app passed 6/6 checks: login HTTP 200 redirected to /dashboard; /escolas loaded with 163 rows; table header 5 columns matched body 5 columns; .xlsx generated for EM EMA NEGRAO DE LIMA (33635 bytes) and EM ALBINO SOUZA CRUZ (33647 bytes); MEMORIA cells filled (B2/B3/B4/B6/F6/A52); no BASE sheet; no BASE!/XLOOKUP formula refs; no #REF!/#VALUE!/#NAME! stored in cells.",
-    "typescript": "passed: npx tsc --noEmit (2026-05-26 on local branch docs/state-reconcile-after-pr43 after npm update, manualChunks, prefetching and Zod schema)",
-    "lint": "passed with 0 errors and existing react-refresh warnings (2026-05-26)",
-    "tests": "passed: 3 test files / 3 tests (vitest run completed in 1.68s in 2026-05-26)",
-    "build": "passed: built successfully in 10.78s; dist/assets/index-DfQZa-Ho.js (main chunk only 188.73 kB!) with 0 circular warnings (2026-05-26)",
-    "branches_cleanup_remote": "Deleted from origin: feat/demonstrativo-basico-individual (PR 43 source after merge), feat/dashboard-real-vw-dashboard-basico (orphan, 0 ahead 16 behind). Only main remains.",
-    "higiene_lockfiles": "bun.lock e bun.lockb deletados fisicamente; package-lock.json consolidado como lockfile unico do npm em 2026-05-26.",
-    "banco_performance": "Criada migration de índices compostos em supabase/migrations/20260526000000_performance_indexes.sql para acelerar views de detalhe, listagens e agregação do dashboard.",
-    "modernizacao_frente1": "Implementada Zero-Latency Navigation via React Query prefetching no hover de TableRow em Escolas.tsx; Criado Data Governance Engine com Zod strict schema em src/schemas/unidadeSchema.ts com algoritmo mod11 para CNPJ e regex de INEP; Integrados Premium Shimmer loaders em skeleton.tsx."
-  },
-  "next_priority": {
-    "current_pr": "docs/state-reconcile-after-pr43 (documentation reconciliation; this PR)",
-    "after_this_pr": [
-      "PR docs(readme): replace Lovable placeholder README with project README",
-      "PR docs(agents): realign AGENTS.md to current tooling model (no Cursor as mandatory tool)",
-      "PR ci(minimal): add .github/workflows/ci.yml with tsc + lint + test + build; mark as required status check in Protect main Ruleset",
-      "PR chore(local): delete dir C:/Users/okidata/.gemini/antigravity/scratch/pddeonlinesme-rj-demonstrativo (git worktree already pruned, only physical leftover due to file lock)"
+  "documentation_update_policy": {
+    "rule": "Documentation follows development; it must not trap the project in reconciliation loops.",
+    "when_to_open_doc_only_pr": [
+      "When documentation can induce the next task to run against the wrong milestone or file path",
+      "When it marks completed work as pending or pending work as completed in a way that changes decisions",
+      "When a new decision changes scope, priority, safety or acceptance criteria"
     ],
-    "later": [
-      "Frente 2: PWA offline-first support (vite-plugin-pwa) e Supabase Real-Time subscriptions no dashboard",
-      "Marco 6B: Auth/roles/RLS final (gate antes do Portal do Diretor)",
-      "Marco 10B: Importador institucional via UI + Edge Function (mitiga xlsx HIGH severity)",
-      "Marco 11+12 (cheio): outros 5 documentos oficiais (Relacao de Bens Adquiridos, Termo de Doacao, Consolidacao de Pesquisas de Precos, Ata do Conselho Escolar, Parecer do Conselho Fiscal)",
-      "Marco 13: Portal do Diretor",
-      "Marco 14: Hardening pre-producao (a11y, perf bundle, logs, observabilidade)",
-      "Test coverage: ampliar DocumentsPanel.test.tsx para cobrir caminhos de erro (!unidadeId, isLoading, error, !unidade, rejection do gerador)",
-      "Operacional: rotacionar senha do operador wilsonmp2@gmail.com antes de qualquer divulgacao real do link de producao"
+    "when_to_fold_into_next_pr": [
+      "Minor commit SHA drift without operational consequence",
+      "Purely historical metadata that does not affect the next task",
+      "Small wording updates that do not alter priority or scope"
     ]
   }
 }
