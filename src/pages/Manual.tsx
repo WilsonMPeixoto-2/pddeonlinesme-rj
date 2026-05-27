@@ -107,6 +107,18 @@ const secoes = [
     ),
   },
   {
+    icon: ShieldCheck,
+    titulo: "Segurança e Conformidade",
+    resumo: "Conheça o ecossistema de proteção do PDDE Online.",
+    conteudo: (
+      <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
+        <li><strong>Row-Level Security (RLS):</strong> as tabelas do Supabase são blindadas nativamente no banco de dados. Mutações só podem ser executadas por diretores associados à sua própria escola ou por administradores autorizados.</li>
+        <li><strong>Multi-Factor Authentication (MFA):</strong> ative a autenticação de segundo fator OTP para a console de gestão, protegendo o acesso contra tentativas de invasão ou sequestro de credenciais.</li>
+        <li><strong>Trilhas de Auditoria Estritas:</strong> triggers nativos no banco de dados gravam em logs inalteráveis todas as modificações cadastrais e bancárias feitas por lote ou individualmente.</li>
+      </ul>
+    ),
+  },
+  {
     icon: HelpCircle,
     titulo: "Dúvidas frequentes",
     resumo: "Respostas rápidas.",
@@ -122,7 +134,7 @@ const secoes = [
         </div>
         <div>
           <p className="font-medium text-foreground">Como adicionar uma nova unidade escolar?</p>
-          <p>Acesse a aba Unidades Escolares e use o botão de adição (em breve), ou importe uma BASE atualizada.</p>
+          <p>Acesse a aba Unidades Escolares para editar dados cadastrais específicos, ou utilize o importador assistido em lote na aba Importar / Exportar BASE para atualizar em massa.</p>
         </div>
       </div>
     ),
@@ -182,8 +194,8 @@ export default function Manual() {
           </CardContent>
         </Card>
 
-        <p className="text-xs text-muted-foreground text-center">
-          Versão do protótipo · 4ª CRE — SME-RJ
+        <p className="text-xs text-muted-foreground text-center font-medium">
+          PDDE Online 2026 · GAD · 4ª CRE — SME-RJ
         </p>
       </div>
     </AppLayout>
