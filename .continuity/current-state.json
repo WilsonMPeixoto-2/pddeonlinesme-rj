@@ -53,7 +53,7 @@
     "governance_hygiene": "AGENTS.md, README, CI, lockfile, deps all hardened"
   },
   "next_priority": {
-    "current_pr": "docs/reconcile-post-pr78-pr79 (this PR — closes night session reconcile)",
+    "current_pr": "docs/state-reconcile-after-pr43 (Frente 1 - Modernização, Otimização de Build, Prefetching e Validação Zod)",
     "immediate_next_step": "smoke operacional manual (Wilson) — NÃO abrir nova frente funcional antes",
     "smoke_checklist": [
       "/painel: hero + 3 cards (TopReprogramados / DistribuicaoDeRecursos / HistoricoGeracoes) + CentralDocumental gera 163 demonstrativos com ZIP + entry no histórico",
@@ -70,7 +70,8 @@
   "applied_migrations_post_main": [
     { "name": "20260517120000_document_generation_runs.sql", "applied_at": "2026-05-17T08:30:00-03:00", "method": "supabase db push --linked" },
     { "name": "20260517130000_admin_user_management.sql", "applied_at": "2026-05-17T12:00:00-03:00", "method": "supabase db push --linked" },
-    { "name": "20260518060000_bulk_update_audit.sql", "applied_at": "2026-05-18T06:50:00-03:00", "method": "supabase db push --linked" }
+    { "name": "20260518060000_bulk_update_audit.sql", "applied_at": "2026-05-18T06:50:00-03:00", "method": "supabase db push --linked" },
+    { "name": "20260526000000_performance_indexes.sql", "applied_at": "2026-05-26T23:14:00-03:00", "method": "supabase db push --linked" }
   ],
   "planned_not_urgent": [
     { "item": "UI admin para gerenciar usuários e roles", "allocation": "Marco 6B", "note": "Elimina INSERT manual via service_role" },

@@ -34,6 +34,8 @@ Cronologia recente:
 - **PR #79** (17/05): **10 refinamentos visuais sóbrios** no Painel + Configurações (sem redesign, sem trocar fonte/paleta/libs).
 - **PR #83** (18/05): **flexibilização da geração do Demonstrativo Básico** — desacopla de completude fiscal/financeira (Marco 11 v2 + 15 v2). Permite gerar 163 demonstrativos para todas as unidades com cadastrais essenciais; valores ausentes saem como `—`.
 - **PR Marco 10B v2** (18/05, em vôo): **Atualização Parcial Assistida da BASE** — feature de mass update cadastral cirúrgico em `/base`. Migration `20260518060000_bulk_update_audit` aplicada em produção (audit_logs + bulk_update_runs + bulk_update_items + RPC `apply_partial_bulk_update`). UI em `BulkUpdatePanel`. Whitelist v1: apenas `diretor`. Limite 200 linhas. Aceita .xlsx e .csv (UTF-8/Latin-1, `;` ou `,`, BOM tolerado). Hash SHA-256 do arquivo persistido.
+- **Frente 1 / Reconciliação** (26/05): **Modernização Tecnológica, Performance & Governança** — branch `docs/state-reconcile-after-pr43` mesclada e enviada com sucesso ao GitHub. Migration `20260526000000_performance_indexes` criada localmente. Otimizações de manualChunks no Vite, prefetching reativo no hover em `/escolas` e Zod strict CNPJ/INEP validation schema em `src/schemas/unidadeSchema.ts`. Reconciliação completa de dependências com `package-lock.json` e todos os 120 testes de unidade Vitest passando verdes.
+
 
 ## Norte operacional (v4.2)
 

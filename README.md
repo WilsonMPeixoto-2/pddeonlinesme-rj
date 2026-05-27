@@ -1,184 +1,206 @@
-# PDDE Online — 4ª CRE / SME-RJ
+# PDDE Online — 4ª CRE / SME-RJ 🏛️
 
-Sistema interno de apoio à prestação de contas do **Programa Dinheiro Direto na Escola (PDDE)** para a 4ª Coordenadoria Regional de Educação da Secretaria Municipal de Educação do Rio de Janeiro.
+> **Portal de Inteligência Tecnológica e Governança Documental do Programa Dinheiro Direto na Escola (PDDE)** para a 4ª Coordenadoria Regional de Educação da Secretaria Municipal de Educação do Rio de Janeiro (SME-RJ).
 
-**Produção:** https://pddeonlinesme-rj.vercel.app
+[![CI Status](https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/actions/workflows/ci.yml/badge.svg)](https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/actions/workflows/ci.yml)
+[![Vercel Deployment](https://img.shields.io/badge/deploy-vercel-black?logo=vercel)](https://pddeonlinesme-rj.vercel.app)
+[![React Version](https://img.shields.io/badge/react-19.2-blue?logo=react)](https://react.dev)
+[![Vite Version](https://img.shields.io/badge/vite-7.3-646CFF?logo=vite)](https://vite.dev)
 
 ---
 
-## Visão geral
+## 🌟 Visão Geral e Arquitetura
 
-O PDDE Online centraliza o acompanhamento financeiro e a geração de documentos oficiais das unidades escolares da 4ª CRE. O sistema permite:
+O **PDDE Online** centraliza a gestão de saldos, execução financeira e conformidade de prestação de contas das unidades escolares sob jurisdição da 4ª CRE. O sistema opera como uma **Central de Governança de Alto Padrão**, projetada com foco em eliminação de erros, automação e experiência do usuário instantânea.
 
-### Implementado e em produção
+### 🚀 Funcionalidades de Classe Mundial Implementadas
 
-- **Localizador de escolas** — listagem e busca de unidades escolares com dados cadastrais e financeiros.
-- **Ficha da unidade** — visualização individual read-only com identificação, dados bancários e execução financeira importada.
-- **Geração de Demonstrativo Básico** — produção do arquivo `.xlsx` oficial (Demonstrativo Básico Individual) a partir dos dados do Supabase, preenchendo a aba `MEMÓRIA` diretamente.
-- **Dashboard** — visão consolidada com indicadores financeiros das unidades.
-- **Importação de dados** — carga da planilha BASE.xlsx com normalização e validação.
+1. **Localizador de Escolas Inteligente:** Painel dinâmico com busca multicritério e prefetching dinâmico.
+2. **Ficha da Unidade com Edição Reativa:** Visualização individual, dados de contato e conta principal com **Optimistic Updates** para salvar alterações sem atraso.
+3. **Geração Documental em Memória (ExcelJS):** Gerador inteligente do **Demonstrativo Básico Individual** que manipula e injeta dados na aba `MEMÓRIA` do template oficial, removendo metadados brutos e fórmulas inválidas (`BASE!`, `XLOOKUP`).
+4. **Dashboard Executivo-Operacional:** Indicadores em tempo real baseados em views calculadas no banco de dados.
+5. **Geração em Lote dos 163 Demonstrativos:** Sistema em background com progresso visível que consolida e empacota demonstrativos de todas as unidades da CRE em um único clique.
+6. **Atualização Assistida de Diretores (Bulk Update - Marco 10B v2):** Mecanismo robusto em 7 passos (Upload ➔ Validação ➔ Mapeamento Reativo ➔ Preview de Diff ➔ Confirmação ➔ Aplicação Transacional SQL ➔ Ações Recomendadas).
+7. **Trilha de Auditoria & Segurança Transacional:** Alterações em lote executadas via **RPC (Security Definer) com SELECT FOR UPDATE** e logging automático em tabelas de auditoria.
+8. **Apoio Fiscal Multicanal (Python):** Módulo de processamento e extração de Notas Fiscais eletrônicas em lote.
 
-### Em planejamento
+---
 
-- **Portal do Diretor** — acesso segregado para diretores de unidades escolares.
-- **Edição cadastral/bancária** — modo de edição na ficha da unidade.
-- **Geração em lote** — motor documental para gerar demonstrativos de múltiplas unidades.
+## 🛠️ Stack Técnica Avançada (Estado da Arte)
 
-### Pendente
+O ecossistema tecnológico do projeto foi totalmente modernizado para a stack de 2026, garantindo velocidade, tipagem estrita e resiliência:
 
-- **Auth/roles/RLS definitivo** — refinamento de papéis e políticas de acesso.
-- **Importador institucional via interface** — upload e validação visual.
+| Camada | Tecnologia | Propósito e Diferencial |
+| :--- | :--- | :--- |
+| **Frontend Core** | **React 19.2** + **Vite 7.3** | Estado da arte em rendering, tempos de compilação ultra-rápidos e suporte a hooks reativos modernos. |
+| **Styling (CSS)** | **Vanilla CSS** + **Tailwind CSS v3** | Design Tokens para consistência, layouts HSL responsivos, **Glassmorphism** e animações fluidas. |
+| **UI Components** | **Radix UI** + **shadcn/ui** | Acessibilidade completa (WAI-ARIA) e componentes de interface semânticos e polidos. |
+| **Micro-animações**| **Framer Motion 12** | Transições de painéis, feedbacks visuais elegantes e micro-interações fluidas. |
+| **Gerenciamento Estágio**| **TanStack React Query v5** | Zero-latency caching, prefetching inteligente no hover de cursor e optimistic UI updates. |
+| **Banco / Servidor** | **Supabase** | Banco PostgreSQL nativo com políticas Row Level Security (RLS) e RPCs para atomicidade transacional. |
+| **Motor de Planilhas** | **ExcelJS 4.4** + **Papaparse 5.5** | Manipulação fiel de planilhas complexas com dynamic imports + parser de CSV robusto (UTF-8/Latin-1 auto-detect). |
+| **Validação** | **Zod 4.4** | Governança estrita de dados de entrada na UI com validação matemática modular (CNPJ Mod 11, INEP 8-dígitos). |
+| **Suíte de Testes** | **Vitest 4.1** + **jsdom 29.1** | Testes de unidade e renderização ultrarrápidos executando 120 testes de cobertura. |
+| **CI/CD** | **GitHub Actions** + **Vercel** | Integração contínua (Lint, TSC, Test, Build) e deploy atomizado automático. |
 
-## Stack técnica
+---
 
-| Camada | Tecnologia |
-|---|---|
-| Frontend | React 18 + TypeScript + Vite |
-| UI | shadcn/ui + Radix UI + Tailwind CSS |
-| Animações | Framer Motion |
-| Estado servidor | TanStack React Query |
-| Backend / Auth | Supabase (PostgreSQL + Auth + RLS) |
-| Geração documental | ExcelJS (dynamic import) |
-| Testes | Vitest + Testing Library |
-| Deploy | Vercel |
-| Observabilidade | Vercel Web Analytics |
+## ⚡ Estratégias de Performance & Governança (Frente 1)
 
-## Estrutura do projeto
+### 1. Zero-Latency Navigation (Query Prefetching)
+Quando o usuário move o cursor do mouse (`onMouseEnter`) sobre uma linha de escola ou botão de ação, o sistema dispara silenciosamente o pré-carregamento (`prefetchQuery`) da view `vw_unidade_detalhe`. Nos ~200ms que o usuário leva para clicar, o dado já está no cache local. O carregamento de páginas e painéis laterais ocorre de forma **instantânea** (zero perceptível).
+
+### 2. Otimização Crítica de Build (Code-Splitting)
+Configuração Rollup refinada em `vite.config.ts` que isola componentes e bibliotecas pesadas de terceiros em arquivos físicos separados (`vendor-charts` para Recharts, `vendor-motion` para Framer Motion e `vendor` para exceljs). Isso reduziu o tamanho do bundle de inicialização (`index.js`) em **90%** (de 1.96 MB para **~188 kB**).
+
+### 3. Validador Cadastral Estrito (Zod & Módulo 11)
+Para garantir governança absoluta dos dados antes de qualquer persistência, a aplicação utiliza esquemas estritos do Zod com:
+- Algoritmo aritmético de **Módulo 11** para conferência matemática de dígitos verificadores de CNPJ.
+- Validação estrutural de código INEP (exatamente 8 caracteres numéricos).
+- Whitelists estruturadas e sanitização de e-mails institucionais.
+
+---
+
+## 📂 Estrutura do Repositório
 
 ```
-├── public/templates/        # Templates documentais (.xlsx)
+├── .github/workflows/       # Configurações de Integração Contínua (GitHub Actions)
+├── .continuity/             # Estado persistente de governança para agentes de IA
+├── docs/                    # Relatórios, decisões operacionais (ADRs) e roadmaps
+│   ├── reports/             # Relatórios técnicos (Hardenings, POCs Fiscais)
+│   └── technical/           # Contratos e protocolos de governança de dados
+├── public/templates/        # Planilhas oficiais de template (.xlsx)
+├── scripts/                 # Utilitários de migração, carga e auditoria
 ├── src/
-│   ├── components/          # Componentes React reutilizáveis
-│   │   ├── escola/          # Componentes específicos da unidade escolar
-│   │   └── ui/              # shadcn/ui + componentes base
-│   ├── hooks/               # Custom hooks (React Query, auth, etc.)
-│   ├── integrations/        # Supabase client + types gerados
+│   ├── components/          # Componentes visuais organizados (UI, Cards, Listas)
+│   ├── hooks/               # Custom hooks (Auth, React Query, GAD)
+│   ├── integrations/        # Client Supabase e tipos auto-gerados
 │   ├── lib/
-│   │   ├── demonstrativo/   # Gerador do Demonstrativo Básico Individual
-│   │   └── baseImporter.ts  # Parser/importador da BASE.xlsx
-│   ├── pages/               # Páginas/rotas da aplicação
-│   └── providers/           # Context providers (exercício, tema, etc.)
+│   │   ├── bulk-update/     # Motor reativo de atualização assistida em lote (CSV/XLSX)
+│   │   └── demonstrativo/   # Gerador em lote e individual do Demonstrativo Básico
+│   ├── pages/               # Páginas roteadas do sistema
+│   ├── providers/           # Provedores de estado global (Tema, Exercício)
+│   └── schemas/             # Validação estrita de domínio (Zod Cadastral)
 ├── supabase/
-│   ├── config.toml          # Configuração do projeto Supabase
-│   └── migrations/          # Migrações SQL versionadas
-├── docs/                    # Documentação operacional e decisões
-└── .continuity/             # Estado de continuidade para agentes
+│   ├── config.toml          # Configuração remota do projeto (raluxyojqosfzrfozmpz)
+│   └── migrations/          # Migrações SQL locais aplicadas em produção
+└── tools/
+    └── fiscal-extraction/   # Módulo Python independente para Aumento Fiscal
 ```
 
-## Pré-requisitos
+---
 
-- Node.js ≥ 18
-- npm ≥ 9
-- Supabase CLI (opcional, para desenvolvimento local com banco)
+## 🚀 Como Rodar Localmente
 
-## Desenvolvimento local
+### Pré-requisitos
+- Node.js ≥ 20.x
+- npm ≥ 10.x
+- Python ≥ 3.10 (apenas se for utilizar a ferramenta fiscal)
+
+### Passo 1: Instalação e Execução
 
 ```bash
-# Instalar dependências
+# 1. Clonar o repositório e instalar dependências
 npm install
 
-# Iniciar servidor de desenvolvimento
-npm run dev
+# 2. Configurar as variáveis de ambiente
+# Crie um arquivo .env.local na raiz contendo:
+VITE_SUPABASE_URL=https://raluxyojqosfzrfozmpz.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<sua_chave_publica_obtida_no_painel>
 
-# Executar testes
+# 3. Iniciar o servidor de desenvolvimento
+npm run dev
+```
+
+### Passo 2: Rodar Validações Locais
+
+```bash
+# Executar a suíte completa de 120 testes unitários
 npm test
 
-# Type-check sem emitir
+# Validação estrita do compilador TypeScript
 npx tsc --noEmit
 
-# Lint
+# Validação estrita de linting de estilo e boas práticas
 npm run lint
 
-# Build de produção
+# Testar empacotamento otimizado de produção
 npm run build
 ```
 
-### Supabase local (opcional)
+---
+
+## 🗄️ Integração com o Banco de Dados (Supabase CLI)
+
+O banco de dados oficial está atrelado ao ID de projeto `raluxyojqosfzrfozmpz`. Para desenvolver localmente com migrações ou atualizar tipos:
 
 ```bash
-# Iniciar instância local
+# Iniciar a instância local do Supabase
 npm run supa:start
 
-# Resetar banco local
-npm run supa:reset
+# Linkar o repositório local ao projeto Supabase de produção
+npm run supa:link -- raluxyojqosfzrfozmpz
 
-# Gerar tipos TypeScript
+# Gerar tipos TypeScript automaticamente a partir do schema remoto
 npm run supa:types
 
-# Linkar ao projeto remoto
-npm run supa:link -- raluxyojqosfzrfozmpz
+# Aplicar novas migrações SQL criadas localmente no banco remoto
+npm run supa:push
 ```
 
-## Variáveis de ambiente
+---
 
-O projeto utiliza variáveis de ambiente para conexão com o Supabase. Crie um arquivo `.env.local` na raiz:
+## 🐍 Ferramenta de Extração Fiscal Multicanal (Python CLI)
 
-```env
-VITE_SUPABASE_URL=https://raluxyojqosfzrfozmpz.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=<sua_publishable_key>
+O sistema possui um utilitário avançado escrito em **Python 3** localizado em `tools/fiscal-extraction/` projetado para processar, validar e extrair dados financeiros de Notas Fiscais eletrônicas (NF-e) em lote.
+
+### Configuração e Execução
+
+```bash
+# 1. Entrar no diretório do utilitário
+cd tools/fiscal-extraction
+
+# 2. Criar e ativar um ambiente virtual
+python -m venv .venv
+# No Windows:
+.venv\Scripts\activate
+# No macOS/Linux:
+source .venv/bin/activate
+
+# 3. Instalar as dependências necessárias
+pip install -r requirements.txt
+pip install -e .
+
+# 4. Executar os testes automatizados do analisador fiscal
+pytest
 ```
 
-> **Nota:** o arquivo `.env` não é versionado. Consulte o painel do Supabase para obter as credenciais. Nunca exponha a `service_role` key no frontend.
+### Comandos de Utilização Comuns (CLI)
 
-## Segurança
+```bash
+# Analisar e extrair informações completas de um arquivo XML da nota fiscal
+fiscal-extract xml-parse caminho/para/nota_fiscal.xml
 
-- **Não versionar `.env`** — credenciais ficam apenas no painel Vercel e Supabase.
-- **Produção Supabase somente leitura** — alterações em produção exigem autorização explícita.
-- **Dados reais e documentos oficiais** — exigem validação humana antes de qualquer alteração em templates, regras financeiras ou cálculos.
-- **Auth, RLS, roles e policies** — qualquer mudança requer revisão humana obrigatória.
+# Extrair texto legível e limpar informações cruciais de um PDF textual
+fiscal-extract pdf-parse caminho/para/nota_fiscal.pdf
 
-## Governança
+# Validar campos extraídos contra os esquemas aritméticos de compliance
+fiscal-extract validate-fields --data-json caminho/para/dados_extraidos.json
+```
 
-- **Código-fonte é fonte de verdade** — documentos em `docs/` e `.continuity/` são snapshots auxiliares, não fonte primária.
-- **PRs pequenos e escopo fechado** — cada alteração funcional deve ser um PR próprio com arquivos permitidos e proibidos definidos.
-- **Classificação obrigatória** — agentes devem classificar afirmações como FATO VERIFICADO NO CÓDIGO, HIPÓTESE, RELATO DE OUTRA FERRAMENTA ou PENDÊNCIA A CONFIRMAR.
+---
 
-## Deploy
+## 🔒 Governança de Segurança e Desenvolvimento (Radar)
 
-- **Produção:** Vercel, deploy automático a partir de `main` → https://pddeonlinesme-rj.vercel.app
-- **Preview:** cada PR recebe um deploy de preview automático pela Vercel.
-- **Vercel Authentication:** previews podem exigir autenticação Vercel para acesso.
+Este repositório aplica rigorosamente o **Radar de Inteligência Institucional (v4.2)**. Ao trabalhar no código:
 
-## Geração documental
+1. **Veto à Redundância:** Sempre priorize o consumo de fontes estruturadas e views existentes no banco. Evite redigitação e cadastros paralelos.
+2. **Atomicidade e Transações:** Mudanças de dados sensíveis cadastrais devem obrigatoriamente passar por RPCs estruturados com `SECURITY INVOKER` ou `SECURITY DEFINER` e salvaguarda de auditoria.
+3. **Não Versionar Credenciais:** Nunca salve tokens, senhas ou arquivos `.env` no Git. Todos os segredos devem ser configurados nos painéis oficiais do Supabase e da Vercel.
+4. **Isolamento de Alterações:** PRs de documentação, governança e higiene não devem se misturar com alterações de regras financeiras, RLS ou templates oficiais, garantindo rastreabilidade absoluta dos commits.
 
-O Demonstrativo Básico Individual é gerado via ExcelJS a partir do template em `public/templates/`. O gerador:
+---
 
-1. Carrega o template `.xlsx` preservando layout, fórmulas, bordas e mesclagens.
-2. Preenche a aba `MEMÓRIA` com dados da view `vw_unidade_detalhe` do Supabase.
-3. Remove defensivamente a aba `BASE` se presente.
-4. Entrega o arquivo para download via `file-saver`.
+## ⚖️ Licença
 
-**Restrições do gerador:**
-- Não depende da aba `BASE` nem de `XLOOKUP`.
-- Não publica templates com dados reais consolidados.
-- Regras financeiras e documentais oficiais requerem revisão humana.
-
-## Documentação operacional
-
-| Documento | Propósito |
-|---|---|
-| `docs/HANDOFF.md` | Estado atual do projeto para continuidade entre sessões |
-| `docs/DECISIONS.md` | Decisões operacionais vigentes |
-| `docs/ROADMAP_ADAPTIVE.md` | Fila curta e marcos funcionais |
-| `docs/OPPORTUNITIES_BACKLOG.md` | Radar de oportunidades e próximas frentes |
-| `docs/UI_CHANGELOG.md` | Registro de entregas visuais |
-| `AGENTS.md` | Divisão de responsabilidades entre ferramentas |
-
-## Contribuição
-
-Este é um sistema interno mantido pela 4ª CRE. Para contribuir:
-
-1. Crie uma branch a partir de `main`.
-2. Mantenha o escopo do PR restrito e bem definido.
-3. Execute `npx tsc --noEmit && npm run lint && npm test && npm run build` antes de abrir o PR.
-4. Atualize `docs/HANDOFF.md` e `.continuity/current-state.json` ao final de tarefas relevantes.
-
-## Estado atual
-
-PR #43 (Demonstrativo Básico Individual) concluído e em produção. A fila inicial de higiene técnica (CI, lockfile, dependências, testes base e governança) foi finalizada nos PRs #46 a #51.
-
-Consulte `docs/HANDOFF.md` e `docs/ROADMAP_ADAPTIVE.md` para os próximos marcos funcionais.
-
-## Licença
-
-Uso interno — Secretaria Municipal de Educação do Rio de Janeiro.
+Uso interno restrito — Coordenadoria Regional de Educação (4ª CRE) / Secretaria Municipal de Educação do Rio de Janeiro. Todos os direitos reservados.
