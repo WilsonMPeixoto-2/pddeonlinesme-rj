@@ -265,10 +265,10 @@ export default function HistoricoGeracoes() {
                     <TableRow className="border-b border-border/50 bg-muted/10">
                       <TableHead className="w-10 text-center text-[10px] uppercase font-bold tracking-wider">#</TableHead>
                       <TableHead className="text-[10px] uppercase font-bold tracking-wider">Documento / Lote</TableHead>
-                      <TableHead className="text-[10px] uppercase font-bold tracking-wider text-center">Exercício</TableHead>
+                      <TableHead className="hidden md:table-cell text-[10px] uppercase font-bold tracking-wider text-center">Exercício</TableHead>
                       <TableHead className="text-[10px] uppercase font-bold tracking-wider text-center">Sucessos</TableHead>
                       <TableHead className="text-[10px] uppercase font-bold tracking-wider text-center">Falhas</TableHead>
-                      <TableHead className="text-[10px] uppercase font-bold tracking-wider">Início</TableHead>
+                      <TableHead className="hidden sm:table-cell text-[10px] uppercase font-bold tracking-wider">Início</TableHead>
                       <TableHead className="text-[10px] uppercase font-bold tracking-wider">Status</TableHead>
                       <TableHead className="w-12"></TableHead>
                     </TableRow>
@@ -303,7 +303,7 @@ export default function HistoricoGeracoes() {
                               </p>
                             </div>
                           </TableCell>
-                          <TableCell className="text-center font-mono text-xs py-3.5 tabular-nums">
+                          <TableCell className="hidden md:table-cell text-center font-mono text-xs py-3.5 tabular-nums">
                             {run.exercicio}
                           </TableCell>
                           <TableCell className="text-center font-mono text-xs py-3.5 text-success font-semibold tabular-nums">
@@ -317,7 +317,7 @@ export default function HistoricoGeracoes() {
                           >
                             {run.total_falha}
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground py-3.5 font-mono tabular-nums">
+                          <TableCell className="hidden sm:table-cell text-xs text-muted-foreground py-3.5 font-mono tabular-nums">
                             {formatDateTime(run.started_at)}
                           </TableCell>
                           <TableCell className="py-3.5">

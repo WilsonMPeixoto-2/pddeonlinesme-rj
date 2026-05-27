@@ -590,7 +590,7 @@ export default function PortalDiretor() {
             </CardHeader>
             <CardContent className="pt-4 space-y-2.5">
               {/* Demonstrativo Básico - FUNCIONAL */}
-              <div className="flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/5 px-4 py-3 hover:bg-muted/10 transition-colors">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/5 px-4 py-3 hover:bg-muted/10 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
                     <FileSpreadsheet className="h-4 w-4" />
@@ -600,7 +600,7 @@ export default function PortalDiretor() {
                     <p className="text-[10px] text-muted-foreground">Formato: Planilha do Excel (.xlsx) · Gerada com dados em tempo real</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2.5 shrink-0">
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto shrink-0 border-t sm:border-t-0 border-border/40 pt-2 sm:pt-0 mt-1 sm:mt-0">
                   <span className="ds-badge ds-badge-success text-[9px] px-1.5 py-0.5">
                     <CheckCircle2 className="h-3 w-3 mr-0.5 shrink-0" /> Integrado
                   </span>
@@ -624,7 +624,7 @@ export default function PortalDiretor() {
                 { icon: ScrollText, nome: "Ata da Assembleia do Conselho da UEx", formato: ".docx" },
                 { icon: ShieldCheck, nome: "Parecer Consolidado do Conselho Fiscal", formato: ".docx" },
               ].map((doc) => (
-                <div key={doc.nome} className="flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-muted/5 px-4 py-3 opacity-75 hover:opacity-100 transition-opacity">
+                <div key={doc.nome} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border/40 bg-muted/5 px-4 py-3 opacity-75 hover:opacity-100 transition-opacity">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground border border-border/50">
                       <doc.icon className="h-4 w-4" />
@@ -634,7 +634,7 @@ export default function PortalDiretor() {
                       <p className="text-[10px] text-muted-foreground">Formato: Documento digital ({doc.formato})</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 border-t sm:border-t-0 border-border/40 pt-2 sm:pt-0 mt-1 sm:mt-0 w-full sm:w-auto">
                     <span className="ds-badge ds-badge-neutral text-[9px] px-1.5 py-0.5">
                       <Clock className="h-3 w-3 mr-0.5 shrink-0" /> Em Breve
                     </span>
