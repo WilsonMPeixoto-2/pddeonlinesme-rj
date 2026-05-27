@@ -18,6 +18,7 @@ import StyleGuide from "./pages/StyleGuide.tsx";
 import AccessDenied from "./pages/AccessDenied.tsx";
 import PortalDiretor from "./pages/PortalDiretor.tsx";
 import HistoricoGeracoes from "./pages/HistoricoGeracoes.tsx";
+import FiscalConferencia from "./pages/FiscalConferencia.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { TopLoadingBar } from "./components/TopLoadingBar.tsx";
 import { CommandPalette } from "./components/CommandPalette.tsx";
@@ -65,6 +66,7 @@ const App = () => (
                 <Route path="/style-guide" element={<ProtectedRoute><StyleGuide /></ProtectedRoute>} />
                 <Route path="/acesso-negado" element={<AccessDenied />} />
                 <Route path="/diretor" element={<ProtectedRoute><PortalDiretor /></ProtectedRoute>} />
+                <Route path="/fiscal" element={<ProtectedRoute><FiscalConferencia /></ProtectedRoute>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

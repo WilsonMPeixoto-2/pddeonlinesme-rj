@@ -1,10 +1,10 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-27T01:10:00-03:00",
+  "updated_at": "2026-05-27T01:25:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "87263bd",
+    "base_commit": "9c54b2f",
     "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -12,9 +12,10 @@
     "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
     "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
     "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "Polimento visual/responsivo e implementação do Centro de Segurança e Auditoria com RLS scanner e MFA simulado nas configurações mergeados com sucesso na main."
+    "current_mode": "Polimento final e saneamento de termos no manual do usuário mergeado com sucesso na main."
   },
   "recent_pull_requests": [
+    { "title": "docs(manual): refinar manual institucional com conformidade de seguranca e saneamento de termos", "merge_commit": "9c54b2f", "date": "2026-05-27" },
     { "title": "feat(security): implementar Centro de Segurança e Auditoria com RLS scanner e MFA simulado nas configuracoes", "merge_commit": "87263bd", "date": "2026-05-27" },
     { "title": "style(responsividade): refinar layout de tabelas de lote e paineis de anexos para viewports mobile", "merge_commit": "24d775f", "date": "2026-05-27" },
     { "number": 83, "title": "fix: gerar 163 demonstrativos sem gate financeiro (Marco 11 v2 + 15 v2)", "state": "merged", "merge_commit": "d30ca39", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/83" },

@@ -28,6 +28,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 const tabs = [
   { to: "/dashboard", label: "Painel" },
   { to: "/escolas", label: "Unidades Escolares" },
+  { to: "/fiscal", label: "Frente Fiscal" },
   { to: "/base", label: "Importar/Exportar" },
   { to: "/configuracoes", label: "Configurações" },
   { to: "/manual", label: "Manual" },
