@@ -38,6 +38,7 @@ export default function PortalDiretor() {
   const [selectedUnidadeId, setSelectedUnidadeId] = useState<string | null>(null);
   const [selectedTab] = useState<"home" | "documentos" | "ajuda">("home");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingBens, setIsDownloadingBens] = useState(false);
 
   // 1. Consultar se o usuário possui a role de admin ou operador
   const { data: userRoles, isLoading: loadingRoles } = useQuery({
@@ -121,6 +122,26 @@ export default function PortalDiretor() {
     programa: "PDDE",
   });
 
+  // 7. Buscar todas as despesas fiscais homologadas da escola ativa no ano vigente
+  const { data: despesasFiscais, isLoading: loadingDespesas } = useQuery({
+    queryKey: ["escola-despesas-fiscais", activeUnidadeId],
+    enabled: !!activeUnidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("despesas_fiscais")
+        .select("*")
+        .eq("unidade_id", activeUnidadeId!)
+        .eq("exercicio", 2026)
+        .order("data_emissao", { ascending: false });
+      
+      if (error) {
+        console.error("Erro ao carregar despesas fiscais:", error);
+        throw error;
+      }
+      return data || [];
+    }
+  });
+
   // Cálculos financeiros reais baseados nas tabelas
   const totalDisponivel = (escolaAtiva?.saldo_anterior ?? 0) + (escolaAtiva?.recebido ?? 0);
   const gastoReal = escolaAtiva?.gasto ?? 0;
@@ -151,6 +172,43 @@ export default function PortalDiretor() {
       toast.error(`Falha ao gerar o arquivo .xlsx: ${err.message}`, { id: toastId });
     } finally {
       setIsDownloading(false);
+    }
+  };
+ 
+  // Ação de download da Relação de Bens Adquiridos (Anexo II - Capital)
+  const handleDownloadRelacaoBens = async () => {
+    if (!escolaAtiva || !unidadeDetalhe) {
+      toast.error("Os dados da unidade não foram carregados completamente.");
+      return;
+    }
+
+    setIsDownloadingBens(true);
+    const toastId = toast.loading("Gerando Relação de Bens Adquiridos (Anexo II - Capital)...");
+
+    try {
+      const { generateRelacaoBens } = await import("@/lib/demonstrativo/generateRelacaoBens");
+      
+      // Converte despesas do Supabase para o contrato da lib
+      const capitalItems = (despesasFiscais || [])
+        .filter(d => d.tipo_gasto === "capital")
+        .map(d => ({
+          id: d.id,
+          fornecedor_cnpj: d.fornecedor_cnpj,
+          fornecedor_nome: d.fornecedor_nome,
+          numero_nota: d.numero_nota,
+          data_emissao: d.data_emissao,
+          valor: Number(d.valor),
+          programa: d.programa
+        }));
+
+      const result = await generateRelacaoBens(unidadeDetalhe, capitalItems, "2026");
+      saveAs(result.blob, result.fileName);
+      toast.success("Relação de Bens Adquiridos gerada e baixada com sucesso!", { id: toastId });
+    } catch (err: any) {
+      console.error("Erro ao baixar relação de bens:", err);
+      toast.error(`Falha ao gerar o arquivo .xlsx: ${err.message}`, { id: toastId });
+    } finally {
+      setIsDownloadingBens(false);
     }
   };
 
@@ -565,6 +623,95 @@ export default function PortalDiretor() {
           </motion.div>
         </div>
 
+        {/* ─── Extrato de Notas Fiscais Homologadas ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+          className="mt-4"
+        >
+          <Card className="ds-card">
+            <CardHeader className="border-b border-border/60 bg-muted/15 pb-2.5 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4 text-primary" /> Extrato de Notas Fiscais Homologadas (Exercício 2026)
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Abaixo estão listadas todas as despesas fiscais auditadas e homologadas para a unidade neste exercício.
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary text-[10px]">
+                {despesasFiscais?.length || 0} Notas
+              </Badge>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {loadingDespesas ? (
+                <div className="space-y-2 py-4">
+                  <div className="h-8 rounded bg-muted animate-pulse" />
+                  <div className="h-8 rounded bg-muted animate-pulse" />
+                </div>
+              ) : !despesasFiscais || despesasFiscais.length === 0 ? (
+                <div className="text-center py-6 border border-dashed border-border/60 rounded-xl bg-card/25">
+                  <AlertCircle className="h-6 w-6 text-muted-foreground/60 mx-auto mb-2 animate-pulse" />
+                  <p className="text-xs font-semibold text-foreground/80">Nenhuma Nota Fiscal Homologada</p>
+                  <p className="text-[10px] text-muted-foreground max-w-sm mx-auto mt-1">
+                    Ainda não há lançamentos homologados no banco de dados para esta escola no exercício 2026. Use a Frente Fiscal para cadastrar e homologar notas.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/50 text-[10px] text-muted-foreground uppercase font-semibold">
+                        <th className="py-2 px-3">Data</th>
+                        <th className="py-2 px-3">Fornecedor</th>
+                        <th className="py-2 px-3 text-center">Nº Nota</th>
+                        <th className="py-2 px-3 text-center">Classificação</th>
+                        <th className="py-2 px-3 text-center">Programa</th>
+                        <th className="py-2 px-3 text-right">Valor Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/40">
+                      {despesasFiscais.map((nota) => (
+                        <tr key={nota.id} className="hover:bg-muted/10 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-[11px] text-muted-foreground">
+                            {new Date(nota.data_emissao).toLocaleDateString("pt-BR")}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <p className="font-semibold text-foreground/90">{nota.fornecedor_nome}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono">{nota.fornecedor_cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}</p>
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono text-muted-foreground">
+                            {nota.numero_nota}
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <Badge
+                              variant="outline"
+                              className={`text-[9px] px-1.5 py-0 h-4.5 ${
+                                nota.tipo_gasto === "custeio"
+                                  ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-400"
+                                  : "border-amber-500/20 bg-amber-500/5 text-amber-400"
+                              }`}
+                            >
+                              {nota.tipo_gasto === "custeio" ? "Custeio" : "Capital"}
+                            </Badge>
+                          </td>
+                          <td className="py-2.5 px-3 text-center text-muted-foreground">
+                            {nota.programa === "basico" ? "PDDE Básico" : nota.programa}
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-bold text-foreground tabular-nums">
+                            {Number(nota.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* ─── Documentos da Prestação de Contas ─── */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card className="ds-card">
@@ -593,7 +740,7 @@ export default function PortalDiretor() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/5 px-4 py-3 hover:bg-muted/10 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
-                    <FileSpreadsheet className="h-4 w-4" />
+                     <FileSpreadsheet className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-foreground">Demonstrativo Básico do PDDE (Anexo I)</p>
@@ -616,9 +763,35 @@ export default function PortalDiretor() {
                 </div>
               </div>
 
+              {/* Relação de Bens Adquiridos - FUNCIONAL */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/5 px-4 py-3 hover:bg-muted/10 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
+                     <ClipboardList className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground">Relação de Bens Adquiridos (Anexo II)</p>
+                    <p className="text-[10px] text-muted-foreground">Formato: Planilha do Excel (.xlsx) · Consolidando compras de Capital</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto shrink-0 border-t sm:border-t-0 border-border/40 pt-2 sm:pt-0 mt-1 sm:mt-0">
+                  <span className="ds-badge ds-badge-success text-[9px] px-1.5 py-0.5">
+                    <CheckCircle2 className="h-3 w-3 mr-0.5 shrink-0" /> Integrado
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-[10px] font-medium"
+                    onClick={handleDownloadRelacaoBens}
+                    disabled={isDownloadingBens || !unidadeDetalhe}
+                  >
+                    <FileDown className="mr-1 h-3 w-3" /> Baixar
+                  </Button>
+                </div>
+              </div>
+
               {/* Documentos Conceituais Complementares */}
               {[
-                { icon: ClipboardList, nome: "Relação de Bens Adquiridos (Anexo II)", formato: ".xlsx" },
                 { icon: FileSignature, nome: "Termo de Doação de Bens (Anexo III)", formato: ".docx" },
                 { icon: Coins, nome: "Consolidação de Pesquisas de Preços", formato: ".xlsx" },
                 { icon: ScrollText, nome: "Ata da Assembleia do Conselho da UEx", formato: ".docx" },
