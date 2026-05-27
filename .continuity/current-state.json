@@ -1,10 +1,10 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-27T00:50:00-03:00",
+  "updated_at": "2026-05-27T01:10:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "24d775f",
+    "base_commit": "87263bd",
     "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -12,9 +12,10 @@
     "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
     "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
     "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "Polimento visual e responsivo de viewports mobile no Portal do Diretor e Histórico de Gerações mergeados com sucesso em 27/05. Sistema 100% verde nos testes e compilando perfeitamente."
+    "current_mode": "Polimento visual/responsivo e implementação do Centro de Segurança e Auditoria com RLS scanner e MFA simulado nas configurações mergeados com sucesso na main."
   },
   "recent_pull_requests": [
+    { "title": "feat(security): implementar Centro de Segurança e Auditoria com RLS scanner e MFA simulado nas configuracoes", "merge_commit": "87263bd", "date": "2026-05-27" },
     { "title": "style(responsividade): refinar layout de tabelas de lote e paineis de anexos para viewports mobile", "merge_commit": "24d775f", "date": "2026-05-27" },
     { "number": 83, "title": "fix: gerar 163 demonstrativos sem gate financeiro (Marco 11 v2 + 15 v2)", "state": "merged", "merge_commit": "d30ca39", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/83" },
     { "number": 79, "title": "polish(painel): 10 refinamentos visuais sobrios sem redesign", "state": "merged", "merge_commit": "fac1d9b", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/79" },
@@ -27,6 +28,7 @@
     { "number": 71, "title": "fix(unidades): make cadastro update atomic via SECURITY INVOKER RPC", "state": "merged", "merge_commit": "d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077", "url": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/71" }
   ],
   "delivered_state": {
+    "security_center_panel": "delivered in commit 87263bd; custom SecurityCenterPanel component added to /configuracoes containing interactive PostgreSQL RLS scanner, simulated Multi-Factor Authentication (MFA) OTP toggle with sonner toasts, and styled terminal logs showing database audit triggers mutations.",
     "responsividade_mobile_refinement": "delivered in commit 24d775f; responsive table columns in HistoricoGeracoes.tsx hiding less critical metadata on md/sm viewports, and flex-col sm:flex-row stackable document panels in PortalDiretor.tsx preventing text overlap on smaller devices",
     "painel_visual_polish": "delivered in PR #79; 10 cirurgical refinements: removed font-light hero subtitle, removed empty 'Total' label in donut, replaced font-mono numerics with Inter+tabular-nums across all cards, CentralDocumental gets transition-shadow hover lift, TopReprogramados numbering becomes left rail (no truncate cutoff), bar gradient becomes solid, DistribuicaoDeRecursos pct color consistency, HistoricoGeracoes row meta becomes horizontal + hover affordance, TableHeader tracking adjusted to eyebrow institucional",
     "escolas_microcopy_fix": "delivered in PR #78; 'Em breve' misleading label replaced with 'Demonstrativo Básico disponível' affordance",
