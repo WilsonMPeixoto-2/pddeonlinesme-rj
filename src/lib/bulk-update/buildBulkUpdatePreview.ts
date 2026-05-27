@@ -46,6 +46,8 @@ export type UnitForPreview = {
   inep: string | null;
   cnpj: string | null;
   diretor: string | null;
+  email: string | null;
+  endereco: string | null;
 };
 
 /**
@@ -76,7 +78,11 @@ export function inspectColumns(parsed: ParsedSpreadsheet): {
   }
 
   const fieldColumn =
-    recognizedColumns.find((c) => c.recognizedAs === "diretor")?.rawHeader ?? null;
+    recognizedColumns.find((c) =>
+      c.recognizedAs === "diretor" ||
+      c.recognizedAs === "email" ||
+      c.recognizedAs === "endereco"
+    )?.rawHeader ?? null;
 
   return { recognizedColumns, availableKeys, fieldColumn };
 }
@@ -92,7 +98,7 @@ async function fetchUnitsFromSupabase(
   const { supabase } = await import("@/integrations/supabase/client");
   const { data, error } = await supabase
     .from("unidades_escolares")
-    .select("id, designacao, inep, cnpj, diretor")
+    .select("id, designacao, inep, cnpj, diretor, email, endereco")
     .in(chosenKey, values);
 
   if (error) {
@@ -149,6 +155,12 @@ export async function buildBulkUpdatePreview(
   const { recognizedColumns, availableKeys, fieldColumn } =
     inspectColumns(parsed);
 
+  const recognizedField = recognizedColumns.find((c) =>
+    c.recognizedAs === "diretor" ||
+    c.recognizedAs === "email" ||
+    c.recognizedAs === "endereco"
+  )?.recognizedAs as BulkUpdateAllowedField | undefined;
+
   const blockingErrors: string[] = [];
 
   // Validacoes estruturais.
@@ -162,9 +174,9 @@ export async function buildBulkUpdatePreview(
     );
   }
 
-  if (!fieldColumn) {
+  if (!fieldColumn || !recognizedField) {
     blockingErrors.push(
-      'A planilha precisa conter uma coluna do tipo "diretor" para que algo seja atualizado.',
+      "A planilha precisa conter uma coluna de alteracao reconhecida (diretor, email ou endereco) para que algo seja atualizado.",
     );
   }
 
@@ -224,7 +236,7 @@ export async function buildBulkUpdatePreview(
     const keyRaw = row[keyColumnHeader];
     const keyValue = normalizeKeyValue(chosenKey, keyRaw);
     const newRaw = fieldColumn != null ? row[fieldColumn] : undefined;
-    const newValue = normalizeDirectorValue(newRaw);
+    const newValue = normalizeTextValue(newRaw);
 
     let secondaryKey: BulkUpdateAllowedKey | undefined;
     let secondaryValue: string | undefined;
@@ -316,7 +328,7 @@ export async function buildBulkUpdatePreview(
       cnpj: null,
       keyType: chosenKey,
       keyValue: row.keyValue,
-      field: "diretor",
+      field: recognizedField!,
       oldValue: null,
       newValue: row.newValue,
       status: "ready",
@@ -334,8 +346,7 @@ export async function buildBulkUpdatePreview(
       return {
         ...base,
         status: "error_empty_value",
-        message:
-          "Novo valor de diretor vazio. Para limpar, edite individualmente.",
+        message: `Novo valor de ${recognizedField} vazio. Para limpar, edite individualmente.`,
       };
     }
 
@@ -367,17 +378,17 @@ export async function buildBulkUpdatePreview(
           designacao: unit.designacao,
           inep: unit.inep,
           cnpj: unit.cnpj,
-          oldValue: unit.diretor,
+          oldValue: recognizedField ? (unit[recognizedField] ?? null) : null,
           status: "error_key_mismatch",
           message: `Divergencia entre ${chosenKey} (${row.keyValue}) e ${row.secondaryKey} (${row.secondaryValue}).`,
         };
       }
     }
 
-    const old = unit.diretor ?? "";
+    const old = recognizedField ? (unit[recognizedField] ?? "") : "";
     const isUnchanged =
-      normalizeDirectorValue(old).toUpperCase() ===
-      normalizeDirectorValue(row.newValue).toUpperCase();
+      normalizeTextValue(old).toUpperCase() ===
+      normalizeTextValue(row.newValue).toUpperCase();
 
     return {
       ...base,
@@ -385,7 +396,7 @@ export async function buildBulkUpdatePreview(
       designacao: unit.designacao,
       inep: unit.inep,
       cnpj: unit.cnpj,
-      oldValue: unit.diretor,
+      oldValue: old || null,
       status: isUnchanged ? "unchanged" : "ready",
     };
   });

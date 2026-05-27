@@ -52,6 +52,12 @@ const KEY_LABEL: Record<BulkUpdateAllowedKey, string> = {
   cnpj: "CNPJ",
 };
 
+const FIELD_LABEL: Record<string, string> = {
+  diretor: "Diretor",
+  email: "E-mail",
+  endereco: "Endereço",
+};
+
 const STATUS_META: Record<
   BulkUpdateRowStatus,
   { label: string; tone: string }
@@ -105,6 +111,9 @@ export function BulkUpdatePanel() {
   const totalRows = state.preview?.summary.totalRows ?? 0;
   const unchangedCount = state.preview?.summary.unchangedCount ?? 0;
   const errorCount = state.preview?.summary.errorCount ?? 0;
+
+  const previewField = state.preview?.items[0]?.field ?? "diretor";
+  const fieldLabel = FIELD_LABEL[previewField] ?? "Diretor";
 
   const recognizedSummary = useMemo(
     () =>
@@ -166,7 +175,7 @@ export function BulkUpdatePanel() {
           <strong className="text-foreground">
             Campos ausentes não serão apagados.
           </strong>{" "}
-          Nesta versão, apenas o campo <code>diretor</code> é alterável. Limite:
+          Nesta versão, os campos <code>diretor</code>, <code>email</code> e <code>endereco</code> são alteráveis. Limite:
           200 linhas.
         </p>
 
@@ -244,8 +253,8 @@ export function BulkUpdatePanel() {
                     >
                       {c.recognizedAs === "ignored"
                         ? "Ignorar"
-                        : c.recognizedAs === "diretor"
-                          ? "Campo: diretor"
+                        : c.recognizedAs === "diretor" || c.recognizedAs === "email" || c.recognizedAs === "endereco"
+                          ? `Campo: ${FIELD_LABEL[c.recognizedAs].toLowerCase()}`
                           : `Chave: ${KEY_LABEL[c.recognizedAs]}`}
                     </span>
                   </li>
@@ -346,10 +355,10 @@ export function BulkUpdatePanel() {
                           Unidade
                         </TableHead>
                         <TableHead className="h-9 text-[10px] uppercase tracking-wide">
-                          Diretor atual
+                          {fieldLabel} atual
                         </TableHead>
                         <TableHead className="h-9 text-[10px] uppercase tracking-wide">
-                          Novo diretor
+                          Novo {fieldLabel.toLowerCase()}
                         </TableHead>
                         <TableHead className="h-9 text-right text-[10px] uppercase tracking-wide">
                           Status

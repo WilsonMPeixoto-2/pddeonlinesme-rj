@@ -54,6 +54,23 @@ const ALIAS_MAP: Record<string, AliasTarget> = {
   "diretor atual": "diretor",
   "diretora atual": "diretor",
 
+  // campo: email
+  "email": "email",
+  "e-mail": "email",
+  "e mail": "email",
+  "email institucional": "email",
+  "e-mail institucional": "email",
+  "e mail institucional": "email",
+  "contato email": "email",
+
+  // campo: endereco
+  "endereco": "endereco",
+  "endereço": "endereco",
+  "endereco da unidade": "endereco",
+  "endereço da unidade": "endereco",
+  "localizacao": "endereco",
+  "localização": "endereco",
+
   // explicitamente NAO mapeados — registrar como ignorado se vierem.
   // "presidente do cec" e ambiguo no dominio: pode ser pessoa diferente
   // do diretor. Se aparecer, fica como nao reconhecida (default no map).

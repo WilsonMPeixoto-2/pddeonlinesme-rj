@@ -33,11 +33,28 @@ describe("recognizeColumn — diretor", () => {
   });
 });
 
+describe("recognizeColumn — email", () => {
+  it.each([
+    ["Email", "email"],
+    ["E-mail", "email"],
+    ["email institucional", "email"],
+  ])("reconhece %s como email", (header, expected) => {
+    expect(recognizeColumn(header)).toBe(expected);
+  });
+});
+
+describe("recognizeColumn — endereco", () => {
+  it.each([
+    ["Endereco", "endereco"],
+    ["Endereço", "endereco"],
+    ["localizacao", "endereco"],
+  ])("reconhece %s como endereco", (header, expected) => {
+    expect(recognizeColumn(header)).toBe(expected);
+  });
+});
+
 describe("recognizeColumn — nao reconhecidas", () => {
   it.each([
-    ["Email"],
-    ["E-mail"],
-    ["Endereço"],
     ["Agência"],
     ["Telefone"],
     ["Presidente do CEC"], // ambiguo no dominio — NUNCA mapear para diretor

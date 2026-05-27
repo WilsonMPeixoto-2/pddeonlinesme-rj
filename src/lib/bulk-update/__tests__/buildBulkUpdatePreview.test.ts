@@ -110,8 +110,8 @@ describe("buildBulkUpdatePreview — erros bloqueantes", () => {
 
   it("bloqueia quando nao ha coluna diretor", async () => {
     const parsed = parsedFromRows(
-      ["DESIGNACAO", "EMAIL"],
-      [{ DESIGNACAO: "04.10.001", EMAIL: "x@y" }],
+      ["DESIGNACAO", "TELEFONE"],
+      [{ DESIGNACAO: "04.10.001", TELEFONE: "123456" }],
     );
     const result = await buildBulkUpdatePreview(
       { parsed, chosenKey: "designacao" },

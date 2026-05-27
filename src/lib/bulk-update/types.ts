@@ -6,7 +6,7 @@
 
 export type BulkUpdateAllowedKey = "designacao" | "inep" | "cnpj";
 
-export type BulkUpdateAllowedField = "diretor";
+export type BulkUpdateAllowedField = "diretor" | "email" | "endereco";
 
 export const BULK_UPDATE_ALLOWED_KEYS: ReadonlyArray<BulkUpdateAllowedKey> = [
   "designacao",
@@ -16,6 +16,8 @@ export const BULK_UPDATE_ALLOWED_KEYS: ReadonlyArray<BulkUpdateAllowedKey> = [
 
 export const BULK_UPDATE_ALLOWED_FIELDS: ReadonlyArray<BulkUpdateAllowedField> = [
   "diretor",
+  "email",
+  "endereco",
 ];
 
 /** Resultado bruto do parser. Nenhum dado normalizado ainda. */
