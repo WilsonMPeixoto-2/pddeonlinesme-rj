@@ -8,7 +8,7 @@ A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, con
 
 ## Contexto atual
 
-**main HEAD:** `d30ca39` (merge PR #83 — flexibilização Marco 11 v2 + 15 v2)
+**main HEAD:** `bd750fc` (chore: upgrade stack to Vite 8, React 19, and Tailwind v4 with 3D Parallax and Container Queries)
 
 PRs #57 a #83 estão incorporados. PR em vôo: **Marco 10B v2 — Atualização Parcial Assistida da BASE**.
 

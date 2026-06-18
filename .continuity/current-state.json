@@ -1,10 +1,10 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-18T15:26:00-03:00",
+  "updated_at": "2026-06-18T15:36:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "c5ce835",
+    "base_commit": "bd750fc",
     "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -32,12 +32,13 @@
     "geracao_em_lote_163_demonstrativos": "delivered in PR #73; generateDemonstrativosLote + batch processing control"
   },
   "next_priority": {
-    "current_pr": "Atualização tecnológica para Tailwind CSS v4 e Vite 8, com integrações de React 19.",
-    "immediate_next_step": "Homologar as animações 3D, formulários useActionState e container queries.",
+    "current_pr": "Nenhum (PR de atualização tecnológica entregue e integrado em bd750fc).",
+    "immediate_next_step": "Avançar para o Marco 11 (Relação de Bens Adquiridos via ExcelJS) ou Sub-Marco 6B (audit_logs de mutações sensíveis).",
     "smoke_checklist": [
-      "Verificar efeitos 3D parallax no /dashboard",
+      "Verificar efeitos 3D parallax no /dashboard ao passar o mouse",
       "Testar formulário cadastral useActionState no /escolas/:id",
-      "Validar responsividade via Container Queries no modal"
+      "Validar responsividade via Container Queries no modal ao redimensionar",
+      "Realizar testes e validações automatizadas pós-upgrade"
     ]
   },
   "applied_migrations_post_main": [
