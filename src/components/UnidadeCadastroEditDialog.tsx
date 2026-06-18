@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, type ReactNode, useEffect, useState } from "react";
+import { type ChangeEvent, type ReactNode, useEffect, useState, useActionState } from "react";
 import { AlertCircle, Loader2, Lock, Save } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ interface UnidadeCadastroEditDialogProps {
   onOpenChange: (open: boolean) => void;
   unidade: UnidadeDetalhe;
   emailAtual?: string;
-  isSaving: boolean;
+  isSaving: boolean; // Mantido para compatibilidade de assinatura no parent
   onSubmit: (values: UnidadeCadastroFormValues) => Promise<void>;
 }
 
@@ -56,12 +56,12 @@ function FieldGroup({ title, hint, icon, children }: FieldGroupProps) {
           </h3>
         </div>
         {hint && (
-          <p className="hidden text-[11px] text-muted-foreground/70 sm:block">
+          <p className="hidden text-[11px] text-muted-foreground/70 @sm:block">
             {hint}
           </p>
         )}
       </header>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
+      <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">{children}</div>
     </section>
   );
 }
@@ -71,13 +71,55 @@ export function UnidadeCadastroEditDialog({
   onOpenChange,
   unidade,
   emailAtual,
-  isSaving,
   onSubmit,
 }: UnidadeCadastroEditDialogProps) {
   const [values, setValues] = useState<UnidadeCadastroFormValues>(() =>
     toUnidadeCadastroFormValues(unidade, emailAtual),
   );
-  const [errors, setErrors] = useState<string[]>([]);
+
+  // Integração de Tecnologia React 19: useActionState (Form Action nativa)
+  // O estado de carregamento (isPending) e erros do formulário são gerenciados pelo React
+  const [errors, formAction, isPending] = useActionState(
+    async (prevState: string[], formData: FormData) => {
+      // 1. Validar limites básicos e de formato bancário tradicionais
+      const nextErrors = validateUnidadeCadastro(values, {
+        designacao: unidade.designacao,
+        diretorAtual: unidade.diretor,
+      });
+
+      // 2. Blindagem adicional: Validar via Zod Schema para integridade e formato de e-mail
+      const parseResult = unidadeSchema.safeParse({
+        designacao: unidade.designacao ?? "00.00.000",
+        nome: values.nome,
+        inep: unidade.inep ?? "00000000",
+        cnpj: unidade.cnpj ?? "00.000.000/0000-00",
+        diretor: values.diretor,
+        endereco: values.endereco,
+        email: values.email,
+      });
+
+      if (!parseResult.success) {
+        parseResult.error.errors.forEach((err) => {
+          const path = err.path[0];
+          if (path === "nome" || path === "diretor" || path === "email" || path === "endereco") {
+            nextErrors.push(err.message);
+          }
+        });
+      }
+
+      if (nextErrors.length > 0) {
+        return nextErrors;
+      }
+
+      try {
+        await onSubmit(values);
+        return [];
+      } catch (err: any) {
+        return [err.message || "Erro ao salvar dados cadastrais."];
+      }
+    },
+    []
+  );
 
   const cnpjValido = unidade.cnpj ? isValidCNPJ(unidade.cnpj) : false;
   const inepValido = unidade.inep ? /^\d{8}$/.test(unidade.inep) : false;
@@ -85,7 +127,6 @@ export function UnidadeCadastroEditDialog({
   useEffect(() => {
     if (!open) return;
     setValues(toUnidadeCadastroFormValues(unidade, emailAtual));
-    setErrors([]);
   }, [open, unidade, emailAtual]);
 
   const updateField =
@@ -95,50 +136,12 @@ export function UnidadeCadastroEditDialog({
         ...current,
         [field]: event.target.value,
       }));
-      if (errors.length > 0) setErrors([]);
     };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isSaving) return;
-
-    // 1. Validar limites básicos e de formato bancário tradicionais
-    const nextErrors = validateUnidadeCadastro(values, {
-      designacao: unidade.designacao,
-      diretorAtual: unidade.diretor,
-    });
-
-    // 2. Blindagem adicional: Validar via Zod Schema para integridade e formato de e-mail
-    const parseResult = unidadeSchema.safeParse({
-      designacao: unidade.designacao ?? "00.00.000",
-      nome: values.nome,
-      inep: unidade.inep ?? "00000000",
-      cnpj: unidade.cnpj ?? "00.000.000/0000-00",
-      diretor: values.diretor,
-      endereco: values.endereco,
-      email: values.email,
-    });
-
-    if (!parseResult.success) {
-      parseResult.error.errors.forEach((err) => {
-        // Ignora erros de CNPJ/INEP/Designação se esses campos forem somente leitura (não modificados) e já estiverem vazios por padrão na base legado.
-        // Focamos nas entradas editáveis na UI: nome, diretor, e-mail e limites do endereço.
-        const path = err.path[0];
-        if (path === "nome" || path === "diretor" || path === "email" || path === "endereco") {
-          nextErrors.push(err.message);
-        }
-      });
-    }
-
-    setErrors(nextErrors);
-    if (nextErrors.length > 0) return;
-
-    await onSubmit(values);
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto p-6 sm:max-w-2xl sm:p-7">
+      {/* Integração de Tecnologia Tailwind v4: @container na raiz para habilitar Container Queries */}
+      <DialogContent className="@container max-h-[92vh] overflow-y-auto p-6 sm:max-w-2xl sm:p-7">
         <DialogHeader className="space-y-1.5">
           <DialogTitle className="text-lg">Editar dados cadastrais</DialogTitle>
           <DialogDescription className="text-sm leading-relaxed">
@@ -147,8 +150,9 @@ export function UnidadeCadastroEditDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="mt-2 space-y-6" onSubmit={handleSubmit} noValidate>
-          {errors.length > 0 && (
+        {/* key reseta o estado do formulário inteiro ao abrir/fechar */}
+        <form key={open ? "open" : "closed"} className="mt-2 space-y-6" action={formAction} noValidate>
+          {errors && errors.length > 0 && (
             <Alert variant="destructive" className="border-destructive/40">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Revise os campos antes de salvar</AlertTitle>
@@ -172,7 +176,8 @@ export function UnidadeCadastroEditDialog({
               />
             }
           >
-            <div className="space-y-1.5 sm:col-span-2">
+            {/* Uso de Container Queries (@md:col-span-2) */}
+            <div className="space-y-1.5 @md:col-span-2">
               <Label htmlFor="cadastro-designacao" className="text-xs font-medium">
                 Designação
               </Label>
@@ -240,7 +245,7 @@ export function UnidadeCadastroEditDialog({
             title="Dados cadastrais"
             hint="Refletem em consultas e novos documentos."
           >
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5 @md:col-span-2">
               <Label htmlFor="cadastro-nome" className="text-xs font-medium">
                 Nome completo
               </Label>
@@ -248,14 +253,14 @@ export function UnidadeCadastroEditDialog({
                 id="cadastro-nome"
                 value={values.nome}
                 onChange={updateField("nome")}
-                disabled={isSaving}
+                disabled={isPending}
                 maxLength={255}
                 required
                 className={editableInputClass}
               />
             </div>
 
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5 @md:col-span-2">
               <Label htmlFor="cadastro-diretor" className="text-xs font-medium">
                 Diretor(a)
               </Label>
@@ -263,13 +268,13 @@ export function UnidadeCadastroEditDialog({
                 id="cadastro-diretor"
                 value={values.diretor}
                 onChange={updateField("diretor")}
-                disabled={isSaving}
+                disabled={isPending}
                 maxLength={160}
                 className={editableInputClass}
               />
             </div>
 
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5 @md:col-span-2">
               <Label htmlFor="cadastro-email" className="text-xs font-medium">
                 E-mail institucional de contato
               </Label>
@@ -278,14 +283,14 @@ export function UnidadeCadastroEditDialog({
                 type="email"
                 value={values.email}
                 onChange={updateField("email")}
-                disabled={isSaving}
+                disabled={isPending}
                 placeholder="exemplo@sme.rio"
                 maxLength={255}
                 className={editableInputClass}
               />
             </div>
 
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5 @md:col-span-2">
               <Label htmlFor="cadastro-endereco" className="text-xs font-medium">
                 Endereço
               </Label>
@@ -293,7 +298,7 @@ export function UnidadeCadastroEditDialog({
                 id="cadastro-endereco"
                 value={values.endereco}
                 onChange={updateField("endereco")}
-                disabled={isSaving}
+                disabled={isPending}
                 maxLength={255}
                 rows={3}
                 className={editableInputClass}
@@ -305,7 +310,7 @@ export function UnidadeCadastroEditDialog({
             title="Dados bancários"
             hint="Preservam zeros à esquerda e caracteres como X."
           >
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5 @md:col-span-2">
               <Label htmlFor="cadastro-banco" className="text-xs font-medium">
                 Banco
               </Label>
@@ -313,7 +318,7 @@ export function UnidadeCadastroEditDialog({
                 id="cadastro-banco"
                 value={values.banco}
                 onChange={updateField("banco")}
-                disabled={isSaving}
+                disabled={isPending}
                 maxLength={80}
                 className={editableInputClass}
               />
@@ -327,7 +332,7 @@ export function UnidadeCadastroEditDialog({
                 id="cadastro-agencia"
                 value={values.agencia}
                 onChange={updateField("agencia")}
-                disabled={isSaving}
+                disabled={isPending}
                 maxLength={20}
                 className={cn(editableInputClass, "font-mono tabular-nums")}
               />
@@ -341,7 +346,7 @@ export function UnidadeCadastroEditDialog({
                 id="cadastro-conta"
                 value={values.conta_corrente}
                 onChange={updateField("conta_corrente")}
-                disabled={isSaving}
+                disabled={isPending}
                 maxLength={30}
                 className={cn(editableInputClass, "font-mono tabular-nums")}
               />
@@ -360,23 +365,23 @@ export function UnidadeCadastroEditDialog({
             </AlertDescription>
           </Alert>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 @md:gap-0">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isSaving}
+              disabled={isPending}
               className="transition-colors duration-150"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              disabled={isSaving}
-              aria-busy={isSaving}
-              className="min-w-[160px] transition-colors duration-150"
+              disabled={isPending}
+              aria-busy={isPending}
+              className="min-w-[160px] @md:min-w-[180px] transition-colors duration-150"
             >
-              {isSaving ? (
+              {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                   Salvando...
@@ -394,3 +399,4 @@ export function UnidadeCadastroEditDialog({
     </Dialog>
   );
 }
+

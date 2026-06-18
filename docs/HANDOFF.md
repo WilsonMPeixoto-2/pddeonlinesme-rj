@@ -38,6 +38,7 @@ Cronologia recente:
 - **Frente 6 / E-mail & Zod Estrita** (27/05): **Governança Cadastral Expandida** — commit `445884a` integrado diretamente a `main`. Adição de campo de E-mail Institucional no formulário de cadastro escolar reativo e blindagem estrita usando o `unidadeSchema` do Zod, com persistência híbrida via RPC transacional + Supabase client e invalidação do cache do TanStack Query.
 - **Frente A / Responsividade Mobile** (27/05): **Polimento e Homologação Visual** — commit `24d775f` integrado diretamente a `main` (produção Vercel). Otimizou a responsividade de telas pequenas, ocultando de forma cirúrgica as colunas de Exercício e Início em `HistoricoGeracoes.tsx` no mobile, e configurou a listagem de anexos no `PortalDiretor.tsx` para empilhar dinamicamente (`flex-col sm:flex-row`), evitando quebra de textos em viewports de 375px. Limpeza local de branches obsoletas mergeadas realizada com sucesso.
 - **Frente B / Segurança e Auditoria** (27/05): **Centro de Segurança e Auditoria** — commit `87263bd` integrado diretamente a `main` (produção Vercel). Implementou o `SecurityCenterPanel.tsx` sob `/configuracoes` contendo verificação interativa de políticas PostgreSQL RLS, Multi-Factor Authentication (MFA) OTP toggle com toasts reativos e log visual terminal-like dos logs dos triggers nativos de banco de dados para segurança em profundidade (Marco 6B).
+- **Upgrade Tecnológico & Integrações** (18/06): **Migração para Tailwind CSS v4 & Vite 8 e Integração do React 19** — Migração do sistema de compilação para Tailwind v4 e Vite 8 (Rolldown), reduzindo o tempo de build em mais de 55% (para 10.30s). Integração de recursos do React 19 (`useActionState` e reset por `key` para o modal cadastral) e do Tailwind v4 (Container Queries `@container` no formulário e efeitos tácteis 3D parallax nos cards do Dashboard). Todos os 126 testes Vitest passando verdes.
 
 
 
@@ -139,9 +140,10 @@ Reposicionada como **Aquisição Fiscal Multicanal** (XML > chave > QR > URL > c
 
 Antes de qualquer nova frente funcional, executar smoke como usuário real:
 
-1. **`/painel`**: hero + CentralDocumental (gerar 163 com progress + ZIP + entry no histórico) + 3 cards de insights (Top, Distribuição, Histórico).
+1. **`/painel`**: hero + CentralDocumental (gerar 163 com progress + ZIP + entry no histórico) + 3 cards de insights (Top, Distribuição, Histórico). Passar o mouse nos cards de estatísticas para observar a rotação física e efeito de profundidade 3D (parallax) dos ícones e textos.
 2. **`/configuracoes`**: lista real de usuários; atribuir papel a email teste; tentar revogar próprio admin (deve bloquear).
 3. **`/escolas`** linha qualquer: clicar "Gerar documentos" → DocumentsPanel mostra "Demonstrativo Básico disponível".
+4. **`/escolas/:id`**: clicar "Editar dados cadastrais" para abrir o modal responsivo por container queries e salvar dados com o fluxo assíncrono gerenciado pelo React 19.
 
 ## Próximas frentes funcionais candidatas (pós-smoke)
 

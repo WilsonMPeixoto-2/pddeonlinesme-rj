@@ -1,10 +1,10 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-05-27T01:14:00-03:00",
+  "updated_at": "2026-06-18T15:26:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "4345c37",
+    "base_commit": "c5ce835",
     "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
   },
   "operational_north": {
@@ -32,12 +32,12 @@
     "geracao_em_lote_163_demonstrativos": "delivered in PR #73; generateDemonstrativosLote + batch processing control"
   },
   "next_priority": {
-    "current_pr": "Conclusão consolidada de todas as grandes frentes funcionais planejadas.",
-    "immediate_next_step": "Apresentar relatório final completo de handoff para o usuário.",
+    "current_pr": "Atualização tecnológica para Tailwind CSS v4 e Vite 8, com integrações de React 19.",
+    "immediate_next_step": "Homologar as animações 3D, formulários useActionState e container queries.",
     "smoke_checklist": [
-      "/fiscal: multi-channel acquisition tested under type check and vitest",
-      "/diretor: real-time expense lists and ExcelJS Bens generator verified",
-      "/escolas/:id: estorno/delete despesa functionality fully operational"
+      "Verificar efeitos 3D parallax no /dashboard",
+      "Testar formulário cadastral useActionState no /escolas/:id",
+      "Validar responsividade via Container Queries no modal"
     ]
   },
   "applied_migrations_post_main": [

@@ -53,7 +53,7 @@ export function TiltCard({
         transition: "transform 0.2s ease-out, box-shadow 0.3s ease-out",
         willChange: "transform",
       }}
-      className={cn("rounded-xl", className)}
+      className={cn("rounded-xl transform-3d [perspective:600px]", className)}
     >
       {children}
     </div>

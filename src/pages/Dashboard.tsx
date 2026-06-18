@@ -329,35 +329,35 @@ export default function Dashboard() {
             return (
               <motion.div key={s.label} variants={item}>
                 <TiltCard className="h-full">
-                  <Card className="ds-card-interactive ds-lift ds-glow-card group relative h-full overflow-hidden">
-                  <CardContent className="flex h-full flex-col gap-4 p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="ds-label">
+                  <Card className="ds-card-interactive ds-lift ds-glow-card group relative h-full transform-3d">
+                  <CardContent className="flex h-full flex-col gap-4 p-5 transform-3d">
+                    <div className="flex items-start justify-between gap-3 transform-3d">
+                      <p className="ds-label [transform:translateZ(12px)]">
                         {s.label}
                       </p>
                       <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-md transition-transform duration-300 group-hover:scale-110 ${toneRing[s.tone]}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-md transition-transform duration-300 group-hover:scale-110 [transform:translateZ(24px)] ${toneRing[s.tone]}`}
                       >
                         <Icon className="h-4 w-4" aria-hidden />
                       </div>
                     </div>
 
-                    <div>
+                    <div className="transform-3d">
                       {loading ? (
-                        <Skeleton className="h-9 w-24" />
+                        <Skeleton className="h-9 w-24 [transform:translateZ(16px)]" />
                       ) : !isReady ? (
-                        <p className="ds-h1 ds-num">
+                        <p className="ds-h1 ds-num [transform:translateZ(16px)]">
                           —
                         </p>
                       ) : (
-                        <p className="ds-h1 ds-num text-foreground">
+                        <p className="ds-h1 ds-num text-foreground [transform:translateZ(18px)]">
                           <NumberTicker
                             value={s.value as number}
                             format={s.format ?? ((n) => Math.round(n).toLocaleString("pt-BR"))}
                           />
                         </p>
                       )}
-                      <p className="mt-1 text-[11px] text-muted-foreground">{s.hint}</p>
+                      <p className="mt-1 text-[11px] text-muted-foreground [transform:translateZ(10px)]">{s.hint}</p>
                     </div>
                   </CardContent>
                 </Card>
