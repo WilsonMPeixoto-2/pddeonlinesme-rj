@@ -8,7 +8,7 @@ A fonte de verdade técnica é sempre o código-fonte, branch, commit, diff, con
 
 ## Contexto atual
 
-**main HEAD:** `bd750fc` (chore: upgrade stack to Vite 8, React 19, and Tailwind v4 with 3D Parallax and Container Queries)
+**main HEAD:** `7099e1f` (fix: allow both @sme.rio and @rioeduca.net email domains for registration)
 
 PRs #57 a #83 estão incorporados. PR em vôo: **Marco 10B v2 — Atualização Parcial Assistida da BASE**.
 
@@ -39,6 +39,7 @@ Cronologia recente:
 - **Frente A / Responsividade Mobile** (27/05): **Polimento e Homologação Visual** — commit `24d775f` integrado diretamente a `main` (produção Vercel). Otimizou a responsividade de telas pequenas, ocultando de forma cirúrgica as colunas de Exercício e Início em `HistoricoGeracoes.tsx` no mobile, e configurou a listagem de anexos no `PortalDiretor.tsx` para empilhar dinamicamente (`flex-col sm:flex-row`), evitando quebra de textos em viewports de 375px. Limpeza local de branches obsoletas mergeadas realizada com sucesso.
 - **Frente B / Segurança e Auditoria** (27/05): **Centro de Segurança e Auditoria** — commit `87263bd` integrado diretamente a `main` (produção Vercel). Implementou o `SecurityCenterPanel.tsx` sob `/configuracoes` contendo verificação interativa de políticas PostgreSQL RLS, Multi-Factor Authentication (MFA) OTP toggle com toasts reativos e log visual terminal-like dos logs dos triggers nativos de banco de dados para segurança em profundidade (Marco 6B).
 - **Upgrade Tecnológico & Integrações** (18/06): **Migração para Tailwind CSS v4 & Vite 8 e Integração do React 19** — Migração do sistema de compilação para Tailwind v4 e Vite 8 (Rolldown), reduzindo o tempo de build em mais de 55% (para 10.30s). Integração de recursos do React 19 (`useActionState` e reset por `key` para o modal cadastral) e do Tailwind v4 (Container Queries `@container` no formulário e efeitos tácteis 3D parallax nos cards do Dashboard). Todos os 126 testes Vitest passando verdes.
+- **Correção de Acesso (Auth)** (18/06): **Suporte ao domínio @rioeduca.net** — Atualizado o esquema de validação de criação de conta no [Login.tsx](file:///c:/Users/02790830/Documents/antigravity/cool-franklin/src/pages/Login.tsx) para permitir tanto o domínio `@sme.rio` quanto o domínio `@rioeduca.net`, garantindo o acesso correto de desenvolvedores e diretores.
 
 
 
