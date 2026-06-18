@@ -19,7 +19,13 @@ const loginSchema = z.object({
 });
 
 const signUpSchema = z.object({
-  email: z.string().min(1, "E-mail é obrigatório").email("E-mail inválido").endsWith("@sme.rio", { message: "Apenas e-mails institucionais @sme.rio são permitidos" }),
+  email: z.string()
+    .min(1, "E-mail é obrigatório")
+    .email("E-mail inválido")
+    .refine(
+      (email) => email.endsWith("@sme.rio") || email.endsWith("@rioeduca.net"),
+      { message: "Apenas e-mails institucionais @sme.rio ou @rioeduca.net são permitidos" }
+    ),
   senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
 });
 
@@ -118,7 +124,7 @@ const Login = () => {
                         <FormItem>
                           <FormLabel>E-mail institucional</FormLabel>
                           <FormControl>
-                            <Input placeholder="seu.nome@sme.rio" type="email" autoComplete="email" className="h-10" {...field} />
+                            <Input placeholder="seu.nome@sme.rio ou @rioeduca.net" type="email" autoComplete="email" className="h-10" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -169,7 +175,7 @@ const Login = () => {
                         <FormItem>
                           <FormLabel>E-mail institucional</FormLabel>
                           <FormControl>
-                            <Input placeholder="seu.nome@sme.rio" type="email" autoComplete="email" className="h-10" {...field} />
+                            <Input placeholder="seu.nome@sme.rio ou @rioeduca.net" type="email" autoComplete="email" className="h-10" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
