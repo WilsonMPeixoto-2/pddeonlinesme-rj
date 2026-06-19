@@ -126,11 +126,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border/50" />
-                <DropdownMenuItem onClick={() => navigate("/configuracoes")} className="gap-2 cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate("/configuracoes", { viewTransition: true })} className="gap-2 cursor-pointer">
                   <User className="h-3.5 w-3.5" />
                   <span className="text-sm">Configurações</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/diretor")} className="gap-2 cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate("/diretor", { viewTransition: true })} className="gap-2 cursor-pointer">
                   <UserCircle className="h-3.5 w-3.5" />
                   <span className="text-sm">Portal do Diretor</span>
                 </DropdownMenuItem>
@@ -149,6 +149,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <NavLink
                 key={t.to}
                 to={t.to}
+                viewTransition
                 className={({ isActive }) =>
                   `relative px-3 py-2.5 text-sm transition-colors whitespace-nowrap ${
                     isActive

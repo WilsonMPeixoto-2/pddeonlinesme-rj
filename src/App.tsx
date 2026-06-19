@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -36,6 +36,47 @@ const queryClient = new QueryClient({
   },
 });
 
+const RootLayout = () => (
+  <>
+    <TopLoadingBar />
+    <CommandPalette />
+    <ErrorBoundary>
+      <Outlet />
+    </ErrorBoundary>
+  </>
+);
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    children: [
+      { path: "", element: <Index /> },
+      { path: "dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
+      { path: "painel", element: <Navigate to="/dashboard" replace /> },
+      { path: "painel/historico", element: <ProtectedRoute><HistoricoGeracoes /></ProtectedRoute> },
+      { path: "escolas", element: <ProtectedRoute><Escolas /></ProtectedRoute> },
+      { path: "escolas/:id", element: <ProtectedRoute><EscolaEditar /></ProtectedRoute> },
+      { path: "base", element: <ProtectedRoute><Base /></ProtectedRoute> },
+      { path: "configuracoes", element: <ProtectedRoute><Configuracoes /></ProtectedRoute> },
+      { path: "manual", element: <ProtectedRoute><Manual /></ProtectedRoute> },
+      { path: "style-guide", element: <ProtectedRoute><StyleGuide /></ProtectedRoute> },
+      { path: "acesso-negado", element: <AccessDenied /> },
+      { path: "diretor", element: <ProtectedRoute><PortalDiretor /></ProtectedRoute> },
+      { path: "fiscal", element: <ProtectedRoute><FiscalConferencia /></ProtectedRoute> },
+      { path: "*", element: <NotFound /> },
+    ],
+  },
+], {
+  future: {
+    v7_relativeSplatPath: true,
+    v7_fetcherPersist: true,
+    v7_normalizeFormMethod: true,
+    v7_partialHydration: true,
+    v7_skipActionErrorRevalidation: true,
+  },
+});
+
 const App = () => (
   <ThemeProvider
     attribute="class"
@@ -48,30 +89,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <TopLoadingBar />
-            <CommandPalette />
-            <ErrorBoundary>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                {/* Alias: sidebar label is "Painel"; redirect direct URL hits to canonical /dashboard */}
-                <Route path="/painel" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/painel/historico" element={<ProtectedRoute><HistoricoGeracoes /></ProtectedRoute>} />
-                <Route path="/escolas" element={<ProtectedRoute><Escolas /></ProtectedRoute>} />
-                <Route path="/escolas/:id" element={<ProtectedRoute><EscolaEditar /></ProtectedRoute>} />
-                <Route path="/base" element={<ProtectedRoute><Base /></ProtectedRoute>} />
-                <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
-                <Route path="/manual" element={<ProtectedRoute><Manual /></ProtectedRoute>} />
-                <Route path="/style-guide" element={<ProtectedRoute><StyleGuide /></ProtectedRoute>} />
-                <Route path="/acesso-negado" element={<AccessDenied />} />
-                <Route path="/diretor" element={<ProtectedRoute><PortalDiretor /></ProtectedRoute>} />
-                <Route path="/fiscal" element={<ProtectedRoute><FiscalConferencia /></ProtectedRoute>} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </ErrorBoundary>
-          </BrowserRouter>
+          <RouterProvider router={router} />
           <Analytics />
           <SpeedInsights />
         </TooltipProvider>

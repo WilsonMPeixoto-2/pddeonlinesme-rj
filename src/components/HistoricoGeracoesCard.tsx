@@ -207,6 +207,7 @@ export function HistoricoGeracoesCard() {
           <div className="mt-4 border-t border-border/40 pt-3 flex justify-end">
             <Link
               to="/painel/historico"
+              viewTransition
               className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
             >
               <span>Ver histórico completo</span>

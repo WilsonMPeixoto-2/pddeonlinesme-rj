@@ -135,7 +135,7 @@ export default function HistoricoGeracoes() {
         {/* Page Header */}
         <div className="flex flex-col gap-1 border-b border-border/60 pb-5">
           <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            <Link to="/dashboard" className="hover:text-primary transition-colors">
+            <Link to="/dashboard" viewTransition className="hover:text-primary transition-colors">
               Painel
             </Link>
             <span>/</span>

@@ -353,6 +353,7 @@ export default function EscolaEditar() {
           <nav className="flex items-center gap-1.5 text-sm">
             <Link
               to="/escolas"
+              viewTransition
               className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
@@ -911,7 +912,6 @@ export default function EscolaEditar() {
                           <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_1_capital)}</td>
                         </tr>
                         <tr>
-                          <td className="ds-td px-3 py-2.5 font-medium text-foreground">2ª Parcela</td>
                           <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_2_custeio)}</td>
                           <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_2_capital)}</td>
                         </tr>
