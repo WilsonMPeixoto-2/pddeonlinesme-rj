@@ -691,6 +691,6 @@ export default function Escolas() {
         schoolName={selectedEscola?.designacao ?? ""}
         exercicio={exercicio}
       />
-    </Layout>
+    </AppLayout>
   );
 }
