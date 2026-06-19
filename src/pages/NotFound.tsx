@@ -32,7 +32,7 @@ const NotFound = () => {
                 O endereço <code className="rounded bg-muted/50 px-1.5 py-0.5 text-xs font-mono">{location.pathname}</code> não existe no sistema PDDE Online.
               </p>
             </div>
-            <Button onClick={() => navigate("/dashboard")} className="mt-2">
+            <Button onClick={() => navigate("/dashboard", { viewTransition: true })} className="mt-2">
               <ArrowLeft className="mr-2 h-4 w-4" /> Voltar ao Painel
             </Button>
           </CardContent>

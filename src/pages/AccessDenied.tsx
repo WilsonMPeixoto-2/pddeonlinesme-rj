@@ -50,7 +50,7 @@ export default function AccessDenied() {
 
             {/* Ação */}
             <Button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/dashboard", { viewTransition: true })}
               className="mt-2"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />

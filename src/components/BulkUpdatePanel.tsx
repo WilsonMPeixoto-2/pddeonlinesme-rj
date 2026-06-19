@@ -61,7 +61,7 @@ const FIELD_LABEL: Record<string, string> = {
 const STATUS_META: Record<
   BulkUpdateRowStatus,
   { label: string; tone: string }
-> = {
+ > = {
   ready: {
     label: "Alterar",
     tone: "text-primary border-primary/30 bg-primary/10",
@@ -425,14 +425,13 @@ export function BulkUpdatePanel() {
                   Demonstrativos afetados
                 </p>
                 <p className="mb-3 text-xs text-muted-foreground">
-                  Os Demonstrativos Básicos de{" "}
-                  <strong>{state.affectedUnitIds.length}</strong> unidades podem
+                  Os Demonstrativos Básicos de <strong>{state.affectedUnitIds.length}</strong> unidades podem
                   estar desatualizados após a alteração de diretor(a).
                 </p>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => navigate("/dashboard")}
+                  onClick={() => navigate("/dashboard", { viewTransition: true })}
                   className="h-8"
                 >
                   Abrir Painel para regenerar

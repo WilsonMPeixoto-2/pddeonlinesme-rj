@@ -284,7 +284,7 @@ export default function PortalDiretor() {
                 </div>
 
                 <div className="flex flex-col gap-2 pt-2">
-                  <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")} className="text-xs w-full">
+                  <Button variant="outline" size="sm" onClick={() => navigate("/dashboard", { viewTransition: true })} className="text-xs w-full">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Voltar ao Painel Geral
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()} className="text-[11px] text-muted-foreground hover:text-destructive w-full">
@@ -388,7 +388,7 @@ export default function PortalDiretor() {
               </div>
             )}
             
-            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="text-[11px] h-7 text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard", { viewTransition: true })} className="text-[11px] h-7 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="mr-1 h-3 w-3" /> Painel Geral
             </Button>
           </div>
@@ -838,4 +838,3 @@ export default function PortalDiretor() {
     </div>
   );
 }
-

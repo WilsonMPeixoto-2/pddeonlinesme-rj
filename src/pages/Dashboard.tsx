@@ -212,11 +212,11 @@ export default function Dashboard() {
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
-                <Button onClick={() => navigate("/escolas")}>
+                <Button onClick={() => navigate("/escolas", { viewTransition: true })}>
                   Ver unidades escolares
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button variant="outline" onClick={() => navigate("/base")}>
+                <Button variant="outline" onClick={() => navigate("/base", { viewTransition: true })}>
                   Importar BASE
                 </Button>
               </div>
@@ -385,7 +385,7 @@ export default function Dashboard() {
                     Últimas modificações no cadastro das unidades.
                   </p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/escolas")} className="text-xs">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/escolas", { viewTransition: true })} className="text-xs">
                   Ver todas
                   <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </Button>
@@ -440,7 +440,7 @@ export default function Dashboard() {
                           variant="ghost"
                           size="sm"
                           className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-                          onClick={() => navigate(`/escolas/${r.id}`)}
+                          onClick={() => navigate(`/escolas/${r.id}`, { viewTransition: true })}
                         >
                           Abrir
                           <ArrowUpRight className="ml-1 h-3.5 w-3.5" />

@@ -71,8 +71,6 @@ function getStatus(e: Unidade, detalhe?: UnidadeDetalhe) {
   return hasCadastroEssencialCompleto(cadastro) ? "completo" as const : "incompleto" as const;
 }
 
-
-
 const statusConfig = {
   completo: {
     label: "Cadastro completo",
@@ -85,8 +83,6 @@ const statusConfig = {
     badgeClass: "ds-badge-warning",
   },
 } as const;
-
-
 
 /* ─── Secondary actions menu (smaller, less prominent) ─── */
 
@@ -256,8 +252,6 @@ export default function Escolas() {
     });
     return counts;
   }, [detalheByUnidadeId, unidades]);
-
-
 
   const COLUMNS = 5;
 
@@ -439,7 +433,6 @@ export default function Escolas() {
               </SelectContent>
             </Select>
 
-
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -500,8 +493,6 @@ export default function Escolas() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  // Refined skeleton — matches real column rhythm and gives a
-                  // sense of layout before data arrives, instead of generic bars.
                   Array.from({ length: 8 }).map((_, i) => (
                     <TableRow
                       key={i}
@@ -585,7 +576,6 @@ export default function Escolas() {
                       const st = getStatus(e, detalheByUnidadeId.get(e.id));
                       const cfg = statusConfig[st];
                       return (
-                        // Keep rows native: row-accent/motion.tr already caused column drift in this table.
                         <TableRow
                           key={e.id}
                           className="group border-b border-border/40 transition-colors hover:bg-primary/[0.04]"
@@ -595,7 +585,7 @@ export default function Escolas() {
                             <div className="flex flex-col gap-1">
                               <button
                                 type="button"
-                                onClick={() => navigate(`/escolas/${e.id}`)}
+                                onClick={() => navigate(`/escolas/${e.id}`, { viewTransition: true })}
                                 title="Abrir cadastro completo"
                                 className="group/link inline-flex items-center gap-1.5 self-start rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                 aria-label={`Abrir cadastro de ${e.designacao}`}
@@ -646,8 +636,8 @@ export default function Escolas() {
                           </TableCell>
                           <TableCell className="text-right">
                             <SecondaryActions
-                              onEdit={() => navigate(`/escolas/${e.id}`)}
-                              onView={() => navigate(`/escolas/${e.id}`)}
+                              onEdit={() => navigate(`/escolas/${e.id}`, { viewTransition: true })}
+                              onView={() => navigate(`/escolas/${e.id}`, { viewTransition: true })}
                               onDelete={() => {
                                 toast.info(`Em breve: remover ${e.designacao}`);
                               }}
@@ -701,6 +691,6 @@ export default function Escolas() {
         schoolName={selectedEscola?.designacao ?? ""}
         exercicio={exercicio}
       />
-    </AppLayout>
+    </Layout>
   );
 }

@@ -85,7 +85,7 @@ export function TopReprogramados() {
                     <div className="flex items-baseline justify-between gap-2">
                       <button
                         type="button"
-                        onClick={() => u.unidade_id && navigate(`/escolas/${u.unidade_id}`)}
+                        onClick={() => u.unidade_id && navigate(`/escolas/${u.unidade_id}`, { viewTransition: true })}
                         className="truncate text-left text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:underline"
                         title={u.designacao ?? ""}
                       >
@@ -115,7 +115,7 @@ export function TopReprogramados() {
             variant="ghost"
             size="sm"
             className="mt-4 h-8 w-full justify-between text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => navigate("/escolas")}
+            onClick={() => navigate("/escolas", { viewTransition: true })}
           >
             <span>Ver lista completa</span>
             <ArrowUpRight className="h-3.5 w-3.5" />

@@ -35,7 +35,6 @@ import type { UnidadeCadastroFormValues } from "@/lib/unidadeCadastro";
 import { cn } from "@/lib/utils";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
-
 /* ─── Helpers ─── */
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -333,7 +332,7 @@ export default function EscolaEditar() {
             icon={AlertCircle}
             title={`Unidade escolar não encontrada para o exercício ${exercicio} e programa ${programaLabel}.`}
             action={
-              <Button variant="outline" onClick={() => navigate("/escolas")}>
+              <Button variant="outline" onClick={() => navigate("/escolas", { viewTransition: true })}>
                 Voltar para o localizador
               </Button>
             }
@@ -723,7 +722,7 @@ export default function EscolaEditar() {
                     Alteracoes afetam novas consultas e novos documentos gerados.
                   </p>
                   <div className="flex gap-2">
-                    <Button type="button" variant="ghost" onClick={() => navigate("/escolas")}>
+                    <Button type="button" variant="ghost" onClick={() => navigate("/escolas", { viewTransition: true })}>
                       Voltar
                     </Button>
                     <Button
@@ -912,6 +911,7 @@ export default function EscolaEditar() {
                           <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_1_capital)}</td>
                         </tr>
                         <tr>
+                          <td className="ds-td px-3 py-2.5 font-medium text-foreground">2ª Parcela</td>
                           <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_2_custeio)}</td>
                           <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_2_capital)}</td>
                         </tr>
@@ -1007,7 +1007,7 @@ export default function EscolaEditar() {
                 Alteracoes afetam novas consultas e novos documentos gerados.
               </p>
               <div className="flex w-full gap-2">
-                <Button type="button" variant="ghost" className="flex-1" onClick={() => navigate("/escolas")}>
+                <Button type="button" variant="ghost" className="flex-1" onClick={() => navigate("/escolas", { viewTransition: true })}>
                   Voltar
                 </Button>
                 <Button
