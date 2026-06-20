@@ -234,35 +234,55 @@ export default function Dashboard() {
                   {!loading && chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
+                        <defs>
+                          <linearGradient id="primaryGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="hsl(var(--primary))" />
+                            <stop offset="100%" stopColor="hsl(var(--primary) / 0.6)" />
+                          </linearGradient>
+                          <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="hsl(var(--warning))" stopOpacity={0.8} />
+                            <stop offset="100%" stopColor="hsl(var(--warning) / 0.3)" />
+                          </linearGradient>
+                          <linearGradient id="successGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="hsl(var(--success))" />
+                            <stop offset="100%" stopColor="hsl(var(--success) / 0.6)" />
+                          </linearGradient>
+                        </defs>
                         <Pie
                           data={chartData}
                           cx="50%"
                           cy="50%"
                           innerRadius={42}
                           outerRadius={55}
-                          paddingAngle={3}
+                          paddingAngle={3.5}
                           dataKey="value"
                           stroke="none"
                         >
-                          {chartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
+                          {chartData.map((entry, index) => {
+                            let fillUrl = "url(#primaryGrad)";
+                            if (entry.name.includes("Capital")) fillUrl = "url(#goldGrad)";
+                            if (entry.name.includes("Parcelas")) fillUrl = "url(#successGrad)";
+                            return <Cell key={`cell-${index}`} fill={fillUrl} />;
+                          })}
                         </Pie>
                         <RechartsTooltip
                           formatter={(value: number) => fmtBRL(value)}
                           contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            borderColor: "hsl(var(--border))",
-                            borderRadius: "8px",
-                            fontSize: "12px"
+                            backgroundColor: "rgba(10, 16, 36, 0.75)",
+                            backdropFilter: "blur(12px)",
+                            border: "1px solid hsl(var(--border) / 0.5)",
+                            borderRadius: "12px",
+                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.5)",
+                            fontSize: "11px",
+                            padding: "8px 12px"
                           }}
-                          itemStyle={{ color: "hsl(var(--foreground))" }}
+                          itemStyle={{ color: "hsl(var(--foreground))", fontWeight: "600" }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-24 w-24 rounded-full border-4 border-muted/30" />
+                      <div className="h-24 w-24 rounded-full border-4 border-muted/30 animate-pulse" />
                     </div>
                   )}
                 </div>
@@ -316,21 +336,21 @@ export default function Dashboard() {
         {/* CENTRAL DOCUMENTAL — Ação Executiva de Alto Valor (Marco 9B + Marco 15) */}
         <CentralDocumental />
 
-        {/* STAT GRID — staggered */}
+        {/* STAT GRID — staggered com Container Queries Tailwind v4 (@container) */}
         <motion.div
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4"
         >
           {stats.map((s) => {
             const Icon = s.icon;
             const isReady = s.value !== null && s.value !== undefined;
             return (
-              <motion.div key={s.label} variants={item}>
+              <motion.div key={s.label} variants={item} className="@container">
                 <TiltCard className="h-full">
                   <Card className="ds-card-interactive ds-lift ds-glow-card group relative h-full transform-3d">
-                  <CardContent className="flex h-full flex-col gap-4 p-5 transform-3d">
+                  <CardContent className="flex h-full flex-col gap-4 p-5 transform-3d @xs:gap-5">
                     <div className="flex items-start justify-between gap-3 transform-3d">
                       <p className="ds-label [transform:translateZ(12px)]">
                         {s.label}
@@ -344,20 +364,20 @@ export default function Dashboard() {
 
                     <div className="transform-3d">
                       {loading ? (
-                        <Skeleton className="h-9 w-24 [transform:translateZ(16px)]" />
+                        <Skeleton className="h-9 w-24 [transform:translateZ(16px)] animate-pulse" />
                       ) : !isReady ? (
                         <p className="ds-h1 ds-num [transform:translateZ(16px)]">
                           —
                         </p>
                       ) : (
-                        <p className="ds-h1 ds-num text-foreground [transform:translateZ(18px)]">
+                        <p className="ds-h1 ds-num text-foreground [transform:translateZ(18px)] tracking-tight">
                           <NumberTicker
                             value={s.value as number}
                             format={s.format ?? ((n) => Math.round(n).toLocaleString("pt-BR"))}
                           />
                         </p>
                       )}
-                      <p className="mt-1 text-[11px] text-muted-foreground [transform:translateZ(10px)]">{s.hint}</p>
+                      <p className="mt-1 text-[10px] text-muted-foreground leading-normal [transform:translateZ(10px)]">{s.hint}</p>
                     </div>
                   </CardContent>
                 </Card>
