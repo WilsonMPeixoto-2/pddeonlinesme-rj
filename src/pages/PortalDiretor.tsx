@@ -886,10 +886,12 @@ export default function PortalDiretor() {
                       const isOpen = openFaqIndex === index;
                       return (
                         <div key={index} className="rounded-lg border border-border bg-card overflow-hidden">
-                          <button
-                            onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                            className="w-full flex items-center justify-between p-4 text-left font-semibold text-xs text-foreground hover:bg-muted/30 transition-colors cursor-pointer"
-                          >
+<button
+  type="button"
+  aria-expanded={isOpen}
+  onClick={() => setOpenFaqIndex(isOpen ? null : index)}
+  className="w-full flex items-center justify-between p-4 text-left font-semibold text-xs text-foreground hover:bg-muted/30 transition-colors cursor-pointer"
+>
                             <span>{item.question}</span>
                             <motion.div
                               animate={{ rotate: isOpen ? 90 : 0 }}
