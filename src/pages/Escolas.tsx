@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, useDeferredValue } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -213,11 +213,13 @@ export default function Escolas() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  const deferredQ = useDeferredValue(q);
+
   const lista = useMemo(() => {
     let filtered = unidades;
-    if (q.trim()) {
-      const lower = q.toLowerCase();
-      const digits = q.replace(/\D/g, "");
+    if (deferredQ.trim()) {
+      const lower = deferredQ.toLowerCase();
+      const digits = deferredQ.replace(/\D/g, "");
       filtered = filtered.filter((e) => {
         if (e.designacao.toLowerCase().includes(lower)) return true;
         if ((e.nome ?? "").toLowerCase().includes(lower)) return true;
@@ -235,7 +237,7 @@ export default function Escolas() {
       filtered = filtered.filter((e) => getStatus(e, detalheByUnidadeId.get(e.id)) === statusFilter);
     }
     return filtered;
-  }, [detalheByUnidadeId, q, statusFilter, unidades]);
+  }, [detalheByUnidadeId, deferredQ, statusFilter, unidades]);
 
   const isSearching =
     q.trim().length > 0 || statusFilter !== "todas";
