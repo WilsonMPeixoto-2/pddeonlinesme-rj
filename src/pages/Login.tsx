@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,7 +34,7 @@ type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
-  const [busy, setBusy] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -52,25 +52,50 @@ const Login = () => {
     defaultValues: { email: "", senha: "" },
   });
 
-  const onSignIn = async (values: LoginFormValues) => {
-    setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: values.email, password: values.senha });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Bem-vindo(a)!");
-    navigate("/dashboard");
+  const onSignIn = (values: LoginFormValues) => {
+    startTransition(async () => {
+      const { error } = await supabase.auth.signInWithPassword({ email: values.email, password: values.senha });
+      if (error) return toast.error(error.message);
+      toast.success("Bem-vindo(a)!");
+      navigate("/dashboard");
+    });
   };
 
-  const onSignUp = async (values: SignUpFormValues) => {
-    setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.senha,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+  const onSignUp = (values: SignUpFormValues) => {
+    startTransition(async () => {
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.senha,
+        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      });
+      if (error) return toast.error(error.message);
+      toast.success("Conta criada! Você já pode entrar.");
     });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Conta criada! Você já pode entrar.");
+  };
+
+  const handleEsqueciSenha = async () => {
+    const email = loginForm.getValues("email");
+    if (!email) {
+      loginForm.setError("email", { type: "manual", message: "Digite seu e-mail institucional primeiro" });
+      return;
+    }
+
+    const emailValido = loginSchema.shape.email.safeParse(email);
+    if (!emailValido.success) {
+      loginForm.setError("email", { type: "manual", message: "E-mail inválido" });
+      return;
+    }
+
+    const toastId = toast.loading("Enviando e-mail de recuperação...");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/dashboard`,
+    });
+
+    if (error) {
+      toast.error(error.message, { id: toastId });
+    } else {
+      toast.success("E-mail de redefinição enviado! Verifique sua caixa de entrada.", { id: toastId });
+    }
   };
 
   return (
@@ -146,14 +171,15 @@ const Login = () => {
                     <div className="flex justify-end">
                       <button
                         type="button"
-                        className="text-xs text-primary hover:text-primary/80 transition-colors"
-                        onClick={() => toast.info("Em breve: recuperação de senha")}
+                        className="text-xs text-primary hover:text-primary/80 transition-colors disabled:opacity-50 cursor-pointer"
+                        onClick={handleEsqueciSenha}
+                        disabled={isPending}
                       >
                         Esqueci minha senha
                       </button>
                     </div>
-                    <Button type="submit" className="h-10 w-full font-medium" disabled={busy}>
-                      {busy ? (
+                    <Button type="submit" className="h-10 w-full font-medium" disabled={isPending}>
+                      {isPending ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Entrando…
                         </>
@@ -197,8 +223,8 @@ const Login = () => {
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="h-10 w-full font-medium" disabled={busy}>
-                      {busy ? (
+                    <Button type="submit" className="h-10 w-full font-medium" disabled={isPending}>
+                      {isPending ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Criando conta…
                         </>
