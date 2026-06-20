@@ -356,8 +356,10 @@ export default function PortalDiretor() {
               { id: "documentos", label: "Documentos" },
               { id: "ajuda", label: "Ajuda" },
             ].map((tab) => (
-              <button
-                key={tab.id}
+<button
+  type="button"
+  key={tab.id}
+  aria-current={selectedTab === tab.id ? "page" : undefined}
                 className={`relative px-3 py-2.5 text-xs transition-colors whitespace-nowrap cursor-pointer ${
                   selectedTab === tab.id
                     ? "text-primary font-medium"
