@@ -1,44 +1,45 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-24T15:45:09-03:00",
+  "updated_at": "2026-06-24T18:22:00-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "a9a049b",
-    "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth. The current cleanup branch is based on a9a049b."
+    "base_commit": "337648c",
+    "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth. PR #90 is based on main commit 337648c."
   },
   "operational_north": {
     "plan": "Plano Global v4.2 (incorpora Radar de Inteligência Institucional)",
     "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
     "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
     "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "Saneamento da memória operacional para remover registros de outros projetos antes de retomar as demais frentes da auditoria geral."
+    "current_mode": "Restauração do gate técnico permanente: lint, typecheck, testes e build novamente executados com sucesso no CI do PR #90."
   },
   "recent_pull_requests": [
+    { "number": 90, "title": "fix(ci): restaurar gate de lint", "status": "open-green", "date": "2026-06-24" },
+    { "number": 89, "title": "chore(continuity): remover registros de outros projetos", "merge_commit": "337648c", "date": "2026-06-24" },
     { "number": 88, "title": "feat: busca reativa por useDeferredValue e melhorias visuais na dashboard", "merge_commit": "4cba6bb", "date": "2026-06-20" },
-    { "number": 87, "title": "feat: implementa useTransition do React 19 e recuperação de senha real no Login.tsx", "merge_commit": "13e9c89", "date": "2026-06-20" },
-    { "number": 86, "title": "chore: atualiza dependências secundárias", "merge_commit": "7a58858", "date": "2026-06-20" },
-    { "number": 85, "title": "style: melhorias estéticas no Portal do Diretor e FAQ interativo", "merge_commit": "7cc2e82", "date": "2026-06-20" }
+    { "number": 87, "title": "feat: implementa useTransition do React 19 e recuperação de senha real no Login.tsx", "merge_commit": "13e9c89", "date": "2026-06-20" }
   ],
   "delivered_state": {
-    "frente_fiscal_v1_acquisition": "delivered in commit 02e198b; Frente Fiscal split-screen panel added under /fiscal with client-side XML DOMParser (NF-e/NFS-e), 44-digit key checksum (Modulo 11) validator with automatic CNPJ extraction, CSS laser scanning OCR sandbox simulator for PDFs/images, and transactional public.homologar_despesa_fiscal Supabase RPC with sandbox localStorage fallback.",
-    "relacao_bens_anexo_ii": "delivered in commit e9fc22b; library generateRelacaoBens.ts added using ExcelJS to programmatically compile and style the official Bens Adquiridos list from capital despesas, complete with institutional headers and signatures, featuring reactive warning rows when no items exist.",
-    "portal_diretor_real_time_despesas": "delivered in commit e9fc22b; Portal do Diretor got a real-time Notas Fiscais extrato listing audited invoices with dates, formatted CNPJ, values, and Custeio vs Capital badges. Mapped Anexo II to functional download button using ExcelJS dynamic code splitting.",
-    "gad_auditoria_estorno": "delivered in commit 4345c37; added Despesas card inside /escolas/:id administrative panel allowing operators/admins to audit and reconcile despesas fiscais using the public.estornar_despesa_fiscal RPC with optimistic query invalidations.",
-    "security_center_panel": "delivered in commit 87263bd; custom SecurityCenterPanel component added to /configuracoes containing an interactive RLS presentation, simulated Multi-Factor Authentication toggle and styled terminal-like audit examples. This component still requires a separate institutional truthfulness review.",
-    "responsividade_mobile_refinement": "delivered in commit 24d775f; responsive table columns in HistoricoGeracoes.tsx and stackable document panels in PortalDiretor.tsx.",
+    "ci_lint_recovery": "Prepared in PR #90. Seven explicit-any errors were replaced with unknown-based handling, two Fast Refresh warnings were explicitly allowlisted, a shared getErrorMessage utility was added, and the normal CI completed typecheck, lint, tests and build successfully.",
+    "frente_fiscal_v1_acquisition": "delivered in commit 02e198b; Frente Fiscal split-screen panel added under /fiscal with client-side XML DOMParser (NF-e/NFS-e), 44-digit key checksum validator, automatic CNPJ extraction, OCR sandbox simulator and transactional public.homologar_despesa_fiscal RPC with sandbox localStorage fallback.",
+    "relacao_bens_anexo_ii": "delivered in commit e9fc22b; library generateRelacaoBens.ts added using ExcelJS to compile the Relação de Bens Adquiridos from capital despesas.",
+    "portal_diretor_real_time_despesas": "delivered in commit e9fc22b; Portal do Diretor lists audited invoices and provides the Anexo II download.",
+    "gad_auditoria_estorno": "delivered in commit 4345c37; Despesas card added to /escolas/:id with estornar_despesa_fiscal RPC integration.",
+    "security_center_panel": "delivered in commit 87263bd; component contains simulated security states and still requires a separate institutional truthfulness correction.",
+    "responsividade_mobile_refinement": "delivered in commit 24d775f; responsive table columns and stackable document panels.",
     "painel_visual_polish": "delivered in PR #79; visual refinements across the executive panel.",
     "admin_roles_ui": "delivered in PR #75 (Marco 6B v0); /configuracoes user list and role management.",
     "geracao_em_lote_163_demonstrativos": "delivered in PR #73; generateDemonstrativosLote and batch processing control."
   },
   "next_priority": {
-    "current_pr": "Limpeza de continuidade preparada na branch chore/clean-cross-project-contamination.",
-    "immediate_next_step": "Revisar e incorporar a limpeza documental; depois tratar segurança, CI, RLS e integridade fiscal em frentes próprias.",
+    "current_pr": "PR #90 aberto e tecnicamente verde, aguardando incorporação.",
+    "immediate_next_step": "Após incorporar o PR #90, tratar a veracidade institucional do SecurityCenterPanel em uma frente isolada.",
     "smoke_checklist": [
-      "Confirmar que o diff da limpeza altera apenas arquivos de continuidade e documentação",
-      "Validar o JSON de .continuity/current-state.json",
-      "Validar cada linha JSON de .continuity/session-log.jsonl",
-      "Confirmar ausência de referências operacionais específicas de outros projetos no estado corrente"
+      "Confirmar que o workflow temporário de diagnóstico não integra o diff final",
+      "Confirmar lint sem erros e sem avisos",
+      "Confirmar typecheck, testes e build no workflow CI normal",
+      "Revisar o diff para garantir ausência de alteração funcional não relacionada"
     ]
   },
   "applied_migrations_post_main": [
