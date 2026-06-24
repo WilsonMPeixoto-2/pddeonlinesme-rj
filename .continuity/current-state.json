@@ -1,44 +1,44 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-23T13:48:00-03:00",
+  "updated_at": "2026-06-24T15:45:09-03:00",
   "source_of_truth": {
     "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "7099e1f",
-    "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth."
+    "base_commit": "a9a049b",
+    "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth. The current cleanup branch is based on a9a049b."
   },
   "operational_north": {
     "plan": "Plano Global v4.2 (incorpora Radar de Inteligência Institucional)",
     "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
     "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
     "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "Frente Fiscal v1, Central de Despesas do Diretor, Relação de Bens Adquiridos (Anexo II) e Estorno GAD 100% entregues e deploiaveis em produção."
+    "current_mode": "Saneamento da memória operacional para remover registros de outros projetos antes de retomar as demais frentes da auditoria geral."
   },
   "recent_pull_requests": [
-    { "title": "feat: Painel de Auditoria de Despesas e Ação de Estorno no GAD", "merge_commit": "4345c37", "date": "2026-05-27" },
-    { "title": "feat: Central de Despesas e download da Relação de Bens (Anexo II) no Portal do Diretor", "merge_commit": "e9fc22b", "date": "2026-05-27" },
-    { "title": "feat: Frente Fiscal v1 — Spike de Aquisição Fiscal Multicanal", "merge_commit": "02e198b", "date": "2026-05-27" },
-    { "title": "docs(manual): refinar manual institucional com conformidade de seguranca e saneamento de termos", "merge_commit": "9c54b2f", "date": "2026-05-27" }
+    { "number": 88, "title": "feat: busca reativa por useDeferredValue e melhorias visuais na dashboard", "merge_commit": "4cba6bb", "date": "2026-06-20" },
+    { "number": 87, "title": "feat: implementa useTransition do React 19 e recuperação de senha real no Login.tsx", "merge_commit": "13e9c89", "date": "2026-06-20" },
+    { "number": 86, "title": "chore: atualiza dependências secundárias", "merge_commit": "7a58858", "date": "2026-06-20" },
+    { "number": 85, "title": "style: melhorias estéticas no Portal do Diretor e FAQ interativo", "merge_commit": "7cc2e82", "date": "2026-06-20" }
   ],
   "delivered_state": {
     "frente_fiscal_v1_acquisition": "delivered in commit 02e198b; Frente Fiscal split-screen panel added under /fiscal with client-side XML DOMParser (NF-e/NFS-e), 44-digit key checksum (Modulo 11) validator with automatic CNPJ extraction, CSS laser scanning OCR sandbox simulator for PDFs/images, and transactional public.homologar_despesa_fiscal Supabase RPC with sandbox localStorage fallback.",
     "relacao_bens_anexo_ii": "delivered in commit e9fc22b; library generateRelacaoBens.ts added using ExcelJS to programmatically compile and style the official Bens Adquiridos list from capital despesas, complete with institutional headers and signatures, featuring reactive warning rows when no items exist.",
-    "portal_diretor_real_time_despesas": "delivered in commit e9fc22b; Portal do Diretor got a beautiful real-time Notas Fiscais extrato listing all audited invoices with dates, formatted CNPJ, values, and HSL Custeio vs Capital badges. Mapped Anexo II to functional download button using ExcelJS dynamic code splitting.",
-    "gad_auditoria_estorno": "delivered in commit 4345c37; added Despesas card inside /escolas/:id administrative panel allowing operators/admins to audit and safely delete/reconcile despesas fiscais dynamically using the public.estornar_despesa_fiscal RPC with optimistic query invalidations.",
-    "security_center_panel": "delivered in commit 87263bd; custom SecurityCenterPanel component added to /configuracoes containing interactive PostgreSQL RLS scanner, simulated Multi-Factor Authentication (MFA) OTP toggle with sonner toasts, and styled terminal logs showing database audit triggers mutations.",
-    "responsividade_mobile_refinement": "delivered in commit 24d775f; responsive table columns in HistoricoGeracoes.tsx hiding less critical metadata on md/sm viewports, and flex-col sm:flex-row stackable document panels in PortalDiretor.tsx preventing text overlap on smaller devices",
-    "painel_visual_polish": "delivered in PR #79; 10 refinements visually sóbrias across all cards",
-    "admin_roles_ui": "delivered in PR #75 (Marco 6B v0); /configuracoes user list and role management",
-    "geracao_em_lote_163_demonstrativos": "delivered in PR #73; generateDemonstrativosLote + batch processing control"
+    "portal_diretor_real_time_despesas": "delivered in commit e9fc22b; Portal do Diretor got a real-time Notas Fiscais extrato listing audited invoices with dates, formatted CNPJ, values, and Custeio vs Capital badges. Mapped Anexo II to functional download button using ExcelJS dynamic code splitting.",
+    "gad_auditoria_estorno": "delivered in commit 4345c37; added Despesas card inside /escolas/:id administrative panel allowing operators/admins to audit and reconcile despesas fiscais using the public.estornar_despesa_fiscal RPC with optimistic query invalidations.",
+    "security_center_panel": "delivered in commit 87263bd; custom SecurityCenterPanel component added to /configuracoes containing an interactive RLS presentation, simulated Multi-Factor Authentication toggle and styled terminal-like audit examples. This component still requires a separate institutional truthfulness review.",
+    "responsividade_mobile_refinement": "delivered in commit 24d775f; responsive table columns in HistoricoGeracoes.tsx and stackable document panels in PortalDiretor.tsx.",
+    "painel_visual_polish": "delivered in PR #79; visual refinements across the executive panel.",
+    "admin_roles_ui": "delivered in PR #75 (Marco 6B v0); /configuracoes user list and role management.",
+    "geracao_em_lote_163_demonstrativos": "delivered in PR #73; generateDemonstrativosLote and batch processing control."
   },
   "next_priority": {
-    "current_pr": "Nenhum (PR de atualização tecnológica entregue e integrado em bd750fc).",
-    "immediate_next_step": "Avançar para o Marco 11 (Relação de Bens Adquiridos via ExcelJS) ou Sub-Marco 6B (audit_logs de mutações sensíveis).",
+    "current_pr": "Limpeza de continuidade preparada na branch chore/clean-cross-project-contamination.",
+    "immediate_next_step": "Revisar e incorporar a limpeza documental; depois tratar segurança, CI, RLS e integridade fiscal em frentes próprias.",
     "smoke_checklist": [
-      "Verificar efeitos 3D parallax no /dashboard ao passar o mouse",
-      "Testar formulário cadastral useActionState no /escolas/:id",
-      "Validar responsividade via Container Queries no modal ao redimensionar",
-      "Realizar testes e validações automatizadas pós-upgrade"
+      "Confirmar que o diff da limpeza altera apenas arquivos de continuidade e documentação",
+      "Validar o JSON de .continuity/current-state.json",
+      "Validar cada linha JSON de .continuity/session-log.jsonl",
+      "Confirmar ausência de referências operacionais específicas de outros projetos no estado corrente"
     ]
   },
   "applied_migrations_post_main": [
@@ -55,6 +55,7 @@
   "mandatory_before_task": [
     "Read AGENTS.md",
     "Read docs/PLANO_GLOBAL_V4_2.md (current plan)",
-    "Read docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md (transversal directive)"
+    "Read docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md (transversal directive)",
+    "Verify the current GitHub main branch and recent pull requests"
   ]
 }
