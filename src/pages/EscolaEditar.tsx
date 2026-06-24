@@ -31,6 +31,7 @@ import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { useUpdateUnidadeCadastro } from "@/hooks/useUpdateUnidadeCadastro";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
+import { getErrorMessage } from "@/lib/errors";
 import type { UnidadeCadastroFormValues } from "@/lib/unidadeCadastro";
 import { cn } from "@/lib/utils";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -183,9 +184,9 @@ export default function EscolaEditar() {
 
       refetch(); // recarrega limites da escola
       refetchDespesas(); // recarrega lista de despesas
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || "Erro ao estornar despesa fiscal.", { id: toastId });
+      toast.error(getErrorMessage(err, "Erro ao estornar despesa fiscal."), { id: toastId });
     } finally {
       setIsEstornandoId(null);
     }
@@ -193,8 +194,18 @@ export default function EscolaEditar() {
 
   const handleEstornoLocalFallback = (despesaId: string) => {
     // 1. Remove do localStorage de sandbox
-    const despesasLocais = JSON.parse(localStorage.getItem("sandbox_despesas_fiscais") || "[]");
-    const filtradas = despesasLocais.filter((d: any) => d.id !== despesaId);
+    const parsedDespesas: unknown = JSON.parse(
+      localStorage.getItem("sandbox_despesas_fiscais") || "[]",
+    );
+    const despesasLocais = Array.isArray(parsedDespesas)
+      ? parsedDespesas.filter(
+          (item): item is Record<string, unknown> =>
+            typeof item === "object" && item !== null,
+        )
+      : [];
+    const filtradas = despesasLocais.filter(
+      (despesa) => despesa.id !== despesaId,
+    );
     localStorage.setItem("sandbox_despesas_fiscais", JSON.stringify(filtradas));
 
     // 2. Desconta do cache do React Query

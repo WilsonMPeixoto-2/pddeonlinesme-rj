@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnidadesLocalizador } from "@/hooks/useUnidadesLocalizador";
 import { useExercicio } from "@/hooks/useExercicio";
+import { getErrorMessage } from "@/lib/errors";
 
 /* ─── HELPERS DE FORMATAÇÃO E MÁSCARAS ─── */
 function formatCNPJ(value: string): string {
@@ -192,9 +193,9 @@ export default function FiscalConferencia() {
       setXmlRawMetadata(JSON.stringify(summary, null, 2));
       setExtractionMethod("xml");
       toast.success("XML fiscal extraído com sucesso!", { id: toastId });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || "Falha ao ler o arquivo XML fiscal.", { id: toastId });
+      toast.error(getErrorMessage(err, "Falha ao ler o arquivo XML fiscal."), { id: toastId });
     }
   };
 
@@ -315,9 +316,9 @@ export default function FiscalConferencia() {
       queryClient.invalidateQueries({ queryKey: ["unidades-localizador"] });
       refetchEscola();
       resetForm();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || "Erro inesperado ao homologar despesa fiscal.", { id: toastId });
+      toast.error(getErrorMessage(err, "Erro inesperado ao homologar despesa fiscal."), { id: toastId });
     } finally {
       setIsHomologando(false);
     }

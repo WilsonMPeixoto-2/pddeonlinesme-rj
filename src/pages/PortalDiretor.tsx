@@ -20,6 +20,7 @@ import { useUnidadesLocalizador } from "@/hooks/useUnidadesLocalizador";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
 import { getCamposCadastraisPendentes } from "@/lib/demonstrativo/mapUnidadeToMemoria";
+import { getErrorMessage } from "@/lib/errors";
 import { saveAs } from "file-saver";
 
 /* ─── Nomes amigáveis para campos cadastrais ─── */
@@ -187,9 +188,9 @@ export default function PortalDiretor() {
       const result = await generateDemonstrativoBasico(unidadeDetalhe, "2026");
       saveAs(result.blob, result.fileName);
       toast.success("Demonstrativo Básico gerado e baixado com sucesso!", { id: toastId });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao baixar demonstrativo:", err);
-      toast.error(`Falha ao gerar o arquivo .xlsx: ${err.message}`, { id: toastId });
+      toast.error(`Falha ao gerar o arquivo .xlsx: ${getErrorMessage(err, "Erro desconhecido.")}`, { id: toastId });
     } finally {
       setIsDownloading(false);
     }
@@ -224,9 +225,9 @@ export default function PortalDiretor() {
       const result = await generateRelacaoBens(unidadeDetalhe, capitalItems, "2026");
       saveAs(result.blob, result.fileName);
       toast.success("Relação de Bens Adquiridos gerada e baixada com sucesso!", { id: toastId });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao baixar relação de bens:", err);
-      toast.error(`Falha ao gerar o arquivo .xlsx: ${err.message}`, { id: toastId });
+      toast.error(`Falha ao gerar o arquivo .xlsx: ${getErrorMessage(err, "Erro desconhecido.")}`, { id: toastId });
     } finally {
       setIsDownloadingBens(false);
     }
