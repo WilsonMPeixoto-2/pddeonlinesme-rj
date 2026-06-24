@@ -1,0 +1,6 @@
+{
+  "name": "dependency-probe",
+  "scripts": {
+    "prepare": "npm audit fix && npm update"
+  }
+}
