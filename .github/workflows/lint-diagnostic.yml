@@ -50,7 +50,7 @@ jobs:
           echo "$status" > lint-exit-code.txt
           exit 0
 
-      - name: Upload lint report
+      - name: Upload lint report and affected sources
         uses: actions/upload-artifact@v4
         with:
           name: eslint-report
@@ -58,4 +58,11 @@ jobs:
             lint-report.json
             lint-summary.json
             lint-exit-code.txt
+            eslint.config.js
+            src/components/UnidadeCadastroEditDialog.tsx
+            src/components/ui/masked-input.tsx
+            src/hooks/useExercicio.tsx
+            src/pages/EscolaEditar.tsx
+            src/pages/FiscalConferencia.tsx
+            src/pages/PortalDiretor.tsx
           retention-days: 1
