@@ -33,20 +33,14 @@ jobs:
           python <<'PY'
           from pathlib import Path
 
-          def replace_once(path: str, old: str, new: str) -> None:
-              file_path = Path(path)
-              content = file_path.read_text(encoding="utf-8")
-              occurrences = content.count(old)
-              if occurrences != 1:
-                  raise RuntimeError(f"{path}: expected one occurrence, found {occurrences}: {old!r}")
-              file_path.write_text(content.replace(old, new, 1), encoding="utf-8")
-
-          def replace_all(path: str, old: str, new: str, expected: int) -> None:
+          def replace_exact(path: str, old: str, new: str, expected: int = 1) -> None:
               file_path = Path(path)
               content = file_path.read_text(encoding="utf-8")
               occurrences = content.count(old)
               if occurrences != expected:
-                  raise RuntimeError(f"{path}: expected {expected} occurrences, found {occurrences}: {old!r}")
+                  raise RuntimeError(
+                      f"{path}: expected {expected} occurrence(s), found {occurrences}: {old!r}"
+                  )
               file_path.write_text(content.replace(old, new), encoding="utf-8")
 
           Path("src/lib/errors.ts").write_text(
@@ -72,42 +66,41 @@ jobs:
               encoding="utf-8",
           )
 
-          replace_once(
+          replace_exact(
               "src/components/UnidadeCadastroEditDialog.tsx",
               'import { cn } from "@/lib/utils";',
               'import { getErrorMessage } from "@/lib/errors";\nimport { cn } from "@/lib/utils";',
           )
-          replace_once(
+          replace_exact(
               "src/components/UnidadeCadastroEditDialog.tsx",
-              '''      } catch (err: any) {
-                return [err.message || "Erro ao salvar dados cadastrais."];
-              }''',
-              '''      } catch (err: unknown) {
-                return [getErrorMessage(err, "Erro ao salvar dados cadastrais.")];
-              }''',
+              "catch (err: any)",
+              "catch (err: unknown)",
+          )
+          replace_exact(
+              "src/components/UnidadeCadastroEditDialog.tsx",
+              'return [err.message || "Erro ao salvar dados cadastrais."];',
+              'return [getErrorMessage(err, "Erro ao salvar dados cadastrais.")];',
           )
 
-          replace_once(
+          replace_exact(
               "src/pages/EscolaEditar.tsx",
               'import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";',
               'import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";\nimport { getErrorMessage } from "@/lib/errors";',
           )
-          replace_once(
+          replace_exact(
               "src/pages/EscolaEditar.tsx",
-              '''    } catch (err: any) {
-                console.error(err);
-                toast.error(err.message || "Erro ao estornar despesa fiscal.", { id: toastId });
-              }''',
-              '''    } catch (err: unknown) {
-                console.error(err);
-                toast.error(getErrorMessage(err, "Erro ao estornar despesa fiscal."), { id: toastId });
-              }''',
+              "catch (err: any)",
+              "catch (err: unknown)",
           )
-          replace_once(
+          replace_exact(
               "src/pages/EscolaEditar.tsx",
-              '''    const despesasLocais = JSON.parse(localStorage.getItem("sandbox_despesas_fiscais") || "[]");
-              const filtradas = despesasLocais.filter((d: any) => d.id !== despesaId);''',
-              '''    const parsedDespesas: unknown = JSON.parse(
+              'toast.error(err.message || "Erro ao estornar despesa fiscal.", { id: toastId });',
+              'toast.error(getErrorMessage(err, "Erro ao estornar despesa fiscal."), { id: toastId });',
+          )
+          replace_exact(
+              "src/pages/EscolaEditar.tsx",
+              'const despesasLocais = JSON.parse(localStorage.getItem("sandbox_despesas_fiscais") || "[]");',
+              '''const parsedDespesas: unknown = JSON.parse(
                 localStorage.getItem("sandbox_despesas_fiscais") || "[]",
               );
               const despesasLocais = Array.isArray(parsedDespesas)
@@ -115,57 +108,57 @@ jobs:
                     (item): item is Record<string, unknown> =>
                       typeof item === "object" && item !== null,
                   )
-                : [];
-              const filtradas = despesasLocais.filter(
+                : [];''',
+          )
+          replace_exact(
+              "src/pages/EscolaEditar.tsx",
+              'const filtradas = despesasLocais.filter((d: any) => d.id !== despesaId);',
+              '''const filtradas = despesasLocais.filter(
                 (despesa) => despesa.id !== despesaId,
               );''',
           )
 
-          replace_once(
+          replace_exact(
               "src/pages/FiscalConferencia.tsx",
               'import { useExercicio } from "@/hooks/useExercicio";',
               'import { useExercicio } from "@/hooks/useExercicio";\nimport { getErrorMessage } from "@/lib/errors";',
           )
-          replace_all(
+          replace_exact(
               "src/pages/FiscalConferencia.tsx",
               "catch (err: any)",
               "catch (err: unknown)",
-              2,
+              expected=2,
           )
-          replace_once(
+          replace_exact(
               "src/pages/FiscalConferencia.tsx",
               'toast.error(err.message || "Falha ao ler o arquivo XML fiscal.", { id: toastId });',
               'toast.error(getErrorMessage(err, "Falha ao ler o arquivo XML fiscal."), { id: toastId });',
           )
-          replace_once(
+          replace_exact(
               "src/pages/FiscalConferencia.tsx",
               'toast.error(err.message || "Erro inesperado ao homologar despesa fiscal.", { id: toastId });',
               'toast.error(getErrorMessage(err, "Erro inesperado ao homologar despesa fiscal."), { id: toastId });',
           )
 
-          replace_once(
+          replace_exact(
               "src/pages/PortalDiretor.tsx",
               'import { getCamposCadastraisPendentes } from "@/lib/demonstrativo/mapUnidadeToMemoria";',
               'import { getCamposCadastraisPendentes } from "@/lib/demonstrativo/mapUnidadeToMemoria";\nimport { getErrorMessage } from "@/lib/errors";',
           )
-          replace_all(
+          replace_exact(
               "src/pages/PortalDiretor.tsx",
               "catch (err: any)",
               "catch (err: unknown)",
-              2,
+              expected=2,
           )
-          replace_once(
+          replace_exact(
               "src/pages/PortalDiretor.tsx",
               'toast.error(`Falha ao gerar o arquivo .xlsx: ${err.message}`, { id: toastId });',
               'toast.error(`Falha ao gerar o arquivo .xlsx: ${getErrorMessage(err, "Erro desconhecido.")}`, { id: toastId });',
-          )
-          replace_once(
-              "src/pages/PortalDiretor.tsx",
-              'toast.error(`Falha ao gerar o arquivo .xlsx: ${err.message}`, { id: toastId });',
-              'toast.error(`Falha ao gerar o arquivo .xlsx: ${getErrorMessage(err, "Erro desconhecido.")}`, { id: toastId });',
+              expected=2,
           )
 
-          replace_once(
+          replace_exact(
               "eslint.config.js",
               '"useSidebar", "toast", "toggleVariants"',
               '"useSidebar", "toast", "toggleVariants", "masks", "useExercicio"',
