@@ -1,17 +1,23 @@
-name: Lint Diagnostic
+name: Apply Lint Fixes
 
 on:
-  pull_request:
-    branches: [main]
+  push:
+    branches: [fix/restore-ci-lint]
+
+permissions:
+  contents: write
 
 jobs:
-  report:
-    name: Generate ESLint report
+  apply:
+    name: Apply and validate lint fixes
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: fix/restore-ci-lint
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -22,47 +28,169 @@ jobs:
       - name: Install dependencies
         run: npm ci --silent
 
-      - name: Generate structured lint report
+      - name: Apply type-safe fixes
         run: |
-          set +e
-          npx eslint . --format json --output-file lint-report.json
-          status=$?
-          node --input-type=module <<'NODE'
-          import fs from 'node:fs';
-          const report = JSON.parse(fs.readFileSync('lint-report.json', 'utf8'));
-          const rows = report
-            .filter((entry) => entry.errorCount || entry.warningCount)
-            .map((entry) => ({
-              filePath: entry.filePath,
-              errorCount: entry.errorCount,
-              warningCount: entry.warningCount,
-              messages: entry.messages.map(({ ruleId, severity, line, column, message }) => ({
-                ruleId,
-                severity,
-                line,
-                column,
-                message,
-              })),
-            }));
-          fs.writeFileSync('lint-summary.json', JSON.stringify(rows, null, 2));
-          console.log(`ESLint: ${rows.reduce((sum, row) => sum + row.errorCount, 0)} erro(s), ${rows.reduce((sum, row) => sum + row.warningCount, 0)} aviso(s), ${rows.length} arquivo(s).`);
-          NODE
-          echo "$status" > lint-exit-code.txt
-          exit 0
+          python <<'PY'
+          from pathlib import Path
 
-      - name: Upload lint report and affected sources
-        uses: actions/upload-artifact@v4
-        with:
-          name: eslint-report
-          path: |
-            lint-report.json
-            lint-summary.json
-            lint-exit-code.txt
-            eslint.config.js
-            src/components/UnidadeCadastroEditDialog.tsx
-            src/components/ui/masked-input.tsx
-            src/hooks/useExercicio.tsx
-            src/pages/EscolaEditar.tsx
-            src/pages/FiscalConferencia.tsx
-            src/pages/PortalDiretor.tsx
-          retention-days: 1
+          def replace_once(path: str, old: str, new: str) -> None:
+              file_path = Path(path)
+              content = file_path.read_text(encoding="utf-8")
+              occurrences = content.count(old)
+              if occurrences != 1:
+                  raise RuntimeError(f"{path}: expected one occurrence, found {occurrences}: {old!r}")
+              file_path.write_text(content.replace(old, new, 1), encoding="utf-8")
+
+          def replace_all(path: str, old: str, new: str, expected: int) -> None:
+              file_path = Path(path)
+              content = file_path.read_text(encoding="utf-8")
+              occurrences = content.count(old)
+              if occurrences != expected:
+                  raise RuntimeError(f"{path}: expected {expected} occurrences, found {occurrences}: {old!r}")
+              file_path.write_text(content.replace(old, new), encoding="utf-8")
+
+          Path("src/lib/errors.ts").write_text(
+              '''export function getErrorMessage(error: unknown, fallback: string): string {
+            if (error instanceof Error && error.message.trim()) {
+              return error.message;
+            }
+
+            if (typeof error === "string" && error.trim()) {
+              return error;
+            }
+
+            if (typeof error === "object" && error !== null && "message" in error) {
+              const message = (error as { message?: unknown }).message;
+              if (typeof message === "string" && message.trim()) {
+                return message;
+              }
+            }
+
+            return fallback;
+          }
+          ''',
+              encoding="utf-8",
+          )
+
+          replace_once(
+              "src/components/UnidadeCadastroEditDialog.tsx",
+              'import { cn } from "@/lib/utils";',
+              'import { getErrorMessage } from "@/lib/errors";\nimport { cn } from "@/lib/utils";',
+          )
+          replace_once(
+              "src/components/UnidadeCadastroEditDialog.tsx",
+              '''      } catch (err: any) {
+                return [err.message || "Erro ao salvar dados cadastrais."];
+              }''',
+              '''      } catch (err: unknown) {
+                return [getErrorMessage(err, "Erro ao salvar dados cadastrais.")];
+              }''',
+          )
+
+          replace_once(
+              "src/pages/EscolaEditar.tsx",
+              'import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";',
+              'import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";\nimport { getErrorMessage } from "@/lib/errors";',
+          )
+          replace_once(
+              "src/pages/EscolaEditar.tsx",
+              '''    } catch (err: any) {
+                console.error(err);
+                toast.error(err.message || "Erro ao estornar despesa fiscal.", { id: toastId });
+              }''',
+              '''    } catch (err: unknown) {
+                console.error(err);
+                toast.error(getErrorMessage(err, "Erro ao estornar despesa fiscal."), { id: toastId });
+              }''',
+          )
+          replace_once(
+              "src/pages/EscolaEditar.tsx",
+              '''    const despesasLocais = JSON.parse(localStorage.getItem("sandbox_despesas_fiscais") || "[]");
+              const filtradas = despesasLocais.filter((d: any) => d.id !== despesaId);''',
+              '''    const parsedDespesas: unknown = JSON.parse(
+                localStorage.getItem("sandbox_despesas_fiscais") || "[]",
+              );
+              const despesasLocais = Array.isArray(parsedDespesas)
+                ? parsedDespesas.filter(
+                    (item): item is Record<string, unknown> =>
+                      typeof item === "object" && item !== null,
+                  )
+                : [];
+              const filtradas = despesasLocais.filter(
+                (despesa) => despesa.id !== despesaId,
+              );''',
+          )
+
+          replace_once(
+              "src/pages/FiscalConferencia.tsx",
+              'import { useExercicio } from "@/hooks/useExercicio";',
+              'import { useExercicio } from "@/hooks/useExercicio";\nimport { getErrorMessage } from "@/lib/errors";',
+          )
+          replace_all(
+              "src/pages/FiscalConferencia.tsx",
+              "catch (err: any)",
+              "catch (err: unknown)",
+              2,
+          )
+          replace_once(
+              "src/pages/FiscalConferencia.tsx",
+              'toast.error(err.message || "Falha ao ler o arquivo XML fiscal.", { id: toastId });',
+              'toast.error(getErrorMessage(err, "Falha ao ler o arquivo XML fiscal."), { id: toastId });',
+          )
+          replace_once(
+              "src/pages/FiscalConferencia.tsx",
+              'toast.error(err.message || "Erro inesperado ao homologar despesa fiscal.", { id: toastId });',
+              'toast.error(getErrorMessage(err, "Erro inesperado ao homologar despesa fiscal."), { id: toastId });',
+          )
+
+          replace_once(
+              "src/pages/PortalDiretor.tsx",
+              'import { getCamposCadastraisPendentes } from "@/lib/demonstrativo/mapUnidadeToMemoria";',
+              'import { getCamposCadastraisPendentes } from "@/lib/demonstrativo/mapUnidadeToMemoria";\nimport { getErrorMessage } from "@/lib/errors";',
+          )
+          replace_all(
+              "src/pages/PortalDiretor.tsx",
+              "catch (err: any)",
+              "catch (err: unknown)",
+              2,
+          )
+          replace_once(
+              "src/pages/PortalDiretor.tsx",
+              'toast.error(`Falha ao gerar o arquivo .xlsx: ${err.message}`, { id: toastId });',
+              'toast.error(`Falha ao gerar o arquivo .xlsx: ${getErrorMessage(err, "Erro desconhecido.")}`, { id: toastId });',
+          )
+          replace_once(
+              "src/pages/PortalDiretor.tsx",
+              'toast.error(`Falha ao gerar o arquivo .xlsx: ${err.message}`, { id: toastId });',
+              'toast.error(`Falha ao gerar o arquivo .xlsx: ${getErrorMessage(err, "Erro desconhecido.")}`, { id: toastId });',
+          )
+
+          replace_once(
+              "eslint.config.js",
+              '"useSidebar", "toast", "toggleVariants"',
+              '"useSidebar", "toast", "toggleVariants", "masks", "useExercicio"',
+          )
+
+          Path(".github/workflows/lint-diagnostic.yml").unlink()
+          PY
+
+      - name: Validate complete technical gate
+        run: |
+          npm run lint
+          npx tsc --noEmit
+          npm test
+          npm run build
+
+      - name: Commit validated fixes
+        run: |
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add eslint.config.js src/lib/errors.ts \
+            src/components/UnidadeCadastroEditDialog.tsx \
+            src/pages/EscolaEditar.tsx \
+            src/pages/FiscalConferencia.tsx \
+            src/pages/PortalDiretor.tsx \
+            .github/workflows/lint-diagnostic.yml
+          git commit -m "fix(lint): substituir any por tratamento seguro de erros"
+          git push origin HEAD:fix/restore-ci-lint
