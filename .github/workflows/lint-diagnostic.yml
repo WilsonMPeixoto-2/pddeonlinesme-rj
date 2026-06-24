@@ -1,8 +1,8 @@
 name: Apply Lint Fixes
 
 on:
-  push:
-    branches: [fix/restore-ci-lint]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
