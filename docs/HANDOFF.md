@@ -1,113 +1,124 @@
 # Handoff Operacional — PDDE Online 2026
 
 **Atualizado em:** 24/06/2026  
-**Escopo:** saneamento da memória operacional e preservação da separação entre projetos
+**Escopo:** continuidade técnica após saneamento documental e restauração do gate de qualidade
 
-## 1. Regra de escopo
+## 1. Regra de escopo e fonte de verdade
 
-Este repositório e seus arquivos de continuidade devem registrar **exclusivamente** fatos, decisões, validações, branches, commits, deploys e pendências do projeto **PDDE Online 2026**.
+Este repositório deve registrar exclusivamente fatos, decisões, testes, deploys e pendências do projeto **PDDE Online 2026**.
 
-Não devem ser registrados aqui eventos de outros repositórios, aplicações ou pastas de trabalho, ainda que tenham sido executados na mesma máquina, pela mesma ferramenta ou na mesma sessão.
-
-Qualquer sistema, protótipo ou repositório diferente de `WilsonMPeixoto-2/pddeonlinesme-rj` está fora do escopo desta memória operacional.
-
-## 2. Fonte de verdade
-
-A fonte primária de verdade técnica é a verificação direta de:
+A fonte primária de verdade é a verificação direta de:
 
 1. código-fonte da branch `main`;
-2. commits e diffs do GitHub;
-3. migrations versionadas em `supabase/migrations/`;
+2. commits, diffs e pull requests do GitHub;
+3. migrations versionadas;
 4. testes e checks efetivamente executados;
 5. deployments vinculados ao repositório correto.
 
-Os arquivos `.continuity/*`, este `HANDOFF.md`, roadmaps e relatórios são snapshots auxiliares. Em caso de divergência, prevalece o código e o histórico real do GitHub.
+Arquivos de continuidade, roadmaps e relatórios são snapshots auxiliares.
 
-## 3. Resultado da auditoria de contaminação entre projetos
+## 2. Saneamento documental concluído — PR #89
 
-A revisão realizada em 24/06/2026 confirmou que houve mistura de informações de outros projetos na memória operacional do PDDE Online.
+A auditoria de 24/06/2026 confirmou três registros de atividades externas indevidamente inseridos na memória operacional.
 
-### Conteúdo indevido identificado
-
-Foram encontrados três registros alheios ao PDDE Online, relacionados a atividades, testes e deploys de outros repositórios.
-
-Esses registros apareciam em:
+A contaminação estava restrita a:
 
 - `.continuity/session-log.jsonl`;
-- `docs/HANDOFF.md`.
+- `docs/HANDOFF.md`;
+- metadados de `.continuity/current-state.json`.
 
-### Origem
+Não foram encontrados código-fonte, migrations, templates ou componentes de outros projetos. A limpeza foi incorporada à `main` pelo PR #89, commit `337648c`.
 
-A contaminação foi introduzida diretamente na `main` pelo commit `0034645` e posteriormente alterada pelo commit `a9a049b`.
+## 3. Restauração do gate de lint — PR #90
 
-Não se tratou de mistura em PRs funcionais do PDDE Online. A revisão do estado atual não encontrou arquivos de código, migrations, templates ou componentes pertencentes a outros projetos.
+### Diagnóstico verificado
 
-### Limpeza aplicada
+O CI vinha falhando no estágio de lint antes dos PRs mais recentes. O diagnóstico estruturado identificou:
 
-- removidos os três registros indevidos do `session-log`;
-- removida a referência externa do handoff;
-- substituído o handoff antigo por este snapshot sanitizado e restrito ao PDDE Online;
-- adicionada regra explícita para impedir novas contaminações de escopo.
+- **7 erros** de `@typescript-eslint/no-explicit-any`;
+- **2 avisos** de Fast Refresh para exports legítimos;
+- nenhuma falha estrutural generalizada no projeto.
 
-Os commits históricos permanecem no Git, como é normal em uma correção não destrutiva. O conteúdo corrente da branch de limpeza deixa de expor os dados operacionais dos projetos externos.
+Arquivos com erros tipáveis:
 
-## 4. Estado operacional verificado antes da limpeza
+- `src/components/UnidadeCadastroEditDialog.tsx`;
+- `src/pages/EscolaEditar.tsx`;
+- `src/pages/FiscalConferencia.tsx`;
+- `src/pages/PortalDiretor.tsx`.
 
-No momento da auditoria:
+### Correção aplicada
+
+O PR #90:
+
+- substitui `catch (err: any)` por `catch (err: unknown)`;
+- cria `src/lib/errors.ts` com normalização segura de mensagens;
+- adiciona testes unitários para `Error`, string, resposta de API e fallback;
+- valida o conteúdo do `localStorage` antes de filtrar despesas de sandbox;
+- registra `masks` e `useExercicio` como exports legítimos no Fast Refresh;
+- mantém ativa a regra `no-explicit-any`;
+- remove o workflow temporário usado no diagnóstico.
+
+Não houve alteração de regra financeira, contrato de banco, RLS, rota, layout ou comportamento institucional do sistema.
+
+### Validação realizada
+
+O workflow normal do PR executou com sucesso:
+
+- `npx tsc --noEmit`;
+- `npm run lint`;
+- `npm test`;
+- `npm run build`.
+
+O PR #90 está tecnicamente verde e pronto para incorporação.
+
+## 4. Estado operacional atual
 
 - repositório: `WilsonMPeixoto-2/pddeonlinesme-rj`;
-- branch-base: `main`;
-- commit-base verificado: `a9a049b`;
-- não havia pull requests abertas;
-- não havia issues abertas;
-- a aplicação estava publicada pela Vercel;
-- o código utilizava Supabase próprio e dados reais das unidades escolares.
+- branch-base do PR #90: `main` no commit `337648c`;
+- PR em análise: **#90 — restaurar gate de lint**;
+- CI: verde;
+- Vercel Preview: publicado com sucesso;
+- nenhuma migration ou dado de produção alterado nesta frente.
 
-## 5. Entregas já presentes no código
+## 5. Entregas funcionais presentes no projeto
 
-A leitura direta do repositório confirma, entre outras frentes:
+A leitura direta do código confirma, entre outras frentes:
 
 - Painel Executivo-Operacional;
-- localizador e ficha das unidades escolares;
-- edição cadastral mínima;
-- geração individual do Demonstrativo Básico;
-- geração em lote dos 163 Demonstrativos;
+- cadastro e consulta das unidades escolares;
+- geração individual e em lote do Demonstrativo Básico;
 - histórico de gerações;
 - atualização parcial assistida da BASE;
-- gestão inicial de papéis administrativos;
+- gestão inicial de papéis;
 - Portal do Diretor em evolução;
 - Relação de Bens Adquiridos;
 - frente fiscal em estágio de spike funcional.
-
-Este resumo não substitui revisão específica de cada fluxo antes de homologação institucional.
 
 ## 6. Norte operacional vigente
 
 - Plano: `docs/PLANO_GLOBAL_V4_2.md`;
 - Diretriz transversal: `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
-- Governança de agentes: `AGENTS.md`.
+- Governança: `AGENTS.md`.
 
-A versão v4.1 permanece apenas como referência histórica.
+O PR #90 atende diretamente:
 
-## 7. Arquivos obrigatórios antes de qualquer nova tarefa
+- **Marco 2:** saneamento e dívida técnica operacional;
+- **Marco 4:** gate técnico permanente;
+- **Marco 14:** hardening e confiabilidade operacional.
 
-1. `AGENTS.md`;
-2. `docs/PLANO_GLOBAL_V4_2.md`;
-3. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
-4. `.continuity/current-state.json`;
-5. `docs/HANDOFF.md`;
-6. código e commits atuais da `main`.
+## 7. Próxima frente recomendada
 
-## 8. Regra de atualização da continuidade
+Após incorporar o PR #90, tratar em PR próprio a **veracidade institucional do `SecurityCenterPanel`**, removendo ou reclassificando estados simulados que hoje podem ser interpretados como controles reais de segurança.
 
-Ao encerrar uma tarefa no PDDE Online:
+Essa frente não deve ser misturada à correção de lint.
 
-- registrar apenas eventos deste repositório;
-- conferir o nome do projeto e o remoto Git antes de escrever no `session-log`;
-- não copiar automaticamente contexto de outras sessões;
-- não registrar testes ou deploys de outro projeto como validação do PDDE;
-- indicar claramente quando uma informação é fato verificado, relato anterior ou pendência de confirmação.
+## 8. Regras para novas tarefas
 
-## 9. Próximo passo após este saneamento
+Antes de implementar:
 
-Revisar e incorporar o PR isolado de limpeza. As demais conclusões da auditoria geral — segurança, CI, RLS, integridade fiscal e homologação — devem ser tratadas em frentes próprias, sem serem misturadas a esta correção documental.
+1. ler `AGENTS.md`;
+2. ler o Plano Global v4.2;
+3. aplicar o Radar de Inteligência Institucional;
+4. verificar a `main` e os PRs atuais;
+5. manter cada correção em escopo isolado;
+6. não desabilitar regras de qualidade apenas para tornar o CI verde.

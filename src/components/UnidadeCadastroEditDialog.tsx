@@ -19,6 +19,7 @@ import {
   validateUnidadeCadastro,
   type UnidadeCadastroFormValues,
 } from "@/lib/unidadeCadastro";
+import { getErrorMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { isValidCNPJ, unidadeSchema } from "@/schemas/unidadeSchema";
 
@@ -114,8 +115,8 @@ export function UnidadeCadastroEditDialog({
       try {
         await onSubmit(values);
         return [];
-      } catch (err: any) {
-        return [err.message || "Erro ao salvar dados cadastrais."];
+      } catch (err: unknown) {
+        return [getErrorMessage(err, "Erro ao salvar dados cadastrais.")];
       }
     },
     []
