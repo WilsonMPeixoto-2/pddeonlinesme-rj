@@ -1,18 +1,19 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-25T09:00:19-03:00",
+  "updated_at": "2026-06-25T09:11:30-03:00",
   "source_of_truth": {
     "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "ecfeb109146cbbd1856d26490b69bb8f633f6835",
+    "base_commit": "f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8",
     "note": "Snapshot auxiliar; confirmar sempre código, commits, testes e deployments reais."
   },
   "operational_north": {
     "plan": "docs/PLANO_GLOBAL_V4_2.md",
     "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "current_mode": "Estado estabilizado apos hotfix de renderizacao. Producao Vercel alinhada ao commit ecfeb109."
+    "current_mode": "Estado estabilizado apos PR #101. Producao Vercel confirmada em f5ad026 antes da correcao isolada do SecurityCenterPanel."
   },
   "recent_pull_requests": [
+    {"number":101,"status":"merged","merge_commit":"f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8","note":"Reconciliação documental apos hotfix e producao Vercel."},
     {"number":100,"status":"closed-not-merged","note":"Fechado porque reintroduzia code splitting por rota revertido pelo hotfix #99."},
     {"number":99,"status":"merged","merge_commit":"ecfeb109146cbbd1856d26490b69bb8f633f6835"},
     {"number":98,"status":"merged-then-reverted-by-99","merge_commit":"e94c36d01bfb75fd8322b699412590c0ccd3ca5c"},
@@ -31,28 +32,28 @@
     "node_types_alignment": "PR #96 alinhou @types/node para ^24.13.2, declarou engines.node 24.x e ajustou CI para Node 24.",
     "query_ui_polish": "PR #97 centralizou queryOptions do TanStack Query e aplicou polimento visual seguro em graficos/listas.",
     "route_code_splitting": "PR #98 aplicou React.lazy por rota, mas causou renderizacao vazia em producao e foi revertido pelo hotfix #99. Nao reabrir sem diagnostico especifico de Preview, cache e service worker.",
-    "security_center_panel": "Existe, mas ainda requer correção isolada de veracidade institucional por conter estados simulados."
+    "security_center_panel": "Em correção isolada na branch codex/security-center-truthfulness para remover aparência de scanner, MFA e logs reais."
   },
   "deployment_state": {
     "project_id": "prj_dErjl7LdzTL2412fsw0pyzo3bdp1",
     "runtime": "Node 24.x",
-    "production_confirmed_commit": "ecfeb109146cbbd1856d26490b69bb8f633f6835",
-    "production_deployment": "dpl_7YMS7fdammFttCq6bF4Edn2Yze97",
+    "production_confirmed_commit": "f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8",
+    "production_deployment": "dpl_56wP3LvWJsmK3YziSoLbzGroGuqg",
     "production_status": "READY",
     "main_ahead_of_production": false,
     "pending_main_commit": null,
-    "note": "GitHub main e Vercel Production estao sincronizados no commit ecfeb109. Smoke publico em /dashboard redirecionou para login e renderizou sem erros de console."
+    "note": "GitHub main e Vercel Production foram sincronizados no commit f5ad026 antes da branch codex/security-center-truthfulness. Confirmar novo SHA de producao apos merge."
   },
   "active_branch_state": {
-    "branch": "codex/reconcile-hotfix-production-state",
-    "base_commit": "ecfeb109146cbbd1856d26490b69bb8f633f6835",
-    "scope": "Reconciliar continuidade apos PR #98, hotfix #99, fechamento do PR #100 e deploy Production dpl_7YMS7fdammFttCq6bF4Edn2Yze97.",
-    "not_in_scope": "Nao alterar codigo de aplicacao, dependencias, Supabase, migrations, templates financeiros ou regras de negocio."
+    "branch": "codex/security-center-truthfulness",
+    "base_commit": "f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8",
+    "scope": "Corrigir a veracidade institucional do SecurityCenterPanel, mantendo-o como mapa/checklist visual de Marco 6B sem prometer controles reais.",
+    "not_in_scope": "Nao alterar Auth, RLS, Supabase, migrations, roles, templates financeiros, dependencias ou regras de negocio."
   },
   "next_priority": {
-    "branch": "a definir",
-    "step": "Corrigir em PR isolado a veracidade institucional do SecurityCenterPanel.",
-    "after": "Reavaliar code splitting por rota somente com diagnostico especifico do incidente #98/#99, validacao visual real em Preview, cache/service worker e criterio claro de rollback."
+    "branch": "a definir apos deploy",
+    "step": "Apos merge e producao do ajuste de veracidade, escolher a proxima frente funcional com escopo fechado.",
+    "after": "Reavaliar code splitting por rota somente com diagnostico especifico do incidente #98/#99, validacao visual real em Preview, cache/service worker e criterio claro de rollback. Qualquer Auth/RLS/audit_logs real exige revisao humana."
   },
   "mandatory_before_task": [
     "Ler AGENTS.md, Plano Global, Radar, HANDOFF e CODEX_HANDOFF",
