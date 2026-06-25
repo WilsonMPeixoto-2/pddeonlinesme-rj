@@ -4,7 +4,7 @@ import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "@tailwindcss/vite";
 
-// https://vitejs.dev/config/
+// Vite 8: plugin React padrão (Oxc) e code splitting nativo do Rolldown.
 export default defineConfig(() => ({
   server: {
     host: "::",
