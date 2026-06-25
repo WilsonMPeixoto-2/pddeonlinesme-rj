@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Atualizar dependências patch/minor de forma reproduzível, reduzir vulnerabilidades corrigíveis sem quebra de compatibilidade e preservar o stack de build atual nesta etapa.
+Atualizar dependências patch/minor de forma reproduzível, reduzir vulnerabilidades corrigíveis sem quebra de compatibilidade e preservar o stack de build durante a primeira etapa.
 
 ## Pacotes atualizados
 
@@ -16,7 +16,7 @@ Atualizar dependências patch/minor de forma reproduzível, reduzir vulnerabilid
 | `autoprefixer` | `^10.5.0` | `^10.5.2` |
 | `globals` | `^17.6.0` | `^17.7.0` |
 
-O `package-lock.json` foi regenerado e versionado pelo GitHub Actions em ambiente limpo. O plugin React SWC foi mantido e `@types/node` permaneceu na série 25.x.
+O `package-lock.json` foi regenerado e versionado pelo GitHub Actions em ambiente limpo.
 
 ## Segurança
 
@@ -54,9 +54,9 @@ O `npm audit` propõe como correção automática o rebaixamento do `exceljs` pa
 1. representa regressão de versão;
 2. pode causar incompatibilidade na geração e leitura das planilhas institucionais;
 3. o vetor informado para `uuid` depende do uso de buffer fornecido às funções v3/v5/v6, cenário que não integra o uso atual do PDDE Online;
-4. não existe, nesta data, correção automática segura indicada pelo gerenciador de pacotes para a cadeia atual.
+4. não existe correção automática segura indicada pelo gerenciador para a cadeia atual.
 
-A medida adotada é manter `exceljs` em `4.4.0`, acompanhar a correção upstream e reavaliar a cadeia em futuras rodadas de atualização.
+A medida adotada é manter `exceljs` em `4.4.0`, acompanhar a correção upstream e reavaliar a cadeia em futuras rodadas.
 
 ## Validação executada
 
@@ -67,12 +67,10 @@ Após as atualizações e correções de segurança, o ambiente limpo aprovou:
 - `npm run lint`;
 - `npm test`;
 - `npm run build`;
-- Preview da Vercel.
+- Preview e produção da Vercel para o commit do PR #92.
 
-## Fora do escopo desta etapa
+## Evolução posterior
 
-Foram deliberadamente separados para frentes próprias:
+A migração do plugin React e do code splitting, inicialmente fora do escopo deste PR, foi concluída separadamente no PR #94, commit `93ed0419c8b861e83eb9c564d726c86ec550cfa3`.
 
-- migração de `@vitejs/plugin-react-swc` para `@vitejs/plugin-react`/Oxc;
-- migração de `rollupOptions/manualChunks` para `rolldownOptions/codeSplitting`;
-- atualização major de `@types/node` 25.x para 26.x.
+A única decisão de dependência ainda aberta desta rodada é o alinhamento de `@types/node` ao runtime Node 24.x da Vercel. Não atualizar automaticamente para 26.x sem decidir o runtime real.
