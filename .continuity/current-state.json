@@ -1,62 +1,47 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-24T18:22:00-03:00",
+  "updated_at": "2026-06-25T01:15:00-03:00",
   "source_of_truth": {
-    "repository": "https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj",
+    "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "337648c",
-    "note": "Always verify against GitHub code, branch, commit, diff and tests. This file is a snapshot, not a source of truth. PR #90 is based on main commit 337648c."
+    "base_commit": "93ed0419c8b861e83eb9c564d726c86ec550cfa3",
+    "note": "Snapshot auxiliar; confirmar sempre código, commits, testes e deployments reais."
   },
   "operational_north": {
-    "plan": "Plano Global v4.2 (incorpora Radar de Inteligência Institucional)",
-    "plan_file": "docs/PLANO_GLOBAL_V4_2.md",
-    "radar_file": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "archived_v41": "docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md",
-    "current_mode": "Restauração do gate técnico permanente: lint, typecheck, testes e build novamente executados com sucesso no CI do PR #90."
+    "plan": "docs/PLANO_GLOBAL_V4_2.md",
+    "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
+    "current_mode": "Encerrar dependências e alinhar tipos Node ao runtime real da Vercel."
   },
   "recent_pull_requests": [
-    { "number": 90, "title": "fix(ci): restaurar gate de lint", "status": "open-green", "date": "2026-06-24" },
-    { "number": 89, "title": "chore(continuity): remover registros de outros projetos", "merge_commit": "337648c", "date": "2026-06-24" },
-    { "number": 88, "title": "feat: busca reativa por useDeferredValue e melhorias visuais na dashboard", "merge_commit": "4cba6bb", "date": "2026-06-20" },
-    { "number": 87, "title": "feat: implementa useTransition do React 19 e recuperação de senha real no Login.tsx", "merge_commit": "13e9c89", "date": "2026-06-20" }
+    {"number":94,"status":"merged","merge_commit":"93ed0419c8b861e83eb9c564d726c86ec550cfa3"},
+    {"number":92,"status":"merged","merge_commit":"1399a691d622715a787ea1d9b720ff9992d9f679"},
+    {"number":91,"status":"closed-not-merged"},
+    {"number":90,"status":"merged","merge_commit":"da109185f3038927702841ea4eeb3cdf294fd419"}
   ],
   "delivered_state": {
-    "ci_lint_recovery": "Prepared in PR #90. Seven explicit-any errors were replaced with unknown-based handling, two Fast Refresh warnings were explicitly allowlisted, a shared getErrorMessage utility was added, and the normal CI completed typecheck, lint, tests and build successfully.",
-    "frente_fiscal_v1_acquisition": "delivered in commit 02e198b; Frente Fiscal split-screen panel added under /fiscal with client-side XML DOMParser (NF-e/NFS-e), 44-digit key checksum validator, automatic CNPJ extraction, OCR sandbox simulator and transactional public.homologar_despesa_fiscal RPC with sandbox localStorage fallback.",
-    "relacao_bens_anexo_ii": "delivered in commit e9fc22b; library generateRelacaoBens.ts added using ExcelJS to compile the Relação de Bens Adquiridos from capital despesas.",
-    "portal_diretor_real_time_despesas": "delivered in commit e9fc22b; Portal do Diretor lists audited invoices and provides the Anexo II download.",
-    "gad_auditoria_estorno": "delivered in commit 4345c37; Despesas card added to /escolas/:id with estornar_despesa_fiscal RPC integration.",
-    "security_center_panel": "delivered in commit 87263bd; component contains simulated security states and still requires a separate institutional truthfulness correction.",
-    "responsividade_mobile_refinement": "delivered in commit 24d775f; responsive table columns and stackable document panels.",
-    "painel_visual_polish": "delivered in PR #79; visual refinements across the executive panel.",
-    "admin_roles_ui": "delivered in PR #75 (Marco 6B v0); /configuracoes user list and role management.",
-    "geracao_em_lote_163_demonstrativos": "delivered in PR #73; generateDemonstrativosLote and batch processing control."
+    "ci_gate": "PR #90 restaurou lint, typecheck, testes e build sem enfraquecer regras.",
+    "dependency_update": "PR #92 atualizou pacotes e lockfile. Auditoria caiu de 5 achados para 2 moderados na cadeia exceljs -> uuid.",
+    "build_modernization": "PR #94 migrou para o plugin React padrão e code splitting do Rolldown, com CI aprovado.",
+    "security_center_panel": "Existe, mas ainda requer correção isolada de veracidade institucional por conter estados simulados."
+  },
+  "deployment_state": {
+    "project_id": "prj_dErjl7LdzTL2412fsw0pyzo3bdp1",
+    "runtime": "Node 24.x",
+    "production_confirmed_commit": "1399a691d622715a787ea1d9b720ff9992d9f679",
+    "production_deployment": "dpl_4M1tQA1JdVNnBYmjjUNXZP3eeBrx",
+    "production_status": "READY",
+    "main_ahead_of_production": true,
+    "pending_main_commit": "93ed0419c8b861e83eb9c564d726c86ec550cfa3",
+    "note": "O PR #94 foi validado em CI e Preview independente, mas a produção principal não foi confirmada nesse SHA por limite de builds."
   },
   "next_priority": {
-    "current_pr": "PR #90 aberto e tecnicamente verde, aguardando incorporação.",
-    "immediate_next_step": "Após incorporar o PR #90, tratar a veracidade institucional do SecurityCenterPanel em uma frente isolada.",
-    "smoke_checklist": [
-      "Confirmar que o workflow temporário de diagnóstico não integra o diff final",
-      "Confirmar lint sem erros e sem avisos",
-      "Confirmar typecheck, testes e build no workflow CI normal",
-      "Revisar o diff para garantir ausência de alteração funcional não relacionada"
-    ]
+    "branch": "types-node-26-evaluation",
+    "step": "Comparar manter @types/node 25, alinhar para 24 ou adotar 26 apenas com decisão explícita de runtime.",
+    "after": "Corrigir a veracidade institucional do SecurityCenterPanel em PR separado."
   },
-  "applied_migrations_post_main": [
-    { "name": "20260527000200_despesas_fiscais.sql", "applied_at": "2026-05-27T01:03:00-03:00", "method": "supabase db push --linked" },
-    { "name": "20260527000300_estorno_despesas.sql", "applied_at": "2026-05-27T01:13:00-03:00", "method": "supabase db push --linked" }
-  ],
-  "document_generation_constraints": [
-    "Fill MEMORIA directly from vw_unidade_detalhe data (Opção B)",
-    "Do not depend on the BASE sheet for the individual file",
-    "Do not depend on XLOOKUP for the individual file",
-    "Remove the BASE sheet from generated individual workbooks if present",
-    "Preserve template layout, formulas, borders and merged cells"
-  ],
   "mandatory_before_task": [
-    "Read AGENTS.md",
-    "Read docs/PLANO_GLOBAL_V4_2.md (current plan)",
-    "Read docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md (transversal directive)",
-    "Verify the current GitHub main branch and recent pull requests"
+    "Ler AGENTS.md, Plano Global, Radar, HANDOFF e CODEX_HANDOFF",
+    "Verificar main, PRs recentes e produção Vercel",
+    "Executar npm ci, typecheck, lint, testes, build e auditoria"
   ]
 }

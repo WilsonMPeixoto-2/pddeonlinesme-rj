@@ -1,184 +1,185 @@
 # AGENTS.md — PDDE Online 2026
 
-Atualizado em: 2026-05-17 (Plano Global v4.2 + Radar de Inteligência Institucional)
+**Atualizado em:** 25/06/2026  
+**Plano vigente:** Plano Global v4.2 + Radar de Inteligência Institucional
 
-## Fonte de verdade tecnica
+## Fonte de verdade técnica
 
-A fonte de verdade primaria do projeto e a verificacao direta do codigo-fonte, branch, commit, diff, configuracao versionada e testes reais no GitHub.
+A fonte primária de verdade é a verificação direta do código-fonte, branch, commit, diff, configuração versionada e testes reais no GitHub.
 
-Relatorios de ferramentas, handoffs, `current-state.json`, roadmap, backlog, comentarios de PR e memorias sao **snapshots auxiliares**. Podem orientar investigacao, mas nao sustentam conclusao sem conferencia na fonte primaria.
+Relatórios, handoffs, `current-state.json`, roadmaps, comentários de PR e memórias são snapshots auxiliares. Se houver conflito, o código e os testes prevalecem.
 
-### Classificacao obrigatoria
+### Classificação obrigatória
 
-Ao reportar informacoes, todo agente deve classificar cada afirmacao como:
+Ao reportar informações, classificar cada afirmação como:
 
-- **FATO VERIFICADO NO CODIGO** — confirmado por leitura direta de arquivo, commit, diff ou teste no repositorio.
-- **HIPOTESE** — inferencia logica ainda nao confirmada na fonte.
-- **RELATO DE OUTRA FERRAMENTA** — informacao proveniente de documento, handoff, log ou memoria de sessao anterior.
-- **PENDENCIA A CONFIRMAR** — item que requer verificacao antes de ser tratado como fato.
-
-### Regra pratica
-
-Nenhuma ferramenta e fonte de verdade. Nenhum relatorio substitui a leitura do codigo. Se houver conflito entre um documento e o codigo real, o codigo prevalece.
+- **FATO VERIFICADO NO CÓDIGO** — confirmado por arquivo, commit, diff, teste ou deployment;
+- **HIPÓTESE** — inferência ainda não confirmada;
+- **RELATO DE OUTRA FERRAMENTA** — informação de relatório, log ou memória;
+- **PENDÊNCIA A CONFIRMAR** — item que exige verificação antes de orientar decisão.
 
 ## Ferramentas e modelo de trabalho
 
-Este projeto pode ser mantido por diferentes ferramentas (Claude Code, Codex, Copilot, Cursor, Antigravity, entre outras). Nenhuma ferramenta tem exclusividade sobre camadas do sistema.
+O projeto pode ser mantido por Codex, Claude Code, Copilot, Cursor, Antigravity ou outras ferramentas. Nenhuma tem exclusividade.
 
-### Principio de escopo
+A ferramenta líder é definida pelo escopo:
 
-A ferramenta que lidera uma tarefa e determinada pelo **escopo da tarefa**, nao por uma hierarquia fixa:
-
-- Se a tarefa tem entrada clara, saida clara e teste claro, qualquer ferramenta pode executa-la.
-- Se a tarefa exige decisao arquitetural ou integracao entre multiplas camadas, deve ser tratada com revisao humana.
-- Se a tarefa envolve seguranca, auth, RLS, roles, dados sensiveis ou regras financeiras/documentais oficiais, a revisao humana e **obrigatoria**.
-
-### Divisao por tipo de trabalho
-
-| Tipo de trabalho | Quem pode liderar | Revisao humana |
-|---|---|---|
-| Implementacao funcional isolada | Qualquer ferramenta | Recomendada |
-| Integracao entre camadas | Qualquer ferramenta | Obrigatoria |
-| Arquitetura, contratos, schemas | Qualquer ferramenta | Obrigatoria |
-| Auth, RLS, roles, policies | Qualquer ferramenta | **Obrigatoria** |
-| Segredos, .env, credenciais | Qualquer ferramenta | **Obrigatoria** |
-| Templates oficiais, regras financeiras | Qualquer ferramenta | **Obrigatoria** |
-| Documentacao e governanca | Qualquer ferramenta | Recomendada |
-| Testes, linting, CI | Qualquer ferramenta | Nao obrigatoria |
-| Limpeza, refactor mecanico | Qualquer ferramenta | Nao obrigatoria |
+- entrada, saída e teste claros: qualquer ferramenta pode liderar;
+- integração entre camadas ou decisão arquitetural: revisão humana obrigatória;
+- segurança, autenticação, RLS, roles, dados sensíveis, regras financeiras ou documentos oficiais: revisão humana obrigatória.
 
 ### Regra de bloqueio
 
-Se uma ferramenta descobrir que a implementacao exige mudar contrato, arquitetura, boundary ou decisao de seguranca, ela **nao deve improvisar**. Deve parar, registrar o bloqueio e devolver a decisao para revisao humana.
+Se a tarefa exigir mudar contrato, arquitetura, boundary ou decisão de segurança, o agente não deve improvisar. Deve registrar o bloqueio e devolver a decisão para revisão humana.
 
 ## Camada de dados e financeiro
 
-Para tarefas envolvendo dados financeiros, planilhas, importacao/exportacao, CNPJ, INEP, demonstrativos ou prestacao de contas:
+Para tarefas envolvendo dados financeiros, planilhas, importação/exportação, CNPJ, INEP, demonstrativos ou prestação de contas:
 
-- Primeiro inventariar a fonte de dados e o contrato esperado antes de alterar codigo.
-- Preservar rastreabilidade entre valor bruto importado, valor normalizado e erro/warning gerado.
-- Nao inventar regra financeira, documental, de acesso ou de identidade de escola. Se a regra nao estiver documentada, devolver para revisao humana.
-- Tratar producao Supabase como somente leitura salvo autorizacao explicita.
+- inventariar a fonte de dados e o contrato esperado antes de alterar código;
+- preservar rastreabilidade entre valor bruto, valor normalizado e erro ou warning;
+- não inventar regra financeira, documental, de acesso ou identidade de escola;
+- tratar produção Supabase como somente leitura salvo autorização explícita;
+- preservar templates, fórmulas, bordas, células mescladas e regras oficiais.
 
-## Validacoes minimas por tipo de alteracao
+## Validações mínimas
 
-| Tipo de alteracao | Validacoes |
+| Tipo de alteração | Validações mínimas |
 |---|---|
-| Codigo TypeScript | `npx tsc --noEmit` |
-| UI ou fluxo React | `npx tsc --noEmit`, `npm run lint`, `npm run build`, verificacao visual |
-| Parser/importador/motor documental | `npx tsc --noEmit`, `npm test`, fixtures representativas |
-| Supabase/RLS/auth | migration/types local + revisao humana obrigatoria |
-| Mudanca substancial | `npx tsc --noEmit && npm run lint && npm test && npm run build` |
-| Documentacao pura | validar JSON se `.json`, `git diff --name-only` para confirmar escopo |
+| TypeScript | `npx tsc --noEmit` |
+| UI ou fluxo React | typecheck, lint, build e verificação visual |
+| Parser, importador ou motor documental | typecheck, testes e fixtures representativas |
+| Supabase, RLS ou auth | migration e types local + revisão humana |
+| Mudança substancial | `npm ci`, typecheck, lint, testes e build |
+| Dependências | sincronizar `package.json` e `package-lock.json`, executar auditoria |
+| Documentação pura | validar JSON e confirmar escopo pelo diff |
 
-## Estado atual do projeto (v4.2)
+Não usar `--force`, `--legacy-peer-deps` ou desabilitar regras para obter CI artificialmente verde.
 
-**main HEAD verificado:** `d6b2d5147d5c3fc8fa6c5f521dc1d75912e5f077` (PR #71)
+## Estado atual verificado
 
-> Este valor e snapshot operacional. Antes de qualquer decisao, verificar novamente o HEAD real da `main` no GitHub via `gh api repos/WilsonMPeixoto-2/pddeonlinesme-rj/branches/main`.
+**main HEAD da rodada:** `93ed0419c8b861e83eb9c564d726c86ec550cfa3` — PR #94.
 
-### Entregue e em producao
+Este valor é snapshot. Confirmar novamente a `main` antes de agir.
 
-- Demonstrativo Basico Individual (PR #43)
-- Dashboard com views reais do Supabase (PR #44)
-- Infraestrutura de continuidade agentic (PR #42)
-- AGENTS.md realinhado (PR #46), README real (PR #47), CI minimo (PR #48), lockfile unico (PR #49), remocao lovable-tagger (PR #50), cobertura DocumentsPanel (PR #51), reconciliacao documental (PRs #45, #52), patches seguros (PR #53)
-- Hardening do motor documental + contrato Fase 2B (PR #57)
-- POC fiscal Python isolada + governanca + validators (PRs #58, #59, #61, #62)
-- **Fase 2B — Edicao cadastral minima** (PR #63) com optimistic update (PR #66)
-- **Modernizacao da stack**: React 19 (PR #66), Vite 7 (PR #67), Vitest 4 + jsdom 29 (PR #68)
-- **Remocao xlsx + migracao para ExcelJS** com 0 vulnerabilities (PR #69)
-- Polimento visual do dialogo cadastral + skeleton (PR #70)
-- **RPC transacional para cadastro** com SECURITY INVOKER (PR #71) — migration aplicada em prod
+### Entregas recentes
 
-### Proxima fila (v4.2)
+- PR #90 — gate permanente de lint, typecheck, testes e build restaurado;
+- PR #92 — atualização segura de dependências e lockfile reproduzível;
+- PR #94 — migração para plugin React padrão do Vite e code splitting do Rolldown;
+- atualização parcial assistida da BASE;
+- geração individual e em lote do Demonstrativo Básico;
+- histórico de gerações;
+- Painel Executivo-Operacional;
+- gestão inicial de papéis;
+- Relação de Bens Adquiridos;
+- frente fiscal funcional em endurecimento;
+- Portal do Diretor em evolução.
 
-A Fase 2B foi implementada e endurecida; falta smoke UI operacional. A proxima frente funcional recomendada e o **Painel Executivo-Operacional GAD v1** (Marco 9B), que incorpora a **Geracao em Lote dos 163 Demonstrativos** (Marco 15 reclassificado como **Acao Executiva de Alto Valor**).
+### Dependências e segurança
 
-### Frentes funcionais maiores planejadas (v4.2)
+A auditoria reproduzível passou de cinco achados para dois moderados na cadeia `exceljs → uuid`. Não executar `npm audit fix --force`, pois a correção proposta rebaixa o ExcelJS.
 
-Os itens abaixo pertencem ao Plano Global v4.2 e nao devem ser tratados como falhas urgentes enquanto estiverem em sua etapa planejada:
+O `package.json` contém override restrito de `@rolldown/plugin-babel` para `0.1.7`, necessário para compatibilidade do peer opcional com Workbox/Babel 7. Não remover sem reproduzir a instalação limpa.
 
-- **Painel Executivo-Operacional GAD v1** (Marco 9B — proxima frente)
-- **Geracao em lote dos 163 Demonstrativos** (Marco 15 — Acao Executiva de Alto Valor)
-- Camada de historico documental (`document_generation_runs`)
-- Auth/RLS/roles/audit_logs/storage final (Marco 6B — sobe em prioridade pois sistema ja escreve dados)
-- Importador institucional com dry-run/diff/hash (Marco 10B)
-- **Aquisicao Fiscal Multicanal** (substituiu "frente fiscal v1 OCR-first"; ordem: XML > chave > QR > URL oficial > codigo de barras > PDF textual > OCR > digitacao)
-- Portal do Diretor mobile-first (Marco 13 — depende Marco 6B)
-- Hardening, WCAG, observabilidade (Marco 14 — continuo)
+### Estado da produção
 
-### Criterio para reordenar o plano
+Projeto Vercel principal:
 
-Alterar a ordem do Plano Global somente com justificativa tecnica explicita e ganho real para o projeto, como reducao de retrabalho, dependencia bloqueadora, risco real de seguranca ou melhoria estrutural comprovada.
+- runtime Node `24.x`;
+- produção confirmada em `1399a691d622715a787ea1d9b720ff9992d9f679`;
+- deployment confirmado `READY`: `dpl_4M1tQA1JdVNnBYmjjUNXZP3eeBrx`.
 
-## Politica de documentacao
+A `main` está à frente da produção. O PR #94 foi validado por CI e Preview independente, mas a produção principal não foi confirmada nesse SHA por limite temporário de frequência de builds.
 
-Documentacao deve apoiar o desenvolvimento, nao captura-lo em ciclos de reconciliacao.
+Nunca declarar produção sincronizada sem verificar o SHA do deployment e o domínio público.
 
-Abrir PR exclusivamente documental apenas quando a documentacao:
+## Próxima fila
 
-- induzir o proximo agente a executar tarefa errada;
-- listar como pendente algo ja concluido de forma que altere decisao operacional;
-- apontar caminho de arquivo incorreto que possa causar erro;
-- registrar prioridade incompativel com o Plano Global;
-- criar risco real de replanejamento equivocado.
+### Tarefa técnica imediata
 
-Drift pequeno de SHA, sem consequencia operacional, deve preferencialmente ser corrigido junto ao proximo PR funcional.
+Branch: `types-node-26-evaluation`.
+
+Avaliar o alinhamento de `@types/node` com o runtime Node 24.x. Comparar:
+
+1. manter 25.x temporariamente;
+2. alinhar para 24.x;
+3. adotar 26.x apenas se houver decisão explícita sobre runtime e benefício comprovado.
+
+Não abrir PR para atualização meramente numérica.
+
+### Próxima frente funcional
+
+Corrigir em PR isolado a veracidade institucional do `SecurityCenterPanel`, que apresenta estados simulados de scanner RLS, MFA e logs com aparência de controles reais.
+
+### Frentes estruturais ainda relevantes
+
+- hardening de auth, roles, guards, RLS, auditoria e storage;
+- aquisição fiscal multicanal com preferência por fontes estruturadas;
+- Portal do Diretor mobile-first;
+- WCAG, observabilidade e hardening contínuo;
+- histórico e rastreabilidade documental onde ainda houver lacunas.
+
+## Política de documentação
+
+Documentação deve apoiar o desenvolvimento, não capturá-lo em ciclos de reconciliação.
+
+Atualizar documentação quando o drift puder:
+
+- induzir o próximo agente à tarefa errada;
+- listar como pendente algo concluído;
+- apontar caminho incorreto;
+- registrar prioridade incompatível com o plano;
+- criar risco real de replanejamento.
 
 ## Formato de prompt operacional
 
 Todo prompt operacional deve declarar:
 
-- ferramenta lider
-- objetivo da tarefa
-- arquivos que deve ler
-- arquivos que pode alterar
-- arquivos que nao deve alterar
-- criterio de aceite
-- validacoes minimas
+- ferramenta líder;
+- objetivo;
+- arquivos que deve ler;
+- arquivos que pode alterar;
+- arquivos proibidos;
+- critérios de aceite;
+- validações mínimas.
 
-## Radar Transversal de Inteligencia Institucional (v4.2)
+## Radar Transversal de Inteligência Institucional
 
-A partir de v4.2, **toda tarefa** deve aplicar o Radar de Inteligencia Institucional documentado em `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`. Plano Global = o que. Radar = como.
+Toda tarefa deve aplicar `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`.
 
-**Diretriz-mae v4.2:** toda funcionalidade relevante deve entregar valor operacional E valor institucional visivel. Nao basta funcionar: precisa reduzir trabalho, orientar acao, gerar evidencia, evitar erro, respeitar perfis, adotar solucao moderna e poder ser apresentada como modernizacao administrativa.
+Perguntas obrigatórias:
 
-**8 perguntas obrigatorias antes de propor implementacao:**
+1. Existe fonte estruturada antes de digitar ou usar OCR?
+2. Existe padrão consolidado em sistemas públicos, ERPs ou design systems?
+3. A tarefa pode virar alerta, status, histórico, gráfico, relatório ou evidência?
+4. A solução reduz clique, memória, retrabalho ou planilha paralela?
+5. A interface mostra o próximo passo?
+6. A entrega é segura para dados reais, perfis, arquivos e auditoria?
+7. O ganho é demonstrável para chefia e Alta Administração?
+8. A abordagem é adequada para 2026?
 
-1. Existe fonte estruturada antes de digitar ou fazer OCR?
-2. Existe padrao consolidado em sistemas publicos, ERPs, dashboards administrativos ou design systems?
-3. A tarefa pode virar alerta, status, historico, grafico, relatorio ou evidencia?
-4. A solucao reduz clique, memoria, retrabalho ou planilha paralela?
-5. A interface mostra o proximo passo ou apenas exibe dados?
-6. A entrega e segura para dados reais, perfis, RLS, arquivos e auditoria?
-7. O ganho pode ser demonstrado visualmente para chefia e Alta Administracao?
-8. A abordagem e adequada para 2026 ou apenas uma solucao provisoria?
-
-Antes de aprovar PR, executar checklist de revisao em `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md` §9.
-
-## Regras antes de qualquer tarefa
+## Antes de qualquer tarefa
 
 Ler:
 
-1. `AGENTS.md` (este arquivo)
-2. **`docs/PLANO_GLOBAL_V4_2.md`** (plano vigente)
-3. **`docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`** (diretriz transversal obrigatoria)
-4. `.continuity/current-state.json` como snapshot auxiliar
-5. `docs/HANDOFF.md` como snapshot auxiliar
-6. `docs/DECISIONS.md`
-7. `docs/ROADMAP_ADAPTIVE.md`
-8. `docs/OPPORTUNITIES_BACKLOG.md`
-9. GitHub `main`, PRs recentes e codigo real antes de decidir
+1. `AGENTS.md`;
+2. `docs/PLANO_GLOBAL_V4_2.md`;
+3. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
+4. `.continuity/current-state.json`;
+5. `docs/HANDOFF.md`;
+6. `docs/CODEX_HANDOFF_2026-06-25.md`;
+7. `docs/DECISIONS.md`;
+8. `docs/ROADMAP_ADAPTIVE.md`;
+9. `docs/OPPORTUNITIES_BACKLOG.md`;
+10. GitHub `main`, PRs recentes e produção real.
 
-Versao anterior do plano (v4.1) preservada em `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md` como referencia historica — nao foi revogada, apenas atualizada.
-
-## Regras depois de qualquer tarefa
+## Depois de qualquer tarefa
 
 Atualizar:
 
-1. `.continuity/current-state.json`
-2. `.continuity/session-log.jsonl`
-3. `docs/HANDOFF.md`
+1. `.continuity/current-state.json`;
+2. `.continuity/session-log.jsonl`;
+3. `docs/HANDOFF.md`.
 
-Se houver nova decisao ou mudanca de prioridade, atualizar tambem `docs/DECISIONS.md`, `docs/ROADMAP_ADAPTIVE.md` e `docs/OPPORTUNITIES_BACKLOG.md`.
+Se houver decisão nova ou mudança de prioridade, atualizar também `docs/DECISIONS.md`, `docs/ROADMAP_ADAPTIVE.md` e `docs/OPPORTUNITIES_BACKLOG.md`.
