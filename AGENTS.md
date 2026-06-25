@@ -58,9 +58,9 @@ Não usar `--force`, `--legacy-peer-deps` ou desabilitar regras para obter CI ar
 
 ## Estado atual verificado
 
-**main HEAD verificada:** `e7cb4952479d6af62e49784e2c544632d2396864` — PR #95 documental.
+**main HEAD verificada:** `dffdc25b1dde210e3a712d4d84723b81cd525938` — PR #96 de tipos Node.
 
-**Último marco técnico de código:** `93ed0419c8b861e83eb9c564d726c86ec550cfa3` — PR #94.
+**Último marco técnico de código:** `dffdc25b1dde210e3a712d4d84723b81cd525938` — PR #96.
 
 Este valor é snapshot. Confirmar novamente a `main` antes de agir.
 
@@ -69,6 +69,8 @@ Este valor é snapshot. Confirmar novamente a `main` antes de agir.
 - PR #90 — gate permanente de lint, typecheck, testes e build restaurado;
 - PR #92 — atualização segura de dependências e lockfile reproduzível;
 - PR #94 — migração para plugin React padrão do Vite e code splitting do Rolldown;
+- PR #95 — reconciliação documental de continuidade;
+- PR #96 — alinhamento de tipos Node e runtime para Node 24;
 - atualização parcial assistida da BASE;
 - geração individual e em lote do Demonstrativo Básico;
 - histórico de gerações;
@@ -84,17 +86,17 @@ A auditoria reproduzível passou de cinco achados para dois moderados na cadeia 
 
 O `package.json` contém override restrito de `@rolldown/plugin-babel` para `0.1.7`, necessário para compatibilidade do peer opcional com Workbox/Babel 7. Não remover sem reproduzir a instalação limpa.
 
-A avaliação `types-node-26-evaluation` decidiu alinhar o ambiente ao runtime real Node 24.x: `engines.node` e CI em Node 24, `@types/node` em `^24.13.2`. Não atualizar para 26.x sem decisão explícita de runtime.
+O PR #96 alinhou o ambiente ao runtime real Node 24.x: `engines.node` e CI em Node 24, `@types/node` em `^24.13.2`. Não atualizar para 26.x sem decisão explícita de runtime.
 
 ### Estado da produção
 
 Projeto Vercel principal:
 
 - runtime Node `24.x`;
-- produção confirmada em `1399a691d622715a787ea1d9b720ff9992d9f679`;
-- deployment confirmado `READY`: `dpl_4M1tQA1JdVNnBYmjjUNXZP3eeBrx`.
+- produção confirmada em `dffdc25b1dde210e3a712d4d84723b81cd525938`;
+- deployment confirmado `READY`: `dpl_7dYRKUR42XNFUNxq2GWzz3Hutt7U`.
 
-A `main` está à frente da produção. O PR #94 foi validado por CI e Preview independente, mas a produção principal não foi confirmada nesse SHA por limite temporário de frequência de builds.
+A `main` e a produção principal da Vercel estão perfeitamente sincronizadas no commit `dffdc25b`.
 
 Nunca declarar produção sincronizada sem verificar o SHA do deployment e o domínio público.
 

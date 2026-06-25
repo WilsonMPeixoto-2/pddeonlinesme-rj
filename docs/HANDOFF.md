@@ -1,7 +1,7 @@
 # Handoff Operacional — PDDE Online 2026
 
 **Atualizado em:** 25/06/2026  
-**Escopo:** continuidade técnica após restauração do CI, atualização segura de dependências e modernização do build
+**Escopo:** continuidade técnica após alinhamento de tipos Node, verificação de produção Vercel e reconciliação documental
 
 ## 1. Fonte de verdade
 
@@ -11,16 +11,10 @@ Repositório: `WilsonMPeixoto-2/pddeonlinesme-rj`.
 
 ## 2. Estado atual da main
 
-Main verificada após o PR documental de continuidade:
+Main verificada após o alinhamento de tipos Node e reconciliação documental:
 
-- commit `e7cb4952479d6af62e49784e2c544632d2396864`;
-- PR #95 — `docs: reconciliar estado e preparar continuidade no Codex`;
-- estado: merged.
-
-Último marco técnico de código:
-
-- commit `93ed0419c8b861e83eb9c564d726c86ec550cfa3`;
-- PR #94 — `build: migrar React para Oxc e Rolldown`;
+- commit `dffdc25b1dde210e3a712d4d84723b81cd525938`;
+- PR #96 — `chore: alinhar tipos node e engine para node 24`;
 - estado: merged.
 
 ## 3. Entregas recentes
@@ -62,6 +56,18 @@ Merge: `93ed0419c8b861e83eb9c564d726c86ec550cfa3`.
 
 O `package.json` mantém override restrito de `@rolldown/plugin-babel` em `0.1.7` para compatibilidade com o Workbox/Babel 7. Não remover sem reproduzir a instalação limpa.
 
+### PR #95 — Reconciliação Documental
+
+Merge: `e7cb4952479d6af62e49784e2c544632d2396864`.
+
+- Concluiu a consolidação inicial da documentação de governança e logs da sessão de modernização.
+
+### PR #96 — Alinhamento de Tipos Node 24
+
+Merge: `dffdc25b1dde210e3a712d4d84723b81cd525938`.
+
+- Alinhou tipos `@types/node` ao runtime Node 24.x da Vercel. Sincronizou `engines.node` e ambiente de CI do GitHub Actions.
+
 ## 4. Estado da Vercel
 
 Projeto principal:
@@ -72,25 +78,23 @@ Projeto principal:
 
 Produção confirmada:
 
-- deployment `dpl_4M1tQA1JdVNnBYmjjUNXZP3eeBrx`;
-- commit `1399a691d622715a787ea1d9b720ff9992d9f679`;
+- deployment `dpl_7dYRKUR42XNFUNxq2GWzz3Hutt7U`;
+- commit `dffdc25b1dde210e3a712d4d84723b81cd525938`;
 - estado `READY`.
 
-A `main` está à frente da produção. O PR #94 foi validado por CI e Preview independente, mas o projeto principal não confirmou deployment desse SHA por limite temporário de frequência de builds. Não declarar produção em `93ed0419` antes de verificar o deployment real.
+A `main` está perfeitamente sincronizada com a produção principal da Vercel no commit `dffdc25b`.
 
 ## 5. Decisão técnica: tipos Node
 
-Branch: `types-node-26-evaluation`.
+Decisão concluída: Alinhamento ao runtime real Node 24.x (via PR #96).
 
-Decisão tomada: alinhar os tipos ao runtime real Node 24.x, sem atualizar para 26.x.
+Alterações realizadas e validadas:
 
-Alterações da branch:
-
-- `@types/node` de `^25.9.4` para `^24.13.2`;
+- `@types/node` ajustado para `^24.13.2`;
 - `package-lock.json` sincronizado com `@types/node` `24.13.2`;
 - `engines.node` declarado como `24.x`;
-- GitHub Actions atualizado de Node 20 para Node 24;
-- decisão documentada em `docs/quality/NODE_TYPES_ALIGNMENT_2026-06-25.md`.
+- GitHub Actions atualizado para executar com Node 24;
+- decisão detalhada em `docs/quality/NODE_TYPES_ALIGNMENT_2026-06-25.md`.
 
 Não atualizar para `@types/node` 26.x sem decisão explícita de runtime Node 26 e benefício comprovado.
 
@@ -108,7 +112,7 @@ npm audit --omit=dev
 
 ## 6. Próxima frente funcional
 
-Após mergear a avaliação de tipos Node, tratar em PR separado a veracidade institucional do `SecurityCenterPanel`. O componente contém estados simulados de scanner RLS, MFA e logs que não devem parecer controles reais.
+A próxima frente funcional é tratar a veracidade institucional do `SecurityCenterPanel`. O componente contém estados simulados de scanner RLS, MFA e logs que não devem parecer controles reais.
 
 ## 7. Leitura obrigatória para continuidade
 
