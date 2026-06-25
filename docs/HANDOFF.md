@@ -11,7 +11,13 @@ Repositório: `WilsonMPeixoto-2/pddeonlinesme-rj`.
 
 ## 2. Estado atual da main
 
-Último marco verificado desta rodada:
+Main verificada após o PR documental de continuidade:
+
+- commit `e7cb4952479d6af62e49784e2c544632d2396864`;
+- PR #95 — `docs: reconciliar estado e preparar continuidade no Codex`;
+- estado: merged.
+
+Último marco técnico de código:
 
 - commit `93ed0419c8b861e83eb9c564d726c86ec550cfa3`;
 - PR #94 — `build: migrar React para Oxc e Rolldown`;
@@ -72,19 +78,21 @@ Produção confirmada:
 
 A `main` está à frente da produção. O PR #94 foi validado por CI e Preview independente, mas o projeto principal não confirmou deployment desse SHA por limite temporário de frequência de builds. Não declarar produção em `93ed0419` antes de verificar o deployment real.
 
-## 5. Próxima tarefa técnica
+## 5. Decisão técnica: tipos Node
 
-Branch já criada: `types-node-26-evaluation`.
+Branch: `types-node-26-evaluation`.
 
-Ela parte de `93ed0419`, mas ainda mantém `@types/node` em `^25.9.4`.
+Decisão tomada: alinhar os tipos ao runtime real Node 24.x, sem atualizar para 26.x.
 
-O runtime real é Node 24.x. Portanto, comparar:
+Alterações da branch:
 
-1. manter 25.x temporariamente;
-2. alinhar para 24.x;
-3. adotar 26.x apenas com decisão explícita de runtime e benefício comprovado.
+- `@types/node` de `^25.9.4` para `^24.13.2`;
+- `package-lock.json` sincronizado com `@types/node` `24.13.2`;
+- `engines.node` declarado como `24.x`;
+- GitHub Actions atualizado de Node 20 para Node 24;
+- decisão documentada em `docs/quality/NODE_TYPES_ALIGNMENT_2026-06-25.md`.
 
-Não fazer atualização meramente numérica. Tipos devem representar o ambiente real.
+Não atualizar para `@types/node` 26.x sem decisão explícita de runtime Node 26 e benefício comprovado.
 
 Validações obrigatórias:
 
@@ -100,7 +108,7 @@ npm audit --omit=dev
 
 ## 6. Próxima frente funcional
 
-Após encerrar dependências, tratar em PR separado a veracidade institucional do `SecurityCenterPanel`. O componente contém estados simulados de scanner RLS, MFA e logs que não devem parecer controles reais.
+Após mergear a avaliação de tipos Node, tratar em PR separado a veracidade institucional do `SecurityCenterPanel`. O componente contém estados simulados de scanner RLS, MFA e logs que não devem parecer controles reais.
 
 ## 7. Leitura obrigatória para continuidade
 

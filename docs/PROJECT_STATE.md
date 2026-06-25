@@ -8,7 +8,12 @@ A fonte oficial é o GitHub `main`, complementado pelos testes e deployments efe
 
 ## Estado técnico atual
 
-Último marco verificado desta rodada na `main`:
+Main verificada:
+
+- commit `e7cb4952479d6af62e49784e2c544632d2396864`;
+- PR #95 — handoff documental para continuidade no Codex.
+
+Último marco técnico de código:
 
 - commit `93ed0419c8b861e83eb9c564d726c86ec550cfa3`;
 - PR #94 — modernização React/Oxc/Rolldown;
@@ -34,6 +39,8 @@ Resultado:
 - não aplicar `npm audit fix --force`, pois a correção sugerida rebaixa o ExcelJS.
 
 Referência: `docs/quality/DEPENDENCY_UPDATE_2026-06-25.md`.
+
+A avaliação `types-node-26-evaluation` alinhou o projeto ao runtime Node 24.x: `@types/node` `^24.13.2`, `engines.node` `24.x` e CI em Node 24. Referência: `docs/quality/NODE_TYPES_ALIGNMENT_2026-06-25.md`.
 
 ## Build atual
 
@@ -78,21 +85,9 @@ Entre as frentes entregues e verificáveis no repositório estão:
 - Relação de Bens Adquiridos;
 - frente fiscal funcional em estágio de endurecimento.
 
-## Próxima ação técnica
-
-Branch criada: `types-node-26-evaluation`.
-
-O runtime real da Vercel é Node 24.x e o projeto ainda usa `@types/node` `^25.9.4`. A próxima tarefa deve comparar:
-
-1. manter 25.x temporariamente;
-2. alinhar para 24.x;
-3. usar 26.x apenas com decisão explícita de runtime e benefício comprovado.
-
-Não fazer atualização meramente numérica.
-
 ## Próxima ação funcional
 
-Após encerrar a frente de dependências, corrigir em PR isolado a veracidade institucional do `SecurityCenterPanel`, que ainda apresenta simulações de segurança com aparência de controles reais.
+Após mergear a frente de dependências/tipos Node, corrigir em PR isolado a veracidade institucional do `SecurityCenterPanel`, que ainda apresenta simulações de segurança com aparência de controles reais.
 
 ## Leitura para continuidade
 

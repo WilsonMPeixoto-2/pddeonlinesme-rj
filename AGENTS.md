@@ -58,7 +58,9 @@ Não usar `--force`, `--legacy-peer-deps` ou desabilitar regras para obter CI ar
 
 ## Estado atual verificado
 
-**main HEAD da rodada:** `93ed0419c8b861e83eb9c564d726c86ec550cfa3` — PR #94.
+**main HEAD verificada:** `e7cb4952479d6af62e49784e2c544632d2396864` — PR #95 documental.
+
+**Último marco técnico de código:** `93ed0419c8b861e83eb9c564d726c86ec550cfa3` — PR #94.
 
 Este valor é snapshot. Confirmar novamente a `main` antes de agir.
 
@@ -82,6 +84,8 @@ A auditoria reproduzível passou de cinco achados para dois moderados na cadeia 
 
 O `package.json` contém override restrito de `@rolldown/plugin-babel` para `0.1.7`, necessário para compatibilidade do peer opcional com Workbox/Babel 7. Não remover sem reproduzir a instalação limpa.
 
+A avaliação `types-node-26-evaluation` decidiu alinhar o ambiente ao runtime real Node 24.x: `engines.node` e CI em Node 24, `@types/node` em `^24.13.2`. Não atualizar para 26.x sem decisão explícita de runtime.
+
 ### Estado da produção
 
 Projeto Vercel principal:
@@ -96,19 +100,7 @@ Nunca declarar produção sincronizada sem verificar o SHA do deployment e o dom
 
 ## Próxima fila
 
-### Tarefa técnica imediata
-
-Branch: `types-node-26-evaluation`.
-
-Avaliar o alinhamento de `@types/node` com o runtime Node 24.x. Comparar:
-
-1. manter 25.x temporariamente;
-2. alinhar para 24.x;
-3. adotar 26.x apenas se houver decisão explícita sobre runtime e benefício comprovado.
-
-Não abrir PR para atualização meramente numérica.
-
-### Próxima frente funcional
+### Próxima frente funcional imediata
 
 Corrigir em PR isolado a veracidade institucional do `SecurityCenterPanel`, que apresenta estados simulados de scanner RLS, MFA e logs com aparência de controles reais.
 

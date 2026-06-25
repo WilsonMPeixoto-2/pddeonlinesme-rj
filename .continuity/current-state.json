@@ -1,16 +1,16 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-25T01:15:00-03:00",
+  "updated_at": "2026-06-25T02:20:00-03:00",
   "source_of_truth": {
     "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "93ed0419c8b861e83eb9c564d726c86ec550cfa3",
+    "base_commit": "e7cb4952479d6af62e49784e2c544632d2396864",
     "note": "Snapshot auxiliar; confirmar sempre código, commits, testes e deployments reais."
   },
   "operational_north": {
     "plan": "docs/PLANO_GLOBAL_V4_2.md",
     "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "current_mode": "Encerrar dependências e alinhar tipos Node ao runtime real da Vercel."
+    "current_mode": "Mergear a branch de alinhamento Node 24; depois tratar veracidade institucional do SecurityCenterPanel."
   },
   "recent_pull_requests": [
     {"number":94,"status":"merged","merge_commit":"93ed0419c8b861e83eb9c564d726c86ec550cfa3"},
@@ -22,6 +22,7 @@
     "ci_gate": "PR #90 restaurou lint, typecheck, testes e build sem enfraquecer regras.",
     "dependency_update": "PR #92 atualizou pacotes e lockfile. Auditoria caiu de 5 achados para 2 moderados na cadeia exceljs -> uuid.",
     "build_modernization": "PR #94 migrou para o plugin React padrão e code splitting do Rolldown, com CI aprovado.",
+    "node_types_alignment": "Branch types-node-26-evaluation alinhou @types/node para ^24.13.2, declarou engines.node 24.x e ajustou CI para Node 24.",
     "security_center_panel": "Existe, mas ainda requer correção isolada de veracidade institucional por conter estados simulados."
   },
   "deployment_state": {
@@ -36,7 +37,7 @@
   },
   "next_priority": {
     "branch": "types-node-26-evaluation",
-    "step": "Comparar manter @types/node 25, alinhar para 24 ou adotar 26 apenas com decisão explícita de runtime.",
+    "step": "Revisar e mergear a branch types-node-26-evaluation.",
     "after": "Corrigir a veracidade institucional do SecurityCenterPanel em PR separado."
   },
   "mandatory_before_task": [
