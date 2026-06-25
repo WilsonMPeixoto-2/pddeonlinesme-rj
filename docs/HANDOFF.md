@@ -1,124 +1,120 @@
 # Handoff Operacional — PDDE Online 2026
 
-**Atualizado em:** 24/06/2026  
-**Escopo:** continuidade técnica após saneamento documental e restauração do gate de qualidade
+**Atualizado em:** 25/06/2026  
+**Escopo:** continuidade técnica após restauração do CI, atualização segura de dependências e modernização do build
 
-## 1. Regra de escopo e fonte de verdade
+## 1. Fonte de verdade
 
-Este repositório deve registrar exclusivamente fatos, decisões, testes, deploys e pendências do projeto **PDDE Online 2026**.
+A fonte primária é a verificação direta da `main`, commits, diffs, testes e deployments reais. Este documento é apenas um snapshot operacional.
 
-A fonte primária de verdade é a verificação direta de:
+Repositório: `WilsonMPeixoto-2/pddeonlinesme-rj`.
 
-1. código-fonte da branch `main`;
-2. commits, diffs e pull requests do GitHub;
-3. migrations versionadas;
-4. testes e checks efetivamente executados;
-5. deployments vinculados ao repositório correto.
+## 2. Estado atual da main
 
-Arquivos de continuidade, roadmaps e relatórios são snapshots auxiliares.
+Último marco verificado desta rodada:
 
-## 2. Saneamento documental concluído — PR #89
+- commit `93ed0419c8b861e83eb9c564d726c86ec550cfa3`;
+- PR #94 — `build: migrar React para Oxc e Rolldown`;
+- estado: merged.
 
-A auditoria de 24/06/2026 confirmou três registros de atividades externas indevidamente inseridos na memória operacional.
+## 3. Entregas recentes
 
-A contaminação estava restrita a:
+### PR #90 — restauração do gate técnico
 
-- `.continuity/session-log.jsonl`;
-- `docs/HANDOFF.md`;
-- metadados de `.continuity/current-state.json`.
+Merge: `da109185f3038927702841ea4eeb3cdf294fd419`.
 
-Não foram encontrados código-fonte, migrations, templates ou componentes de outros projetos. A limpeza foi incorporada à `main` pelo PR #89, commit `337648c`.
+- corrigidos sete usos de `any` em tratamentos de erro;
+- criada normalização segura de erros baseada em `unknown`;
+- adicionados testes unitários;
+- mantidas as regras de lint;
+- CI normal voltou a executar typecheck, lint, testes e build.
 
-## 3. Restauração do gate de lint — PR #90
+### PR #92 — atualização segura e reproduzível
 
-### Diagnóstico verificado
+Merge: `1399a691d622715a787ea1d9b720ff9992d9f679`.
 
-O CI vinha falhando no estágio de lint antes dos PRs mais recentes. O diagnóstico estruturado identificou:
+- atualizados React Query, Framer Motion, Recharts, Vite, TypeScript ESLint, Autoprefixer e Globals;
+- `package-lock.json` regenerado e versionado;
+- executado `npm audit fix` sem `--force`;
+- vulnerabilidades reduzidas de 5 para 2 moderadas;
+- eliminadas todas as vulnerabilidades low e high;
+- risco residual `exceljs → uuid` documentado.
 
-- **7 erros** de `@typescript-eslint/no-explicit-any`;
-- **2 avisos** de Fast Refresh para exports legítimos;
-- nenhuma falha estrutural generalizada no projeto.
+Referência: `docs/quality/DEPENDENCY_UPDATE_2026-06-25.md`.
 
-Arquivos com erros tipáveis:
+### PR #94 — Oxc e Rolldown
 
-- `src/components/UnidadeCadastroEditDialog.tsx`;
-- `src/pages/EscolaEditar.tsx`;
-- `src/pages/FiscalConferencia.tsx`;
-- `src/pages/PortalDiretor.tsx`.
+Merge: `93ed0419c8b861e83eb9c564d726c86ec550cfa3`.
 
-### Correção aplicada
+- `@vitejs/plugin-react-swc` substituído por `@vitejs/plugin-react`;
+- Vite e Vitest alinhados ao plugin React padrão;
+- React Compiler não habilitado;
+- `manualChunks` substituído por `rolldownOptions.codeSplitting.groups`;
+- `react-is` e `@testing-library/dom` declarados explicitamente;
+- lockfile sincronizado;
+- CI completo aprovado.
 
-O PR #90:
+O `package.json` mantém override restrito de `@rolldown/plugin-babel` em `0.1.7` para compatibilidade com o Workbox/Babel 7. Não remover sem reproduzir a instalação limpa.
 
-- substitui `catch (err: any)` por `catch (err: unknown)`;
-- cria `src/lib/errors.ts` com normalização segura de mensagens;
-- adiciona testes unitários para `Error`, string, resposta de API e fallback;
-- valida o conteúdo do `localStorage` antes de filtrar despesas de sandbox;
-- registra `masks` e `useExercicio` como exports legítimos no Fast Refresh;
-- mantém ativa a regra `no-explicit-any`;
-- remove o workflow temporário usado no diagnóstico.
+## 4. Estado da Vercel
 
-Não houve alteração de regra financeira, contrato de banco, RLS, rota, layout ou comportamento institucional do sistema.
+Projeto principal:
 
-### Validação realizada
+- ID `prj_dErjl7LdzTL2412fsw0pyzo3bdp1`;
+- runtime Node `24.x`;
+- domínio `https://pddeonlinesme-rj.vercel.app`.
 
-O workflow normal do PR executou com sucesso:
+Produção confirmada:
 
-- `npx tsc --noEmit`;
-- `npm run lint`;
-- `npm test`;
-- `npm run build`.
+- deployment `dpl_4M1tQA1JdVNnBYmjjUNXZP3eeBrx`;
+- commit `1399a691d622715a787ea1d9b720ff9992d9f679`;
+- estado `READY`.
 
-O PR #90 está tecnicamente verde e pronto para incorporação.
+A `main` está à frente da produção. O PR #94 foi validado por CI e Preview independente, mas o projeto principal não confirmou deployment desse SHA por limite temporário de frequência de builds. Não declarar produção em `93ed0419` antes de verificar o deployment real.
 
-## 4. Estado operacional atual
+## 5. Próxima tarefa técnica
 
-- repositório: `WilsonMPeixoto-2/pddeonlinesme-rj`;
-- branch-base do PR #90: `main` no commit `337648c`;
-- PR em análise: **#90 — restaurar gate de lint**;
-- CI: verde;
-- Vercel Preview: publicado com sucesso;
-- nenhuma migration ou dado de produção alterado nesta frente.
+Branch já criada: `types-node-26-evaluation`.
 
-## 5. Entregas funcionais presentes no projeto
+Ela parte de `93ed0419`, mas ainda mantém `@types/node` em `^25.9.4`.
 
-A leitura direta do código confirma, entre outras frentes:
+O runtime real é Node 24.x. Portanto, comparar:
 
-- Painel Executivo-Operacional;
-- cadastro e consulta das unidades escolares;
-- geração individual e em lote do Demonstrativo Básico;
-- histórico de gerações;
-- atualização parcial assistida da BASE;
-- gestão inicial de papéis;
-- Portal do Diretor em evolução;
-- Relação de Bens Adquiridos;
-- frente fiscal em estágio de spike funcional.
+1. manter 25.x temporariamente;
+2. alinhar para 24.x;
+3. adotar 26.x apenas com decisão explícita de runtime e benefício comprovado.
 
-## 6. Norte operacional vigente
+Não fazer atualização meramente numérica. Tipos devem representar o ambiente real.
 
-- Plano: `docs/PLANO_GLOBAL_V4_2.md`;
-- Diretriz transversal: `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
-- Governança: `AGENTS.md`.
+Validações obrigatórias:
 
-O PR #90 atende diretamente:
+```bash
+npm ci
+npx tsc --noEmit
+npm run lint
+npm test
+npm run build
+npm audit
+npm audit --omit=dev
+```
 
-- **Marco 2:** saneamento e dívida técnica operacional;
-- **Marco 4:** gate técnico permanente;
-- **Marco 14:** hardening e confiabilidade operacional.
+## 6. Próxima frente funcional
 
-## 7. Próxima frente recomendada
+Após encerrar dependências, tratar em PR separado a veracidade institucional do `SecurityCenterPanel`. O componente contém estados simulados de scanner RLS, MFA e logs que não devem parecer controles reais.
 
-Após incorporar o PR #90, tratar em PR próprio a **veracidade institucional do `SecurityCenterPanel`**, removendo ou reclassificando estados simulados que hoje podem ser interpretados como controles reais de segurança.
+## 7. Leitura obrigatória para continuidade
 
-Essa frente não deve ser misturada à correção de lint.
+1. `AGENTS.md`;
+2. `docs/PLANO_GLOBAL_V4_2.md`;
+3. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
+4. `.continuity/current-state.json`;
+5. `docs/CODEX_HANDOFF_2026-06-25.md`;
+6. documentos em `docs/quality/` desta rodada.
 
-## 8. Regras para novas tarefas
+## 8. Regras de execução
 
-Antes de implementar:
-
-1. ler `AGENTS.md`;
-2. ler o Plano Global v4.2;
-3. aplicar o Radar de Inteligência Institucional;
-4. verificar a `main` e os PRs atuais;
-5. manter cada correção em escopo isolado;
-6. não desabilitar regras de qualidade apenas para tornar o CI verde.
+- manter PRs em escopo isolado;
+- não usar `--force` ou `--legacy-peer-deps` para obter instalação artificialmente verde;
+- não alterar migrations, regras financeiras, templates oficiais ou segurança nesta avaliação de tipos;
+- confirmar SHA de produção antes de reportar sincronização;
+- atualizar `current-state.json`, `session-log.jsonl` e este handoff ao concluir a próxima tarefa.
