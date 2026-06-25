@@ -10,9 +10,11 @@ A fonte oficial é o GitHub `main`, complementado pelos testes e deployments efe
 
 Main verificada:
 
-- commit `ecfeb109146cbbd1856d26490b69bb8f633f6835`;
-- PR #99 — hotfix de restauração da renderização estável.
+- commit `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8`;
+- PR #101 — reconciliação documental pós-hotfix e produção Vercel.
 - CI aprovado.
+
+O último marco de código de aplicação antes da branch `codex/security-center-truthfulness` era o hotfix `ecfeb109146cbbd1856d26490b69bb8f633f6835`.
 
 ## Marcos recentes
 
@@ -27,6 +29,7 @@ Main verificada:
 | #98 | Code splitting por rota com React lazy; revertido pelo PR #99 por incidente de renderização | `e94c36d` |
 | #99 | Hotfix para restaurar renderização estável | `ecfeb109` |
 | #100 | Code splitting por rota fechado sem merge para não reintroduzir o incidente #98/#99 | — |
+| #101 | Reconciliação documental após hotfix e produção Vercel | `f5ad026` |
 
 ## Dependências e segurança
 
@@ -70,11 +73,11 @@ Projeto Vercel principal:
 
 Produção confirmada:
 
-- deployment `dpl_7YMS7fdammFttCq6bF4Edn2Yze97`;
-- commit `ecfeb109146cbbd1856d26490b69bb8f633f6835`;
+- deployment mais recente confirmado `dpl_56wP3LvWJsmK3YziSoLbzGroGuqg`;
+- commit `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8`;
 - estado `READY`.
 
-A `main` e a produção principal da Vercel estão sincronizadas no commit `ecfeb109`. Smoke público em `/dashboard` redirecionou para login e renderizou sem erros de console.
+A `main` e a produção principal da Vercel estavam sincronizadas no commit `f5ad026` antes da branch `codex/security-center-truthfulness`. Smoke público em `/dashboard` redirecionou para login e renderizou sem erros de console. Confirmar novamente o SHA de produção após o merge desta correção.
 
 ## Funcionalidades já presentes
 
@@ -90,9 +93,11 @@ Entre as frentes entregues e verificáveis no repositório estão:
 - Relação de Bens Adquiridos;
 - frente fiscal funcional em estágio de endurecimento.
 
-## Próxima ação funcional
+## Frente funcional em execução
 
-Corrigir em PR isolado a veracidade institucional do `SecurityCenterPanel`, que ainda apresenta simulações de segurança com aparência de controles reais.
+A branch `codex/security-center-truthfulness` corrige a veracidade institucional do `SecurityCenterPanel`, mantendo o componente como mapa/checklist visual e removendo aparência de scanner RLS, MFA e logs reais.
+
+Fora de escopo nesta frente: Auth, RLS, Supabase, migrations, roles, policies, templates financeiros, dependências e regras de negócio.
 
 ## Leitura para continuidade
 

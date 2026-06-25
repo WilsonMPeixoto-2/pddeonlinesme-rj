@@ -1,7 +1,7 @@
 # Handoff Operacional — PDDE Online 2026
 
 **Atualizado em:** 25/06/2026  
-**Escopo:** continuidade técnica após PR #97, incidente do PR #98, hotfix #99, fechamento do PR #100 e produção Vercel estabilizada
+**Escopo:** continuidade técnica após PR #97, incidente do PR #98, hotfix #99, fechamento do PR #100, PR #101 e correção isolada do `SecurityCenterPanel`
 
 ## 1. Fonte de verdade
 
@@ -11,11 +11,12 @@ Repositório: `WilsonMPeixoto-2/pddeonlinesme-rj`.
 
 ## 2. Estado atual da main
 
-Main verificada após o hotfix de renderização:
+Main verificada antes da correção isolada do `SecurityCenterPanel`:
 
-- commit `ecfeb109146cbbd1856d26490b69bb8f633f6835`;
-- PR #99 — `hotfix: restaurar renderização estável da aplicação`;
-- estado: merged.
+- commit `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8`;
+- PR #101 — `[codex] docs: reconciliar hotfix e produção Vercel`;
+- estado: merged;
+- último marco de código de aplicação permanece o hotfix `ecfeb109146cbbd1856d26490b69bb8f633f6835` até a entrada do PR de veracidade do `SecurityCenterPanel`.
 
 ## 3. Entregas recentes
 
@@ -100,6 +101,14 @@ PR: `https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/100`.
 - Foi fechado sem merge porque reintroduzia a mesma mudança revertida pelo hotfix #99;
 - manter fechado para evitar regressão.
 
+### PR #101 — Reconciliação pós-hotfix e produção
+
+Merge: `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8`.
+
+- Atualizou documentação de continuidade após o hotfix #99 e o fechamento do PR #100;
+- foi implantado automaticamente em produção pela Vercel;
+- não alterou código de aplicação.
+
 ## 4. Estado da Vercel
 
 Projeto principal:
@@ -110,11 +119,11 @@ Projeto principal:
 
 Produção confirmada:
 
-- deployment `dpl_7YMS7fdammFttCq6bF4Edn2Yze97`;
-- commit `ecfeb109146cbbd1856d26490b69bb8f633f6835`;
+- deployment `dpl_56wP3LvWJsmK3YziSoLbzGroGuqg`;
+- commit `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8`;
 - estado `READY`.
 
-A `main` está sincronizada com a produção principal da Vercel no commit `ecfeb109`.
+A `main` estava sincronizada com a produção principal da Vercel no commit `f5ad026` antes da branch `codex/security-center-truthfulness`. Confirmar novamente o SHA de produção após o merge desta correção.
 
 Smoke público executado em `https://pddeonlinesme-rj.vercel.app/dashboard`:
 
@@ -160,9 +169,21 @@ Qualquer retomada deve ser feita em PR próprio com:
 - plano explícito de rollback;
 - sem acoplar a mudanças de documentação, Supabase, auth ou regras financeiras.
 
-## 7. Próxima frente funcional
+## 7. Frente funcional em execução
 
-A próxima frente funcional recomendada continua sendo tratar a veracidade institucional do `SecurityCenterPanel`. O componente contém estados simulados de scanner RLS, MFA e logs que não devem parecer controles reais.
+A branch `codex/security-center-truthfulness` trata a veracidade institucional do `SecurityCenterPanel`.
+
+Escopo permitido:
+
+- manter o painel como mapa/checklist visual do Marco 6B;
+- remover aparência de scanner RLS real, toggle MFA real e logs de auditoria reais;
+- preservar layout, valor institucional e microinterações seguras.
+
+Fora de escopo:
+
+- Auth, RLS, Supabase, migrations, papéis, policies, templates financeiros, dependências e regras de negócio.
+
+Depois do merge e deploy, escolher nova frente funcional com escopo fechado. Qualquer implementação real de Auth/RLS/audit_logs continua exigindo revisão humana.
 
 ## 8. Leitura obrigatória para continuidade
 
