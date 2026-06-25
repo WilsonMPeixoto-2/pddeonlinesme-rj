@@ -10,8 +10,8 @@ A fonte oficial é o GitHub `main`, complementado pelos testes e deployments efe
 
 Main verificada:
 
-- commit `dffdc25b1dde210e3a712d4d84723b81cd525938`;
-- PR #96 — alinhamento de tipos Node e runtime para Node 24.
+- commit `ecfeb109146cbbd1856d26490b69bb8f633f6835`;
+- PR #99 — hotfix de restauração da renderização estável.
 - CI aprovado.
 
 ## Marcos recentes
@@ -23,6 +23,10 @@ Main verificada:
 | #94 | Migração do plugin React para o stack padrão do Vite e code splitting do Rolldown | `93ed0419` |
 | #95 | Handoff documental para continuidade no Codex | `e7cb4952` |
 | #96 | Alinhamento de tipos Node e runtime para Node 24 | `dffdc25b` |
+| #97 | Query options centralizadas e polimento visual seguro | `3ee6253` |
+| #98 | Code splitting por rota com React lazy; revertido pelo PR #99 por incidente de renderização | `e94c36d` |
+| #99 | Hotfix para restaurar renderização estável | `ecfeb109` |
+| #100 | Code splitting por rota fechado sem merge para não reintroduzir o incidente #98/#99 | — |
 
 ## Dependências e segurança
 
@@ -39,6 +43,8 @@ Referência: `docs/quality/DEPENDENCY_UPDATE_2026-06-25.md`.
 
 O PR #96 alinhou o projeto ao runtime Node 24.x: `@types/node` `^24.13.2`, `engines.node` `24.x` e CI em Node 24. Referência: `docs/quality/NODE_TYPES_ALIGNMENT_2026-06-25.md`.
 
+O PR #97 aplicou ganho seguro sobre as dependências atualizadas: centralização de `queryOptions()` do TanStack Query e polimento visual pontual com Recharts/Framer Motion.
+
 ## Build atual
 
 O PR #94:
@@ -52,6 +58,8 @@ O PR #94:
 
 Não remover esse override sem reproduzir e resolver a instalação limpa.
 
+O PR #98 tentou dividir páginas em chunks com `React.lazy()` e `Suspense`, mas causou tela vazia em produção. O PR #99 restaurou o `src/App.tsx` estável. Não retomar code splitting por rota sem diagnóstico específico de Preview, cache/service worker e smoke visual real.
+
 ## Estado da produção
 
 Projeto Vercel principal:
@@ -62,11 +70,11 @@ Projeto Vercel principal:
 
 Produção confirmada:
 
-- deployment `dpl_7dYRKUR42XNFUNxq2GWzz3Hutt7U`;
-- commit `dffdc25b1dde210e3a712d4d84723b81cd525938`;
+- deployment `dpl_7YMS7fdammFttCq6bF4Edn2Yze97`;
+- commit `ecfeb109146cbbd1856d26490b69bb8f633f6835`;
 - estado `READY`.
 
-A `main` e a produção principal da Vercel estão perfeitamente sincronizadas no commit `dffdc25b`.
+A `main` e a produção principal da Vercel estão sincronizadas no commit `ecfeb109`. Smoke público em `/dashboard` redirecionou para login e renderizou sem erros de console.
 
 ## Funcionalidades já presentes
 

@@ -58,9 +58,9 @@ Não usar `--force`, `--legacy-peer-deps` ou desabilitar regras para obter CI ar
 
 ## Estado atual verificado
 
-**main HEAD verificada:** `dffdc25b1dde210e3a712d4d84723b81cd525938` — PR #96 de tipos Node.
+**main HEAD verificada:** `ecfeb109146cbbd1856d26490b69bb8f633f6835` — PR #99 de hotfix de renderização.
 
-**Último marco técnico de código:** `dffdc25b1dde210e3a712d4d84723b81cd525938` — PR #96.
+**Último marco técnico de código:** `ecfeb109146cbbd1856d26490b69bb8f633f6835` — PR #99.
 
 Este valor é snapshot. Confirmar novamente a `main` antes de agir.
 
@@ -71,6 +71,10 @@ Este valor é snapshot. Confirmar novamente a `main` antes de agir.
 - PR #94 — migração para plugin React padrão do Vite e code splitting do Rolldown;
 - PR #95 — reconciliação documental de continuidade;
 - PR #96 — alinhamento de tipos Node e runtime para Node 24;
+- PR #97 — queryOptions centralizadas e polimento visual seguro;
+- PR #98 — tentativa de code splitting por rota; causou tela vazia em produção e foi revertida;
+- PR #99 — hotfix para restaurar renderização estável;
+- PR #100 — fechado sem merge para não reintroduzir o incidente do PR #98;
 - atualização parcial assistida da BASE;
 - geração individual e em lote do Demonstrativo Básico;
 - histórico de gerações;
@@ -93,10 +97,12 @@ O PR #96 alinhou o ambiente ao runtime real Node 24.x: `engines.node` e CI em No
 Projeto Vercel principal:
 
 - runtime Node `24.x`;
-- produção confirmada em `dffdc25b1dde210e3a712d4d84723b81cd525938`;
-- deployment confirmado `READY`: `dpl_7dYRKUR42XNFUNxq2GWzz3Hutt7U`.
+- produção confirmada em `ecfeb109146cbbd1856d26490b69bb8f633f6835`;
+- deployment confirmado `READY`: `dpl_7YMS7fdammFttCq6bF4Edn2Yze97`.
 
-A `main` e a produção principal da Vercel estão perfeitamente sincronizadas no commit `dffdc25b`.
+A `main` e a produção principal da Vercel estão sincronizadas no commit `ecfeb109`.
+
+Smoke público em `https://pddeonlinesme-rj.vercel.app/dashboard` redirecionou para login e renderizou sem erros de console.
 
 Nunca declarar produção sincronizada sem verificar o SHA do deployment e o domínio público.
 
@@ -105,6 +111,8 @@ Nunca declarar produção sincronizada sem verificar o SHA do deployment e o dom
 ### Próxima frente funcional imediata
 
 Corrigir em PR isolado a veracidade institucional do `SecurityCenterPanel`, que apresenta estados simulados de scanner RLS, MFA e logs com aparência de controles reais.
+
+Não retomar code splitting por rota sem diagnóstico específico do incidente #98/#99, validação visual real em Preview, teste com cache/service worker e plano explícito de rollback.
 
 ### Frentes estruturais ainda relevantes
 
