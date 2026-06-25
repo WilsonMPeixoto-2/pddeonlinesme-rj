@@ -1,6 +1,6 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-25T03:10:00-03:00",
+  "updated_at": "2026-06-25T03:55:00-03:00",
   "source_of_truth": {
     "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
@@ -10,7 +10,7 @@
   "operational_north": {
     "plan": "docs/PLANO_GLOBAL_V4_2.md",
     "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "current_mode": "Corrigir veracidade institucional do SecurityCenterPanel."
+    "current_mode": "Avaliar PR de polimento tecnico pós-atualizacao de pacotes: queryOptions centralizado e refinamentos visuais seguros."
   },
   "recent_pull_requests": [
     {"number":96,"status":"merged","merge_commit":"dffdc25b1dde210e3a712d4d84723b81cd525938"},
@@ -37,9 +37,15 @@
     "pending_main_commit": null,
     "note": "GitHub main e Vercel Production estão perfeitamente sincronizados no commit dffdc25."
   },
+  "active_branch_state": {
+    "branch": "codex/tanstack-query-ui-polish",
+    "base_commit": "279013f9d63edb7e9c7832f65a9a980e51dc2619",
+    "scope": "Centralizar TanStack Query queryOptions mantendo contratos de loading/error existentes; adicionar tooltip e animacoes em viewport em graficos/listas.",
+    "not_in_scope": "Nao migrar hooks para useSuspenseQuery nesta rodada; nao alterar SecurityCenterPanel; nao alterar Supabase, migrations, templates financeiros ou producao Vercel."
+  },
   "next_priority": {
-    "branch": "main",
-    "step": "Corrigir a veracidade institucional do SecurityCenterPanel em PR separado.",
+    "branch": "codex/tanstack-query-ui-polish",
+    "step": "Revisar e decidir merge do PR de polimento tecnico; depois corrigir a veracidade institucional do SecurityCenterPanel em PR separado.",
     "after": "Seguir com a transição para o Supabase próprio / painel exec."
   },
   "mandatory_before_task": [

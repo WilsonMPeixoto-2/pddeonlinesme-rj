@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import { dashboardBasicoOptions, queryKeys } from "@/lib/queryKeys";
 
-export type DashboardBasico = Tables<"vw_dashboard_basico">;
+export type { DashboardBasico } from "@/lib/queryKeys";
 
 interface UseDashboardBasicoParams {
   exercicio: string;
@@ -24,7 +24,9 @@ export function useDashboardBasico({
         "postgres_changes",
         { event: "*", schema: "public", table: "execucao_financeira" },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["dashboard-basico", exercicioNumber, programa] });
+          void queryClient.invalidateQueries({
+            queryKey: queryKeys.dashboardBasico(exercicioNumber, programa),
+          });
         }
       )
       .subscribe();
@@ -34,25 +36,5 @@ export function useDashboardBasico({
     };
   }, [queryClient, exercicioNumber, programa]);
 
-  return useQuery<DashboardBasico | null, Error>({
-    queryKey: ["dashboard-basico", exercicioNumber, programa],
-    enabled: Number.isFinite(exercicioNumber) && Boolean(programa),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("vw_dashboard_basico")
-        .select(
-          "exercicio, programa, total_unidades, total_reprogramado_custeio, total_reprogramado_capital, total_reprogramado, total_parcela_1_custeio, total_parcela_1_capital, total_parcela_2_custeio, total_parcela_2_capital, total_parcelas, total_disponivel_inicial, updated_at_max",
-        )
-        .eq("exercicio", exercicioNumber)
-        .eq("programa", programa)
-        .maybeSingle();
-
-      if (error) {
-        throw new Error(error.message);
-      }
-      return data ?? null;
-    },
-    staleTime: 0,
-    refetchOnMount: "always",
-  });
+  return useQuery(dashboardBasicoOptions(exercicioNumber, programa));
 }

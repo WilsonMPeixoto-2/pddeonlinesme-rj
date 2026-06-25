@@ -1,7 +1,7 @@
 # Handoff Operacional — PDDE Online 2026
 
 **Atualizado em:** 25/06/2026  
-**Escopo:** continuidade técnica após alinhamento de tipos Node, verificação de produção Vercel e reconciliação documental
+**Escopo:** continuidade técnica após alinhamento de tipos Node, verificação de produção Vercel, reconciliação documental e abertura de frente de polimento técnico pós-atualização de pacotes
 
 ## 1. Fonte de verdade
 
@@ -110,11 +110,38 @@ npm audit
 npm audit --omit=dev
 ```
 
-## 6. Próxima frente funcional
+## 6. Frente em avaliação — polimento técnico pós-atualização
+
+Branch: `codex/tanstack-query-ui-polish`.
+
+Escopo preparado:
+
+- centralizar `queryOptions()` do TanStack Query em `src/lib/queryKeys.ts`;
+- manter os hooks existentes com `useQuery`, preservando contratos atuais de `isLoading`, `error` e `data`;
+- adicionar `Tooltip` do Recharts ao gráfico `DistribuicaoDeRecursos`;
+- aplicar `useInView` do Framer Motion em animações de entrada de gráficos/listas.
+
+Fora do escopo desta frente:
+
+- migração ampla para `useSuspenseQuery`;
+- alterações no `SecurityCenterPanel`;
+- mudanças em Supabase, migrations, templates financeiros, regras de negócio ou produção Vercel.
+
+Validações locais já executadas na branch:
+
+```bash
+npx tsc --noEmit
+npm run lint
+npm test
+npm run build
+git diff --check
+```
+
+## 7. Próxima frente funcional
 
 A próxima frente funcional é tratar a veracidade institucional do `SecurityCenterPanel`. O componente contém estados simulados de scanner RLS, MFA e logs que não devem parecer controles reais.
 
-## 7. Leitura obrigatória para continuidade
+## 8. Leitura obrigatória para continuidade
 
 1. `AGENTS.md`;
 2. `docs/PLANO_GLOBAL_V4_2.md`;
@@ -123,7 +150,7 @@ A próxima frente funcional é tratar a veracidade institucional do `SecurityCen
 5. `docs/CODEX_HANDOFF_2026-06-25.md`;
 6. documentos em `docs/quality/` desta rodada.
 
-## 8. Regras de execução
+## 9. Regras de execução
 
 - manter PRs em escopo isolado;
 - não usar `--force` ou `--legacy-peer-deps` para obter instalação artificialmente verde;

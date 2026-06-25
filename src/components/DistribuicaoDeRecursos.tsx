@@ -1,10 +1,17 @@
+import { useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Coins, ArrowUpRight, AlertTriangle } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+} from "recharts";
 
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadesDetalheLista } from "@/hooks/useUnidadesDetalheLista";
@@ -17,6 +24,8 @@ const fmtPct = (num: number, den: number) =>
 export function DistribuicaoDeRecursos() {
   const { exercicio } = useExercicio();
   const navigate = useNavigate();
+  const chartRef = useRef<HTMLDivElement>(null);
+  const isChartInView = useInView(chartRef, { once: true, margin: "-60px" });
   const { stats, isLoading } = useUnidadesDetalheLista({
     exercicio,
     programa: PROGRAMA,
@@ -67,8 +76,9 @@ export function DistribuicaoDeRecursos() {
           </div>
         ) : (
           <motion.div
+            ref={chartRef}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={isChartInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.4 }}
             className="flex items-center gap-5"
           >
@@ -76,6 +86,20 @@ export function DistribuicaoDeRecursos() {
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
+                    <RechartsTooltip
+                      formatter={(value: number, name: string) => [
+                        `${value} unidade${value !== 1 ? "s" : ""}`,
+                        name,
+                      ]}
+                      contentStyle={{
+                        background: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        color: "hsl(var(--foreground))",
+                        fontSize: "12px",
+                      }}
+                      cursor={{ fill: "transparent" }}
+                    />
                     <Pie
                       data={chartData}
                       cx="50%"
