@@ -3,44 +3,31 @@ name: CI
 on:
   pull_request:
     branches: [main]
-  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  diagnose:
-    name: Diagnose dependency resolution
+  validate:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-
-      - name: Capture dependency resolution
-        shell: bash
+      - run: npm install --package-lock-only --ignore-scripts
+      - name: Commit lockfile
         run: |
-          set +e
-          npm install --package-lock-only --ignore-scripts > dependency-resolution.log 2>&1
-          status=$?
-          set -e
-          echo "$status" > dependency-resolution.status
-          cat dependency-resolution.log
-
-      - name: Upload dependency resolution report
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-resolution-report
-          path: |
-            dependency-resolution.log
-            dependency-resolution.status
-          if-no-files-found: error
-
-      - name: Propagate resolution result
-        shell: bash
-        run: |
-          status=$(cat dependency-resolution.status)
-          exit "$status"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git diff --cached --quiet || git commit -m "build: sincronizar package-lock.json"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
