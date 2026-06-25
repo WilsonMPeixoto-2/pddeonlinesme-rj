@@ -1,17 +1,76 @@
+import { useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight, TrendingUp } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadesDetalheLista } from "@/hooks/useUnidadesDetalheLista";
+import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 
 const PROGRAMA = "basico";
 
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+function TopReprogramadoItem({
+  unidade,
+  index,
+  max,
+  navigate,
+}: {
+  unidade: UnidadeDetalhe;
+  index: number;
+  max: number;
+  navigate: ReturnType<typeof useNavigate>;
+}) {
+  const itemRef = useRef<HTMLLIElement>(null);
+  const isInView = useInView(itemRef, { once: true, margin: "-20px" });
+  const value = unidade.total_reprogramado ?? 0;
+  const widthPct = max > 0 ? Math.max(6, Math.round((value / max) * 100)) : 0;
+
+  return (
+    <motion.li
+      ref={itemRef}
+      initial={{ opacity: 0, y: 6 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
+      transition={{ duration: 0.4, delay: index * 0.04, ease: [0.22, 1, 0.36, 1] }}
+      className="group flex items-start gap-2.5"
+    >
+      <span className="mt-0.5 inline-flex w-5 shrink-0 justify-end pt-px text-[10px] font-medium tabular-nums text-muted-foreground/70">
+        {index + 1}.
+      </span>
+      <div className="min-w-0 flex-1 space-y-1">
+        <div className="flex items-baseline justify-between gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              unidade.unidade_id &&
+              navigate(`/escolas/${unidade.unidade_id}`, { viewTransition: true })
+            }
+            className="truncate text-left text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:underline"
+            title={unidade.designacao ?? ""}
+          >
+            {unidade.designacao}
+          </button>
+          <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground">
+            {fmtBRL(value)}
+          </span>
+        </div>
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted/40">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={isInView ? { width: `${widthPct}%` } : { width: 0 }}
+            transition={{ duration: 0.6, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+            className="h-full rounded-full bg-primary/80 transition-colors duration-300 group-hover:bg-primary"
+          />
+        </div>
+      </div>
+    </motion.li>
+  );
+}
 
 export function TopReprogramados() {
   const { exercicio } = useExercicio();
@@ -66,47 +125,15 @@ export function TopReprogramados() {
             }}
             className="space-y-2.5"
           >
-            {topReprogramados.map((u, i) => {
-              const value = u.total_reprogramado ?? 0;
-              const widthPct = max > 0 ? Math.max(6, Math.round((value / max) * 100)) : 0;
-              return (
-                <motion.li
-                  key={u.unidade_id ?? `top-${i}`}
-                  variants={{
-                    hidden: { opacity: 0, y: 6 },
-                    show: { opacity: 1, y: 0 },
-                  }}
-                  className="group flex items-start gap-2.5"
-                >
-                  <span className="mt-0.5 inline-flex w-5 shrink-0 justify-end pt-px text-[10px] font-medium tabular-nums text-muted-foreground/70">
-                    {i + 1}.
-                  </span>
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => u.unidade_id && navigate(`/escolas/${u.unidade_id}`, { viewTransition: true })}
-                        className="truncate text-left text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:underline"
-                        title={u.designacao ?? ""}
-                      >
-                        {u.designacao}
-                      </button>
-                      <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground">
-                        {fmtBRL(value)}
-                      </span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted/40">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${widthPct}%` }}
-                        transition={{ duration: 0.6, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                        className="h-full rounded-full bg-primary/80 transition-colors duration-300 group-hover:bg-primary"
-                      />
-                    </div>
-                  </div>
-                </motion.li>
-              );
-            })}
+            {topReprogramados.map((u, i) => (
+              <TopReprogramadoItem
+                key={u.unidade_id ?? `top-${i}`}
+                unidade={u}
+                index={i}
+                max={max}
+                navigate={navigate}
+              />
+            ))}
           </motion.ul>
         )}
 
