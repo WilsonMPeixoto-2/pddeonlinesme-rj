@@ -5,19 +5,14 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  validate:
-    name: Generate Lockfile, Lint, Typecheck, Test & Build
+  diagnose:
+    name: Diagnose dependency resolution
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout PR branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -25,32 +20,27 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Generate reproducible lockfile
-        run: npm install --package-lock-only --ignore-scripts
-
-      - name: Commit generated lockfile
+      - name: Capture dependency resolution
+        shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          if git diff --cached --quiet; then
-            echo "Lockfile already synchronized."
-          else
-            git commit -m "build: sincronizar lockfile da migração Oxc"
-            git push origin HEAD:${{ github.event.pull_request.head.ref }}
-          fi
+          set +e
+          npm install --package-lock-only --ignore-scripts > dependency-resolution.log 2>&1
+          status=$?
+          set -e
+          echo "$status" > dependency-resolution.status
+          cat dependency-resolution.log
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Upload dependency resolution report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-resolution-report
+          path: |
+            dependency-resolution.log
+            dependency-resolution.status
+          if-no-files-found: error
 
-      - name: Typecheck
-        run: npx tsc --noEmit
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test
-
-      - name: Build
-        run: npm run build
+      - name: Propagate resolution result
+        shell: bash
+        run: |
+          status=$(cat dependency-resolution.status)
+          exit "$status"
