@@ -1,11 +1,11 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "@tailwindcss/vite";
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+// Vite 8: plugin React padrão (Oxc) e code splitting nativo do Rolldown.
+export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
-  ].filter(Boolean),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -61,18 +61,26 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("recharts")) {
-              return "vendor-charts";
-            }
-            if (id.includes("framer-motion")) {
-              return "vendor-motion";
-            }
-            return "vendor";
-          }
+        codeSplitting: {
+          groups: [
+            {
+              name: "vendor-charts",
+              test: /[\\/]node_modules[\\/]recharts[\\/]/,
+              priority: 20,
+            },
+            {
+              name: "vendor-motion",
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              priority: 20,
+            },
+            {
+              name: "vendor",
+              test: /[\\/]node_modules[\\/]/,
+              priority: 10,
+            },
+          ],
         },
       },
     },
