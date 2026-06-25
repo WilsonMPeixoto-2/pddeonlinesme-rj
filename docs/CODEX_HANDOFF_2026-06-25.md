@@ -7,6 +7,17 @@
 - Branch já criada: `types-node-26-evaluation`.
 - A branch parte de `93ed0419` e ainda mantém `@types/node` em `^25.9.4`.
 
+## Status pós-retomada no Codex
+
+Este handoff foi consumido na branch `types-node-26-evaluation`. A decisão aplicada foi alinhar a tipagem e o gate ao runtime Node 24.x, sem atualizar para Node 26:
+
+- `@types/node` `^24.13.2`;
+- `engines.node` `24.x`;
+- GitHub Actions em Node 24;
+- decisão documentada em `docs/quality/NODE_TYPES_ALIGNMENT_2026-06-25.md`.
+
+Tratar as seções abaixo como histórico do ponto de partida, não como fila ainda pendente.
+
 ## Entregas concluídas
 
 ### PR #90 — gate de qualidade

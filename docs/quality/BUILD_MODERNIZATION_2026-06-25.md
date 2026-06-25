@@ -71,6 +71,8 @@ O merge está na `main`, porém a produção principal não foi confirmada no me
 
 Produção confirmada permanece em `1399a691d622715a787ea1d9b720ff9992d9f679` até nova verificação.
 
-## Próxima decisão técnica
+## Decisão técnica posterior
 
-Avaliar `@types/node` em relação ao runtime Node 24.x da Vercel. Não atualizar automaticamente para 26.x sem decidir se os tipos e o ambiente de execução permanecerão alinhados.
+A avaliação foi executada na branch `types-node-26-evaluation`. O projeto foi alinhado ao runtime Node 24.x com `@types/node` `^24.13.2`, `engines.node` `24.x` e GitHub Actions em Node 24.
+
+Referência: `docs/quality/NODE_TYPES_ALIGNMENT_2026-06-25.md`.

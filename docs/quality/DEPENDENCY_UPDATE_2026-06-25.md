@@ -73,4 +73,6 @@ Após as atualizações e correções de segurança, o ambiente limpo aprovou:
 
 A migração do plugin React e do code splitting, inicialmente fora do escopo deste PR, foi concluída separadamente no PR #94, commit `93ed0419c8b861e83eb9c564d726c86ec550cfa3`.
 
-A única decisão de dependência ainda aberta desta rodada é o alinhamento de `@types/node` ao runtime Node 24.x da Vercel. Não atualizar automaticamente para 26.x sem decidir o runtime real.
+A decisão de dependência ainda aberta nesta rodada foi encerrada posteriormente na branch `types-node-26-evaluation`: `@types/node` foi alinhado à série 24, o CI passou para Node 24 e `engines.node` foi declarado como `24.x`.
+
+Referência: `docs/quality/NODE_TYPES_ALIGNMENT_2026-06-25.md`.
