@@ -1,7 +1,7 @@
 # Handoff Operacional — PDDE Online 2026
 
 **Atualizado em:** 25/06/2026  
-**Escopo:** continuidade técnica após alinhamento de tipos Node, verificação de produção Vercel, reconciliação documental e abertura de frente de polimento técnico pós-atualização de pacotes
+**Escopo:** continuidade técnica após atualização de dependências, PR #97 e abertura de frente de code splitting por rota
 
 ## 1. Fonte de verdade
 
@@ -11,10 +11,10 @@ Repositório: `WilsonMPeixoto-2/pddeonlinesme-rj`.
 
 ## 2. Estado atual da main
 
-Main verificada após o alinhamento de tipos Node e reconciliação documental:
+Main verificada após o merge do PR #97:
 
-- commit `dffdc25b1dde210e3a712d4d84723b81cd525938`;
-- PR #96 — `chore: alinhar tipos node e engine para node 24`;
+- commit `3ee62531466a3f46ce8d9e39b2470aa42a62ba1c`;
+- PR #97 — `refactor: centralizar query options e polir graficos`;
 - estado: merged.
 
 ## 3. Entregas recentes
@@ -68,6 +68,15 @@ Merge: `dffdc25b1dde210e3a712d4d84723b81cd525938`.
 
 - Alinhou tipos `@types/node` ao runtime Node 24.x da Vercel. Sincronizou `engines.node` e ambiente de CI do GitHub Actions.
 
+### PR #97 — Query options e polimento visual seguro
+
+Merge: `3ee62531466a3f46ce8d9e39b2470aa42a62ba1c`.
+
+- Centralizou `queryOptions()` do TanStack Query em `src/lib/queryKeys.ts`;
+- preservou contratos existentes de loading, erro e dados;
+- adicionou tooltip no gráfico `DistribuicaoDeRecursos`;
+- aplicou animações em viewport com Framer Motion em gráficos/listas.
+
 ## 4. Estado da Vercel
 
 Projeto principal:
@@ -78,11 +87,11 @@ Projeto principal:
 
 Produção confirmada:
 
-- deployment `dpl_7dYRKUR42XNFUNxq2GWzz3Hutt7U`;
-- commit `dffdc25b1dde210e3a712d4d84723b81cd525938`;
+- deployment `dpl_779JPpHNfyVa5kpqvcZGLNUiApQF`;
+- commit `279013f9d63edb7e9c7832f65a9a980e51dc2619`;
 - estado `READY`.
 
-A `main` está perfeitamente sincronizada com a produção principal da Vercel no commit `dffdc25b`.
+A `main` está à frente da produção principal da Vercel. O preview do PR #97 ficou `READY` em `dpl_EnRBpqKazvWQeAYUaS7wb7hycnqc`, commit `fa80ef38774461856f88c80354c48881b6543767`. Tentativas de deploy/promote de produção após o merge do PR #97 foram bloqueadas por limite temporário da Vercel; confirmar novamente antes de declarar produção sincronizada.
 
 ## 5. Decisão técnica: tipos Node
 
@@ -110,36 +119,34 @@ npm audit
 npm audit --omit=dev
 ```
 
-## 6. Frente em avaliação — polimento técnico pós-atualização
+## 6. Frente atual — code splitting por rota
 
-Branch: `codex/tanstack-query-ui-polish`.
+Branch: `codex/route-level-code-splitting`.
 
-Escopo preparado:
+Escopo:
 
-- centralizar `queryOptions()` do TanStack Query em `src/lib/queryKeys.ts`;
-- manter os hooks existentes com `useQuery`, preservando contratos atuais de `isLoading`, `error` e `data`;
-- adicionar `Tooltip` do Recharts ao gráfico `DistribuicaoDeRecursos`;
-- aplicar `useInView` do Framer Motion em animações de entrada de gráficos/listas.
+- converter imports de páginas em `src/App.tsx` para `React.lazy`;
+- envolver `Outlet` com `Suspense` e fallback leve;
+- preservar providers, `ProtectedRoute`, `TopLoadingBar`, `CommandPalette`, auth, Supabase e regras de negócio.
 
-Fora do escopo desta frente:
+Validações locais executadas:
 
-- migração ampla para `useSuspenseQuery`;
-- alterações no `SecurityCenterPanel`;
-- mudanças em Supabase, migrations, templates financeiros, regras de negócio ou produção Vercel.
+- `npx tsc --noEmit`;
+- `npm run lint`;
+- `npm test`;
+- `npm run build`;
+- `npm audit --omit=dev` (2 vulnerabilidades moderadas residuais conhecidas em `exceljs -> uuid`);
+- `vite preview` + Playwright CLI: `/dashboard` redireciona para login sem sessão; `/acesso-negado` renderiza como rota lazy não protegida. Os únicos erros de console no preview local foram 404 dos scripts Vercel Analytics/Speed Insights, esperados fora da Vercel.
 
-Validações locais já executadas na branch:
+Resultado de build observado:
 
-```bash
-npx tsc --noEmit
-npm run lint
-npm test
-npm run build
-git diff --check
-```
+- páginas separadas em chunks (`Dashboard`, `Escolas`, `Base`, `Configuracoes`, `PortalDiretor`, etc.);
+- chunk inicial `index` em aproximadamente `22.70 kB` minificado / `7.38 kB` gzip;
+- alerta restante de chunk grande concentrado no `vendor` compartilhado (`~1.92 MB` minificado / `~553 kB` gzip).
 
 ## 7. Próxima frente funcional
 
-A próxima frente funcional é tratar a veracidade institucional do `SecurityCenterPanel`. O componente contém estados simulados de scanner RLS, MFA e logs que não devem parecer controles reais.
+A próxima frente funcional continua sendo tratar a veracidade institucional do `SecurityCenterPanel`. Como alternativa técnica, após esta frente de rota, pode-se investigar a divisão adicional do `vendor` compartilhado se houver ganho mensurável sem fragmentação excessiva.
 
 ## 8. Leitura obrigatória para continuidade
 

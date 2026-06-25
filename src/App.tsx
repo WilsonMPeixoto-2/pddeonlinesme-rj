@@ -1,3 +1,4 @@
+import { lazy, Suspense, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider, Outlet, Navigate, ScrollRestoration } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -6,25 +7,26 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
-import Escolas from "./pages/Escolas.tsx";
-import EscolaEditar from "./pages/EscolaEditar.tsx";
-import Base from "./pages/Base.tsx";
-import Configuracoes from "./pages/Configuracoes.tsx";
-import Manual from "./pages/Manual.tsx";
-import StyleGuide from "./pages/StyleGuide.tsx";
-import AccessDenied from "./pages/AccessDenied.tsx";
-import PortalDiretor from "./pages/PortalDiretor.tsx";
-import HistoricoGeracoes from "./pages/HistoricoGeracoes.tsx";
-import FiscalConferencia from "./pages/FiscalConferencia.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { TopLoadingBar } from "./components/TopLoadingBar.tsx";
 import { CommandPalette } from "./components/CommandPalette.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import { ExercicioProvider } from "./hooks/useExercicio.tsx";
 import "nprogress/nprogress.css";
+
+const Index = lazy(() => import("./pages/Index.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
+const Escolas = lazy(() => import("./pages/Escolas.tsx"));
+const EscolaEditar = lazy(() => import("./pages/EscolaEditar.tsx"));
+const Base = lazy(() => import("./pages/Base.tsx"));
+const Configuracoes = lazy(() => import("./pages/Configuracoes.tsx"));
+const Manual = lazy(() => import("./pages/Manual.tsx"));
+const StyleGuide = lazy(() => import("./pages/StyleGuide.tsx"));
+const AccessDenied = lazy(() => import("./pages/AccessDenied.tsx"));
+const PortalDiretor = lazy(() => import("./pages/PortalDiretor.tsx"));
+const HistoricoGeracoes = lazy(() => import("./pages/HistoricoGeracoes.tsx"));
+const FiscalConferencia = lazy(() => import("./pages/FiscalConferencia.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,13 +38,29 @@ const queryClient = new QueryClient({
   },
 });
 
+const protectedRoute = (children: ReactNode) => (
+  <ProtectedRoute>{children}</ProtectedRoute>
+);
+
+const RouteFallback = () => (
+  <div className="flex min-h-[50vh] items-center justify-center px-6">
+    <div
+      aria-label="Carregando"
+      className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"
+      role="status"
+    />
+  </div>
+);
+
 const RootLayout = () => (
   <>
     <TopLoadingBar />
     <CommandPalette />
     <ScrollRestoration />
     <ErrorBoundary>
-      <Outlet />
+      <Suspense fallback={<RouteFallback />}>
+        <Outlet />
+      </Suspense>
     </ErrorBoundary>
   </>
 );
@@ -53,18 +71,18 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { path: "", element: <Index /> },
-      { path: "dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
+      { path: "dashboard", element: protectedRoute(<Dashboard />) },
       { path: "painel", element: <Navigate to="/dashboard" replace /> },
-      { path: "painel/historico", element: <ProtectedRoute><HistoricoGeracoes /></ProtectedRoute> },
-      { path: "escolas", element: <ProtectedRoute><Escolas /></ProtectedRoute> },
-      { path: "escolas/:id", element: <ProtectedRoute><EscolaEditar /></ProtectedRoute> },
-      { path: "base", element: <ProtectedRoute><Base /></ProtectedRoute> },
-      { path: "configuracoes", element: <ProtectedRoute><Configuracoes /></ProtectedRoute> },
-      { path: "manual", element: <ProtectedRoute><Manual /></ProtectedRoute> },
-      { path: "style-guide", element: <ProtectedRoute><StyleGuide /></ProtectedRoute> },
+      { path: "painel/historico", element: protectedRoute(<HistoricoGeracoes />) },
+      { path: "escolas", element: protectedRoute(<Escolas />) },
+      { path: "escolas/:id", element: protectedRoute(<EscolaEditar />) },
+      { path: "base", element: protectedRoute(<Base />) },
+      { path: "configuracoes", element: protectedRoute(<Configuracoes />) },
+      { path: "manual", element: protectedRoute(<Manual />) },
+      { path: "style-guide", element: protectedRoute(<StyleGuide />) },
       { path: "acesso-negado", element: <AccessDenied /> },
-      { path: "diretor", element: <ProtectedRoute><PortalDiretor /></ProtectedRoute> },
-      { path: "fiscal", element: <ProtectedRoute><FiscalConferencia /></ProtectedRoute> },
+      { path: "diretor", element: protectedRoute(<PortalDiretor />) },
+      { path: "fiscal", element: protectedRoute(<FiscalConferencia />) },
       { path: "*", element: <NotFound /> },
     ],
   },

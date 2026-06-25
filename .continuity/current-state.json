@@ -1,18 +1,19 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-25T03:55:00-03:00",
+  "updated_at": "2026-06-25T08:50:57-03:00",
   "source_of_truth": {
     "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "dffdc25b1dde210e3a712d4d84723b81cd525938",
+    "base_commit": "3ee62531466a3f46ce8d9e39b2470aa42a62ba1c",
     "note": "Snapshot auxiliar; confirmar sempre código, commits, testes e deployments reais."
   },
   "operational_north": {
     "plan": "docs/PLANO_GLOBAL_V4_2.md",
     "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "current_mode": "Avaliar PR de polimento tecnico pós-atualizacao de pacotes: queryOptions centralizado e refinamentos visuais seguros."
+    "current_mode": "Implementar ganho real pos-atualizacao de pacotes: code splitting por rota para reduzir o custo inicial do bundle."
   },
   "recent_pull_requests": [
+    {"number":97,"status":"merged","merge_commit":"3ee62531466a3f46ce8d9e39b2470aa42a62ba1c"},
     {"number":96,"status":"merged","merge_commit":"dffdc25b1dde210e3a712d4d84723b81cd525938"},
     {"number":95,"status":"merged","merge_commit":"e7cb4952479d6af62e49784e2c544632d2396864"},
     {"number":94,"status":"merged","merge_commit":"93ed0419c8b861e83eb9c564d726c86ec550cfa3"},
@@ -25,28 +26,31 @@
     "dependency_update": "PR #92 atualizou pacotes e lockfile. Auditoria caiu de 5 achados para 2 moderados na cadeia exceljs -> uuid.",
     "build_modernization": "PR #94 migrou para o plugin React padrão e code splitting do Rolldown, com CI aprovado.",
     "node_types_alignment": "PR #96 alinhou @types/node para ^24.13.2, declarou engines.node 24.x e ajustou CI para Node 24.",
+    "query_ui_polish": "PR #97 centralizou queryOptions do TanStack Query e aplicou polimento visual seguro em graficos/listas.",
     "security_center_panel": "Existe, mas ainda requer correção isolada de veracidade institucional por conter estados simulados."
   },
   "deployment_state": {
     "project_id": "prj_dErjl7LdzTL2412fsw0pyzo3bdp1",
     "runtime": "Node 24.x",
-    "production_confirmed_commit": "dffdc25b1dde210e3a712d4d84723b81cd525938",
-    "production_deployment": "dpl_7dYRKUR42XNFUNxq2GWzz3Hutt7U",
+    "production_confirmed_commit": "279013f9d63edb7e9c7832f65a9a980e51dc2619",
+    "production_deployment": "dpl_779JPpHNfyVa5kpqvcZGLNUiApQF",
     "production_status": "READY",
-    "main_ahead_of_production": false,
-    "pending_main_commit": null,
-    "note": "GitHub main e Vercel Production estão perfeitamente sincronizados no commit dffdc25."
+    "main_ahead_of_production": true,
+    "pending_main_commit": "3ee62531466a3f46ce8d9e39b2470aa42a62ba1c",
+    "latest_preview_commit": "fa80ef38774461856f88c80354c48881b6543767",
+    "latest_preview_deployment": "dpl_EnRBpqKazvWQeAYUaS7wb7hycnqc",
+    "note": "Vercel Production esta atras da main. Tentativas de deploy/promote apos PR #97 foram bloqueadas por limite temporario da Vercel; confirmar novamente antes de declarar producao sincronizada."
   },
   "active_branch_state": {
-    "branch": "codex/tanstack-query-ui-polish",
-    "base_commit": "279013f9d63edb7e9c7832f65a9a980e51dc2619",
-    "scope": "Centralizar TanStack Query queryOptions mantendo contratos de loading/error existentes; adicionar tooltip e animacoes em viewport em graficos/listas.",
-    "not_in_scope": "Nao migrar hooks para useSuspenseQuery nesta rodada; nao alterar SecurityCenterPanel; nao alterar Supabase, migrations, templates financeiros ou producao Vercel."
+    "branch": "codex/route-level-code-splitting",
+    "base_commit": "3ee62531466a3f46ce8d9e39b2470aa42a62ba1c",
+    "scope": "Aplicar React.lazy e Suspense nas paginas roteadas para gerar chunks por rota e reduzir o bundle inicial do app.",
+    "not_in_scope": "Nao alterar Supabase, auth, migrations, templates financeiros, regras de negocio, credenciais ou deploy de producao."
   },
   "next_priority": {
-    "branch": "codex/tanstack-query-ui-polish",
-    "step": "Revisar e decidir merge do PR de polimento tecnico; depois corrigir a veracidade institucional do SecurityCenterPanel em PR separado.",
-    "after": "Seguir com a transição para o Supabase próprio / painel exec."
+    "branch": "codex/route-level-code-splitting",
+    "step": "Revisar PR de code splitting por rota. Apos merge, publicar producao quando a Vercel liberar novo deploy/promote.",
+    "after": "Continuar a correcao de veracidade institucional do SecurityCenterPanel ou aprofundar a divisao do vendor chunk se houver ganho mensuravel."
   },
   "mandatory_before_task": [
     "Ler AGENTS.md, Plano Global, Radar, HANDOFF e CODEX_HANDOFF",
