@@ -1,0 +1,107 @@
+name: Dependency Refresh Once
+
+on:
+  push:
+    branches:
+      - maintenance/pdde-online-deps-2026-08-09
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pdde-online-dependency-refresh-2026-08-09
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout da branch correta
+        uses: actions/checkout@v4
+        with:
+          ref: maintenance/pdde-online-deps-2026-08-09
+          fetch-depth: 0
+
+      - name: Validar identidade do projeto
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REPOSITORY}" = "WilsonMPeixoto-2/pddeonlinesme-rj"
+          test "$(git branch --show-current)" = "maintenance/pdde-online-deps-2026-08-09"
+          echo "Repositorio: ${GITHUB_REPOSITORY}"
+          echo "Branch: $(git branch --show-current)"
+          echo "HEAD inicial: $(git rev-parse HEAD)"
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalação limpa inicial
+        run: npm ci
+
+      - name: Baseline de versões
+        shell: bash
+        run: |
+          echo '===== NPM OUTDATED ANTES ====='
+          npm outdated || true
+          echo '===== NPM AUDIT ANTES ====='
+          npm audit || true
+          echo '===== NPM AUDIT PROD ANTES ====='
+          npm audit --omit=dev || true
+
+      - name: Atualizar apenas dentro dos ranges existentes
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm update
+          npm audit fix || true
+
+      - name: Capturar diff de dependências
+        shell: bash
+        run: |
+          echo '===== DIFF package.json/package-lock.json ====='
+          git diff -- package.json package-lock.json || true
+          echo '===== NPM OUTDATED DEPOIS ====='
+          npm outdated || true
+
+      - name: Reinstalação reproduzível
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Testes
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Auditoria final
+        shell: bash
+        run: |
+          echo '===== NPM AUDIT FINAL ====='
+          npm audit || true
+          echo '===== NPM AUDIT PROD FINAL ====='
+          npm audit --omit=dev || true
+          npm audit --audit-level=high
+          npm audit --omit=dev --audit-level=high
+
+      - name: Commitar somente atualização validada
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- package.json package-lock.json; then
+            echo 'Nenhuma mudança de dependência após npm update/audit fix.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json package-lock.json
+          git commit -m 'chore(deps): atualizar patches e minors seguros'
+          git push origin HEAD:maintenance/pdde-online-deps-2026-08-09
