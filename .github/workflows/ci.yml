@@ -7,7 +7,7 @@ on:
 
 jobs:
   validate:
-    name: Lint, Typecheck, Test & Build
+    name: Typecheck, Lint, Test, Build & E2E
     runs-on: ubuntu-latest
 
     steps:
@@ -24,13 +24,22 @@ jobs:
         run: npm ci
 
       - name: Typecheck
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: Lint
         run: npm run lint
 
-      - name: Test
+      - name: Unit tests
         run: npm test
+
+      - name: Coverage
+        run: npm run test:coverage
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E and accessibility
+        run: npm run test:e2e
