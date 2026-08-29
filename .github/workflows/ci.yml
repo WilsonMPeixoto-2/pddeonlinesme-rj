@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   validate:
     name: Typecheck, Lint, Test, Build & E2E
@@ -13,12 +16,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+
+      - name: Refresh lockfile for dependency modernization
+        if: github.event_name == 'pull_request' && github.head_ref == 'chore/dependency-modernization-2026-08'
+        run: npm install --package-lock-only
 
       - name: Install dependencies
         run: npm ci
@@ -43,3 +53,17 @@ jobs:
 
       - name: E2E and accessibility
         run: npm run test:e2e
+
+      - name: Commit refreshed lockfile
+        if: github.event_name == 'pull_request' && github.head_ref == 'chore/dependency-modernization-2026-08'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          if git diff --cached --quiet; then
+            echo "package-lock.json already current"
+          else
+            git commit -m "chore(deps): refresh package lock [skip ci]"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
