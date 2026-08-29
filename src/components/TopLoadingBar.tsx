@@ -8,6 +8,10 @@ NProgress.configure({
   speed: 300,
   minimum: 0.15,
   trickleSpeed: 120,
+  // O template padrão do nprogress usa role="bar", que não é um papel ARIA válido.
+  // A barra é apenas um indicador visual; ocultá-la da árvore de acessibilidade evita
+  // semântica inválida sem interferir no anúncio do conteúdo real da rota.
+  template: '<div class="bar" aria-hidden="true"><div class="peg"></div></div>',
 });
 
 /**
