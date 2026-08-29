@@ -38,19 +38,9 @@ export default defineConfig(() => ({
       workbox: {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,png,svg,xlsx,ico}"],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/raluxyojqosfzrfozmpz\.supabase\.co\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "supabase-api-cache",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 24 * 60 * 60 * 7, // 7 days
-              },
-            },
-          },
-        ],
+        // Não armazenar respostas da API Supabase no Service Worker.
+        // Dados administrativos/financeiros precisam refletir o estado atual do backend;
+        // o cache de sessão é controlado pelo React Query, com política explícita de staleTime.
       },
     }),
   ],
