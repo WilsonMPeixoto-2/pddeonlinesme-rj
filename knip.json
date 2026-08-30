@@ -10,6 +10,7 @@
     "*.config.ts"
   ],
   "ignore": [
-    "src/integrations/supabase/types.ts"
+    "src/integrations/supabase/types.ts",
+    "src/test/setup.ts"
   ]
 }
