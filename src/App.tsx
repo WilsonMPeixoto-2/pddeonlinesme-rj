@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider, Outlet, Navigate, ScrollRestoration } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -11,7 +10,6 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { TopLoadingBar } from "./components/TopLoadingBar.tsx";
-import { CommandPalette } from "./components/CommandPalette.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import { ExercicioProvider } from "./hooks/useExercicio.tsx";
 import "nprogress/nprogress.css";
@@ -51,7 +49,6 @@ const RouteFallback = () => (
 const RootLayout = () => (
   <>
     <TopLoadingBar />
-    <CommandPalette />
     <ScrollRestoration />
     <ErrorBoundary>
       <Suspense fallback={<RouteFallback />}>
@@ -102,7 +99,6 @@ const App = () => (
     <ExercicioProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Toaster />
           <Sonner />
           <RouterProvider router={router} />
           <Analytics />
