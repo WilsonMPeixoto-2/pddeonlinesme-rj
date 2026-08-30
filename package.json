@@ -26,7 +26,10 @@
     "test:e2e": "playwright test",
     "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
     "check:deps": "knip",
-    "validate": "npm run typecheck && npm run lint && npm test && npm run build"
+    "validate": "npm run typecheck && npm run lint && npm test && npm run build",
+    "audit:demonstrativo:template": "node scripts/audit-demonstrativo-template.mjs",
+    "audit:demonstrativo:generated": "node scripts/audit-generated-demonstrativo.mjs",
+    "check:deps:prod": "knip --production"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
