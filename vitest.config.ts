@@ -18,6 +18,12 @@ export default defineConfig({
         "src/integrations/supabase/types.ts",
         "src/vite-env.d.ts",
       ],
+      thresholds: {
+        statements: 80,
+        branches: 64,
+        functions: 84,
+        lines: 83,
+      },
     },
   },
   resolve: {
