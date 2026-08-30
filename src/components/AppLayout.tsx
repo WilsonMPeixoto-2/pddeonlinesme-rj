@@ -84,7 +84,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
               {/* Exercício global (O6) */}
               <Select value={exercicio} onValueChange={setExercicio}>
-                <SelectTrigger className="h-8 w-[105px] text-xs border-border/50 bg-muted/20">
+                <SelectTrigger aria-label="Selecionar exercício" className="h-8 w-[105px] text-xs border-border/50 bg-muted/20">
                   <CalendarDays className="mr-1.5 h-3 w-3 text-muted-foreground" />
                   <SelectValue />
                 </SelectTrigger>
