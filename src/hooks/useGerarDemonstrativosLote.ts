@@ -2,12 +2,10 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
-import {
-  generateDemonstrativosLote,
-  saveLoteResult,
-  type CadastroPendente,
-  type LoteFailure,
-  type LoteProgress,
+import type {
+  CadastroPendente,
+  LoteFailure,
+  LoteProgress,
 } from "@/lib/demonstrativo/generateDemonstrativosLote";
 
 const DOC_GEN_RUNS = "document_generation_runs" as const;
@@ -187,6 +185,11 @@ export function useGerarDemonstrativosLote() {
       });
 
       try {
+        // JSZip + motor Excel entram somente quando o usuário inicia a geração.
+        const { generateDemonstrativosLote, saveLoteResult } = await import(
+          "@/lib/demonstrativo/generateDemonstrativosLote"
+        );
+
         const result = await generateDemonstrativosLote({
           unidades,
           exercicio,

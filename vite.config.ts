@@ -50,29 +50,4 @@ export default defineConfig(() => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
-  build: {
-    rolldownOptions: {
-      output: {
-        codeSplitting: {
-          groups: [
-            {
-              name: "vendor-charts",
-              test: /[\\/]node_modules[\\/]recharts[\\/]/,
-              priority: 20,
-            },
-            {
-              name: "vendor-motion",
-              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-              priority: 20,
-            },
-            {
-              name: "vendor",
-              test: /[\\/]node_modules[\\/]/,
-              priority: 10,
-            },
-          ],
-        },
-      },
-    },
-  },
 }));
