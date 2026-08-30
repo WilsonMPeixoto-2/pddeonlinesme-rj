@@ -1,8 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { installSupabaseMock, signInAsTestAdmin } from "./supabase-mock";
 
-async function expectNoCriticalViolations(page: Parameters<typeof AxeBuilder>[0]["page"]) {
+async function expectNoCriticalViolations(page: Page) {
   const results = await new AxeBuilder({ page }).analyze();
   const criticalViolations = results.violations.filter(
     (violation) => violation.impact === "critical",
