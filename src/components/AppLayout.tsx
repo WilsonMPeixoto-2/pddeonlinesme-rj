@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useExercicio } from "@/hooks/useExercicio";
 import BrandMark from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { CommandPalette } from "@/components/CommandPalette";
 
 const tabs = [
   { to: "/dashboard", label: "Painel" },
@@ -58,6 +59,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <CommandPalette />
       <header className="sticky top-0 z-30 border-b border-border/40 bg-card/40 backdrop-blur-xl shadow-sm">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex h-14 items-center justify-between">
