@@ -35,6 +35,9 @@ jobs:
       - name: Coverage
         run: npm run test:coverage
 
+      - name: Demonstrativo template audit
+        run: npm run audit:demonstrativo:template
+
       - name: Build
         run: npm run build
 
@@ -44,6 +47,6 @@ jobs:
       - name: E2E and accessibility
         run: npm run test:e2e
 
-      - name: Dependency audit
+      - name: Production dependency audit
         continue-on-error: true
-        run: npm run check:deps
+        run: npm run check:deps:prod
