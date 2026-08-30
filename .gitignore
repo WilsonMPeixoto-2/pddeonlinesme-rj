@@ -41,3 +41,6 @@ dist-ssr
 supabase/.temp/
 
 .vercel
+coverage/
+playwright-report/
+test-results/

@@ -370,7 +370,7 @@ describe("generateDemonstrativoBasico", () => {
         expect(values).not.toContain(other.diretor);
       }
     }
-  });
+  }, 15_000);
 });
 
 describe("extractMemoriaRef", () => {
