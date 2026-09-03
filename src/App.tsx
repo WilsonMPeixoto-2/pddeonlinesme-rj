@@ -15,7 +15,7 @@ import Base from "./pages/Base.tsx";
 import Configuracoes from "./pages/Configuracoes.tsx";
 import Manual from "./pages/Manual.tsx";
 import StyleGuide from "./pages/StyleGuide.tsx";
-import AccessDenied from "./pages/AccessDenied.tsx";
+import AccessDenied from "./pages/AccessDenied.tsx";\nimport RedefinirSenha from "./pages/RedefinirSenha.tsx";
 import PortalDiretor from "./pages/PortalDiretor.tsx";
 import HistoricoGeracoes from "./pages/HistoricoGeracoes.tsx";
 import FiscalConferencia from "./pages/FiscalConferencia.tsx";
@@ -62,7 +62,7 @@ const router = createBrowserRouter([
       { path: "configuracoes", element: <ProtectedRoute><Configuracoes /></ProtectedRoute> },
       { path: "manual", element: <ProtectedRoute><Manual /></ProtectedRoute> },
       { path: "style-guide", element: <ProtectedRoute><StyleGuide /></ProtectedRoute> },
-      { path: "acesso-negado", element: <AccessDenied /> },
+      { path: "acesso-negado", element: <AccessDenied /> },\n      { path: "redefinir-senha", element: <RedefinirSenha /> },
       { path: "diretor", element: <ProtectedRoute><PortalDiretor /></ProtectedRoute> },
       { path: "fiscal", element: <ProtectedRoute><FiscalConferencia /></ProtectedRoute> },
       { path: "*", element: <NotFound /> },
