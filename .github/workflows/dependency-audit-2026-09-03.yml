@@ -1,0 +1,65 @@
+name: Dependency Audit 2026-09-03
+
+on:
+  push:
+    branches:
+      - audit/dependencies-2026-09-03
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Read-only dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Guard repository
+        shell: bash
+        run: |
+          test "$GITHUB_REPOSITORY" = "WilsonMPeixoto-2/pddeonlinesme-rj"
+          test "$GITHUB_REF_NAME" = "audit/dependencies-2026-09-03"
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install exact lockfile
+        run: npm ci
+
+      - name: Print runtime versions
+        run: |
+          node --version
+          npm --version
+
+      - name: Installed top-level packages
+        run: npm ls --depth=0
+
+      - name: Outdated packages
+        shell: bash
+        run: |
+          echo "===== npm outdated --json ====="
+          npm outdated --json || true
+
+      - name: Full audit
+        shell: bash
+        run: |
+          echo "===== npm audit --json ====="
+          npm audit --json || true
+
+      - name: Production-only audit
+        shell: bash
+        run: |
+          echo "===== npm audit --omit=dev --json ====="
+          npm audit --omit=dev --json || true
+
+      - name: Lockfile integrity
+        run: npm ci --ignore-scripts
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
