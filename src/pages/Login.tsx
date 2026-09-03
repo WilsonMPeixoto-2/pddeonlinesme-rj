@@ -88,11 +88,11 @@ const Login = () => {
 
     const toastId = toast.loading("Enviando e-mail de recuperação...");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/dashboard`,
+      redirectTo: `${window.location.origin}/redefinir-senha`,
     });
 
     if (error) {
-      toast.error(error.message, { id: toastId });
+      toast.error(mensagemErroAuth(error.message), { id: toastId });
     } else {
       toast.success("E-mail de redefinição enviado! Verifique sua caixa de entrada.", { id: toastId });
     }
