@@ -1,3 +1,43 @@
+# Atualização crítica — 03/09/2026 — Incidente de autenticação
+
+> Esta seção prevalece sobre snapshots antigos deste handoff quando houver conflito. A fonte final continua sendo código, commits, Supabase e deployments reais.
+
+## Estado verificado
+
+- Repositório: `WilsonMPeixoto-2/pddeonlinesme-rj`.
+- `main`: `48e1a77de901d8b5abf5db273c94639da6aebcc5`.
+- Supabase oficial do projeto: `raluxyojqosfzrfozmpz` (`pdde-online-2026-dev`).
+- Estado do Supabase: **INACTIVE**.
+- A tentativa de restauração foi recusada porque a organização atingiu o limite de projetos gratuitos ativos.
+- Nenhum outro projeto Supabase foi pausado ou alterado para liberar capacidade.
+- Vercel Production verificada: deployment `dpl_HYVZxagNhUFAvtPfxyfP4bkDSy9L`, commit `c838deabf28ac4fe21702b0e50c69c7db6f8ba6a`, estado READY.
+- Portanto, a `main` está à frente da Production.
+
+## Impacto
+
+Com o backend oficial inativo, login, recuperação de senha e operações autenticadas do PDDE Online não funcionam. O problema não deve ser tratado como credencial individual até o backend voltar a ficar disponível.
+
+## Hotfix de recuperação de senha
+
+PR #110, merge `48e1a77de901d8b5abf5db273c94639da6aebcc5`:
+
+- corrigiu o redirect de recuperação de `/dashboard` para `/redefinir-senha`;
+- criou rota pública dedicada para definir a nova senha;
+- implementou atualização via `supabase.auth.updateUser()`;
+- trata link inválido/expirado e indisponibilidade de autenticação;
+- adicionou E2E para envio do reset, rota inválida e atualização efetiva da senha.
+
+Validação final: GitHub Actions run `33711713326` com typecheck, lint, testes unitários, cobertura, auditoria do template, build, Playwright E2E/acessibilidade e auditoria de dependências em sucesso.
+
+## Bloqueios e ordem correta
+
+1. Reativar **o mesmo Supabase do PDDE Online**. A camada gratuita não permite restaurá-lo enquanto a quota estiver ocupada; qualquer ação sobre outro projeto exige decisão explícita do proprietário.
+2. Com o backend ativo, validar Redirect URLs e o fluxo real de login/recuperação de senha.
+3. Promover/sincronizar a Vercel Production com a `main` e confirmar o SHA efetivamente publicado.
+4. Só depois retomar performance ou novas evoluções. O PR #109 permanece separado deste incidente.
+
+---
+
 # Handoff Operacional — PDDE Online 2026
 
 **Atualizado em:** 25/06/2026  
