@@ -55,7 +55,7 @@ const Login = () => {
   const onSignIn = (values: LoginFormValues) => {
     startTransition(async () => {
       const { error } = await supabase.auth.signInWithPassword({ email: values.email, password: values.senha });
-      if (error) return toast.error(error.message);
+      if (error) return toast.error(mensagemErroAuth(error.message));
       toast.success("Bem-vindo(a)!");
       navigate("/dashboard");
     });
@@ -68,7 +68,7 @@ const Login = () => {
         password: values.senha,
         options: { emailRedirectTo: `${window.location.origin}/dashboard` },
       });
-      if (error) return toast.error(error.message);
+      if (error) return toast.error(mensagemErroAuth(error.message));
       toast.success("Conta criada! Você já pode entrar.");
     });
   };
@@ -88,11 +88,11 @@ const Login = () => {
 
     const toastId = toast.loading("Enviando e-mail de recuperação...");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/dashboard`,
+      redirectTo: `${window.location.origin}/redefinir-senha`,
     });
 
     if (error) {
-      toast.error(error.message, { id: toastId });
+      toast.error(mensagemErroAuth(error.message), { id: toastId });
     } else {
       toast.success("E-mail de redefinição enviado! Verifique sua caixa de entrada.", { id: toastId });
     }
