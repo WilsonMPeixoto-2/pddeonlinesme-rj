@@ -55,8 +55,8 @@ test("tela de redefinição atualiza a senha com sessão autenticada", async ({ 
   await signInAsTestAdmin(page);
   await page.goto("/redefinir-senha");
 
-  await page.getByLabel("Nova senha").fill("nova-senha-e2e");
-  await page.getByLabel("Confirmar nova senha").fill("nova-senha-e2e");
+  await page.getByLabel("Nova senha", { exact: true }).fill("nova-senha-e2e");
+  await page.getByLabel("Confirmar nova senha", { exact: true }).fill("nova-senha-e2e");
 
   const updateRequestPromise = page.waitForRequest(
     (request) => request.url().includes("/auth/v1/user") && request.method() === "PUT",
