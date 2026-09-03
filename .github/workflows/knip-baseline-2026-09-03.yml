@@ -1,0 +1,27 @@
+name: Knip Baseline 2026-09-03
+
+on:
+  push:
+    branches:
+      - audit/dependencies-2026-09-03
+  workflow_dispatch:
+
+jobs:
+  baseline:
+    name: Production dependency scan baseline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Guard repository
+        shell: bash
+        run: |
+          test "$GITHUB_REPOSITORY" = "WilsonMPeixoto-2/pddeonlinesme-rj"
+          test "$GITHUB_REF_NAME" = "audit/dependencies-2026-09-03"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Baseline Knip production scan
+        shell: bash
+        run: npm run check:deps:prod || true
