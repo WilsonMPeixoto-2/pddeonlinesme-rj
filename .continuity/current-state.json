@@ -1,63 +1,103 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-25T09:11:30-03:00",
+  "updated_at": "2026-09-03T00:36:00-03:00",
   "source_of_truth": {
     "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8",
-    "note": "Snapshot auxiliar; confirmar sempre código, commits, testes e deployments reais."
+    "base_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
+    "note": "Snapshot auxiliar. Confirmar sempre codigo, commits, testes, Supabase e deployments reais."
   },
   "operational_north": {
     "plan": "docs/PLANO_GLOBAL_V4_2.md",
     "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "current_mode": "Estado estabilizado apos PR #101. Producao Vercel confirmada em f5ad026 antes da correcao isolada do SecurityCenterPanel."
+    "current_mode": "Incidente de autenticacao em tratamento. Prioridade absoluta e restaurar disponibilidade do backend e sincronizar Production antes de retomar evolucoes."
   },
   "recent_pull_requests": [
-    {"number":101,"status":"merged","merge_commit":"f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8","note":"Reconciliação documental apos hotfix e producao Vercel."},
-    {"number":100,"status":"closed-not-merged","note":"Fechado porque reintroduzia code splitting por rota revertido pelo hotfix #99."},
-    {"number":99,"status":"merged","merge_commit":"ecfeb109146cbbd1856d26490b69bb8f633f6835"},
-    {"number":98,"status":"merged-then-reverted-by-99","merge_commit":"e94c36d01bfb75fd8322b699412590c0ccd3ca5c"},
-    {"number":97,"status":"merged","merge_commit":"3ee62531466a3f46ce8d9e39b2470aa42a62ba1c"},
-    {"number":96,"status":"merged","merge_commit":"dffdc25b1dde210e3a712d4d84723b81cd525938"},
-    {"number":95,"status":"merged","merge_commit":"e7cb4952479d6af62e49784e2c544632d2396864"},
-    {"number":94,"status":"merged","merge_commit":"93ed0419c8b861e83eb9c564d726c86ec550cfa3"},
-    {"number":92,"status":"merged","merge_commit":"1399a691d622715a787ea1d9b720ff9992d9f679"},
-    {"number":91,"status":"closed-not-merged"},
-    {"number":90,"status":"merged","merge_commit":"da109185f3038927702841ea4eeb3cdf294fd419"}
+    {
+      "number": 110,
+      "status": "merged",
+      "merge_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
+      "note": "Hotfix de recuperacao de senha com rota dedicada e E2E."
+    },
+    {
+      "number": 109,
+      "status": "open",
+      "note": "Performance/code splitting. Nao misturar com o incidente de autenticacao; reavaliar apenas depois da estabilizacao."
+    },
+    {
+      "number": 108,
+      "status": "merged",
+      "merge_commit": "c838deabf28ac4fe21702b0e50c69c7db6f8ba6a",
+      "note": "Higiene de dependencias e auditoria de producao."
+    },
+    {
+      "number": 107,
+      "status": "merged",
+      "merge_commit": "edaeb58b98b578f71ae9b7223eaa30ff48cdbbd7",
+      "note": "E2E autenticado e acessibilidade."
+    },
+    {
+      "number": 106,
+      "status": "merged",
+      "merge_commit": "cf4d3502250a20beb62ab149cc638a7dd8c8af3b",
+      "note": "Gates de qualidade e Knip."
+    },
+    {
+      "number": 105,
+      "status": "merged",
+      "merge_commit": "4cf886b1a45ee25978495b371d8bd7e7106cea92",
+      "note": "Modernizacao de dependencias e Playwright."
+    }
   ],
-  "delivered_state": {
-    "ci_gate": "PR #90 restaurou lint, typecheck, testes e build sem enfraquecer regras.",
-    "dependency_update": "PR #92 atualizou pacotes e lockfile. Auditoria caiu de 5 achados para 2 moderados na cadeia exceljs -> uuid.",
-    "build_modernization": "PR #94 migrou para o plugin React padrão e code splitting do Rolldown, com CI aprovado.",
-    "node_types_alignment": "PR #96 alinhou @types/node para ^24.13.2, declarou engines.node 24.x e ajustou CI para Node 24.",
-    "query_ui_polish": "PR #97 centralizou queryOptions do TanStack Query e aplicou polimento visual seguro em graficos/listas.",
-    "route_code_splitting": "PR #98 aplicou React.lazy por rota, mas causou renderizacao vazia em producao e foi revertido pelo hotfix #99. Nao reabrir sem diagnostico especifico de Preview, cache e service worker.",
-    "security_center_panel": "Em correção isolada na branch codex/security-center-truthfulness para remover aparência de scanner, MFA e logs reais."
+  "auth_incident": {
+    "detected_at": "2026-09-03T00:22:00-03:00",
+    "supabase_project_ref": "raluxyojqosfzrfozmpz",
+    "supabase_project_name": "pdde-online-2026-dev",
+    "backend_status": "INACTIVE",
+    "primary_cause": "Projeto Supabase do PDDE Online esta inativo. Tentativa de restore foi recusada pelo limite de projetos gratuitos ativos da organizacao.",
+    "operational_impact": [
+      "Login indisponivel.",
+      "Envio de recuperacao de senha indisponivel.",
+      "Operacoes autenticadas e consultas ao backend indisponiveis."
+    ],
+    "code_defect_found": "O fluxo Esqueci minha senha redirecionava para /dashboard e nao possuia pagina para definir nova senha.",
+    "code_fix": {
+      "pull_request": 110,
+      "merge_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
+      "scope": [
+        "redirect de reset para /redefinir-senha",
+        "nova rota publica de redefinicao",
+        "updateUser para gravar nova senha",
+        "tratamento de link invalido/expirado",
+        "mensagem amigavel para indisponibilidade de autenticacao",
+        "E2E de recuperacao e redefinicao"
+      ],
+      "verification": "CI run 33711713326 concluido com typecheck, lint, unit tests, coverage, template audit, build, Playwright E2E/accessibility e production dependency audit em sucesso."
+    }
   },
   "deployment_state": {
-    "project_id": "prj_dErjl7LdzTL2412fsw0pyzo3bdp1",
+    "vercel_project_id": "prj_dErjl7LdzTL2412fsw0pyzo3bdp1",
     "runtime": "Node 24.x",
-    "production_confirmed_commit": "f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8",
-    "production_deployment": "dpl_56wP3LvWJsmK3YziSoLbzGroGuqg",
+    "production_confirmed_commit": "c838deabf28ac4fe21702b0e50c69c7db6f8ba6a",
+    "production_deployment": "dpl_HYVZxagNhUFAvtPfxyfP4bkDSy9L",
     "production_status": "READY",
-    "main_ahead_of_production": false,
-    "pending_main_commit": null,
-    "note": "GitHub main e Vercel Production foram sincronizados no commit f5ad026 antes da branch codex/security-center-truthfulness. Confirmar novo SHA de producao apos merge."
+    "main_ahead_of_production": true,
+    "pending_main_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
+    "note": "PR #110 esta na main, mas ainda nao havia deployment Production correspondente ao SHA 48e1a77 na ultima verificacao."
   },
-  "active_branch_state": {
-    "branch": "codex/security-center-truthfulness",
-    "base_commit": "f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8",
-    "scope": "Corrigir a veracidade institucional do SecurityCenterPanel, mantendo-o como mapa/checklist visual de Marco 6B sem prometer controles reais.",
-    "not_in_scope": "Nao alterar Auth, RLS, Supabase, migrations, roles, templates financeiros, dependencias ou regras de negocio."
-  },
+  "blockers": [
+    "Reativar o mesmo projeto Supabase do PDDE Online. A restauracao esta bloqueada por limite da camada gratuita; nao pausar outro projeto sem decisao explicita do proprietario.",
+    "Apos backend ativo, confirmar configuracao de Redirect URLs do Supabase para /redefinir-senha e executar smoke real de login/reset.",
+    "Sincronizar Vercel Production com a main 48e1a77 e confirmar deployment READY antes de declarar o hotfix publicado."
+  ],
+  "protected_scope": [
+    "Nao trocar o projeto Supabase.",
+    "Nao pausar ou alterar projetos externos ao PDDE Online sem autorizacao explicita.",
+    "Nao misturar o PR #109 de performance com o incidente de autenticacao.",
+    "Nao alterar migrations, RLS, dados financeiros ou regras de negocio para resolver este incidente."
+  ],
   "next_priority": {
-    "branch": "a definir apos deploy",
-    "step": "Apos merge e producao do ajuste de veracidade, escolher a proxima frente funcional com escopo fechado.",
-    "after": "Reavaliar code splitting por rota somente com diagnostico especifico do incidente #98/#99, validacao visual real em Preview, cache/service worker e criterio claro de rollback. Qualquer Auth/RLS/audit_logs real exige revisao humana."
-  },
-  "mandatory_before_task": [
-    "Ler AGENTS.md, Plano Global, Radar, HANDOFF e CODEX_HANDOFF",
-    "Verificar main, PRs recentes e produção Vercel",
-    "Executar npm ci, typecheck, lint, testes, build e auditoria"
-  ]
+    "step": "Restaurar disponibilidade do backend do PDDE Online por capacidade/plano ou decisao explicita sobre quota.",
+    "after": "Validar autenticacao real, recuperacao de senha, redirects, e-mail e Production; somente depois retomar PR #109 ou outras evolucoes."
+  }
 }
