@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { installSupabaseMock, TEST_EMAIL } from "./supabase-mock";
 
 test("renderiza a tela pública de acesso", async ({ page }) => {
   await page.goto("/");
@@ -22,4 +23,20 @@ test("valida credenciais obrigatórias antes de chamar o backend", async ({ page
   await expect(page.getByText("E-mail inválido")).toBeVisible();
   await expect(page.getByText("Senha é obrigatória")).toBeVisible();
   expect(authRequests).toBe(0);
+});
+
+test("recuperação de senha direciona para a tela de redefinição", async ({ page }) => {
+  await installSupabaseMock(page);
+  await page.goto("/");
+  await page.getByLabel("E-mail institucional").first().fill(TEST_EMAIL);
+
+  const recoverRequestPromise = page.waitForRequest((request) =>
+    request.url().includes("/auth/v1/recover"),
+  );
+
+  await page.getByRole("button", { name: "Esqueci minha senha" }).click();
+  const recoverRequest = await recoverRequestPromise;
+
+  const redirectTo = new URL(recoverRequest.url()).searchParams.get("redirect_to");
+  expect(redirectTo).toBe("http://127.0.0.1:4173/redefinir-senha");
 });
