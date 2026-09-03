@@ -1,0 +1,77 @@
+name: Dependency Candidate Smoke 2026-09-03
+
+on:
+  push:
+    branches:
+      - audit/dependencies-2026-09-03
+  workflow_dispatch:
+
+jobs:
+  candidate:
+    name: Compatible update simulation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Guard repository
+        shell: bash
+        run: |
+          test "$GITHUB_REPOSITORY" = "WilsonMPeixoto-2/pddeonlinesme-rj"
+          test "$GITHUB_REF_NAME" = "audit/dependencies-2026-09-03"
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install exact baseline
+        run: npm ci
+
+      - name: Update compatible non-auth candidates
+        run: |
+          npm update \
+            @types/react-dom \
+            eslint-plugin-react-refresh \
+            globals \
+            knip \
+            lucide-react \
+            react-hook-form \
+            typescript-eslint
+
+      - name: Show candidate versions
+        shell: bash
+        run: |
+          npm ls @types/react-dom eslint-plugin-react-refresh globals knip lucide-react react-hook-form typescript-eslint --depth=0
+          echo "===== remaining outdated ====="
+          npm outdated --json || true
+          echo "===== lockfile diff summary ====="
+          git diff --stat -- package.json package-lock.json
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Coverage
+        run: npm run test:coverage
+
+      - name: Template audit
+        run: npm run audit:demonstrativo:template
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E and accessibility
+        run: npm run test:e2e
+
+      - name: Production dependency scan
+        run: npm run check:deps:prod
