@@ -1,6 +1,6 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-09-08T16:51:35-03:00",
+  "updated_at": "2026-09-08T16:56:22-03:00",
   "source_of_truth": {
     "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
@@ -10,19 +10,19 @@
   "operational_north": {
     "plan": "docs/PLANO_GLOBAL_V4_2.md",
     "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "current_mode": "Backend em processo de reativacao; preservar estabilidade de Auth e manter evolucoes desacopladas ate smoke real."
+    "current_mode": "Backend restaurado e ACTIVE_HEALTHY; preservar estabilidade de Auth e manter evolucoes desacopladas ate smoke real."
   },
   "recent_pull_requests": [
     {
       "number": 112,
       "status": "merged",
       "merge_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
-      "note": "Atualizacao segura de sete dependencias compatíveis; package.json e package-lock.json sincronizados."
+      "note": "Atualizacao segura de sete dependencias compativeis; package.json e package-lock.json sincronizados."
     },
     {
       "number": 111,
       "status": "open",
-      "note": "Reconciliação documental do incidente de Auth; atualizado em 08/09/2026 para refletir PR #112 e Production atual."
+      "note": "Reconciliacao documental de Auth, dependencias e estado de Production."
     },
     {
       "number": 110,
@@ -65,8 +65,8 @@
     "detected_at": "2026-09-03T00:22:00-03:00",
     "supabase_project_ref": "raluxyojqosfzrfozmpz",
     "supabase_project_name": "pdde-online-2026-dev",
-    "backend_status_verified_at_2026_09_08_1651": "COMING_UP",
-    "historical_cause": "O projeto estava INACTIVE e a restauracao havia sido bloqueada pelo limite de projetos gratuitos ativos.",
+    "backend_status_verified_at_2026_09_08_1656": "ACTIVE_HEALTHY",
+    "historical_cause": "O projeto estava INACTIVE e a restauracao havia sido inicialmente bloqueada pelo limite de projetos gratuitos ativos.",
     "code_fix": {
       "pull_request": 110,
       "merge_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
@@ -91,8 +91,7 @@
     "public_smoke": "https://pddeonlinesme-rj.vercel.app/ respondeu HTTP 200 em 08/09/2026 apos o deploy."
   },
   "blockers": [
-    "Aguardar o mesmo Supabase do PDDE Online concluir a reativacao; nao pausar ou alterar projeto externo sem autorizacao explicita.",
-    "Quando o backend estiver ACTIVE_HEALTHY, executar smoke real de login, recuperacao de senha, Redirect URLs e e-mail.",
+    "Executar smoke real de login, recuperacao de senha, Redirect URLs e e-mail agora que o backend esta ACTIVE_HEALTHY.",
     "Somente depois reavaliar PR #109 ou majors de dependencias que alterem runtime/testes/UI."
   ],
   "protected_scope": [
@@ -102,7 +101,7 @@
     "Nao alterar migrations, RLS, dados financeiros ou regras de negocio para resolver Auth ou atualizacoes de dependencias."
   ],
   "next_priority": {
-    "step": "Confirmar Supabase ACTIVE_HEALTHY e validar o fluxo real de autenticacao/recuperacao de senha em Production.",
+    "step": "Validar o fluxo real de autenticacao/recuperacao de senha em Production com o Supabase ACTIVE_HEALTHY.",
     "after": "Com Auth estabilizado, avaliar @supabase/supabase-js 2.114.x e, separadamente, majors de ferramentas/testes."
   }
 }
