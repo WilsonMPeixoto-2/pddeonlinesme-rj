@@ -1,203 +1,142 @@
 # Handoff Operacional — PDDE Online 2026
 
-**Atualizado em:** 25/06/2026  
-**Escopo:** continuidade técnica após PR #97, incidente do PR #98, hotfix #99, fechamento do PR #100, PR #101 e correção isolada do `SecurityCenterPanel`
+**Atualizado em:** 08/09/2026 16:56 (America/Sao_Paulo)  
+**Repositório:** `WilsonMPeixoto-2/pddeonlinesme-rj`  
+**Fonte de verdade:** código, commits, CI, Supabase e deployments reais. Este documento é um snapshot auxiliar.
 
-## 1. Fonte de verdade
+## 1. Estado verificado
 
-A fonte primária é a verificação direta da `main`, commits, diffs, testes e deployments reais. Este documento é apenas um snapshot operacional.
+- `main`: `1722b4b50c5340b39a883220423cc40e2b315eeb`.
+- PR #112 — `chore(deps): atualizar lote seguro de dependências`: **merged**.
+- Vercel Production: `dpl_EAAQ6mBgPQ1w6EbLXHg83yHasdPr`, estado **READY**, commit `1722b4b50c5340b39a883220423cc40e2b315eeb`.
+- Domínio `https://pddeonlinesme-rj.vercel.app/`: HTTP 200 após o deploy.
+- Supabase oficial: `raluxyojqosfzrfozmpz` (`pdde-online-2026-dev`).
+- Estado do Supabase verificado em 08/09/2026 16:56: **ACTIVE_HEALTHY**.
+- Nenhum projeto Supabase externo ao PDDE Online foi pausado ou alterado nesta tarefa.
 
-Repositório: `WilsonMPeixoto-2/pddeonlinesme-rj`.
+## 2. Incidente de autenticação
 
-## 2. Estado atual da main
+Em 03/09/2026, o login e a recuperação de senha estavam indisponíveis porque o projeto Supabase oficial estava `INACTIVE`. A tentativa de restauração foi inicialmente bloqueada pelo limite de projetos gratuitos ativos.
 
-Main verificada antes da correção isolada do `SecurityCenterPanel`:
+O defeito independente do fluxo de recuperação foi corrigido no PR #110, merge `48e1a77de901d8b5abf5db273c94639da6aebcc5`:
 
-- commit `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8`;
-- PR #101 — `[codex] docs: reconciliar hotfix e produção Vercel`;
-- estado: merged;
-- último marco de código de aplicação permanece o hotfix `ecfeb109146cbbd1856d26490b69bb8f633f6835` até a entrada do PR de veracidade do `SecurityCenterPanel`.
+- redirect de recuperação para `/redefinir-senha`;
+- rota pública dedicada;
+- atualização de senha via `supabase.auth.updateUser()`;
+- tratamento de link inválido/expirado;
+- mensagem amigável para indisponibilidade do serviço;
+- cobertura E2E do fluxo.
 
-## 3. Entregas recentes
+CI final do hotfix: run `33711713326`, integralmente aprovado.
 
-### PR #90 — restauração do gate técnico
+O backend está novamente `ACTIVE_HEALTHY`, mas o incidente de Auth só deve ser considerado encerrado após smoke real de login, reset, Redirect URLs e entrega do e-mail.
 
-Merge: `da109185f3038927702841ea4eeb3cdf294fd419`.
+## 3. Atualização de dependências — PR #112
 
-- corrigidos sete usos de `any` em tratamentos de erro;
-- criada normalização segura de erros baseada em `unknown`;
-- adicionados testes unitários;
-- mantidas as regras de lint;
-- CI normal voltou a executar typecheck, lint, testes e build.
+Merge: `1722b4b50c5340b39a883220423cc40e2b315eeb`.
 
-### PR #92 — atualização segura e reproduzível
+Atualizações aplicadas:
 
-Merge: `1399a691d622715a787ea1d9b720ff9992d9f679`.
+- `lucide-react` → `1.40.0`;
+- `react-hook-form` → `7.87.0`;
+- `@types/react-dom` → `19.2.7`;
+- `eslint-plugin-react-refresh` → `0.5.6`;
+- `globals` → `17.12.0`;
+- `knip` → `6.34.0`;
+- `typescript-eslint` → `8.69.0`.
 
-- atualizados React Query, Framer Motion, Recharts, Vite, TypeScript ESLint, Autoprefixer e Globals;
-- `package-lock.json` regenerado e versionado;
-- executado `npm audit fix` sem `--force`;
-- vulnerabilidades reduzidas de 5 para 2 moderadas;
-- eliminadas todas as vulnerabilidades low e high;
-- risco residual `exceljs → uuid` documentado.
+Ficaram deliberadamente fora do lote:
 
-Referência: `docs/quality/DEPENDENCY_UPDATE_2026-06-25.md`.
+- `@supabase/supabase-js`, enquanto Auth não estiver validado de ponta a ponta;
+- majors de Vitest, jsdom, Framer Motion, TypeScript e Node.
 
-### PR #94 — Oxc e Rolldown
+### Evidência de validação
 
-Merge: `93ed0419c8b861e83eb9c564d726c86ec550cfa3`.
+Workflow controlado pré-PR: run `34270447310`.
 
-- `@vitejs/plugin-react-swc` substituído por `@vitejs/plugin-react`;
-- Vite e Vitest alinhados ao plugin React padrão;
-- React Compiler não habilitado;
-- `manualChunks` substituído por `rolldownOptions.codeSplitting.groups`;
-- `react-is` e `@testing-library/dom` declarados explicitamente;
-- lockfile sincronizado;
-- CI completo aprovado.
+- instalação da baseline com `npm ci`;
+- atualização exata das sete dependências;
+- remoção de `node_modules` e novo `npm ci` apenas pelo lockfile regenerado;
+- typecheck;
+- lint;
+- 130/130 testes unitários;
+- cobertura;
+- auditoria do template do Demonstrativo;
+- build;
+- 11/11 E2E/acessibilidade;
+- `npm audit` e `npm audit --omit=dev`: 0 HIGH, 0 CRITICAL, 2 MODERATE conhecidos.
 
-O `package.json` mantém override restrito de `@rolldown/plugin-babel` em `0.1.7` para compatibilidade com o Workbox/Babel 7. Não remover sem reproduzir a instalação limpa.
+CI oficial do PR #112: run `34270901320`, **success** em todas as etapas.
 
-### PR #95 — Reconciliação Documental
+O diff final do PR #112 continha somente `package.json` e `package-lock.json`.
 
-Merge: `e7cb4952479d6af62e49784e2c544632d2396864`.
+## 4. Risco residual conhecido de dependências
 
-- Concluiu a consolidação inicial da documentação de governança e logs da sessão de modernização.
+Permanecem 2 vulnerabilidades moderadas na cadeia `exceljs -> uuid`. O `npm audit` propõe correção incompatível por downgrade/major de `exceljs`; não usar `npm audit fix --force`.
 
-### PR #96 — Alinhamento de Tipos Node 24
+O `knip --production` continua encontrando a baseline preexistente:
 
-Merge: `dffdc25b1dde210e3a712d4d84723b81cd525938`.
+- 26 arquivos não usados;
+- 22 dependências não usadas;
+- 49 exports não usados;
+- 14 tipos exportados não usados.
 
-- Alinhou tipos `@types/node` ao runtime Node 24.x da Vercel. Sincronizou `engines.node` e ambiente de CI do GitHub Actions.
+Esses achados foram comparados antes/depois e não são regressão do PR #112. Tratar limpeza de dependências mortas em PR próprio, com revisão de impacto no design system e rotas.
 
-### PR #97 — Query options e polimento visual seguro
-
-Merge: `3ee62531466a3f46ce8d9e39b2470aa42a62ba1c`.
-
-- Centralizou `queryOptions()` do TanStack Query;
-- preservou contratos de loading, erro e dados;
-- adicionou tooltip no gráfico de distribuição de recursos;
-- aplicou polimento visual com Framer Motion em pontos já seguros.
-
-### PR #98 — Code splitting por rota
-
-Merge: `e94c36d01bfb75fd8322b699412590c0ccd3ca5c`.
-
-- Aplicou `React.lazy()` e `Suspense` em páginas roteadas;
-- reduziu o entrypoint inicial, mas causou renderização vazia em produção;
-- não deve ser repetido sem investigação específica de Preview, cache, service worker e validação visual real.
-
-### PR #99 — Hotfix de renderização
-
-Merge: `ecfeb109146cbbd1856d26490b69bb8f633f6835`.
-
-- Restaurou `src/App.tsx` ao padrão estável anterior ao PR #98;
-- removeu temporariamente lazy loading por rota;
-- restabeleceu a renderização da aplicação em produção.
-
-### PR #100 — Fechado sem merge
-
-PR: `https://github.com/WilsonMPeixoto-2/pddeonlinesme-rj/pull/100`.
-
-- Foi fechado sem merge porque reintroduzia a mesma mudança revertida pelo hotfix #99;
-- manter fechado para evitar regressão.
-
-### PR #101 — Reconciliação pós-hotfix e produção
-
-Merge: `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8`.
-
-- Atualizou documentação de continuidade após o hotfix #99 e o fechamento do PR #100;
-- foi implantado automaticamente em produção pela Vercel;
-- não alterou código de aplicação.
-
-## 4. Estado da Vercel
+## 5. Produção Vercel
 
 Projeto principal:
 
-- ID `prj_dErjl7LdzTL2412fsw0pyzo3bdp1`;
-- runtime Node `24.x`;
-- domínio `https://pddeonlinesme-rj.vercel.app`.
+- Project ID: `prj_dErjl7LdzTL2412fsw0pyzo3bdp1`;
+- runtime: Node `24.x`;
+- domínio: `https://pddeonlinesme-rj.vercel.app`.
 
-Produção confirmada:
+Produção confirmada em 08/09/2026:
 
-- deployment `dpl_56wP3LvWJsmK3YziSoLbzGroGuqg`;
-- commit `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8`;
-- estado `READY`.
+- deployment: `dpl_EAAQ6mBgPQ1w6EbLXHg83yHasdPr`;
+- commit: `1722b4b50c5340b39a883220423cc40e2b315eeb`;
+- estado: `READY`;
+- `main` e Production sincronizadas.
 
-A `main` estava sincronizada com a produção principal da Vercel no commit `f5ad026` antes da branch `codex/security-center-truthfulness`. Confirmar novamente o SHA de produção após o merge desta correção.
+## 6. Proteções técnicas que continuam válidas
 
-Smoke público executado em `https://pddeonlinesme-rj.vercel.app/dashboard`:
+### Node
 
-- redirecionou para `/` sem sessão autenticada;
-- renderizou a tela de login;
-- console sem erros ou warnings.
+Manter Node 24.x e `@types/node` 24.x. Não migrar para Node/@types 26 sem decisão explícita de runtime e benefício comprovado.
 
-## 5. Decisão técnica: tipos Node
+### Code splitting
 
-Decisão concluída: Alinhamento ao runtime real Node 24.x (via PR #96).
+O PR #98 aplicou `React.lazy()` por rota e causou tela vazia em Production; o PR #99 reverteu. O PR #109 retoma performance/code splitting e deve permanecer separado de Auth e de dependências.
 
-Alterações realizadas e validadas:
+Qualquer retomada exige:
 
-- `@types/node` ajustado para `^24.13.2`;
-- `package-lock.json` sincronizado com `@types/node` `24.13.2`;
-- `engines.node` declarado como `24.x`;
-- GitHub Actions atualizado para executar com Node 24;
-- decisão detalhada em `docs/quality/NODE_TYPES_ALIGNMENT_2026-06-25.md`.
+- Preview Vercel validado visualmente;
+- sessão limpa e sessão com cache/service worker anterior;
+- smoke de `/`, `/dashboard`, `/acesso-negado` e rota autenticada;
+- rollback explícito.
 
-Não atualizar para `@types/node` 26.x sem decisão explícita de runtime Node 26 e benefício comprovado.
+### Supabase/Auth
 
-Validações obrigatórias:
+- não trocar o projeto Supabase oficial;
+- não pausar ou alterar outro projeto sem autorização explícita;
+- não misturar migrations, RLS, dados financeiros ou regras de negócio com correções de Auth;
+- não atualizar `@supabase/supabase-js` antes do smoke real de Auth.
 
-```bash
-npm ci
-npx tsc --noEmit
-npm run lint
-npm test
-npm run build
-npm audit
-npm audit --omit=dev
-```
+## 7. Próxima prioridade
 
-## 6. Lição técnica imediata — code splitting por rota
+1. Validar em Production login, recuperação de senha, Redirect URLs e e-mail de recuperação com `raluxyojqosfzrfozmpz` em `ACTIVE_HEALTHY`.
+2. Com Auth estabilizado, avaliar atualização do cliente `@supabase/supabase-js` em PR isolado.
+3. Depois, avaliar majors de ferramentas/testes separadamente.
+4. Só então retomar PR #109 ou nova frente de performance.
 
-O code splitting por rota é uma oportunidade real, mas a tentativa do PR #98 não pode ser tratada como pronta. Ela quebrou a renderização em produção e foi revertida pelo PR #99.
-
-Qualquer retomada deve ser feita em PR próprio com:
-
-- preview Vercel validado visualmente antes do merge;
-- teste em sessão limpa e sessão com service worker/cache prévio;
-- smoke de `/`, `/dashboard`, `/acesso-negado` e uma rota autenticada;
-- plano explícito de rollback;
-- sem acoplar a mudanças de documentação, Supabase, auth ou regras financeiras.
-
-## 7. Frente funcional em execução
-
-A branch `codex/security-center-truthfulness` trata a veracidade institucional do `SecurityCenterPanel`.
-
-Escopo permitido:
-
-- manter o painel como mapa/checklist visual do Marco 6B;
-- remover aparência de scanner RLS real, toggle MFA real e logs de auditoria reais;
-- preservar layout, valor institucional e microinterações seguras.
-
-Fora de escopo:
-
-- Auth, RLS, Supabase, migrations, papéis, policies, templates financeiros, dependências e regras de negócio.
-
-Depois do merge e deploy, escolher nova frente funcional com escopo fechado. Qualquer implementação real de Auth/RLS/audit_logs continua exigindo revisão humana.
-
-## 8. Leitura obrigatória para continuidade
+## 8. Leitura para continuidade
 
 1. `AGENTS.md`;
-2. `docs/PLANO_GLOBAL_V4_2.md`;
-3. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
-4. `.continuity/current-state.json`;
-5. `docs/CODEX_HANDOFF_2026-06-25.md`;
-6. documentos em `docs/quality/` desta rodada.
+2. `.continuity/current-state.json`;
+3. `.continuity/session-log.jsonl`;
+4. `docs/PLANO_GLOBAL_V4_2.md`;
+5. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
+6. `docs/DECISIONS.md`;
+7. `docs/ROADMAP_ADAPTIVE.md`.
 
-## 9. Regras de execução
-
-- manter PRs em escopo isolado;
-- não usar `--force` ou `--legacy-peer-deps` para obter instalação artificialmente verde;
-- não alterar migrations, regras financeiras, templates oficiais ou segurança nesta avaliação de tipos;
-- confirmar SHA de produção antes de reportar sincronização;
-- atualizar `current-state.json`, `session-log.jsonl` e este handoff ao concluir a próxima tarefa.
+Histórico detalhado anterior permanece preservado no Git e no `session-log.jsonl`; este handoff foi consolidado para eliminar snapshots conflitantes e permitir leitura operacional rápida.

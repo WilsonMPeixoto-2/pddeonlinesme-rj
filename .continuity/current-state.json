@@ -1,63 +1,107 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-06-25T09:11:30-03:00",
+  "updated_at": "2026-09-08T16:56:22-03:00",
   "source_of_truth": {
     "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8",
-    "note": "Snapshot auxiliar; confirmar sempre código, commits, testes e deployments reais."
+    "base_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
+    "note": "Snapshot auxiliar. Confirmar sempre codigo, commits, testes, Supabase e deployments reais."
   },
   "operational_north": {
     "plan": "docs/PLANO_GLOBAL_V4_2.md",
     "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "current_mode": "Estado estabilizado apos PR #101. Producao Vercel confirmada em f5ad026 antes da correcao isolada do SecurityCenterPanel."
+    "current_mode": "Backend restaurado e ACTIVE_HEALTHY; preservar estabilidade de Auth e manter evolucoes desacopladas ate smoke real."
   },
   "recent_pull_requests": [
-    {"number":101,"status":"merged","merge_commit":"f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8","note":"Reconciliação documental apos hotfix e producao Vercel."},
-    {"number":100,"status":"closed-not-merged","note":"Fechado porque reintroduzia code splitting por rota revertido pelo hotfix #99."},
-    {"number":99,"status":"merged","merge_commit":"ecfeb109146cbbd1856d26490b69bb8f633f6835"},
-    {"number":98,"status":"merged-then-reverted-by-99","merge_commit":"e94c36d01bfb75fd8322b699412590c0ccd3ca5c"},
-    {"number":97,"status":"merged","merge_commit":"3ee62531466a3f46ce8d9e39b2470aa42a62ba1c"},
-    {"number":96,"status":"merged","merge_commit":"dffdc25b1dde210e3a712d4d84723b81cd525938"},
-    {"number":95,"status":"merged","merge_commit":"e7cb4952479d6af62e49784e2c544632d2396864"},
-    {"number":94,"status":"merged","merge_commit":"93ed0419c8b861e83eb9c564d726c86ec550cfa3"},
-    {"number":92,"status":"merged","merge_commit":"1399a691d622715a787ea1d9b720ff9992d9f679"},
-    {"number":91,"status":"closed-not-merged"},
-    {"number":90,"status":"merged","merge_commit":"da109185f3038927702841ea4eeb3cdf294fd419"}
+    {
+      "number": 112,
+      "status": "merged",
+      "merge_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
+      "note": "Atualizacao segura de sete dependencias compativeis; package.json e package-lock.json sincronizados."
+    },
+    {
+      "number": 111,
+      "status": "open",
+      "note": "Reconciliacao documental de Auth, dependencias e estado de Production."
+    },
+    {
+      "number": 110,
+      "status": "merged",
+      "merge_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
+      "note": "Hotfix de recuperacao de senha com rota dedicada e E2E."
+    },
+    {
+      "number": 109,
+      "status": "open",
+      "note": "Performance/code splitting. Nao misturar com Auth; reavaliar apenas depois da estabilizacao e com Preview visual."
+    }
   ],
-  "delivered_state": {
-    "ci_gate": "PR #90 restaurou lint, typecheck, testes e build sem enfraquecer regras.",
-    "dependency_update": "PR #92 atualizou pacotes e lockfile. Auditoria caiu de 5 achados para 2 moderados na cadeia exceljs -> uuid.",
-    "build_modernization": "PR #94 migrou para o plugin React padrão e code splitting do Rolldown, com CI aprovado.",
-    "node_types_alignment": "PR #96 alinhou @types/node para ^24.13.2, declarou engines.node 24.x e ajustou CI para Node 24.",
-    "query_ui_polish": "PR #97 centralizou queryOptions do TanStack Query e aplicou polimento visual seguro em graficos/listas.",
-    "route_code_splitting": "PR #98 aplicou React.lazy por rota, mas causou renderizacao vazia em producao e foi revertido pelo hotfix #99. Nao reabrir sem diagnostico especifico de Preview, cache e service worker.",
-    "security_center_panel": "Em correção isolada na branch codex/security-center-truthfulness para remover aparência de scanner, MFA e logs reais."
+  "dependency_refresh_2026_09_08": {
+    "pull_request": 112,
+    "merge_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
+    "packages": {
+      "lucide-react": "1.40.0",
+      "react-hook-form": "7.87.0",
+      "@types/react-dom": "19.2.7",
+      "eslint-plugin-react-refresh": "0.5.6",
+      "globals": "17.12.0",
+      "knip": "6.34.0",
+      "typescript-eslint": "8.69.0"
+    },
+    "excluded": [
+      "@supabase/supabase-js",
+      "major upgrades de Vitest/jsdom/Framer Motion/TypeScript/Node"
+    ],
+    "verification": {
+      "controlled_run": 34270447310,
+      "pull_request_ci_run": 34270901320,
+      "unit_tests": "130/130",
+      "e2e": "11/11",
+      "audit": "0 high, 0 critical; 2 moderate conhecidos na cadeia exceljs -> uuid",
+      "knip": "Achados de producao preexistentes e sem regressao em relacao a baseline."
+    }
+  },
+  "auth_incident": {
+    "detected_at": "2026-09-03T00:22:00-03:00",
+    "supabase_project_ref": "raluxyojqosfzrfozmpz",
+    "supabase_project_name": "pdde-online-2026-dev",
+    "backend_status_verified_at_2026_09_08_1656": "ACTIVE_HEALTHY",
+    "historical_cause": "O projeto estava INACTIVE e a restauracao havia sido inicialmente bloqueada pelo limite de projetos gratuitos ativos.",
+    "code_fix": {
+      "pull_request": 110,
+      "merge_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
+      "scope": [
+        "redirect de reset para /redefinir-senha",
+        "rota publica de redefinicao",
+        "updateUser para gravar nova senha",
+        "tratamento de link invalido/expirado",
+        "mensagem amigavel para indisponibilidade de autenticacao",
+        "E2E de recuperacao e redefinicao"
+      ],
+      "verification": "CI run 33711713326 integralmente aprovado."
+    }
   },
   "deployment_state": {
-    "project_id": "prj_dErjl7LdzTL2412fsw0pyzo3bdp1",
+    "vercel_project_id": "prj_dErjl7LdzTL2412fsw0pyzo3bdp1",
     "runtime": "Node 24.x",
-    "production_confirmed_commit": "f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8",
-    "production_deployment": "dpl_56wP3LvWJsmK3YziSoLbzGroGuqg",
+    "production_confirmed_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
+    "production_deployment": "dpl_EAAQ6mBgPQ1w6EbLXHg83yHasdPr",
     "production_status": "READY",
     "main_ahead_of_production": false,
-    "pending_main_commit": null,
-    "note": "GitHub main e Vercel Production foram sincronizados no commit f5ad026 antes da branch codex/security-center-truthfulness. Confirmar novo SHA de producao apos merge."
+    "public_smoke": "https://pddeonlinesme-rj.vercel.app/ respondeu HTTP 200 em 08/09/2026 apos o deploy."
   },
-  "active_branch_state": {
-    "branch": "codex/security-center-truthfulness",
-    "base_commit": "f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8",
-    "scope": "Corrigir a veracidade institucional do SecurityCenterPanel, mantendo-o como mapa/checklist visual de Marco 6B sem prometer controles reais.",
-    "not_in_scope": "Nao alterar Auth, RLS, Supabase, migrations, roles, templates financeiros, dependencias ou regras de negocio."
-  },
+  "blockers": [
+    "Executar smoke real de login, recuperacao de senha, Redirect URLs e e-mail agora que o backend esta ACTIVE_HEALTHY.",
+    "Somente depois reavaliar PR #109 ou majors de dependencias que alterem runtime/testes/UI."
+  ],
+  "protected_scope": [
+    "Nao trocar o projeto Supabase.",
+    "Nao pausar ou alterar projetos externos ao PDDE Online sem autorizacao explicita.",
+    "Nao misturar o PR #109 de performance com o incidente de autenticacao.",
+    "Nao alterar migrations, RLS, dados financeiros ou regras de negocio para resolver Auth ou atualizacoes de dependencias."
+  ],
   "next_priority": {
-    "branch": "a definir apos deploy",
-    "step": "Apos merge e producao do ajuste de veracidade, escolher a proxima frente funcional com escopo fechado.",
-    "after": "Reavaliar code splitting por rota somente com diagnostico especifico do incidente #98/#99, validacao visual real em Preview, cache/service worker e criterio claro de rollback. Qualquer Auth/RLS/audit_logs real exige revisao humana."
-  },
-  "mandatory_before_task": [
-    "Ler AGENTS.md, Plano Global, Radar, HANDOFF e CODEX_HANDOFF",
-    "Verificar main, PRs recentes e produção Vercel",
-    "Executar npm ci, typecheck, lint, testes, build e auditoria"
-  ]
+    "step": "Validar o fluxo real de autenticacao/recuperacao de senha em Production com o Supabase ACTIVE_HEALTHY.",
+    "after": "Com Auth estabilizado, avaliar @supabase/supabase-js 2.114.x e, separadamente, majors de ferramentas/testes."
+  }
 }
