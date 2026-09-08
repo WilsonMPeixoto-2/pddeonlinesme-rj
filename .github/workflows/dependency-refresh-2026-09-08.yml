@@ -1,0 +1,128 @@
+name: Dependency Refresh 2026-09-08
+
+on:
+  push:
+    branches:
+      - chore/dependency-refresh-2026-09-08
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    name: Update and verify safe dependency batch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v6
+        with:
+          ref: chore/dependency-refresh-2026-09-08
+
+      - name: Guard repository and branch
+        shell: bash
+        run: |
+          test "$GITHUB_REPOSITORY" = "WilsonMPeixoto-2/pddeonlinesme-rj"
+          test "$GITHUB_REF_NAME" = "chore/dependency-refresh-2026-09-08"
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Verify baseline lockfile
+        run: npm ci
+
+      - name: Apply validated dependency batch
+        run: |
+          npm install lucide-react@1.40.0 react-hook-form@7.87.0
+          npm install --save-dev \
+            @types/react-dom@19.2.7 \
+            eslint-plugin-react-refresh@0.5.6 \
+            globals@17.12.0 \
+            knip@6.34.0 \
+            typescript-eslint@8.69.0
+
+      - name: Verify resolved versions
+        run: |
+          npm ls \
+            lucide-react \
+            react-hook-form \
+            @types/react-dom \
+            eslint-plugin-react-refresh \
+            globals \
+            knip \
+            typescript-eslint \
+            --depth=0
+
+      - name: Prove clean install from regenerated lockfile
+        shell: bash
+        run: |
+          rm -rf node_modules
+          npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Coverage
+        run: npm run test:coverage
+
+      - name: Demonstrativo template audit
+        run: npm run audit:demonstrativo:template
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E and accessibility
+        run: npm run test:e2e
+
+      - name: Audit all dependencies
+        shell: bash
+        run: |
+          npm audit --json > /tmp/audit-all.json || true
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync('/tmp/audit-all.json', 'utf8'));
+          const v = report.metadata?.vulnerabilities ?? {};
+          console.log('npm audit:', v);
+          if ((v.high ?? 0) > 0 || (v.critical ?? 0) > 0) process.exit(1);
+          NODE
+
+      - name: Audit production dependencies
+        shell: bash
+        run: |
+          npm audit --omit=dev --json > /tmp/audit-prod.json || true
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync('/tmp/audit-prod.json', 'utf8'));
+          const v = report.metadata?.vulnerabilities ?? {};
+          console.log('npm audit --omit=dev:', v);
+          if ((v.high ?? 0) > 0 || (v.critical ?? 0) > 0) process.exit(1);
+          NODE
+
+      - name: Baseline-aware Knip production scan
+        shell: bash
+        run: npm run check:deps:prod || true
+
+      - name: Commit dependency manifests when changed
+        shell: bash
+        run: |
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "Dependency manifests already match target versions; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "chore(deps): atualizar lote seguro de dependências"
+          git push origin HEAD:chore/dependency-refresh-2026-09-08
