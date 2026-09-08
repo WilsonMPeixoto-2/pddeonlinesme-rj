@@ -1,18 +1,29 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-09-03T00:36:00-03:00",
+  "updated_at": "2026-09-08T16:51:35-03:00",
   "source_of_truth": {
     "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
     "base_branch": "main",
-    "base_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
+    "base_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
     "note": "Snapshot auxiliar. Confirmar sempre codigo, commits, testes, Supabase e deployments reais."
   },
   "operational_north": {
     "plan": "docs/PLANO_GLOBAL_V4_2.md",
     "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "current_mode": "Incidente de autenticacao em tratamento. Prioridade absoluta e restaurar disponibilidade do backend e sincronizar Production antes de retomar evolucoes."
+    "current_mode": "Backend em processo de reativacao; preservar estabilidade de Auth e manter evolucoes desacopladas ate smoke real."
   },
   "recent_pull_requests": [
+    {
+      "number": 112,
+      "status": "merged",
+      "merge_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
+      "note": "Atualizacao segura de sete dependencias compatíveis; package.json e package-lock.json sincronizados."
+    },
+    {
+      "number": 111,
+      "status": "open",
+      "note": "Reconciliação documental do incidente de Auth; atualizado em 08/09/2026 para refletir PR #112 e Production atual."
+    },
     {
       "number": 110,
       "status": "merged",
@@ -22,82 +33,76 @@
     {
       "number": 109,
       "status": "open",
-      "note": "Performance/code splitting. Nao misturar com o incidente de autenticacao; reavaliar apenas depois da estabilizacao."
-    },
-    {
-      "number": 108,
-      "status": "merged",
-      "merge_commit": "c838deabf28ac4fe21702b0e50c69c7db6f8ba6a",
-      "note": "Higiene de dependencias e auditoria de producao."
-    },
-    {
-      "number": 107,
-      "status": "merged",
-      "merge_commit": "edaeb58b98b578f71ae9b7223eaa30ff48cdbbd7",
-      "note": "E2E autenticado e acessibilidade."
-    },
-    {
-      "number": 106,
-      "status": "merged",
-      "merge_commit": "cf4d3502250a20beb62ab149cc638a7dd8c8af3b",
-      "note": "Gates de qualidade e Knip."
-    },
-    {
-      "number": 105,
-      "status": "merged",
-      "merge_commit": "4cf886b1a45ee25978495b371d8bd7e7106cea92",
-      "note": "Modernizacao de dependencias e Playwright."
+      "note": "Performance/code splitting. Nao misturar com Auth; reavaliar apenas depois da estabilizacao e com Preview visual."
     }
   ],
+  "dependency_refresh_2026_09_08": {
+    "pull_request": 112,
+    "merge_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
+    "packages": {
+      "lucide-react": "1.40.0",
+      "react-hook-form": "7.87.0",
+      "@types/react-dom": "19.2.7",
+      "eslint-plugin-react-refresh": "0.5.6",
+      "globals": "17.12.0",
+      "knip": "6.34.0",
+      "typescript-eslint": "8.69.0"
+    },
+    "excluded": [
+      "@supabase/supabase-js",
+      "major upgrades de Vitest/jsdom/Framer Motion/TypeScript/Node"
+    ],
+    "verification": {
+      "controlled_run": 34270447310,
+      "pull_request_ci_run": 34270901320,
+      "unit_tests": "130/130",
+      "e2e": "11/11",
+      "audit": "0 high, 0 critical; 2 moderate conhecidos na cadeia exceljs -> uuid",
+      "knip": "Achados de producao preexistentes e sem regressao em relacao a baseline."
+    }
+  },
   "auth_incident": {
     "detected_at": "2026-09-03T00:22:00-03:00",
     "supabase_project_ref": "raluxyojqosfzrfozmpz",
     "supabase_project_name": "pdde-online-2026-dev",
-    "backend_status": "INACTIVE",
-    "primary_cause": "Projeto Supabase do PDDE Online esta inativo. Tentativa de restore foi recusada pelo limite de projetos gratuitos ativos da organizacao.",
-    "operational_impact": [
-      "Login indisponivel.",
-      "Envio de recuperacao de senha indisponivel.",
-      "Operacoes autenticadas e consultas ao backend indisponiveis."
-    ],
-    "code_defect_found": "O fluxo Esqueci minha senha redirecionava para /dashboard e nao possuia pagina para definir nova senha.",
+    "backend_status_verified_at_2026_09_08_1651": "COMING_UP",
+    "historical_cause": "O projeto estava INACTIVE e a restauracao havia sido bloqueada pelo limite de projetos gratuitos ativos.",
     "code_fix": {
       "pull_request": 110,
       "merge_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
       "scope": [
         "redirect de reset para /redefinir-senha",
-        "nova rota publica de redefinicao",
+        "rota publica de redefinicao",
         "updateUser para gravar nova senha",
         "tratamento de link invalido/expirado",
         "mensagem amigavel para indisponibilidade de autenticacao",
         "E2E de recuperacao e redefinicao"
       ],
-      "verification": "CI run 33711713326 concluido com typecheck, lint, unit tests, coverage, template audit, build, Playwright E2E/accessibility e production dependency audit em sucesso."
+      "verification": "CI run 33711713326 integralmente aprovado."
     }
   },
   "deployment_state": {
     "vercel_project_id": "prj_dErjl7LdzTL2412fsw0pyzo3bdp1",
     "runtime": "Node 24.x",
-    "production_confirmed_commit": "c838deabf28ac4fe21702b0e50c69c7db6f8ba6a",
-    "production_deployment": "dpl_HYVZxagNhUFAvtPfxyfP4bkDSy9L",
+    "production_confirmed_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
+    "production_deployment": "dpl_EAAQ6mBgPQ1w6EbLXHg83yHasdPr",
     "production_status": "READY",
-    "main_ahead_of_production": true,
-    "pending_main_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
-    "note": "PR #110 esta na main, mas ainda nao havia deployment Production correspondente ao SHA 48e1a77 na ultima verificacao."
+    "main_ahead_of_production": false,
+    "public_smoke": "https://pddeonlinesme-rj.vercel.app/ respondeu HTTP 200 em 08/09/2026 apos o deploy."
   },
   "blockers": [
-    "Reativar o mesmo projeto Supabase do PDDE Online. A restauracao esta bloqueada por limite da camada gratuita; nao pausar outro projeto sem decisao explicita do proprietario.",
-    "Apos backend ativo, confirmar configuracao de Redirect URLs do Supabase para /redefinir-senha e executar smoke real de login/reset.",
-    "Sincronizar Vercel Production com a main 48e1a77 e confirmar deployment READY antes de declarar o hotfix publicado."
+    "Aguardar o mesmo Supabase do PDDE Online concluir a reativacao; nao pausar ou alterar projeto externo sem autorizacao explicita.",
+    "Quando o backend estiver ACTIVE_HEALTHY, executar smoke real de login, recuperacao de senha, Redirect URLs e e-mail.",
+    "Somente depois reavaliar PR #109 ou majors de dependencias que alterem runtime/testes/UI."
   ],
   "protected_scope": [
     "Nao trocar o projeto Supabase.",
     "Nao pausar ou alterar projetos externos ao PDDE Online sem autorizacao explicita.",
     "Nao misturar o PR #109 de performance com o incidente de autenticacao.",
-    "Nao alterar migrations, RLS, dados financeiros ou regras de negocio para resolver este incidente."
+    "Nao alterar migrations, RLS, dados financeiros ou regras de negocio para resolver Auth ou atualizacoes de dependencias."
   ],
   "next_priority": {
-    "step": "Restaurar disponibilidade do backend do PDDE Online por capacidade/plano ou decisao explicita sobre quota.",
-    "after": "Validar autenticacao real, recuperacao de senha, redirects, e-mail e Production; somente depois retomar PR #109 ou outras evolucoes."
+    "step": "Confirmar Supabase ACTIVE_HEALTHY e validar o fluxo real de autenticacao/recuperacao de senha em Production.",
+    "after": "Com Auth estabilizado, avaliar @supabase/supabase-js 2.114.x e, separadamente, majors de ferramentas/testes."
   }
 }
