@@ -1,6 +1,6 @@
 # Handoff Operacional — PDDE Online 2026
 
-**Atualizado em:** 08/09/2026 16:51 (America/Sao_Paulo)  
+**Atualizado em:** 08/09/2026 16:56 (America/Sao_Paulo)  
 **Repositório:** `WilsonMPeixoto-2/pddeonlinesme-rj`  
 **Fonte de verdade:** código, commits, CI, Supabase e deployments reais. Este documento é um snapshot auxiliar.
 
@@ -11,7 +11,7 @@
 - Vercel Production: `dpl_EAAQ6mBgPQ1w6EbLXHg83yHasdPr`, estado **READY**, commit `1722b4b50c5340b39a883220423cc40e2b315eeb`.
 - Domínio `https://pddeonlinesme-rj.vercel.app/`: HTTP 200 após o deploy.
 - Supabase oficial: `raluxyojqosfzrfozmpz` (`pdde-online-2026-dev`).
-- Estado do Supabase verificado em 08/09/2026 16:51: **COMING_UP**.
+- Estado do Supabase verificado em 08/09/2026 16:56: **ACTIVE_HEALTHY**.
 - Nenhum projeto Supabase externo ao PDDE Online foi pausado ou alterado nesta tarefa.
 
 ## 2. Incidente de autenticação
@@ -29,7 +29,7 @@ O defeito independente do fluxo de recuperação foi corrigido no PR #110, merge
 
 CI final do hotfix: run `33711713326`, integralmente aprovado.
 
-**Pendente:** quando o Supabase atingir `ACTIVE_HEALTHY`, executar smoke real de login, reset, Redirect URLs e entrega do e-mail antes de declarar o incidente encerrado.
+O backend está novamente `ACTIVE_HEALTHY`, mas o incidente de Auth só deve ser considerado encerrado após smoke real de login, reset, Redirect URLs e entrega do e-mail.
 
 ## 3. Atualização de dependências — PR #112
 
@@ -118,17 +118,16 @@ Qualquer retomada exige:
 ### Supabase/Auth
 
 - não trocar o projeto Supabase oficial;
-- não pausar ou alterar outro projeto para liberar quota sem autorização explícita;
+- não pausar ou alterar outro projeto sem autorização explícita;
 - não misturar migrations, RLS, dados financeiros ou regras de negócio com correções de Auth;
-- não atualizar `@supabase/supabase-js` enquanto o backend ainda estiver sendo estabilizado.
+- não atualizar `@supabase/supabase-js` antes do smoke real de Auth.
 
 ## 7. Próxima prioridade
 
-1. Confirmar `raluxyojqosfzrfozmpz` em `ACTIVE_HEALTHY`.
-2. Validar em Production login, recuperação de senha, Redirect URLs e e-mail de recuperação.
-3. Com Auth estabilizado, avaliar atualização do cliente `@supabase/supabase-js` em PR isolado.
-4. Depois, avaliar majors de ferramentas/testes separadamente.
-5. Só então retomar PR #109 ou nova frente de performance.
+1. Validar em Production login, recuperação de senha, Redirect URLs e e-mail de recuperação com `raluxyojqosfzrfozmpz` em `ACTIVE_HEALTHY`.
+2. Com Auth estabilizado, avaliar atualização do cliente `@supabase/supabase-js` em PR isolado.
+3. Depois, avaliar majors de ferramentas/testes separadamente.
+4. Só então retomar PR #109 ou nova frente de performance.
 
 ## 8. Leitura para continuidade
 
