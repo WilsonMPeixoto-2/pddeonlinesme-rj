@@ -62,7 +62,7 @@ vi.mock("recharts", () => ({
 import Repasses from "@/pages/Repasses";
 
 describe("Repasses com TanStack Table v9", () => {
-  it("renderiza o cabeçalho textual Ação sem lançar exceção", () => {
+  it("renderiza o cabeçalho textual Ação e as células sem lançar exceção", () => {
     expect(() =>
       render(
         <MemoryRouter>
@@ -71,6 +71,7 @@ describe("Repasses com TanStack Table v9", () => {
       ),
     ).not.toThrow();
 
+    expect(screen.getByRole("table")).toBeVisible();
     expect(screen.getByText("Ação")).toBeVisible();
     expect(screen.getAllByText("PDDE Básico").length).toBeGreaterThan(0);
   });
