@@ -23,26 +23,13 @@ jobs:
           from pathlib import Path
           path = Path('src/pages/Repasses.tsx')
           text = path.read_text(encoding='utf-8')
-          old_features = '''const repassesTableFeatures = tableFeatures({
-            sorting: rowSortingFeature,
-          });'''.replace('            ', '')
-          new_features = '''const repassesTableFeatures = tableFeatures({
-            rowSortingFeature,
-            sortedRowModel: createSortedRowModel(),
-          });'''.replace('            ', '')
+          old_features = 'const repassesTableFeatures = tableFeatures({\n  sorting: rowSortingFeature,\n});'
+          new_features = 'const repassesTableFeatures = tableFeatures({\n  rowSortingFeature,\n  sortedRowModel: createSortedRowModel(),\n});'
+          old_state = '    initialState: {\n      sorting: {\n        sortBy: [{ id: "valorPago", desc: true }],\n      },\n    },\n    getSortedRowModel: createSortedRowModel(),'
+          new_state = '    initialState: {\n      sorting: [{ id: "valorPago", desc: true }],\n    },'
           assert text.count(old_features) == 1, f'feature matches: {text.count(old_features)}'
-          text = text.replace(old_features, new_features)
-          old_state = '''initialState: {
-            sorting: {
-              sortBy: [{ id: "valorPago", desc: true }],
-            },
-          },
-          getSortedRowModel: createSortedRowModel(),'''.replace('          ', '')
-          new_state = '''initialState: {
-            sorting: [{ id: "valorPago", desc: true }],
-          },'''.replace('          ', '')
           assert text.count(old_state) == 1, f'state matches: {text.count(old_state)}'
-          text = text.replace(old_state, new_state)
+          text = text.replace(old_features, new_features).replace(old_state, new_state)
           path.write_text(text, encoding='utf-8')
           Path('.github/workflows/apply-repasses-sorting-hotfix-temp.yml').unlink()
       - name: Commitar correção e remover workflow temporário
