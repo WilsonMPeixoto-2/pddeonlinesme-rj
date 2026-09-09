@@ -587,9 +587,9 @@ export default function Repasses() {
                       {table.getRowModel().rows.length > 0 ? (
                         table.getRowModel().rows.map((row) => (
                           <tr key={row.id} className="border-b border-border/40 transition-colors last:border-b-0 hover:bg-muted/15">
-                            {row.getVisibleCells().map((cell) => (
+                            {row.getAllCells().map((cell) => (
                               <td key={cell.id} className="px-4 py-3 align-middle text-sm">
-                                {<table.FlexRender cell={cell} />}
+                                <table.FlexRender cell={cell} />
                               </td>
                             ))}
                           </tr>
