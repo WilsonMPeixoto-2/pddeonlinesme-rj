@@ -32,9 +32,6 @@ export function useUpdateUnidadeCadastro({
   const exercicioNumber = Number.parseInt(exercicio, 10);
 
   return useMutation<string, Error, UpdateUnidadeCadastroInput, OptimisticSnapshot>({
-    // Optimistic UI: aplica novos valores no cache antes do servidor confirmar,
-    // melhorando a percepcao de velocidade na edicao cadastral. Se a mutacao
-    // falhar, onError restaura o snapshot anterior.
     onMutate: async ({ unidadeId, values }) => {
       const detalheKey = [
         "unidade-detalhe",
@@ -56,9 +53,6 @@ export function useUpdateUnidadeCadastro({
       const nome = normalizeRequiredText(values.nome);
       const diretor = normalizeOptionalText(values.diretor);
       const endereco = normalizeOptionalText(values.endereco);
-      const banco = normalizeOptionalText(values.banco);
-      const agencia = normalizeOptionalText(values.agencia);
-      const contaCorrente = normalizeOptionalText(values.conta_corrente);
 
       if (detalheBefore) {
         queryClient.setQueryData<UnidadeDetalhe>(detalheKey, {
@@ -66,9 +60,6 @@ export function useUpdateUnidadeCadastro({
           nome,
           diretor,
           endereco,
-          banco: banco ?? detalheBefore.banco,
-          agencia,
-          conta_corrente: contaCorrente,
           updated_at: new Date().toISOString(),
         });
       }
@@ -77,19 +68,14 @@ export function useUpdateUnidadeCadastro({
         queryClient.setQueryData<UnidadeLocalizador[]>(
           ["unidades-localizador"],
           localizadorBefore.map((row) =>
-            row.id === unidadeId
-              ? { ...row, nome, diretor }
-              : row,
+            row.id === unidadeId ? { ...row, nome, diretor } : row,
           ),
         );
       }
 
       return { detalheKey, detalheBefore, localizadorBefore };
     },
-    // Salvamento atomico via RPC public.update_unidade_cadastro_minima
-    // e atualizacao direta do email na tabela unidades_escolares no Supabase.
     mutationFn: async ({ unidadeId, values }: UpdateUnidadeCadastroInput) => {
-      // 1. Atualizar dados cadastrais basicos e bancarios via RPC
       const { data, error } = await supabase.rpc(
         "update_unidade_cadastro_minima",
         {
@@ -97,9 +83,6 @@ export function useUpdateUnidadeCadastro({
           p_nome: normalizeRequiredText(values.nome),
           p_diretor: normalizeOptionalText(values.diretor),
           p_endereco: normalizeOptionalText(values.endereco),
-          p_banco: normalizeOptionalText(values.banco),
-          p_agencia: normalizeOptionalText(values.agencia),
-          p_conta_corrente: normalizeOptionalText(values.conta_corrente),
         },
       );
 
@@ -107,7 +90,6 @@ export function useUpdateUnidadeCadastro({
         throw new Error(error.message);
       }
 
-      // 2. Atualizar o email institucional de contato da UEx diretamente
       const email = normalizeOptionalText(values.email ?? "");
       const { error: emailError } = await supabase
         .from("unidades_escolares")
@@ -128,7 +110,6 @@ export function useUpdateUnidadeCadastro({
     },
     onError: (_error, _variables, context) => {
       if (!context) return;
-      // Rollback do optimistic update: restaura snapshot anterior.
       if (context.detalheBefore !== undefined) {
         queryClient.setQueryData(context.detalheKey, context.detalheBefore);
       }
@@ -140,7 +121,6 @@ export function useUpdateUnidadeCadastro({
       }
     },
     onSettled: async (_data, _error, variables) => {
-      // Garante reconciliacao com o servidor apos sucesso ou rollback.
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["unidade-detalhe", variables.unidadeId, exercicioNumber, programa],

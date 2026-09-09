@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   normalizeOptionalText,
-  toContasBancariasUpdate,
+  toUnidadeCadastroFormValues,
   toUnidadesEscolaresUpdate,
   validateUnidadeCadastro,
   type UnidadeCadastroFormValues,
@@ -11,15 +11,37 @@ const validValues: UnidadeCadastroFormValues = {
   nome: "Escola Municipal Alfa",
   diretor: "Maria Teste",
   endereco: "Rua Alfa, 123",
-  banco: "Banco do Brasil",
-  agencia: "0123-X",
-  conta_corrente: "000123-4",
+  email: "escola@sme.rio",
 };
 
 describe("unidadeCadastro", () => {
-  it("normaliza texto opcional preservando formatos bancarios", () => {
+  it("normaliza texto opcional sem perder zeros ou caracteres", () => {
     expect(normalizeOptionalText("  0012-X  ")).toBe("0012-X");
     expect(normalizeOptionalText("   ")).toBeNull();
+  });
+
+  it("inicializa formulario vazio sem campos bancarios", () => {
+    expect(toUnidadeCadastroFormValues(null)).toEqual({
+      nome: "",
+      diretor: "",
+      endereco: "",
+      email: "",
+    });
+  });
+
+  it("mapeia somente dados cadastrais da ficha", () => {
+    const unidade = {
+      nome: "EM Alfa",
+      diretor: "Maria",
+      endereco: "Rua A",
+    } as Parameters<typeof toUnidadeCadastroFormValues>[0];
+
+    expect(toUnidadeCadastroFormValues(unidade, "alfa@sme.rio")).toEqual({
+      nome: "EM Alfa",
+      diretor: "Maria",
+      endereco: "Rua A",
+      email: "alfa@sme.rio",
+    });
   });
 
   it("valida campos obrigatorios do cadastro minimo", () => {
@@ -36,24 +58,6 @@ describe("unidadeCadastro", () => {
     );
   });
 
-  it("rejeita formatos bancarios fora do contrato", () => {
-    const errors = validateUnidadeCadastro(
-      {
-        ...validValues,
-        agencia: "0123@",
-        conta_corrente: "000 123",
-      },
-      { designacao: "EM ALFA", diretorAtual: "Maria Teste" },
-    );
-
-    expect(errors).toEqual(
-      expect.arrayContaining([
-        "Agencia aceita apenas digitos, hifen e X.",
-        "Conta corrente aceita apenas digitos, hifen, ponto, barra e X.",
-      ]),
-    );
-  });
-
   it("rejeita apagar diretor existente sem substituto", () => {
     const errors = validateUnidadeCadastro(
       { ...validValues, diretor: " " },
@@ -63,21 +67,11 @@ describe("unidadeCadastro", () => {
     expect(errors).toContain("Diretor(a) nao pode ser apagado sem substituto.");
   });
 
-  it("gera payload de update da unidade sem converter dados bancarios para numero", () => {
-    expect(toUnidadesEscolaresUpdate(validValues)).toMatchObject({
+  it("gera payload apenas com dados cadastrais da unidade", () => {
+    expect(toUnidadesEscolaresUpdate(validValues)).toEqual({
       nome: "Escola Municipal Alfa",
       diretor: "Maria Teste",
       endereco: "Rua Alfa, 123",
-      agencia: "0123-X",
-      conta_corrente: "000123-4",
-    });
-  });
-
-  it("gera payload de update da conta bancaria incluindo banco editavel", () => {
-    expect(toContasBancariasUpdate(validValues)).toMatchObject({
-      banco: "Banco do Brasil",
-      agencia: "0123-X",
-      conta_corrente: "000123-4",
     });
   });
 });

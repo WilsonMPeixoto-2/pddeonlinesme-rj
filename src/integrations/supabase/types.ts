@@ -7,35 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
   }
   public: {
     Tables: {
@@ -218,8 +191,10 @@ export type Database = {
           banco: string | null
           conta_corrente: string | null
           created_at: string
+          exercicio: number | null
           id: string
           principal: boolean
+          programa: string | null
           unidade_id: string
           updated_at: string
         }
@@ -228,8 +203,10 @@ export type Database = {
           banco?: string | null
           conta_corrente?: string | null
           created_at?: string
+          exercicio?: number | null
           id?: string
           principal?: boolean
+          programa?: string | null
           unidade_id: string
           updated_at?: string
         }
@@ -238,8 +215,10 @@ export type Database = {
           banco?: string | null
           conta_corrente?: string | null
           created_at?: string
+          exercicio?: number | null
           id?: string
           principal?: boolean
+          programa?: string | null
           unidade_id?: string
           updated_at?: string
         }
@@ -323,14 +302,18 @@ export type Database = {
       }
       execucao_financeira: {
         Row: {
+          acao: string | null
           created_at: string
           exercicio: number
           gasto: number
           id: string
           parcela_1_capital: number
           parcela_1_custeio: number
+          parcela_1_data_pagamento: string | null
+          parcela_1_total: number | null
           parcela_2_capital: number
           parcela_2_custeio: number
+          parcela_2_total_programado: number | null
           programa: string
           reprogramado_capital: number
           reprogramado_custeio: number
@@ -338,14 +321,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          acao?: string | null
           created_at?: string
           exercicio: number
           gasto?: number
           id?: string
           parcela_1_capital?: number
           parcela_1_custeio?: number
+          parcela_1_data_pagamento?: string | null
+          parcela_1_total?: number | null
           parcela_2_capital?: number
           parcela_2_custeio?: number
+          parcela_2_total_programado?: number | null
           programa?: string
           reprogramado_capital?: number
           reprogramado_custeio?: number
@@ -353,14 +340,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          acao?: string | null
           created_at?: string
           exercicio?: number
           gasto?: number
           id?: string
           parcela_1_capital?: number
           parcela_1_custeio?: number
+          parcela_1_data_pagamento?: string | null
+          parcela_1_total?: number | null
           parcela_2_capital?: number
           parcela_2_custeio?: number
+          parcela_2_total_programado?: number | null
           programa?: string
           reprogramado_capital?: number
           reprogramado_custeio?: number
@@ -438,6 +429,154 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      integracoes_financeiras_runs: {
+        Row: {
+          artifact_id: number | null
+          criado_em: string
+          exercicio: number
+          id: string
+          origem: string
+          publicado_em: string | null
+          total_contas: number
+          total_repasses: number
+          total_unidades: number
+          workflow_run_id: number | null
+        }
+        Insert: {
+          artifact_id?: number | null
+          criado_em?: string
+          exercicio: number
+          id?: string
+          origem: string
+          publicado_em?: string | null
+          total_contas?: number
+          total_repasses?: number
+          total_unidades?: number
+          workflow_run_id?: number | null
+        }
+        Update: {
+          artifact_id?: number | null
+          criado_em?: string
+          exercicio?: number
+          id?: string
+          origem?: string
+          publicado_em?: string | null
+          total_contas?: number
+          total_repasses?: number
+          total_unidades?: number
+          workflow_run_id?: number | null
+        }
+        Relationships: []
+      }
+      repasses_financeiros: {
+        Row: {
+          acao: string
+          capital_pago: number | null
+          capital_programado: number | null
+          conta_bancaria_id: string | null
+          created_at: string
+          custeio_pago: number | null
+          custeio_programado: number | null
+          data_ordem_pagamento: string | null
+          data_pagamento: string | null
+          exercicio: number
+          id: string
+          integracao_run_id: string
+          ordem_exibicao: number
+          parcela: string
+          programa: string
+          unidade_id: string
+          updated_at: string
+          valor_pago: number | null
+          valor_programado: number
+        }
+        Insert: {
+          acao: string
+          capital_pago?: number | null
+          capital_programado?: number | null
+          conta_bancaria_id?: string | null
+          created_at?: string
+          custeio_pago?: number | null
+          custeio_programado?: number | null
+          data_ordem_pagamento?: string | null
+          data_pagamento?: string | null
+          exercicio: number
+          id?: string
+          integracao_run_id: string
+          ordem_exibicao?: number
+          parcela: string
+          programa: string
+          unidade_id: string
+          updated_at?: string
+          valor_pago?: number | null
+          valor_programado: number
+        }
+        Update: {
+          acao?: string
+          capital_pago?: number | null
+          capital_programado?: number | null
+          conta_bancaria_id?: string | null
+          created_at?: string
+          custeio_pago?: number | null
+          custeio_programado?: number | null
+          data_ordem_pagamento?: string | null
+          data_pagamento?: string | null
+          exercicio?: number
+          id?: string
+          integracao_run_id?: string
+          ordem_exibicao?: number
+          parcela?: string
+          programa?: string
+          unidade_id?: string
+          updated_at?: string
+          valor_pago?: number | null
+          valor_programado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repasses_financeiros_conta_bancaria_id_fkey"
+            columns: ["conta_bancaria_id"]
+            isOneToOne: false
+            referencedRelation: "contas_bancarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repasses_financeiros_conta_bancaria_id_fkey"
+            columns: ["conta_bancaria_id"]
+            isOneToOne: false
+            referencedRelation: "vw_repasses_financeiros_unidade"
+            referencedColumns: ["conta_bancaria_id"]
+          },
+          {
+            foreignKeyName: "repasses_financeiros_integracao_run_id_fkey"
+            columns: ["integracao_run_id"]
+            isOneToOne: false
+            referencedRelation: "integracoes_financeiras_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repasses_financeiros_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades_escolares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repasses_financeiros_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidade_detalhe"
+            referencedColumns: ["unidade_id"]
+          },
+          {
+            foreignKeyName: "repasses_financeiros_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidades_localizador"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       unidades_escolares: {
         Row: {
@@ -555,6 +694,55 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_repasses_financeiros_unidade: {
+        Row: {
+          acao: string | null
+          agencia: string | null
+          banco: string | null
+          capital_pago: number | null
+          capital_programado: number | null
+          conta_bancaria_id: string | null
+          conta_corrente: string | null
+          custeio_pago: number | null
+          custeio_programado: number | null
+          data_ordem_pagamento: string | null
+          data_pagamento: string | null
+          designacao: string | null
+          exercicio: number | null
+          id: string | null
+          inep: string | null
+          nome: string | null
+          ordem_exibicao: number | null
+          parcela: string | null
+          programa: string | null
+          unidade_id: string | null
+          valor_pago: number | null
+          valor_programado: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repasses_financeiros_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades_escolares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repasses_financeiros_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidade_detalhe"
+            referencedColumns: ["unidade_id"]
+          },
+          {
+            foreignKeyName: "repasses_financeiros_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "vw_unidades_localizador"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_unidade_detalhe: {
         Row: {
           agencia: string | null
@@ -653,18 +841,28 @@ export type Database = {
           user_id: string
         }[]
       }
-      update_unidade_cadastro_minima: {
-        Args: {
-          p_agencia: string
-          p_banco: string
-          p_conta_corrente: string
-          p_diretor: string
-          p_endereco: string
-          p_nome: string
-          p_unidade_id: string
-        }
-        Returns: string
-      }
+      update_unidade_cadastro_minima:
+        | {
+            Args: {
+              p_diretor: string | null
+              p_endereco: string | null
+              p_nome: string
+              p_unidade_id: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_agencia: string | null
+              p_banco: string | null
+              p_conta_corrente: string | null
+              p_diretor: string | null
+              p_endereco: string | null
+              p_nome: string
+              p_unidade_id: string
+            }
+            Returns: string
+          }
     }
     Enums: {
       app_role: "admin" | "operador"
@@ -683,12 +881,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -712,11 +910,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -737,11 +935,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -762,11 +960,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -779,11 +977,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -793,9 +991,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["admin", "operador"],
