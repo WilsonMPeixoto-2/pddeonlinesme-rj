@@ -11,7 +11,7 @@ import NotFound from "./pages/NotFound.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Repasses from "./pages/Repasses.tsx";
 import Escolas from "./pages/Escolas.tsx";
-import EscolaEditar from "./pages/EscolaEditar.tsx";
+import EscolaEditarComRecursos from "./pages/EscolaEditarComRecursos.tsx";
 import EscolaRecursos from "./pages/EscolaRecursos.tsx";
 import Base from "./pages/Base.tsx";
 import Configuracoes from "./pages/Configuracoes.tsx";
@@ -61,7 +61,7 @@ const router = createBrowserRouter([
       { path: "painel/historico", element: <ProtectedRoute><HistoricoGeracoes /></ProtectedRoute> },
       { path: "repasses", element: <ProtectedRoute><Repasses /></ProtectedRoute> },
       { path: "escolas", element: <ProtectedRoute><Escolas /></ProtectedRoute> },
-      { path: "escolas/:id", element: <ProtectedRoute><EscolaEditar /></ProtectedRoute> },
+      { path: "escolas/:id", element: <ProtectedRoute><EscolaEditarComRecursos /></ProtectedRoute> },
       { path: "escolas/:id/recursos", element: <ProtectedRoute><EscolaRecursos /></ProtectedRoute> },
       { path: "base", element: <ProtectedRoute><Base /></ProtectedRoute> },
       { path: "configuracoes", element: <ProtectedRoute><Configuracoes /></ProtectedRoute> },
