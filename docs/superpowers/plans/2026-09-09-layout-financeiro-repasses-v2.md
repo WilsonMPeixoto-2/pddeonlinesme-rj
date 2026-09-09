@@ -32,49 +32,36 @@
 - Create: `src/test/repasses-table-v9.test.tsx`
 
 **Interfaces:**
-- Consumes: TanStack Table v9 `table.FlexRender`.
-- Produces: tabela de Repasses que renderiza cabeçalhos textuais e células sem exceção.
+- Consumes: TanStack Table v9 `table.FlexRender`, cells e sorting.
+- Produces: tabela de Repasses que renderiza cabeçalhos textuais, células e ordenação sem exceção.
 
-- [ ] **Step 1: Escrever teste de regressão**
+- [x] **Step 1: Escrever teste de regressão**
 
-Criar um harness mínimo com uma coluna `header: "Ação"` e uma célula textual, usando `tableFeatures`, `useTable` e `table.FlexRender` como componente.
+Criar um harness com dados de repasse que renderiza a página real e exige cabeçalho `Ação` e tabela visível.
 
-- [ ] **Step 2: Executar o teste e confirmar RED**
+- [x] **Step 2: Executar o teste e confirmar RED**
 
-Run: `npm test -- src/test/repasses-table-v9.test.tsx`
-Expected: FAIL reproduzindo a incompatibilidade do uso antigo de `FlexRender`.
+O ciclo RED revelou sequencialmente três incompatibilidades v9 reais: `FlexRender` chamado como função, `getVisibleCells()` sem feature de visibilidade e estado/configuração de sorting no formato antigo.
 
-- [ ] **Step 3: Corrigir o uso de FlexRender**
+- [x] **Step 3: Corrigir APIs TanStack Table v9**
 
-Substituir:
-
-```tsx
-table.FlexRender(header.column.columnDef.header, header.getContext())
-```
-
-por:
+Aplicado:
 
 ```tsx
 <table.FlexRender header={header} />
-```
-
-E substituir o equivalente de célula por:
-
-```tsx
 <table.FlexRender cell={cell} />
 ```
+
+A tabela usa `row.getAllCells()` porque não há feature de visibilidade e registra sorting no `tableFeatures`, com `initialState.sorting` como array v9.
 
 - [ ] **Step 4: Executar teste, typecheck e build**
 
 Run: `npm test -- src/test/repasses-table-v9.test.tsx && npm run typecheck && npm run build`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Publicar hotfix com gate verde**
 
-```bash
-git add src/pages/Repasses.tsx src/test/repasses-table-v9.test.tsx
-git commit -m "fix: corrigir renderização da tabela de repasses"
-```
+Como `/repasses` está quebrada em produção, o hotfix deve ser integrado imediatamente após o CI integral verde, antes das mudanças visuais maiores.
 
 ### Task 2: Reorganizar o Painel para dados financeiros reais
 
@@ -115,7 +102,7 @@ Destinos mínimos:
 
 - [ ] **Step 6: Remover metadados técnicos do corpo visual**
 
-Retirar menções a BASE/importação do hero e dos resumos financeiros. Manter `Importar BASE` somente na área administrativa própria.
+Retirar menções a BASE/importação do hero e dos resumos financeiros. Manter importação somente na área administrativa própria.
 
 - [ ] **Step 7: Validar**
 
@@ -156,8 +143,7 @@ Expected: PASS.
 - Modify: `src/pages/EscolaRecursos.tsx`
 - Modify: `src/pages/EscolaEditarComRecursos.tsx`
 - Modify: `src/lib/financeiroPDDE.ts`
-- Create: `src/components/financeiro/ProgramaPDDESection.tsx`
-- Create: `src/components/financeiro/ContaBancariaItem.tsx`
+- Modify: `src/components/RecursosPDDEPanel.tsx`
 - Create: `src/test/recursos-pdde-domain.test.ts`
 
 **Interfaces:**
@@ -172,9 +158,9 @@ Garantir que:
 - valor desconhecido permanece `—`;
 - primeira e segunda parcelas não são confundidas.
 
-- [ ] **Step 2: Implementar componentes de apresentação**
+- [ ] **Step 2: Implementar apresentação por programa**
 
-`ProgramaPDDESection` deve destacar `PDDE BÁSICO`, `PDDE QUALIDADE`, `PDDE EQUIDADE`; abaixo, ações e parcelas.
+`RecursosPDDEPanel` deve destacar `PDDE BÁSICO`, `PDDE QUALIDADE`, `PDDE EQUIDADE`; abaixo, ações e parcelas.
 
 - [ ] **Step 3: Melhorar nomenclaturas**
 
