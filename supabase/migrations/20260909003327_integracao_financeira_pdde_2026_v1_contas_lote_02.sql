@@ -1,0 +1,4 @@
+-- Registro histórico de migration remota.
+-- A carga de dados de contas de 2026 é operacional e reproduzível a partir do snapshot
+-- canônico do pdde-repasse-conciliador; não deve ser semeada por migration de schema.
+-- Mantido como no-op para reconciliar o histórico local/remoto do Supabase.
