@@ -3,11 +3,10 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   type ColumnDef,
-  type SortingState,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
+  createSortedRowModel,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   Area,
@@ -46,6 +45,10 @@ import {
 } from "@/lib/financeiroPDDE";
 import { repassesFinanceirosOptions } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
+
+const repassesTableFeatures = tableFeatures({
+  sorting: rowSortingFeature,
+});
 
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -131,7 +134,10 @@ function FilterBar({
       </div>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted/70">
         <div
-          className={cn("h-full rounded-full transition-[width]", active ? "bg-primary" : "bg-primary/45 group-hover:bg-primary/60")}
+          className={cn(
+            "h-full rounded-full transition-[width]",
+            active ? "bg-primary" : "bg-primary/45 group-hover:bg-primary/60",
+          )}
           style={{ width: `${Math.max(2, Math.min(100, percentage * 100))}%` }}
         />
       </div>
@@ -172,7 +178,6 @@ export default function Repasses() {
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [selectedBandId, setSelectedBandId] = useState<ValueBandOverview["id"] | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [sorting, setSorting] = useState<SortingState>([{ id: "valorPago", desc: true }]);
 
   const overview = useMemo(
     () => buildPrimeiraParcelaOverview(repassesQuery.data ?? [], exercicioNumero),
@@ -201,7 +206,7 @@ export default function Repasses() {
   const maxValue = overview.escolas[0]?.valorPago ?? 1;
   const hasFilters = Boolean(search.trim() || selectedAction || selectedBand || selectedDate);
 
-  const columns = useMemo<ColumnDef<EscolaPrimeiraParcela>[]>(
+  const columns = useMemo<ColumnDef<typeof repassesTableFeatures, EscolaPrimeiraParcela>[]>(
     () => [
       {
         accessorKey: "designacao",
@@ -209,7 +214,7 @@ export default function Repasses() {
           <SortHeader
             label="Unidade escolar"
             sorted={column.getIsSorted()}
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            onClick={column.getToggleSortingHandler()}
           />
         ),
         cell: ({ row }) => (
@@ -238,7 +243,7 @@ export default function Repasses() {
           <SortHeader
             label="Pagamento"
             sorted={column.getIsSorted()}
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            onClick={column.getToggleSortingHandler()}
           />
         ),
         cell: ({ row }) => (
@@ -253,7 +258,7 @@ export default function Repasses() {
           <SortHeader
             label="Valor pago"
             sorted={column.getIsSorted()}
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            onClick={column.getToggleSortingHandler()}
           />
         ),
         cell: ({ row }) => (
@@ -278,7 +283,7 @@ export default function Repasses() {
           <SortHeader
             label="Participação"
             sorted={column.getIsSorted()}
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            onClick={column.getToggleSortingHandler()}
           />
         ),
         cell: ({ row }) => (
@@ -291,13 +296,17 @@ export default function Repasses() {
     [maxValue],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: repassesTableFeatures,
     data: filteredSchools,
     columns,
-    state: { sorting },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    getRowId: (row) => row.unidadeId,
+    initialState: {
+      sorting: {
+        sortBy: [{ id: "valorPago", desc: true }],
+      },
+    },
+    getSortedRowModel: createSortedRowModel(),
   });
 
   const clearFilters = () => {
@@ -568,7 +577,7 @@ export default function Repasses() {
                             <th key={header.id} className="px-4 py-3 align-middle text-xs font-semibold text-muted-foreground">
                               {header.isPlaceholder
                                 ? null
-                                : flexRender(header.column.columnDef.header, header.getContext())}
+                                : table.FlexRender(header.column.columnDef.header, header.getContext())}
                             </th>
                           ))}
                         </tr>
@@ -580,7 +589,7 @@ export default function Repasses() {
                           <tr key={row.id} className="border-b border-border/40 transition-colors last:border-b-0 hover:bg-muted/15">
                             {row.getVisibleCells().map((cell) => (
                               <td key={cell.id} className="px-4 py-3 align-middle text-sm">
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                {table.FlexRender(cell.column.columnDef.cell, cell.getContext())}
                               </td>
                             ))}
                           </tr>
