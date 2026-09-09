@@ -23,13 +23,12 @@ import { getErrorMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { isValidCNPJ, unidadeSchema } from "@/schemas/unidadeSchema";
 
-
 interface UnidadeCadastroEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   unidade: UnidadeDetalhe;
   emailAtual?: string;
-  isSaving: boolean; // Mantido para compatibilidade de assinatura no parent
+  isSaving: boolean;
   onSubmit: (values: UnidadeCadastroFormValues) => Promise<void>;
 }
 
@@ -78,17 +77,13 @@ export function UnidadeCadastroEditDialog({
     toUnidadeCadastroFormValues(unidade, emailAtual),
   );
 
-  // Integração de Tecnologia React 19: useActionState (Form Action nativa)
-  // O estado de carregamento (isPending) e erros do formulário são gerenciados pelo React
   const [errors, formAction, isPending] = useActionState(
-    async (prevState: string[], formData: FormData) => {
-      // 1. Validar limites básicos e de formato bancário tradicionais
+    async (_prevState: string[], _formData: FormData) => {
       const nextErrors = validateUnidadeCadastro(values, {
         designacao: unidade.designacao,
         diretorAtual: unidade.diretor,
       });
 
-      // 2. Blindagem adicional: Validar via Zod Schema para integridade e formato de e-mail
       const parseResult = unidadeSchema.safeParse({
         designacao: unidade.designacao ?? "00.00.000",
         nome: values.nome,
@@ -108,9 +103,7 @@ export function UnidadeCadastroEditDialog({
         });
       }
 
-      if (nextErrors.length > 0) {
-        return nextErrors;
-      }
+      if (nextErrors.length > 0) return nextErrors;
 
       try {
         await onSubmit(values);
@@ -119,7 +112,7 @@ export function UnidadeCadastroEditDialog({
         return [getErrorMessage(err, "Erro ao salvar dados cadastrais.")];
       }
     },
-    []
+    [],
   );
 
   const cnpjValido = unidade.cnpj ? isValidCNPJ(unidade.cnpj) : false;
@@ -133,25 +126,20 @@ export function UnidadeCadastroEditDialog({
   const updateField =
     (field: keyof UnidadeCadastroFormValues) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setValues((current) => ({
-        ...current,
-        [field]: event.target.value,
-      }));
+      setValues((current) => ({ ...current, [field]: event.target.value }));
     };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* Integração de Tecnologia Tailwind v4: @container na raiz para habilitar Container Queries */}
       <DialogContent className="@container max-h-[92vh] overflow-y-auto p-6 sm:max-w-2xl sm:p-7">
         <DialogHeader className="space-y-1.5">
           <DialogTitle className="text-lg">Editar dados cadastrais</DialogTitle>
           <DialogDescription className="text-sm leading-relaxed">
-            Alterações afetam novas consultas e novos documentos gerados.
-            Arquivos já baixados não são reprocessados.
+            Atualize os dados institucionais da unidade. Contas bancárias são
+            mantidas separadamente para preservar a identidade financeira e o histórico dos repasses.
           </DialogDescription>
         </DialogHeader>
 
-        {/* key reseta o estado do formulário inteiro ao abrir/fechar */}
         <form key={open ? "open" : "closed"} className="mt-2 space-y-6" action={formAction} noValidate>
           {errors && errors.length > 0 && (
             <Alert variant="destructive" className="border-destructive/40">
@@ -159,9 +147,7 @@ export function UnidadeCadastroEditDialog({
               <AlertTitle>Revise os campos antes de salvar</AlertTitle>
               <AlertDescription>
                 <ul className="mt-1.5 list-disc space-y-1 pl-4 text-sm">
-                  {errors.map((error) => (
-                    <li key={error}>{error}</li>
-                  ))}
+                  {errors.map((error) => <li key={error}>{error}</li>)}
                 </ul>
               </AlertDescription>
             </Alert>
@@ -169,19 +155,11 @@ export function UnidadeCadastroEditDialog({
 
           <FieldGroup
             title="Identificação"
-            hint="Gerenciado pela BASE.xlsx e Marco 6B."
-            icon={
-              <Lock
-                className="h-3 w-3 text-muted-foreground/60"
-                aria-hidden="true"
-              />
-            }
+            hint="Identificadores institucionais protegidos."
+            icon={<Lock className="h-3 w-3 text-muted-foreground/60" aria-hidden="true" />}
           >
-            {/* Uso de Container Queries (@md:col-span-2) */}
             <div className="space-y-1.5 @md:col-span-2">
-              <Label htmlFor="cadastro-designacao" className="text-xs font-medium">
-                Designação
-              </Label>
+              <Label htmlFor="cadastro-designacao" className="text-xs font-medium">Designação</Label>
               <Input
                 id="cadastro-designacao"
                 value={unidade.designacao ?? ""}
@@ -193,15 +171,13 @@ export function UnidadeCadastroEditDialog({
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="cadastro-inep" className="text-xs font-medium">
-                  INEP
-                </Label>
+                <Label htmlFor="cadastro-inep" className="text-xs font-medium">INEP</Label>
                 {unidade.inep && (
                   <span className={cn(
                     "text-[10px] px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1",
-                    inepValido 
-                      ? "bg-success/10 text-success border border-success/20" 
-                      : "bg-destructive/10 text-destructive border border-destructive/20"
+                    inepValido
+                      ? "bg-success/10 text-success border border-success/20"
+                      : "bg-destructive/10 text-destructive border border-destructive/20",
                   )}>
                     {inepValido ? "✓ Válido (8d)" : "✗ Inválido"}
                   </span>
@@ -218,15 +194,13 @@ export function UnidadeCadastroEditDialog({
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="cadastro-cnpj" className="text-xs font-medium">
-                  CNPJ
-                </Label>
+                <Label htmlFor="cadastro-cnpj" className="text-xs font-medium">CNPJ</Label>
                 {unidade.cnpj && (
                   <span className={cn(
                     "text-[10px] px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1",
-                    cnpjValido 
-                      ? "bg-success/10 text-success border border-success/20" 
-                      : "bg-destructive/10 text-destructive border border-destructive/20"
+                    cnpjValido
+                      ? "bg-success/10 text-success border border-success/20"
+                      : "bg-destructive/10 text-destructive border border-destructive/20",
                   )}>
                     {cnpjValido ? "✓ Válido (Mod 11)" : "✗ Inconsistente"}
                   </span>
@@ -242,14 +216,9 @@ export function UnidadeCadastroEditDialog({
             </div>
           </FieldGroup>
 
-          <FieldGroup
-            title="Dados cadastrais"
-            hint="Refletem em consultas e novos documentos."
-          >
+          <FieldGroup title="Dados cadastrais" hint="Refletem em consultas e novos documentos.">
             <div className="space-y-1.5 @md:col-span-2">
-              <Label htmlFor="cadastro-nome" className="text-xs font-medium">
-                Nome completo
-              </Label>
+              <Label htmlFor="cadastro-nome" className="text-xs font-medium">Nome completo</Label>
               <Input
                 id="cadastro-nome"
                 value={values.nome}
@@ -262,9 +231,7 @@ export function UnidadeCadastroEditDialog({
             </div>
 
             <div className="space-y-1.5 @md:col-span-2">
-              <Label htmlFor="cadastro-diretor" className="text-xs font-medium">
-                Diretor(a)
-              </Label>
+              <Label htmlFor="cadastro-diretor" className="text-xs font-medium">Diretor(a)</Label>
               <Input
                 id="cadastro-diretor"
                 value={values.diretor}
@@ -276,9 +243,7 @@ export function UnidadeCadastroEditDialog({
             </div>
 
             <div className="space-y-1.5 @md:col-span-2">
-              <Label htmlFor="cadastro-email" className="text-xs font-medium">
-                E-mail institucional de contato
-              </Label>
+              <Label htmlFor="cadastro-email" className="text-xs font-medium">E-mail institucional de contato</Label>
               <Input
                 id="cadastro-email"
                 type="email"
@@ -292,9 +257,7 @@ export function UnidadeCadastroEditDialog({
             </div>
 
             <div className="space-y-1.5 @md:col-span-2">
-              <Label htmlFor="cadastro-endereco" className="text-xs font-medium">
-                Endereço
-              </Label>
+              <Label htmlFor="cadastro-endereco" className="text-xs font-medium">Endereço</Label>
               <Textarea
                 id="cadastro-endereco"
                 value={values.endereco}
@@ -307,62 +270,11 @@ export function UnidadeCadastroEditDialog({
             </div>
           </FieldGroup>
 
-          <FieldGroup
-            title="Dados bancários"
-            hint="Preservam zeros à esquerda e caracteres como X."
-          >
-            <div className="space-y-1.5 @md:col-span-2">
-              <Label htmlFor="cadastro-banco" className="text-xs font-medium">
-                Banco
-              </Label>
-              <Input
-                id="cadastro-banco"
-                value={values.banco}
-                onChange={updateField("banco")}
-                disabled={isPending}
-                maxLength={80}
-                className={editableInputClass}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="cadastro-agencia" className="text-xs font-medium">
-                Agência
-              </Label>
-              <Input
-                id="cadastro-agencia"
-                value={values.agencia}
-                onChange={updateField("agencia")}
-                disabled={isPending}
-                maxLength={20}
-                className={cn(editableInputClass, "font-mono tabular-nums")}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="cadastro-conta" className="text-xs font-medium">
-                Conta corrente
-              </Label>
-              <Input
-                id="cadastro-conta"
-                value={values.conta_corrente}
-                onChange={updateField("conta_corrente")}
-                disabled={isPending}
-                maxLength={30}
-                className={cn(editableInputClass, "font-mono tabular-nums")}
-              />
-            </div>
-          </FieldGroup>
-
-          <Alert className="border-amber-500/30 bg-amber-500/[0.06] text-foreground dark:border-amber-400/25 dark:bg-amber-400/[0.05]">
-            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <AlertTitle className="text-sm font-semibold">
-              Protótipo controlado — sem auditoria persistente
-            </AlertTitle>
+          <Alert className="border-primary/20 bg-primary/[0.04] text-foreground">
+            <Lock className="h-4 w-4 text-primary" />
+            <AlertTitle className="text-sm font-semibold">Dados bancários protegidos</AlertTitle>
             <AlertDescription className="text-sm leading-relaxed text-muted-foreground">
-              Este fluxo grava no cadastro compartilhado em produção. Trilha de
-              auditoria e fluxo de aprovação chegam no Marco 6B (Auth/RLS).
-              Confirme os valores antes de salvar.
+              Banco, agência e conta não são alterados neste formulário. Essa separação evita que uma edição cadastral modifique a conta associada a repasses já registrados.
             </AlertDescription>
           </Alert>
 
@@ -383,15 +295,9 @@ export function UnidadeCadastroEditDialog({
               className="min-w-[160px] @md:min-w-[180px] transition-colors duration-150"
             >
               {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                  Salvando...
-                </>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />Salvando...</>
               ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Salvar cadastro
-                </>
+                <><Save className="mr-2 h-4 w-4" aria-hidden="true" />Salvar cadastro</>
               )}
             </Button>
           </DialogFooter>
@@ -400,4 +306,3 @@ export function UnidadeCadastroEditDialog({
     </Dialog>
   );
 }
-
