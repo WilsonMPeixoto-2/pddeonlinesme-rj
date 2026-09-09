@@ -27,6 +27,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 const tabs = [
   { to: "/dashboard", label: "Painel" },
+  { to: "/repasses", label: "Repasses" },
   { to: "/escolas", label: "Unidades Escolares" },
   { to: "/fiscal", label: "Frente Fiscal" },
   { to: "/base", label: "Importar/Exportar" },
@@ -72,7 +73,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* ⌘K shortcut hint */}
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true }))}
@@ -82,7 +82,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <kbd className="pointer-events-none inline-flex h-4 select-none items-center rounded border border-border/40 bg-muted/30 px-1 text-[10px] font-mono">⌘K</kbd>
               </button>
 
-              {/* Exercício global (O6) */}
               <Select value={exercicio} onValueChange={setExercicio}>
                 <SelectTrigger aria-label="Selecionar exercício" className="h-8 w-[105px] text-xs border-border/50 bg-muted/20">
                   <CalendarDays className="mr-1.5 h-3 w-3 text-muted-foreground" />
@@ -94,53 +93,51 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SelectContent>
               </Select>
 
-              {/* Theme toggle */}
               <ThemeToggle />
 
-            {/* User avatar + dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-2 rounded-full p-0.5 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-label="Menu do usuário"
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 rounded-full p-0.5 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label="Menu do usuário"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-muted/80 to-muted/30 shadow-inner text-xs font-semibold text-foreground/80">
+                      {initials}
+                    </div>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-[220px] bg-popover/95 backdrop-blur-md border-border/60 shadow-xl"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-muted/80 to-muted/30 shadow-inner text-xs font-semibold text-foreground/80">
-                    {initials}
-                  </div>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-[220px] bg-popover/95 backdrop-blur-md border-border/60 shadow-xl"
-              >
-                <DropdownMenuLabel className="font-normal">
-                  <p className="text-sm font-medium truncate">{user?.email ?? "Usuário"}</p>
-                  <div className="mt-1">
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] px-1.5 py-0 h-4 border-primary/30 bg-primary/8 text-primary"
-                    >
-                      Administrador
-                    </Badge>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-border/50" />
-                <DropdownMenuItem onClick={() => navigate("/configuracoes", { viewTransition: true })} className="gap-2 cursor-pointer">
-                  <User className="h-3.5 w-3.5" />
-                  <span className="text-sm">Configurações</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/diretor", { viewTransition: true })} className="gap-2 cursor-pointer">
-                  <UserCircle className="h-3.5 w-3.5" />
-                  <span className="text-sm">Portal do Diretor</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-border/50" />
-                <DropdownMenuItem onClick={handleLogout} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span className="text-sm">Sair</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuLabel className="font-normal">
+                    <p className="text-sm font-medium truncate">{user?.email ?? "Usuário"}</p>
+                    <div className="mt-1">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] px-1.5 py-0 h-4 border-primary/30 bg-primary/8 text-primary"
+                      >
+                        Administrador
+                      </Badge>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-border/50" />
+                  <DropdownMenuItem onClick={() => navigate("/configuracoes", { viewTransition: true })} className="gap-2 cursor-pointer">
+                    <User className="h-3.5 w-3.5" />
+                    <span className="text-sm">Configurações</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/diretor", { viewTransition: true })} className="gap-2 cursor-pointer">
+                    <UserCircle className="h-3.5 w-3.5" />
+                    <span className="text-sm">Portal do Diretor</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border/50" />
+                  <DropdownMenuItem onClick={handleLogout} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="h-3.5 w-3.5" />
+                    <span className="text-sm">Sair</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
