@@ -1,0 +1,38 @@
+name: Apply Repasses Cells Hotfix Temp
+
+on:
+  push:
+    branches:
+      - feat/layout-financeiro-repasses-v2
+    paths:
+      - .github/workflows/apply-repasses-cells-hotfix-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/layout-financeiro-repasses-v2
+      - name: Aplicar correção mínima de células
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('src/pages/Repasses.tsx')
+          text = path.read_text(encoding='utf-8')
+          old = 'row.getVisibleCells().map((cell) => ('
+          assert text.count(old) == 1, f'matches: {text.count(old)}'
+          text = text.replace(old, 'row.getAllCells().map((cell) => (')
+          text = text.replace('{<table.FlexRender cell={cell} />}', '<table.FlexRender cell={cell} />')
+          path.write_text(text, encoding='utf-8')
+          Path('.github/workflows/apply-repasses-cells-hotfix-temp.yml').unlink()
+      - name: Commitar correção e remover workflow temporário
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/Repasses.tsx .github/workflows/apply-repasses-cells-hotfix-temp.yml
+          git commit -m "fix: usar células core no TanStack Table v9"
+          git push origin HEAD:feat/layout-financeiro-repasses-v2
