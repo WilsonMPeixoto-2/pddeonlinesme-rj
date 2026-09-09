@@ -577,7 +577,7 @@ export default function Repasses() {
                             <th key={header.id} className="px-4 py-3 align-middle text-xs font-semibold text-muted-foreground">
                               {header.isPlaceholder
                                 ? null
-                                : table.FlexRender(header.column.columnDef.header, header.getContext())}
+                                : <table.FlexRender header={header} />}
                             </th>
                           ))}
                         </tr>
@@ -589,7 +589,7 @@ export default function Repasses() {
                           <tr key={row.id} className="border-b border-border/40 transition-colors last:border-b-0 hover:bg-muted/15">
                             {row.getVisibleCells().map((cell) => (
                               <td key={cell.id} className="px-4 py-3 align-middle text-sm">
-                                {table.FlexRender(cell.column.columnDef.cell, cell.getContext())}
+                                {<table.FlexRender cell={cell} />}
                               </td>
                             ))}
                           </tr>
