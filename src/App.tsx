@@ -14,7 +14,6 @@ import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import { ExercicioProvider } from "./hooks/useExercicio.tsx";
 import "nprogress/nprogress.css";
 
-// Production redeploy marker: 2026-09-09, after financial data/UI consolidation.
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
 const Repasses = lazy(() => import("./pages/Repasses.tsx"));
 const Escolas = lazy(() => import("./pages/Escolas.tsx"));
