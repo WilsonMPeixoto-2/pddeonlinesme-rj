@@ -47,7 +47,8 @@ import { repassesFinanceirosOptions } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 
 const repassesTableFeatures = tableFeatures({
-  sorting: rowSortingFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
 });
 
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -302,11 +303,8 @@ export default function Repasses() {
     columns,
     getRowId: (row) => row.unidadeId,
     initialState: {
-      sorting: {
-        sortBy: [{ id: "valorPago", desc: true }],
-      },
+      sorting: [{ id: "valorPago", desc: true }],
     },
-    getSortedRowModel: createSortedRowModel(),
   });
 
   const clearFilters = () => {
