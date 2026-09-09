@@ -71,7 +71,7 @@ describe("Repasses com TanStack Table v9", () => {
       ),
     ).not.toThrow();
 
-    expect(screen.getByText("Ação")).toBeInTheDocument();
+    expect(screen.getByText("Ação")).toBeVisible();
     expect(screen.getAllByText("PDDE Básico").length).toBeGreaterThan(0);
   });
 });
