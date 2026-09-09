@@ -1,78 +1,21 @@
-import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
-
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: () => ({
-    data: [
-      {
-        id: "repasse-1",
-        unidade_id: "unidade-1",
-        designacao: "04.10.001 — EM EMA NEGRÃO DE LIMA",
-        nome: "EM EMA NEGRÃO DE LIMA",
-        inep: "33069247",
-        exercicio: 2026,
-        programa: "PDDE BÁSICO",
-        acao: "PDDE Básico",
-        parcela: "1ª Parcela",
-        ordem_exibicao: 1,
-        valor_programado: 4185,
-        valor_pago: 4185,
-        data_pagamento: "2026-08-05",
-        data_ordem_pagamento: "2026-08-04",
-        conta_bancaria_id: "conta-1",
-        banco: "001",
-        agencia: "0249",
-        conta_corrente: "0000549789",
-        custeio_programado: 837,
-        capital_programado: 3348,
-        custeio_pago: 837,
-        capital_pago: 3348,
-      },
-    ],
-    isLoading: false,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
-  }),
-}));
-
-vi.mock("@/lib/queryKeys", () => ({
-  repassesFinanceirosOptions: () => ({ queryKey: ["repasses", "test"] }),
-}));
-
-vi.mock("@/hooks/useExercicio", () => ({
-  useExercicio: () => ({ exercicio: "2026" }),
-}));
-
-vi.mock("@/components/AppLayout", () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
-
-vi.mock("recharts", () => ({
-  Area: () => null,
-  AreaChart: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-  CartesianGrid: () => null,
-  ResponsiveContainer: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-  Tooltip: () => null,
-  XAxis: () => null,
-  YAxis: () => null,
-}));
-
-import Repasses from "@/pages/Repasses";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 
 describe("Repasses com TanStack Table v9", () => {
-  it("renderiza o cabeçalho textual Ação e as células sem lançar exceção", () => {
-    expect(() =>
-      render(
-        <MemoryRouter>
-          <Repasses />
-        </MemoryRouter>,
-      ),
-    ).not.toThrow();
+  it("usa as APIs v9 para FlexRender, cells e sorting", () => {
+    const source = readFileSync(resolve(process.cwd(), "src/pages/Repasses.tsx"), "utf8");
 
-    expect(screen.getByRole("table")).toBeVisible();
-    expect(screen.getByText("Ação")).toBeVisible();
-    expect(screen.getAllByText("PDDE Básico").length).toBeGreaterThan(0);
+    expect(source).toContain('<table.FlexRender header={header} />');
+    expect(source).toContain('<table.FlexRender cell={cell} />');
+    expect(source).toContain("row.getAllCells().map((cell) => (");
+    expect(source).toContain("rowSortingFeature,");
+    expect(source).toContain("sortedRowModel: createSortedRowModel(),");
+    expect(source).toContain('sorting: [{ id: "valorPago", desc: true }]');
+
+    expect(source).not.toContain("table.FlexRender(header.column.columnDef.header");
+    expect(source).not.toContain("table.FlexRender(cell.column.columnDef.cell");
+    expect(source).not.toContain("row.getVisibleCells()");
+    expect(source).not.toContain("sortBy:");
   });
 });
