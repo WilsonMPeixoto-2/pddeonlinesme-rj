@@ -47,6 +47,9 @@ jobs:
       - name: E2E and accessibility
         run: npm run test:e2e
 
-      - name: Production dependency audit
+      - name: Production dependency hygiene (Knip)
         continue-on-error: true
         run: npm run check:deps:prod
+
+      - name: Production vulnerability audit
+        run: npm audit --omit=dev --audit-level=high
