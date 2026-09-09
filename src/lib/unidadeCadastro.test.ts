@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   normalizeOptionalText,
+  toUnidadeCadastroFormValues,
   toUnidadesEscolaresUpdate,
   validateUnidadeCadastro,
   type UnidadeCadastroFormValues,
@@ -17,6 +18,30 @@ describe("unidadeCadastro", () => {
   it("normaliza texto opcional sem perder zeros ou caracteres", () => {
     expect(normalizeOptionalText("  0012-X  ")).toBe("0012-X");
     expect(normalizeOptionalText("   ")).toBeNull();
+  });
+
+  it("inicializa formulario vazio sem campos bancarios", () => {
+    expect(toUnidadeCadastroFormValues(null)).toEqual({
+      nome: "",
+      diretor: "",
+      endereco: "",
+      email: "",
+    });
+  });
+
+  it("mapeia somente dados cadastrais da ficha", () => {
+    const unidade = {
+      nome: "EM Alfa",
+      diretor: "Maria",
+      endereco: "Rua A",
+    } as Parameters<typeof toUnidadeCadastroFormValues>[0];
+
+    expect(toUnidadeCadastroFormValues(unidade, "alfa@sme.rio")).toEqual({
+      nome: "EM Alfa",
+      diretor: "Maria",
+      endereco: "Rua A",
+      email: "alfa@sme.rio",
+    });
   });
 
   it("valida campos obrigatorios do cadastro minimo", () => {
