@@ -25,6 +25,7 @@ const validValues: UnidadeCadastroFormValues = {
   banco: "Banco do Brasil",
   agencia: "0012-X",
   conta_corrente: "00045-6",
+  email: "escola@sme.rio",
 };
 
 function makeWrapper() {
@@ -47,7 +48,7 @@ describe("useUpdateUnidadeCadastro", () => {
     vi.clearAllMocks();
   });
 
-  it("chama a RPC atomica com payload normalizado", async () => {
+  it("chama a RPC cadastral sem alterar identidade bancaria", async () => {
     mockedRpc.mockResolvedValueOnce({
       data: "uid-1",
       error: null,
@@ -67,19 +68,16 @@ describe("useUpdateUnidadeCadastro", () => {
     expect(mockedRpc).toHaveBeenCalledTimes(1);
     expect(mockedRpc).toHaveBeenCalledWith(
       "update_unidade_cadastro_minima",
-      expect.objectContaining({
+      {
         p_unidade_id: "uid-1",
         p_nome: "Escola Municipal Teste",
         p_diretor: "Maria Teste",
         p_endereco: "Rua Alfa, 123",
-        p_banco: "Banco do Brasil",
-        p_agencia: "0012-X",
-        p_conta_corrente: "00045-6",
-      }),
+      },
     );
   });
 
-  it("preserva zeros a esquerda em agencia e conta", async () => {
+  it("ignora banco agencia e conta recebidos pelo formulario legado", async () => {
     mockedRpc.mockResolvedValueOnce({
       data: "uid-1",
       error: null,
@@ -92,19 +90,21 @@ describe("useUpdateUnidadeCadastro", () => {
 
     await result.current.mutateAsync({
       unidadeId: "uid-1",
-      values: { ...validValues, agencia: "0001-X", conta_corrente: "00099-0" },
+      values: {
+        ...validValues,
+        banco: "Banco que nao deve ser gravado",
+        agencia: "9999-X",
+        conta_corrente: "99999-9",
+      },
     });
 
-    expect(mockedRpc).toHaveBeenCalledWith(
-      "update_unidade_cadastro_minima",
-      expect.objectContaining({
-        p_agencia: "0001-X",
-        p_conta_corrente: "00099-0",
-      }),
-    );
+    const [, payload] = mockedRpc.mock.calls[0];
+    expect(payload).not.toHaveProperty("p_banco");
+    expect(payload).not.toHaveProperty("p_agencia");
+    expect(payload).not.toHaveProperty("p_conta_corrente");
   });
 
-  it("envia null em campos opcionais aparados que ficaram vazios", async () => {
+  it("envia null somente nos campos cadastrais opcionais vazios", async () => {
     mockedRpc.mockResolvedValueOnce({
       data: "uid-1",
       error: null,
@@ -121,21 +121,17 @@ describe("useUpdateUnidadeCadastro", () => {
         ...validValues,
         diretor: "  ",
         endereco: "",
-        banco: "",
-        agencia: "",
-        conta_corrente: "",
       },
     });
 
     expect(mockedRpc).toHaveBeenCalledWith(
       "update_unidade_cadastro_minima",
-      expect.objectContaining({
+      {
+        p_unidade_id: "uid-1",
+        p_nome: "Escola Municipal Teste",
         p_diretor: null,
         p_endereco: null,
-        p_banco: null,
-        p_agencia: null,
-        p_conta_corrente: null,
-      }),
+      },
     );
   });
 
@@ -213,13 +209,22 @@ describe("useUpdateUnidadeCadastro", () => {
     await expect(
       result.current.mutateAsync({
         unidadeId: "uid-1",
-        values: { ...validValues, diretor: "DIRETOR NEW", nome: "ESCOLA NEW" },
+        values: {
+          ...validValues,
+          diretor: "DIRETOR NEW",
+          nome: "ESCOLA NEW",
+          banco: "Banco nao deve entrar no optimistic update",
+          agencia: "9999",
+          conta_corrente: "999-9",
+        },
       }),
     ).rejects.toThrow(/falha de rede/);
 
-    // Apos rollback, o cache deve refletir os valores anteriores (nao os otimistas).
     const after = qc.getQueryData([...detalheKey]) as typeof detalheBefore;
     expect(after.diretor).toBe("DIRETOR OLD");
     expect(after.nome).toBe("ESCOLA OLD");
+    expect(after.banco).toBe("Banco X");
+    expect(after.agencia).toBe("0001");
+    expect(after.conta_corrente).toBe("123-4");
   });
 });
