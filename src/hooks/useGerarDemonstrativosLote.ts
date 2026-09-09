@@ -2,12 +2,10 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
-import {
-  generateDemonstrativosLote,
-  saveLoteResult,
-  type CadastroPendente,
-  type LoteFailure,
-  type LoteProgress,
+import type {
+  CadastroPendente,
+  LoteFailure,
+  LoteProgress,
 } from "@/lib/demonstrativo/generateDemonstrativosLote";
 
 const DOC_GEN_RUNS = "document_generation_runs" as const;
@@ -101,8 +99,6 @@ export function useGerarDemonstrativosLote() {
         if (error) throw error;
         return data as { id: string } | null;
       } catch (err) {
-        // Best-effort: nao impedir a geracao se a tabela ainda nao existe ou
-        // se o usuario nao tem permissao. Reportamos via meta.historyError.
         const message = err instanceof Error ? err.message : String(err);
         setState((prev) =>
           prev.phase === "running" || prev.phase === "done"
@@ -187,6 +183,10 @@ export function useGerarDemonstrativosLote() {
       });
 
       try {
+        const { generateDemonstrativosLote, saveLoteResult } = await import(
+          "@/lib/demonstrativo/generateDemonstrativosLote"
+        );
+
         const result = await generateDemonstrativosLote({
           unidades,
           exercicio,
