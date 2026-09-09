@@ -1,33 +1,33 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider, Outlet, Navigate, ScrollRestoration } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
-import Repasses from "./pages/Repasses.tsx";
-import Escolas from "./pages/Escolas.tsx";
-import EscolaEditarComRecursos from "./pages/EscolaEditarComRecursos.tsx";
-import EscolaRecursos from "./pages/EscolaRecursos.tsx";
-import Base from "./pages/Base.tsx";
-import Configuracoes from "./pages/Configuracoes.tsx";
-import Manual from "./pages/Manual.tsx";
-import StyleGuide from "./pages/StyleGuide.tsx";
-import AccessDenied from "./pages/AccessDenied.tsx";
-import RedefinirSenha from "./pages/RedefinirSenha.tsx";
-import PortalDiretor from "./pages/PortalDiretor.tsx";
-import HistoricoGeracoes from "./pages/HistoricoGeracoes.tsx";
-import FiscalConferencia from "./pages/FiscalConferencia.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { TopLoadingBar } from "./components/TopLoadingBar.tsx";
-import { CommandPalette } from "./components/CommandPalette.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import { ExercicioProvider } from "./hooks/useExercicio.tsx";
 import "nprogress/nprogress.css";
+
+const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
+const Repasses = lazy(() => import("./pages/Repasses.tsx"));
+const Escolas = lazy(() => import("./pages/Escolas.tsx"));
+const EscolaEditarComRecursos = lazy(() => import("./pages/EscolaEditarComRecursos.tsx"));
+const EscolaRecursos = lazy(() => import("./pages/EscolaRecursos.tsx"));
+const Base = lazy(() => import("./pages/Base.tsx"));
+const Configuracoes = lazy(() => import("./pages/Configuracoes.tsx"));
+const Manual = lazy(() => import("./pages/Manual.tsx"));
+const StyleGuide = lazy(() => import("./pages/StyleGuide.tsx"));
+const AccessDenied = lazy(() => import("./pages/AccessDenied.tsx"));
+const RedefinirSenha = lazy(() => import("./pages/RedefinirSenha.tsx"));
+const PortalDiretor = lazy(() => import("./pages/PortalDiretor.tsx"));
+const HistoricoGeracoes = lazy(() => import("./pages/HistoricoGeracoes.tsx"));
+const FiscalConferencia = lazy(() => import("./pages/FiscalConferencia.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,13 +39,24 @@ const queryClient = new QueryClient({
   },
 });
 
+const RouteFallback = () => (
+  <div
+    role="status"
+    aria-live="polite"
+    className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground"
+  >
+    Carregando área…
+  </div>
+);
+
 const RootLayout = () => (
   <>
     <TopLoadingBar />
-    <CommandPalette />
     <ScrollRestoration />
     <ErrorBoundary>
-      <Outlet />
+      <Suspense fallback={<RouteFallback />}>
+        <Outlet />
+      </Suspense>
     </ErrorBoundary>
   </>
 );
@@ -94,7 +105,6 @@ const App = () => (
     <ExercicioProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Toaster />
           <Sonner />
           <RouterProvider router={router} />
           <Analytics />
