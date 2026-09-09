@@ -37,6 +37,10 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
+vi.mock("@/lib/queryKeys", () => ({
+  repassesFinanceirosOptions: () => ({ queryKey: ["repasses", "test"] }),
+}));
+
 vi.mock("@/hooks/useExercicio", () => ({
   useExercicio: () => ({ exercicio: "2026" }),
 }));
