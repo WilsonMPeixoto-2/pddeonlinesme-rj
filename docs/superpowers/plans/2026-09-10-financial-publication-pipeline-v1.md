@@ -28,14 +28,14 @@
 
 **Files:**
 - Create: `scripts/lib/financial-publication.mjs`
-- Create: `src/test/financial-publication.test.ts`
+- Create: `src/test/financial-publication.test.mjs`
 
 **Interfaces:**
 - Consumes: snapshot reidratado no formato humano do `pdde-repasse-conciliador`.
 - Produces: `buildNormalizedPublicationPayload(snapshot, manifest)` e `evaluatePublicationDimensions(payload)`.
 
 - [ ] **Step 1: Escrever testes RED para classificação de programa/ação, múltiplas contas, centavos→reais e NULL preservado**
-- [ ] **Step 2: Executar `npm test -- src/test/financial-publication.test.ts` e confirmar falha por módulo inexistente**
+- [ ] **Step 2: Executar `npm test -- src/test/financial-publication.test.mjs` e confirmar falha por módulo inexistente**
 - [ ] **Step 3: Implementar transformação mínima para o payload `{ accounts, repasses, dimensions, source }`**
 - [ ] **Step 4: Executar o teste e confirmar GREEN**
 - [ ] **Step 5: Adicionar testes RED para as cinco dimensões, inclusive cobertura 162/163 e breakdown incompleto**
@@ -67,7 +67,7 @@
 **Files:**
 - Create: `scripts/sync-financial-snapshot.mjs`
 - Modify: `package.json`
-- Modify: `src/test/financial-publication.test.ts`
+- Modify: `src/test/financial-publication.test.mjs`
 
 **Interfaces:**
 - Consumes: manifesto `public/data/pdde-2026-snapshot.json` do motor.
