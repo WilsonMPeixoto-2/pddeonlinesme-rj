@@ -2,25 +2,23 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentsPanel } from "@/components/DocumentsPanel";
+import { IdentificacaoInstitucional } from "@/components/escola/IdentificacaoInstitucional";
+import { RecursosPDDEPanel } from "@/components/RecursosPDDEPanel";
 import { UnidadeCadastroEditDialog } from "@/components/UnidadeCadastroEditDialog";
 import { EmptyState } from "@/components/EmptyState";
 import {
   ArrowLeft,
   AlertCircle,
   User,
-  Landmark,
-  Coins,
   CheckCircle2,
   Download,
   FileText,
   Loader2,
   Pencil,
-  Mail,
+  WalletCards,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -32,6 +30,7 @@ import { useUpdateUnidadeCadastro } from "@/hooks/useUpdateUnidadeCadastro";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
 import { getErrorMessage } from "@/lib/errors";
+import { financeiroUnidadeOptions } from "@/lib/queryKeys";
 import type { UnidadeCadastroFormValues } from "@/lib/unidadeCadastro";
 import { cn } from "@/lib/utils";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -47,15 +46,11 @@ const formatMoney = (val: number | null | undefined) => {
   return moneyFormatter.format(val);
 };
 
-const formatText = (val: string | null | undefined, fallback = "Não informado") => {
-  return val && val.trim() !== "" ? val : fallback;
-};
 
 /* ─── Section navigation ─── */
 const SECTIONS = [
   { id: "identificacao", label: "Identificação", icon: User },
-  { id: "bancarios", label: "Dados Bancários", icon: Landmark },
-  { id: "financeiros", label: "Execução Financeira Importada", icon: Coins },
+  { id: "financeiros", label: "Recursos PDDE", icon: WalletCards },
   { id: "despesas", label: "Despesas Homologadas", icon: FileText },
 ];
 
@@ -100,12 +95,6 @@ export default function EscolaEditar() {
 
   const PROGRAMA_PADRAO = "basico";
   const programaLabel = PROGRAMA_PADRAO === "basico" ? "básico" : PROGRAMA_PADRAO;
-  const readOnlyInputClass = "bg-background/60 border-border/50 text-foreground cursor-default shadow-inner";
-
-  // Fase 2A: fallback visual para o padrão bancário do PDDE.
-  // A normalização persistida do campo banco será tratada em etapa própria.
-  const BANCO_PADRAO_PDDE = "Banco do Brasil";
-
   const { data: u, isLoading, error, refetch, isFetching } = useUnidadeDetalhe({
     unidadeId: id,
     exercicio,
@@ -119,7 +108,7 @@ export default function EscolaEditar() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("unidades_escolares")
-        .select("email")
+        .select("email, alunos")
         .eq("id", id!)
         .maybeSingle();
 
@@ -130,6 +119,8 @@ export default function EscolaEditar() {
       return data;
     },
   });
+
+  const financeiro = useQuery(financeiroUnidadeOptions(id, Number(exercicio)));
 
   const updateCadastro = useUpdateUnidadeCadastro({
     exercicio,
@@ -287,7 +278,8 @@ export default function EscolaEditar() {
   };
 
   const scrollTo = (sectionId: string) => {
-    const el = sectionRefs.current[sectionId];
+    const mobile = window.matchMedia("(max-width: 1023px)").matches;
+    const el = mobile ? document.getElementById(`${sectionId}-mobile`) : sectionRefs.current[sectionId];
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -490,162 +482,36 @@ export default function EscolaEditar() {
             {/* MAIN FORM */}
             <ResizablePanel defaultSize={78} minSize={50} className="pl-4 pb-20">
               <div className="space-y-5">
-                {/* SECTION 1: Identificação */}
-                <Card
-                  id="identificacao"
-                  ref={(el) => {
-                    sectionRefs.current["identificacao"] = el;
-                  }}
-                  className="scroll-mt-32"
-                >
-                  <CardContent className="p-6">
-                    <SectionHeader
-                      icon={User}
-                      title="Identificação"
-                      subtitle="Dados institucionais da unidade"
-                    />
-                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                      <div className="space-y-1.5 sm:col-span-2">
-                        <Label>Designação</Label>
-                        <Input readOnly value={formatText(u.designacao)} className={readOnlyInputClass} />
-                      </div>
-                      
-                      <div className="space-y-1.5 sm:col-span-2">
-                        <Label>Nome Completo</Label>
-                        <Input readOnly value={formatText(u.nome)} className={readOnlyInputClass} />
-                      </div>
+                {/* SECTION 1: Identificação institucional */}
+      <Card id="identificacao" ref={(el) => { sectionRefs.current["identificacao"] = el; }} className="scroll-mt-32">
+        <CardContent className="p-6">
+          <SectionHeader icon={User} title="Identificação institucional" subtitle="Dados cadastrais disponíveis para a unidade" />
+          <IdentificacaoInstitucional
+            designacao={u.designacao}
+            nome={u.nome}
+            inep={u.inep}
+            cnpj={u.cnpj}
+            diretor={u.diretor}
+            email={escolaCadastral?.email}
+            endereco={u.endereco}
+            alunos={escolaCadastral?.alunos}
+          />
+        </CardContent>
+      </Card>
 
-                      <div className="space-y-1.5">
-                        <Label>INEP</Label>
-                        <Input readOnly value={formatText(u.inep)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
-                      </div>
+      {/* SECTION 2: Recursos PDDE */}
+      <Card id="financeiros" ref={(el) => { sectionRefs.current["financeiros"] = el; }} className="scroll-mt-32">
+        <CardContent className="p-6">
+          <SectionHeader icon={WalletCards} title="Recursos PDDE" subtitle={`Programas, ações, parcelas, contas e datas · ${exercicio}`} />
+          <RecursosPDDEPanel
+            programas={financeiro.data?.programas ?? []}
+            isLoading={financeiro.isLoading}
+            error={financeiro.isError ? financeiro.error.message : null}
+          />
+        </CardContent>
+      </Card>
 
-                      <div className="space-y-1.5">
-                        <Label>CNPJ</Label>
-                        <Input readOnly value={formatText(u.cnpj)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
-                      </div>
-
-                      <div className="space-y-1.5 sm:col-span-2">
-                        <Label>Diretor(a)</Label>
-                        <Input readOnly value={formatText(u.diretor)} className={readOnlyInputClass} />
-                      </div>
-
-                      <div className="space-y-1.5 sm:col-span-2">
-                        <Label>E-mail Institucional</Label>
-                        <Input readOnly value={formatText(escolaCadastral?.email)} className={readOnlyInputClass} />
-                      </div>
-
-                      <div className="space-y-1.5 sm:col-span-2">
-                        <Label>Endereço</Label>
-                        <Input readOnly value={formatText(u.endereco)} className={readOnlyInputClass} />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* SECTION 2: Bancários */}
-                <Card
-                  id="bancarios"
-                  ref={(el) => {
-                    sectionRefs.current["bancarios"] = el;
-                  }}
-                  className="scroll-mt-32"
-                >
-                  <CardContent className="p-6">
-                    <SectionHeader
-                      icon={Landmark}
-                      title="Dados Bancários"
-                      subtitle="Conta vinculada da unidade"
-                    />
-                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
-                      <div className="space-y-1.5 sm:col-span-3">
-                        <Label>Banco</Label>
-                        <Input readOnly value={formatText(u.banco, BANCO_PADRAO_PDDE)} className={readOnlyInputClass} />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>Agência</Label>
-                        <Input readOnly value={formatText(u.agencia)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
-                      </div>
-                      <div className="space-y-1.5 sm:col-span-2">
-                        <Label>Conta corrente</Label>
-                        <Input readOnly value={formatText(u.conta_corrente)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* SECTION 3: Financeiros */}
-                <Card
-                  id="financeiros"
-                  ref={(el) => {
-                    sectionRefs.current["financeiros"] = el;
-                  }}
-                  className="scroll-mt-32"
-                >
-                  <CardContent className="p-6">
-                    <SectionHeader
-                      icon={Coins}
-                      title="Execução Financeira Importada"
-                      subtitle={`Valores referentes a ${exercicio} - Programa ${PROGRAMA_PADRAO.toUpperCase()}`}
-                    />
-                    
-                    <div className="mb-6 rounded-lg border border-border/40 bg-muted/10 p-5">
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total Reprogramado</p>
-                          <p className="text-lg font-mono font-medium text-foreground">{formatMoney(u.total_reprogramado)}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total Parcelas</p>
-                          <p className="text-lg font-mono font-medium text-foreground">{formatMoney(u.total_parcelas)}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground text-primary">Disponível Inicial</p>
-                          <p className="text-lg font-mono font-semibold text-primary">{formatMoney(u.total_disponivel_inicial)}</p>
-                        </div>
-                      </div>
-                      <p className="mt-3 text-xs italic text-muted-foreground/70">
-                        Valores exibidos conforme BASE importada para o exercício e programa selecionados.
-                      </p>
-                    </div>
-
-                    <div className="space-y-4">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Detalhamento Custeio × Capital
-                      </p>
-                      <div className="overflow-x-auto rounded-md border border-border/40">
-                        <table className="w-full text-sm min-w-[500px]">
-                          <thead>
-                            <tr className="bg-muted/30">
-                              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Componente</th>
-                              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Custeio</th>
-                              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Capital</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border/30">
-                            <tr>
-                              <td className="px-3 py-2.5 text-sm font-medium text-foreground">Saldo Reprogramado</td>
-                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.reprogramado_custeio)}</td>
-                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.reprogramado_capital)}</td>
-                            </tr>
-                            <tr>
-                              <td className="px-3 py-2.5 text-sm font-medium text-foreground">1ª Parcela</td>
-                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_1_custeio)}</td>
-                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_1_capital)}</td>
-                            </tr>
-                            <tr>
-                              <td className="px-3 py-2.5 text-sm font-medium text-foreground">2ª Parcela</td>
-                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_2_custeio)}</td>
-                              <td className="px-3 py-2.5 text-right font-mono text-sm tabular-nums text-muted-foreground">{formatMoney(u.parcela_2_capital)}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* SECTION 4: Despesas Fiscais */}
+      {/* SECTION 3: Despesas Fiscais */}
                 <Card
                   id="despesas"
                   ref={(el) => {
@@ -787,153 +653,36 @@ export default function EscolaEditar() {
           </aside>
 
           <div className="space-y-5">
-            {/* SECTION 1: Identificação */}
-            <Card
-              id="identificacao-mobile"
-              className="ds-card scroll-mt-32"
-            >
-              <CardContent className="p-6">
-                <SectionHeader
-                  icon={User}
-                  title="Identificação"
-                  subtitle="Dados institucionais da unidade"
-                />
-                <div className="grid grid-cols-1 gap-x-6 gap-y-4">
-                  <div className="space-y-1.5">
-                    <Label>Designação</Label>
-                    <Input readOnly value={formatText(u.designacao)} className={readOnlyInputClass} />
-                  </div>
-                  
-                  <div className="space-y-1.5">
-                    <Label>Nome Completo</Label>
-                    <Input readOnly value={formatText(u.nome)} className={readOnlyInputClass} />
-                  </div>
+            {/* SECTION 1: Identificação institucional */}
+  <Card id="identificacao-mobile" className="ds-card scroll-mt-32">
+    <CardContent className="p-6">
+      <SectionHeader icon={User} title="Identificação institucional" subtitle="Dados cadastrais disponíveis para a unidade" />
+      <IdentificacaoInstitucional
+        designacao={u.designacao}
+        nome={u.nome}
+        inep={u.inep}
+        cnpj={u.cnpj}
+        diretor={u.diretor}
+        email={escolaCadastral?.email}
+        endereco={u.endereco}
+        alunos={escolaCadastral?.alunos}
+      />
+    </CardContent>
+  </Card>
 
-                  <div className="space-y-1.5">
-                    <Label>INEP</Label>
-                    <Input readOnly value={formatText(u.inep)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
-                  </div>
+  {/* SECTION 2: Recursos PDDE */}
+  <Card id="financeiros-mobile" className="ds-card scroll-mt-32">
+    <CardContent className="p-6">
+      <SectionHeader icon={WalletCards} title="Recursos PDDE" subtitle={`Programas, ações, parcelas, contas e datas · ${exercicio}`} />
+      <RecursosPDDEPanel
+        programas={financeiro.data?.programas ?? []}
+        isLoading={financeiro.isLoading}
+        error={financeiro.isError ? financeiro.error.message : null}
+      />
+    </CardContent>
+  </Card>
 
-                  <div className="space-y-1.5">
-                    <Label>CNPJ</Label>
-                    <Input readOnly value={formatText(u.cnpj)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label>Diretor(a)</Label>
-                    <Input readOnly value={formatText(u.diretor)} className={readOnlyInputClass} />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label>E-mail Institucional</Label>
-                    <Input readOnly value={formatText(escolaCadastral?.email)} className={readOnlyInputClass} />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label>Endereço</Label>
-                    <Input readOnly value={formatText(u.endereco)} className={readOnlyInputClass} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* SECTION 2: Bancários */}
-            <Card
-              id="bancarios-mobile"
-              className="ds-card scroll-mt-32"
-            >
-              <CardContent className="p-6">
-                <SectionHeader
-                  icon={Landmark}
-                  title="Dados Bancários"
-                  subtitle="Conta vinculada da unidade"
-                />
-                <div className="grid grid-cols-1 gap-x-6 gap-y-4">
-                  <div className="space-y-1.5">
-                    <Label>Banco</Label>
-                    <Input readOnly value={formatText(u.banco, BANCO_PADRAO_PDDE)} className={readOnlyInputClass} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Agência</Label>
-                    <Input readOnly value={formatText(u.agencia)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Conta corrente</Label>
-                    <Input readOnly value={formatText(u.conta_corrente)} className={cn(readOnlyInputClass, "font-mono tabular-nums")} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* SECTION 3: Financeiros */}
-            <Card
-              id="financeiros-mobile"
-              className="ds-card scroll-mt-32"
-            >
-              <CardContent className="p-6">
-                <SectionHeader
-                  icon={Coins}
-                  title="Execução Financeira Importada"
-                  subtitle={`Valores referentes a ${exercicio} - Programa ${PROGRAMA_PADRAO.toUpperCase()}`}
-                />
-                
-                <div className="mb-6 rounded-lg border border-border/40 bg-muted/10 p-5">
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-1">
-                      <p className="ds-label">Total Reprogramado</p>
-                      <p className="ds-num-mono text-lg font-medium text-foreground">{formatMoney(u.total_reprogramado)}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="ds-label">Total Parcelas</p>
-                      <p className="ds-num-mono text-lg font-medium text-foreground">{formatMoney(u.total_parcelas)}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="ds-label text-primary">Disponível Inicial</p>
-                      <p className="ds-num-mono text-lg font-semibold text-primary">{formatMoney(u.total_disponivel_inicial)}</p>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-xs italic text-muted-foreground/70">
-                    Valores exibidos conforme BASE importada para o exercício e programa selecionados.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="ds-label">
-                    Detalhamento Custeio × Capital
-                  </p>
-                  <div className="overflow-x-auto rounded-md border border-border/40">
-                    <table className="w-full text-sm min-w-[500px]">
-                      <thead>
-                        <tr className="bg-muted/30">
-                          <th className="ds-th px-3 py-2 text-left">Componente</th>
-                          <th className="ds-th px-3 py-2 text-right">Custeio</th>
-                          <th className="ds-th px-3 py-2 text-right">Capital</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/30">
-                        <tr>
-                          <td className="ds-td px-3 py-2.5 font-medium text-foreground">Saldo Reprogramado</td>
-                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.reprogramado_custeio)}</td>
-                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.reprogramado_capital)}</td>
-                        </tr>
-                        <tr>
-                          <td className="ds-td px-3 py-2.5 font-medium text-foreground">1ª Parcela</td>
-                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_1_custeio)}</td>
-                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_1_capital)}</td>
-                        </tr>
-                        <tr>
-                          <td className="ds-td px-3 py-2.5 font-medium text-foreground">2ª Parcela</td>
-                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_2_custeio)}</td>
-                          <td className="ds-td ds-num-mono px-3 py-2.5 text-right text-muted-foreground">{formatMoney(u.parcela_2_capital)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* SECTION 4: Despesas Fiscais (Mobile) */}
+  {/* SECTION 3: Despesas Fiscais (Mobile) */}
             <Card
               id="despesas-mobile"
               className="ds-card scroll-mt-32"
