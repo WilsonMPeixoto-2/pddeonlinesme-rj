@@ -114,11 +114,6 @@ export function CommandPalette() {
               >
                 <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 <span>{item.label}</span>
-                {item.shortcut ? (
-                  <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border border-border/50 bg-muted/40 px-1.5 text-[10px] font-mono font-medium text-muted-foreground">
-                    ⌘{item.shortcut}
-                  </kbd>
-                ) : null}
               </CommandItem>
             );
           })}
