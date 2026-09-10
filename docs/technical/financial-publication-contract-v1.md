@@ -46,7 +46,7 @@ O ciclo inicial formaliza somente fatos que o PDDE Online já utiliza em produç
 
 | Chave | Escopo esperado | Critério mínimo de maturidade |
 |---|---:|---|
-| `accounts` | 163 escolas | ao menos uma conta válida por escola |
+| `bank_accounts` | 163 escolas | ao menos uma conta com banco, agência e conta válidos por escola |
 | `scheduled_repasses` | 163 escolas | ao menos um repasse programado válido por escola |
 | `pdde_basic_first_installment` | 163 escolas | pagamento da 1ª parcela/P1 identificado, com data |
 | `pdde_basic_first_installment_breakdown` | 163 escolas | 1ª parcela/P1 com custeio e capital conhecidos e soma consistente |
@@ -61,11 +61,12 @@ Novas dimensões como saldo, movimentos bancários, crédito localizado e concil
 Guarda o contrato versionado de cada dimensão:
 
 - `dimension_key`;
+- `exercise`;
 - `contract_version`;
 - `coverage_expected`;
 - `coverage_required_ratio`;
 - `requirements` em JSONB;
-- `active`;
+- `enabled`;
 - timestamps.
 
 ### `financial_dimension_status`
@@ -82,7 +83,7 @@ Registra o resultado de cada dimensão por execução:
 - `reference_date_max`;
 - `quality_status`;
 - `publication_status`;
-- `validation_details`;
+- `source_snapshot_digest`;
 - `validated_at`;
 - `published_at`;
 - `withdrawn_at`.
@@ -93,7 +94,7 @@ A publicação controlada recebe um payload normalizado do snapshot do motor e e
 
 1. valida metadados da fonte;
 2. valida 163 INEPs e correspondência com `unidades_escolares`;
-3. valida duplicidades e valores;
+3. valida duplicidades, valores e identidade bancária;
 4. valida vínculos de conta;
 5. calcula a maturidade das cinco dimensões V1;
 6. bloqueia regressão em dimensão atualmente `PUBLISHED`;
@@ -113,7 +114,7 @@ Como a chamada é uma função PostgreSQL única, qualquer exceção desfaz a op
 
 ## Automação
 
-O PDDE Online terá um workflow próprio que:
+O PDDE Online possui um workflow próprio que:
 
 1. lê o manifesto publicado pelo `pdde-repasse-conciliador`;
 2. reidrata o snapshot `gzip-base64-parts`;
@@ -122,7 +123,7 @@ O PDDE Online terá um workflow próprio que:
 5. chama a RPC transacional com credencial de backend;
 6. encerra sem alterações quando o workflow/artifact já foi publicado.
 
-O workflow deve operar somente no projeto Supabase `raluxyojqosfzrfozmpz` e exige segredo de backend próprio. A ausência desse segredo bloqueia a automação, sem recorrer a escrita com chave `anon` ou permissões ampliadas.
+A execução é **diária e também manual**, com `concurrency` para impedir publicações concorrentes. O workflow opera somente no projeto Supabase `raluxyojqosfzrfozmpz` e exige segredo de backend próprio. A ausência desse segredo bloqueia a automação, sem recorrer a escrita com chave `anon` ou permissões ampliadas.
 
 ## Fronteira de responsabilidade
 
