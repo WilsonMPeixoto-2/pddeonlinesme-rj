@@ -94,7 +94,15 @@ export async function hydratePublishedSnapshot(manifestInput, loadPart, options 
     throw new Error("Snapshot financeiro excede o limite comprimido.");
   }
 
-  const raw = gunzipSync(compressed, { maxOutputLength: limits.maxRawBytes + 1 });
+  let raw;
+  try {
+    raw = gunzipSync(compressed, { maxOutputLength: limits.maxRawBytes + 1 });
+  } catch (error) {
+    if (error instanceof RangeError || String(error).includes("Buffer larger")) {
+      throw new Error("Snapshot financeiro excede o limite descomprimido.");
+    }
+    throw error;
+  }
   if (raw.byteLength > limits.maxRawBytes) {
     throw new Error("Snapshot financeiro excede o limite descomprimido.");
   }
