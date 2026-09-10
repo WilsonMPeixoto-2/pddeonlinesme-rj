@@ -13,7 +13,6 @@ import {
   Landmark,
   Receipt,
   School,
-  WalletCards,
 } from "lucide-react";
 
 import AppLayout from "@/components/AppLayout";
@@ -71,28 +70,25 @@ const toneRing: Record<Tone, string> = {
 
 const PROGRAM_STYLE: Record<
   string,
-  { dot: string; text: string; border: string; surface: string; chart: string }
+  { dot: string; text: string; border: string; surface: string }
 > = {
   "PDDE BÁSICO": {
     dot: "bg-primary",
     text: "text-primary",
     border: "border-primary/25",
     surface: "bg-primary/[0.035]",
-    chart: "hsl(var(--primary))",
   },
   "PDDE QUALIDADE": {
     dot: "bg-violet-500",
     text: "text-violet-700 dark:text-violet-300",
     border: "border-violet-500/25",
     surface: "bg-violet-500/[0.035]",
-    chart: "rgb(139 92 246)",
   },
   "PDDE EQUIDADE": {
     dot: "bg-teal-600",
     text: "text-teal-700 dark:text-teal-300",
     border: "border-teal-600/25",
     surface: "bg-teal-600/[0.035]",
-    chart: "rgb(13 148 136)",
   },
 };
 
@@ -102,7 +98,6 @@ function ProgramCard({ program }: { program: ProgramaFinanceiroOverview }) {
     text: "text-foreground",
     border: "border-border",
     surface: "bg-muted/20",
-    chart: "hsl(var(--muted-foreground))",
   };
 
   return (
