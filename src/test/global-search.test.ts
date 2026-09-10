@@ -45,6 +45,10 @@ describe("GLOBAL_NAVIGATION", () => {
     expect(paths).not.toContain("/style-guide");
     expect(paths).not.toContain("/acesso-negado");
   });
+
+  it("não anuncia atalhos de teclado que não são implementados", () => {
+    expect(GLOBAL_NAVIGATION.every((item) => !("shortcut" in item))).toBe(true);
+  });
 });
 
 describe("searchGlobalSchools", () => {
