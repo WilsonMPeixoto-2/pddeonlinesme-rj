@@ -47,6 +47,7 @@ export const queryKeys = {
   unidadeDetalhe: (unidadeId: string | undefined, exercicio: number, programa: string) => ["unidade-detalhe", unidadeId, exercicio, programa] as const,
   unidadesLocalizador: () => ["unidades-localizador"] as const,
   repassesFinanceiros: (exercicio: number) => ["repasses-financeiros", exercicio] as const,
+  contasFinanceiras: (exercicio: number) => ["contas-financeiras", exercicio] as const,
   financeiroUnidade: (unidadeId: string | undefined, exercicio: number) => ["financeiro-unidade", unidadeId, exercicio] as const,
   documentGenerationRuns: {
     all: () => ["document-generation-runs"] as const,
@@ -161,6 +162,22 @@ export const repassesFinanceirosOptions = (exercicio: number) => queryOptions<Re
     const { data, error } = await supabase.from("vw_repasses_financeiros_unidade").select(REPASSE_COLUMNS).eq("exercicio", exercicio).order("designacao", { ascending: true }).order("ordem_exibicao", { ascending: true });
     if (error) throw new Error(error.message);
     return ((data ?? []) as Tables<"vw_repasses_financeiros_unidade">[]).map(toRepasseFinanceiro).filter((row): row is RepasseFinanceiro => row !== null);
+  },
+  staleTime: 5 * 60 * 1000,
+});
+
+export const contasFinanceirasOptions = (exercicio: number) => queryOptions<ContaFinanceira[], Error>({
+  queryKey: queryKeys.contasFinanceiras(exercicio),
+  enabled: Number.isFinite(exercicio),
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("contas_bancarias")
+      .select("id, unidade_id, programa, exercicio, banco, agencia, conta_corrente, principal")
+      .eq("exercicio", exercicio)
+      .order("programa", { ascending: true })
+      .order("principal", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as ContaFinanceira[];
   },
   staleTime: 5 * 60 * 1000,
 });

@@ -82,6 +82,35 @@ export interface PrimeiraParcelaOverview {
   insightData: string | null;
 }
 
+export interface ProgramaFinanceiroOverview {
+  programa: string;
+  totalProgramado: number | null;
+  totalPago: number | null;
+  pagamentosIdentificados: number;
+  acoes: number;
+  contas: number;
+  escolas: number;
+}
+
+export interface DashboardFinanceiroOverview {
+  exercicio: number;
+  totalProgramado: number | null;
+  totalPagoIdentificado: number | null;
+  pagamentosIdentificados: number;
+  totalRepasses: number;
+  totalContas: number;
+  totalEscolas: number;
+  ultimaDataPagamento: string | null;
+  primeiraParcela: {
+    totalPago: number | null;
+    escolas: number;
+    custeioPago: number | null;
+    capitalPago: number | null;
+    detalhamentoCompleto: number;
+  };
+  porPrograma: ProgramaFinanceiroOverview[];
+}
+
 export interface ParcelaFinanceira {
   id: string;
   parcela: string;
@@ -254,6 +283,106 @@ export function buildPrimeiraParcelaOverview(
     insightData: predominantDate && porData.length > 1
       ? `${predominantDate.escolas} escolas receberam recursos na data com maior concentração de pagamentos.`
       : null,
+  };
+}
+
+export function buildDashboardFinanceiroOverview(
+  repasses: RepasseFinanceiro[],
+  contas: ContaFinanceira[],
+  exercicio: number,
+): DashboardFinanceiroOverview {
+  const repassesDoExercicio = repasses.filter((repasse) => repasse.exercicio === exercicio);
+  const contasDoExercicio = contas.filter((conta) => conta.exercicio === exercicio);
+  const pagos = repassesDoExercicio.filter((repasse) => repasse.valor_pago !== null);
+  const primeiraParcela = repassesDoExercicio.filter((repasse) =>
+    isPrimeiraParcelaPublicada(repasse, exercicio),
+  );
+
+  const escolas = new Set<string>();
+  repassesDoExercicio.forEach((repasse) => escolas.add(repasse.unidade_id));
+  contasDoExercicio.forEach((conta) => escolas.add(conta.unidade_id));
+
+  const somaConhecida = (
+    rows: RepasseFinanceiro[],
+    field: "custeio_pago" | "capital_pago",
+  ) => {
+    if (rows.length === 0 || rows.some((row) => row[field] === null)) return null;
+    return rows.reduce((sum, row) => sum + (row[field] ?? 0), 0);
+  };
+
+  const programNames = new Set<string>();
+  repassesDoExercicio.forEach((repasse) => programNames.add(repasse.programa));
+  contasDoExercicio.forEach((conta) => {
+    if (conta.programa) programNames.add(conta.programa);
+  });
+  PROGRAM_ORDER.forEach((programa) => {
+    if (
+      repassesDoExercicio.some((repasse) => repasse.programa === programa) ||
+      contasDoExercicio.some((conta) => conta.programa === programa)
+    ) {
+      programNames.add(programa);
+    }
+  });
+
+  const order = new Map<string, number>(PROGRAM_ORDER.map((programa, index) => [programa, index]));
+  const porPrograma = [...programNames]
+    .map((programa): ProgramaFinanceiroOverview => {
+      const repassesPrograma = repassesDoExercicio.filter((repasse) => repasse.programa === programa);
+      const contasPrograma = contasDoExercicio.filter((conta) => conta.programa === programa);
+      const pagosPrograma = repassesPrograma.filter((repasse) => repasse.valor_pago !== null);
+      const escolasPrograma = new Set<string>();
+      repassesPrograma.forEach((repasse) => escolasPrograma.add(repasse.unidade_id));
+      contasPrograma.forEach((conta) => escolasPrograma.add(conta.unidade_id));
+      return {
+        programa,
+        totalProgramado: repassesPrograma.length > 0
+          ? repassesPrograma.reduce((sum, repasse) => sum + repasse.valor_programado, 0)
+          : null,
+        totalPago: pagosPrograma.length > 0
+          ? pagosPrograma.reduce((sum, repasse) => sum + (repasse.valor_pago ?? 0), 0)
+          : null,
+        pagamentosIdentificados: pagosPrograma.length,
+        acoes: new Set(repassesPrograma.map((repasse) => repasse.acao)).size,
+        contas: contasPrograma.length,
+        escolas: escolasPrograma.size,
+      };
+    })
+    .sort(
+      (a, b) =>
+        (order.get(a.programa) ?? 99) - (order.get(b.programa) ?? 99) ||
+        a.programa.localeCompare(b.programa, "pt-BR"),
+    );
+
+  const datasPagamento = pagos
+    .map((repasse) => repasse.data_pagamento)
+    .filter((data): data is string => Boolean(data))
+    .sort((a, b) => b.localeCompare(a));
+
+  return {
+    exercicio,
+    totalProgramado: repassesDoExercicio.length > 0
+      ? repassesDoExercicio.reduce((sum, repasse) => sum + repasse.valor_programado, 0)
+      : null,
+    totalPagoIdentificado: pagos.length > 0
+      ? pagos.reduce((sum, repasse) => sum + (repasse.valor_pago ?? 0), 0)
+      : null,
+    pagamentosIdentificados: pagos.length,
+    totalRepasses: repassesDoExercicio.length,
+    totalContas: contasDoExercicio.length,
+    totalEscolas: escolas.size,
+    ultimaDataPagamento: datasPagamento[0] ?? null,
+    primeiraParcela: {
+      totalPago: primeiraParcela.length > 0
+        ? primeiraParcela.reduce((sum, repasse) => sum + (repasse.valor_pago ?? 0), 0)
+        : null,
+      escolas: new Set(primeiraParcela.map((repasse) => repasse.unidade_id)).size,
+      custeioPago: somaConhecida(primeiraParcela, "custeio_pago"),
+      capitalPago: somaConhecida(primeiraParcela, "capital_pago"),
+      detalhamentoCompleto: primeiraParcela.filter(
+        (repasse) => repasse.custeio_pago !== null && repasse.capital_pago !== null,
+      ).length,
+    },
+    porPrograma,
   };
 }
 
