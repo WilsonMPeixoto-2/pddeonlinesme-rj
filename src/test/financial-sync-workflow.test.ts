@@ -1,11 +1,12 @@
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const workflowUrl = new URL("../../.github/workflows/sync-financial-snapshot.yml", import.meta.url);
+const workflowPath = resolve(process.cwd(), ".github/workflows/sync-financial-snapshot.yml");
 
 describe("workflow de sincronização financeira", () => {
   it("usa somente o PDDE Online e credenciais service-role dedicadas", async () => {
-    const workflow = await readFile(workflowUrl, "utf8");
+    const workflow = await readFile(workflowPath, "utf8");
 
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("schedule:");
