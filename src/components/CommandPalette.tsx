@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   CommandDialog,
@@ -10,35 +11,56 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  LayoutDashboard, School, Upload, Settings, BookOpen, FileSpreadsheet,
-  Palette, ShieldAlert, UserCircle, Search,
+  BookOpen,
+  Database,
+  LayoutDashboard,
+  Receipt,
+  School,
+  Search,
+  Settings,
+  Upload,
+  UserCircle,
+  WalletCards,
+  type LucideIcon,
 } from "lucide-react";
-import { toast } from "sonner";
+import {
+  GLOBAL_NAVIGATION,
+  searchGlobalSchools,
+  type GlobalNavigationItem,
+} from "@/lib/globalSearch";
+import { unidadesLocalizadorOptions } from "@/lib/queryKeys";
 
-const NAVIGATION = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard", shortcut: "D" },
-  { label: "Unidades Escolares", icon: School, path: "/escolas", shortcut: "E" },
-  { label: "Importar / Exportar BASE", icon: Upload, path: "/base", shortcut: "B" },
-  { label: "Configurações", icon: Settings, path: "/configuracoes", shortcut: "C" },
-  { label: "Manual", icon: BookOpen, path: "/manual", shortcut: "M" },
-  { label: "Portal do Diretor", icon: UserCircle, path: "/diretor", shortcut: "P" },
-  { label: "Style Guide", icon: Palette, path: "/style-guide" },
-  { label: "Acesso Negado (demo)", icon: ShieldAlert, path: "/acesso-negado" },
-];
-
-const ACTIONS = [
-  { label: "Exportar BASE em .xlsx", icon: FileSpreadsheet, action: () => toast.info("Em breve: exportar BASE em .xlsx") },
-  { label: "Gerar lote de documentos (.zip)", icon: FileSpreadsheet, action: () => toast.info("Em breve: geração de lote (.zip)") },
-];
+const NAVIGATION_ICONS: Record<GlobalNavigationItem["id"], LucideIcon> = {
+  dashboard: LayoutDashboard,
+  repasses: WalletCards,
+  escolas: School,
+  fiscal: Receipt,
+  base: Upload,
+  configuracoes: Settings,
+  manual: BookOpen,
+  diretor: UserCircle,
+};
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-      e.preventDefault();
-      setOpen((prev) => !prev);
+  const unidadesQuery = useQuery({
+    ...unidadesLocalizadorOptions(),
+    enabled: open,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const schoolResults = useMemo(() => {
+    if (query.trim().length < 2) return [];
+    return searchGlobalSchools(unidadesQuery.data ?? [], query, 8);
+  }, [query, unidadesQuery.data]);
+
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLocaleLowerCase("pt-BR") === "k") {
+      event.preventDefault();
+      setOpen((previous) => !previous);
     }
   }, []);
 
@@ -47,54 +69,100 @@ export function CommandPalette() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const runAction = (fn: () => void) => {
-    setOpen(false);
-    fn();
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) setQuery("");
   };
 
+  const goTo = (path: string) => {
+    setOpen(false);
+    setQuery("");
+    navigate(path);
+  };
+
+  const searchingSchools = query.trim().length >= 2;
+
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Buscar páginas, ações e atalhos…" />
+    <CommandDialog open={open} onOpenChange={handleOpenChange}>
+      <CommandInput
+        value={query}
+        onValueChange={setQuery}
+        placeholder="Buscar páginas ou unidades escolares…"
+        aria-label="Buscar no PDDE Online"
+      />
       <CommandList>
         <CommandEmpty>
           <div className="flex flex-col items-center gap-2 py-4 text-center">
-            <Search className="h-5 w-5 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">Nenhum resultado encontrado.</p>
+            <Search className="h-5 w-5 text-muted-foreground/50" aria-hidden="true" />
+            <p className="text-sm text-muted-foreground">
+              {searchingSchools && unidadesQuery.isFetching
+                ? "Carregando unidades escolares…"
+                : "Nenhum resultado encontrado."}
+            </p>
           </div>
         </CommandEmpty>
 
         <CommandGroup heading="Navegação">
-          {NAVIGATION.map((item) => (
-            <CommandItem
-              key={item.path}
-              onSelect={() => runAction(() => navigate(item.path))}
-              className="gap-3 cursor-pointer"
-            >
-              <item.icon className="h-4 w-4 text-muted-foreground" />
-              <span>{item.label}</span>
-              {item.shortcut && (
-                <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border/50 bg-muted/40 px-1.5 text-[10px] font-mono font-medium text-muted-foreground">
-                  ⌘{item.shortcut}
-                </kbd>
-              )}
-            </CommandItem>
-          ))}
+          {GLOBAL_NAVIGATION.map((item) => {
+            const Icon = NAVIGATION_ICONS[item.id];
+            return (
+              <CommandItem
+                key={item.path}
+                value={`${item.label} ${item.keywords.join(" ")}`}
+                onSelect={() => goTo(item.path)}
+                className="cursor-pointer gap-3"
+              >
+                <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <span>{item.label}</span>
+                {item.shortcut ? (
+                  <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border border-border/50 bg-muted/40 px-1.5 text-[10px] font-mono font-medium text-muted-foreground">
+                    ⌘{item.shortcut}
+                  </kbd>
+                ) : null}
+              </CommandItem>
+            );
+          })}
         </CommandGroup>
 
-        <CommandSeparator />
+        {schoolResults.length > 0 ? (
+          <>
+            <CommandSeparator />
+            <CommandGroup heading={`Unidades escolares · ${schoolResults.length}`}>
+              {schoolResults.map((school) => (
+                <CommandItem
+                  key={school.id}
+                  forceMount
+                  value={`escola-${school.id}`}
+                  onSelect={() => goTo(`/escolas/${school.id}`)}
+                  className="cursor-pointer gap-3"
+                >
+                  <School className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">{school.designacao}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">
+                      {[school.nome, school.inep ? `INEP ${school.inep}` : null, school.diretor]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-medium text-muted-foreground">Abrir</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </>
+        ) : null}
 
-        <CommandGroup heading="Ações rápidas">
-          {ACTIONS.map((item) => (
-            <CommandItem
-              key={item.label}
-              onSelect={() => runAction(item.action)}
-              className="gap-3 cursor-pointer"
-            >
-              <item.icon className="h-4 w-4 text-muted-foreground" />
-              <span>{item.label}</span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
+        {searchingSchools && unidadesQuery.isError ? (
+          <>
+            <CommandSeparator />
+            <CommandGroup heading="Unidades escolares">
+              <CommandItem disabled forceMount value="erro-unidades" className="gap-3">
+                <Database className="h-4 w-4 text-destructive" aria-hidden="true" />
+                <span className="text-sm text-muted-foreground">Não foi possível consultar o localizador de unidades.</span>
+              </CommandItem>
+            </CommandGroup>
+          </>
+        ) : null}
       </CommandList>
     </CommandDialog>
   );
