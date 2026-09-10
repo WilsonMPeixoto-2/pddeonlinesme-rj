@@ -15,13 +15,6 @@ import {
   School,
   WalletCards,
 } from "lucide-react";
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip as RechartsTooltip,
-} from "recharts";
 
 import AppLayout from "@/components/AppLayout";
 import { CentralDocumental } from "@/components/CentralDocumental";
@@ -181,14 +174,17 @@ export default function Dashboard() {
   const totalUnidades = overview.totalEscolas > 0
     ? overview.totalEscolas
     : (resumoUnidades?.total ?? null);
-
-  const programChartData = overview.porPrograma
-    .filter((program) => program.totalPago !== null && program.totalPago > 0)
-    .map((program) => ({
-      name: program.programa,
-      value: program.totalPago ?? 0,
-      color: PROGRAM_STYLE[program.programa]?.chart ?? "hsl(var(--muted-foreground))",
-    }));
+  const composicaoDisponivel = overview.primeiraParcela.custeioPago !== null
+    && overview.primeiraParcela.capitalPago !== null;
+  const totalComposicao = composicaoDisponivel
+    ? (overview.primeiraParcela.custeioPago ?? 0) + (overview.primeiraParcela.capitalPago ?? 0)
+    : null;
+  const custeioPercentual = totalComposicao && totalComposicao > 0
+    ? ((overview.primeiraParcela.custeioPago ?? 0) / totalComposicao) * 100
+    : 0;
+  const capitalPercentual = totalComposicao && totalComposicao > 0
+    ? ((overview.primeiraParcela.capitalPago ?? 0) / totalComposicao) * 100
+    : 0;
 
   const stats: Array<{
     label: string;
@@ -286,20 +282,22 @@ export default function Dashboard() {
           <div className="relative grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-end">
             <div className="space-y-5">
               <div className="flex items-center gap-2">
-                <span className="ds-dot-success animate-pulse pulse-dot-success" />
+                <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
                 <p className="ds-eyebrow">
                   Painel Executivo-Operacional · GAD · 4ª CRE · Exercício {exercicio}
                 </p>
               </div>
 
               <div>
-                <p className="mb-2 text-sm font-medium text-muted-foreground">Pagamentos identificados em 2026</p>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">
+                  1ª parcela paga · PDDE Básico · {exercicio}
+                </p>
                 <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
                   {loading ? (
                     <Skeleton className="h-16 w-[80%]" />
-                  ) : overview.totalPagoIdentificado !== null ? (
+                  ) : overview.primeiraParcela.totalPago !== null ? (
                     <NumberTicker
-                      value={overview.totalPagoIdentificado}
+                      value={overview.primeiraParcela.totalPago}
                       format={fmtBRLDecimal}
                       className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
                     />
@@ -307,10 +305,10 @@ export default function Dashboard() {
                     <span className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">—</span>
                   )}
                 </h1>
-                <p className="mt-3 max-w-[58ch] text-[15px] leading-relaxed text-muted-foreground">
-                  Recursos com pagamento informado para {totalUnidades ?? "—"} unidades escolares.
-                  {overview.ultimaDataPagamento
-                    ? ` Última data de pagamento registrada: ${formatDate(overview.ultimaDataPagamento)}.`
+                <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
+                  Pagamento identificado para {overview.primeiraParcela.escolas} de {totalUnidades ?? "—"} unidades escolares no recorte exibido.
+                  {overview.primeiraParcela.ultimaDataPagamento
+                    ? ` Última data de pagamento deste recorte: ${formatDate(overview.primeiraParcela.ultimaDataPagamento)}.`
                     : ""}
                 </p>
               </div>
@@ -326,86 +324,76 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="ds-card-elevated space-y-4 p-5 backdrop-blur-md">
-              <div className="flex items-center justify-between gap-3">
-                <p className="ds-eyebrow">Composição dos pagamentos</p>
-                <span className="text-[10px] tabular-nums text-muted-foreground">
-                  {overview.pagamentosIdentificados} registros
+            <div className="ds-card-elevated space-y-5 p-5 backdrop-blur-md">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="ds-eyebrow">Composição da 1ª parcela</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Custeio e capital no mesmo recorte do destaque principal.</p>
+                </div>
+                <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                  {overview.primeiraParcela.detalhamentoCompleto}/{overview.primeiraParcela.escolas} completos
                 </span>
               </div>
 
-              <div className="flex flex-col items-center gap-6 sm:flex-row">
-                <div className="relative h-[124px] w-[124px] shrink-0">
-                  {!loading && programChartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={programChartData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={43}
-                          outerRadius={58}
-                          paddingAngle={3}
-                          dataKey="value"
-                          stroke="none"
-                        >
-                          {programChartData.map((entry) => (
-                            <Cell key={entry.name} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip
-                          formatter={(value: number) => fmtBRL(value)}
-                          contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "10px",
-                            fontSize: "11px",
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-24 w-24 rounded-full border-4 border-muted/30" />
-                    </div>
-                  )}
-                </div>
+              {composicaoDisponivel && totalComposicao !== null && totalComposicao > 0 ? (
+                <div className="space-y-5">
+                  <div
+                    className="flex h-3 overflow-hidden rounded-full bg-muted"
+                    role="img"
+                    aria-label={`Composição da primeira parcela: ${custeioPercentual.toFixed(1)}% custeio e ${capitalPercentual.toFixed(1)}% capital`}
+                  >
+                    <div className="h-full bg-fin-custeio" style={{ width: `${custeioPercentual}%` }} />
+                    <div className="h-full bg-fin-capital" style={{ width: `${capitalPercentual}%` }} />
+                  </div>
 
-                <div className="w-full flex-1 space-y-3">
-                  {overview.porPrograma.map((program) => {
-                    const style = PROGRAM_STYLE[program.programa] ?? PROGRAM_STYLE["PDDE BÁSICO"];
-                    return (
-                      <div key={program.programa} className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className={cn("h-2 w-2 rounded-full", style.dot)} aria-hidden="true" />
-                            <span className="truncate text-sm font-medium text-foreground">{program.programa}</span>
-                          </div>
-                          <p className="ml-4 mt-0.5 text-[10px] text-muted-foreground">
-                            {program.contas} {program.contas === 1 ? "conta" : "contas"}
-                            {program.acoes > 0 ? ` · ${program.acoes} ${program.acoes === 1 ? "ação" : "ações"}` : ""}
-                          </p>
-                        </div>
-                        <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
-                          {formatMoneyOrDash(program.totalPago)}
-                        </span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-fin-custeio" aria-hidden="true" />
+                        <p className="text-xs font-medium text-muted-foreground">Custeio</p>
                       </div>
-                    );
-                  })}
-
-                  <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-3">
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Valor programado no exercício</p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">
-                        {overview.totalContas} contas · {overview.totalRepasses} registros de repasse
+                      <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
+                        {formatMoneyOrDash(overview.primeiraParcela.custeioPago)}
+                      </p>
+                      <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">
+                        {custeioPercentual.toFixed(1)}% do total
                       </p>
                     </div>
-                    <span className="text-sm font-semibold tabular-nums text-primary">
-                      {formatMoneyOrDash(overview.totalProgramado)}
+
+                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-fin-capital" aria-hidden="true" />
+                        <p className="text-xs font-medium text-muted-foreground">Capital</p>
+                      </div>
+                      <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
+                        {formatMoneyOrDash(overview.primeiraParcela.capitalPago)}
+                      </p>
+                      <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">
+                        {capitalPercentual.toFixed(1)}% do total
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-4">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">Cobertura do detalhamento</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        Somente valores conhecidos; ausência de dado não é convertida em zero.
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold tabular-nums text-foreground">
+                      {formatMoneyOrDash(totalComposicao)}
                     </span>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5">
+                  <p className="text-sm font-medium text-foreground">Composição ainda não disponível para todo o recorte</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    O Painel preserva a ausência de informação em vez de inferir custeio ou capital como zero.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </motion.section>
