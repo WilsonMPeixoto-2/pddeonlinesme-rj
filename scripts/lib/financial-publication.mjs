@@ -96,6 +96,12 @@ function normalizeAccount(account, inep, exercise) {
   };
 }
 
+function hasCompleteAccountIdentity(account) {
+  return [account?.bank, account?.agency, account?.account].every(
+    (value) => typeof value === "string" && value.trim().length > 0,
+  );
+}
+
 function accountSortKey(account) {
   return [
     account.program === "PDDE BÁSICO" ? "0" : "1",
@@ -213,9 +219,11 @@ export function evaluatePublicationDimensions(payload) {
   const foreignRow = [...accounts, ...repasses].some((row) => !knownIneps.has(row.inep));
   const globalRejected = duplicatedSchool || foreignRow || knownIneps.size > EXPECTED_SCHOOLS;
 
-  const accountCoverage = uniqueCoverage(accounts, (row) =>
-    typeof row.account === "string" && row.account.trim().length > 0,
+  const invalidAccountRows = accounts.some((row) => !hasCompleteAccountIdentity(row));
+  const invalidExplicitAccountRows = repasses.some(
+    (row) => row.account !== null && row.account !== undefined && !hasCompleteAccountIdentity(row.account),
   );
+  const accountCoverage = uniqueCoverage(accounts, hasCompleteAccountIdentity);
   const scheduledCoverage = uniqueCoverage(repasses, (row) =>
     typeof row.programmed === "number" && Number.isFinite(row.programmed) && row.programmed >= 0,
   );
@@ -263,20 +271,21 @@ export function evaluatePublicationDimensions(payload) {
     (row.programmed !== null && row.programmed !== undefined && (!Number.isFinite(row.programmed) || row.programmed < 0)) ||
     (row.paid !== null && row.paid !== undefined && (!Number.isFinite(row.paid) || row.paid < 0)),
   );
+  const invalidFinancialRows = invalidMoney || invalidExplicitAccountRows;
 
   return [
-    dimensionStatus("bank_accounts", accountCoverage, { rejected: globalRejected }),
-    dimensionStatus("scheduled_repasses", scheduledCoverage, { rejected: globalRejected || invalidMoney }),
+    dimensionStatus("bank_accounts", accountCoverage, { rejected: globalRejected || invalidAccountRows }),
+    dimensionStatus("scheduled_repasses", scheduledCoverage, { rejected: globalRejected || invalidFinancialRows }),
     dimensionStatus("pdde_basic_first_installment", firstCoverage, {
-      rejected: globalRejected || invalidMoney,
+      rejected: globalRejected || invalidFinancialRows,
       dates: validFirstRows,
     }),
     dimensionStatus("pdde_basic_first_installment_breakdown", breakdownCoverage, {
-      rejected: globalRejected || invalidMoney || breakdownRejected,
+      rejected: globalRejected || invalidFinancialRows || breakdownRejected,
       dates: validBreakdownRows,
     }),
     dimensionStatus("pdde_basic_second_installment_programmed", secondCoverage, {
-      rejected: globalRejected || invalidMoney,
+      rejected: globalRejected || invalidFinancialRows,
     }),
   ];
 }
