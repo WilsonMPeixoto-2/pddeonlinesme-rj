@@ -1,0 +1,23 @@
+name: Dashboard Financeiro RED Temp
+
+on:
+  push:
+    branches:
+      - feat/painel-ficha-recursos-financeiro-v2
+    paths:
+      - src/test/dashboard-financeiro.test.ts
+      - .github/workflows/dashboard-financeiro-red-temp.yml
+
+jobs:
+  red:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/painel-ficha-recursos-financeiro-v2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test -- src/test/dashboard-financeiro.test.ts
