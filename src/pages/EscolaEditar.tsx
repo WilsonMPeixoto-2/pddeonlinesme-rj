@@ -416,7 +416,7 @@ export default function EscolaEditar() {
                 </h1>
                 <div className="flex items-center gap-2 mt-1 sm:mt-0">
                   <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary border border-primary/20">
-                    {PROGRAMA_PADRAO === "basico" ? "PDDE BÁSICO" : `PDDE ${PROGRAMA_PADRAO.toUpperCase()}`}
+                    Recursos PDDE
                   </span>
                   <span className="inline-flex items-center rounded-md bg-secondary/60 px-2 py-0.5 text-xs font-semibold text-secondary-foreground border border-border/50">
                     Exercício {exercicio}
