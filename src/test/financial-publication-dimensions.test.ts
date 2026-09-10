@@ -17,9 +17,9 @@ type Repasse = {
 type Account = {
   inep: string;
   program: string;
-  bank: string;
-  agency: string;
-  account: string;
+  bank: string | null;
+  agency: string | null;
+  account: string | null;
 };
 
 function buildPayload(count = 163) {
@@ -142,5 +142,22 @@ describe("evaluatePublicationDimensions", () => {
 
     expect(breakdown.qualityStatus).toBe("REJECTED");
     expect(breakdown.publicationStatus).toBe("UNPUBLISHED");
+  });
+
+  it("rejeita bank_accounts quando qualquer conta recebida tem identidade incompleta", () => {
+    const payload = buildPayload();
+    payload.accounts.push({
+      inep: payload.schools[0].inep,
+      program: "PDDE QUALIDADE",
+      bank: null,
+      agency: "0249",
+      account: "99999-9",
+    });
+
+    const accounts = byKey(evaluatePublicationDimensions(payload), "bank_accounts");
+
+    expect(accounts.coverageObserved).toBe(163);
+    expect(accounts.qualityStatus).toBe("REJECTED");
+    expect(accounts.publicationStatus).toBe("UNPUBLISHED");
   });
 });
