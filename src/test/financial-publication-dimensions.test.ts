@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-// @ts-expect-error RED: o avaliador de maturidade ainda não existe neste commit.
 import { evaluatePublicationDimensions } from "../../scripts/lib/financial-publication.mjs";
 
 type Repasse = {
