@@ -1,4 +1,5 @@
 const CURRENT_EXERCISE = 2026;
+const EXPECTED_SCHOOLS = 163;
 
 function normalizedText(value) {
   return String(value ?? "")
@@ -155,6 +156,129 @@ function validateSource(snapshot, manifest) {
   ) {
     throw new Error("Snapshot e manifesto divergem na origem publicada.");
   }
+}
+
+function isBasicFirstInstallment(repasse) {
+  if (repasse.program !== "PDDE BÁSICO") return false;
+  return (
+    (repasse.action === "PDDE Básico" && repasse.installment === "1ª Parcela") ||
+    (repasse.action === "PDDE Básico — Primeira Infância" && repasse.installment === "P1")
+  );
+}
+
+function isBasicSecondInstallment(repasse) {
+  if (repasse.program !== "PDDE BÁSICO") return false;
+  return (
+    (repasse.action === "PDDE Básico" && repasse.installment === "2ª Parcela") ||
+    (repasse.action === "PDDE Básico — Primeira Infância" && repasse.installment === "P2")
+  );
+}
+
+function uniqueCoverage(rows, predicate = () => true) {
+  return new Set(rows.filter(predicate).map((row) => row.inep).filter(Boolean)).size;
+}
+
+function dateBounds(rows) {
+  const dates = rows.map((row) => row.paymentDate).filter(Boolean).sort();
+  return {
+    referenceDateMin: dates[0] ?? null,
+    referenceDateMax: dates.at(-1) ?? null,
+  };
+}
+
+function dimensionStatus(dimensionKey, coverageObserved, { rejected = false, dates = [] } = {}) {
+  const coverageRatio = Math.min(coverageObserved / EXPECTED_SCHOOLS, 1);
+  const mature = !rejected && coverageObserved >= EXPECTED_SCHOOLS;
+  return {
+    dimensionKey,
+    coverageObserved,
+    coverageExpected: EXPECTED_SCHOOLS,
+    coverageRatio,
+    qualityStatus: rejected ? "REJECTED" : mature ? "MATURE" : "VALIDATED",
+    publicationStatus: "UNPUBLISHED",
+    ...dateBounds(dates),
+  };
+}
+
+export function evaluatePublicationDimensions(payload) {
+  if (Number(payload?.exercise) !== CURRENT_EXERCISE) {
+    throw new Error(`Exercício financeiro inesperado: ${payload?.exercise}`);
+  }
+
+  const schools = Array.isArray(payload?.schools) ? payload.schools : [];
+  const accounts = Array.isArray(payload?.accounts) ? payload.accounts : [];
+  const repasses = Array.isArray(payload?.repasses) ? payload.repasses : [];
+  const knownIneps = new Set(schools.map((school) => school.inep).filter(Boolean));
+  const duplicatedSchool = knownIneps.size !== schools.length;
+  const foreignRow = [...accounts, ...repasses].some((row) => !knownIneps.has(row.inep));
+  const globalRejected = duplicatedSchool || foreignRow || knownIneps.size > EXPECTED_SCHOOLS;
+
+  const accountCoverage = uniqueCoverage(accounts, (row) =>
+    typeof row.account === "string" && row.account.trim().length > 0,
+  );
+  const scheduledCoverage = uniqueCoverage(repasses, (row) =>
+    typeof row.programmed === "number" && Number.isFinite(row.programmed) && row.programmed >= 0,
+  );
+
+  const firstRows = repasses.filter(isBasicFirstInstallment);
+  const validFirstRows = firstRows.filter((row) =>
+    typeof row.paid === "number" &&
+    Number.isFinite(row.paid) &&
+    row.paid >= 0 &&
+    typeof row.paymentDate === "string" &&
+    row.paymentDate.length > 0,
+  );
+  const firstCoverage = uniqueCoverage(validFirstRows);
+
+  let breakdownRejected = false;
+  const validBreakdownRows = validFirstRows.filter((row) => {
+    if (row.paidCusteio === null || row.paidCusteio === undefined || row.paidCapital === null || row.paidCapital === undefined) {
+      return false;
+    }
+    if (
+      typeof row.paidCusteio !== "number" ||
+      typeof row.paidCapital !== "number" ||
+      !Number.isFinite(row.paidCusteio) ||
+      !Number.isFinite(row.paidCapital) ||
+      row.paidCusteio < 0 ||
+      row.paidCapital < 0
+    ) {
+      breakdownRejected = true;
+      return false;
+    }
+    if (Math.abs(row.paidCusteio + row.paidCapital - row.paid) >= 0.005) {
+      breakdownRejected = true;
+      return false;
+    }
+    return true;
+  });
+  const breakdownCoverage = uniqueCoverage(validBreakdownRows);
+
+  const secondRows = repasses.filter(isBasicSecondInstallment);
+  const secondCoverage = uniqueCoverage(secondRows, (row) =>
+    typeof row.programmed === "number" && Number.isFinite(row.programmed) && row.programmed >= 0,
+  );
+
+  const invalidMoney = repasses.some((row) =>
+    (row.programmed !== null && row.programmed !== undefined && (!Number.isFinite(row.programmed) || row.programmed < 0)) ||
+    (row.paid !== null && row.paid !== undefined && (!Number.isFinite(row.paid) || row.paid < 0)),
+  );
+
+  return [
+    dimensionStatus("bank_accounts", accountCoverage, { rejected: globalRejected }),
+    dimensionStatus("scheduled_repasses", scheduledCoverage, { rejected: globalRejected || invalidMoney }),
+    dimensionStatus("pdde_basic_first_installment", firstCoverage, {
+      rejected: globalRejected || invalidMoney,
+      dates: validFirstRows,
+    }),
+    dimensionStatus("pdde_basic_first_installment_breakdown", breakdownCoverage, {
+      rejected: globalRejected || invalidMoney || breakdownRejected,
+      dates: validBreakdownRows,
+    }),
+    dimensionStatus("pdde_basic_second_installment_programmed", secondCoverage, {
+      rejected: globalRejected || invalidMoney,
+    }),
+  ];
 }
 
 export function buildNormalizedPublicationPayload(snapshot, manifest) {
