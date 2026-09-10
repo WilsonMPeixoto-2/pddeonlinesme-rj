@@ -107,6 +107,7 @@ export interface DashboardFinanceiroOverview {
     custeioPago: number | null;
     capitalPago: number | null;
     detalhamentoCompleto: number;
+    ultimaDataPagamento: string | null;
   };
   porPrograma: ProgramaFinanceiroOverview[];
 }
@@ -357,6 +358,10 @@ export function buildDashboardFinanceiroOverview(
     .map((repasse) => repasse.data_pagamento)
     .filter((data): data is string => Boolean(data))
     .sort((a, b) => b.localeCompare(a));
+  const datasPrimeiraParcela = primeiraParcela
+    .map((repasse) => repasse.data_pagamento)
+    .filter((data): data is string => Boolean(data))
+    .sort((a, b) => b.localeCompare(a));
 
   return {
     exercicio,
@@ -381,6 +386,7 @@ export function buildDashboardFinanceiroOverview(
       detalhamentoCompleto: primeiraParcela.filter(
         (repasse) => repasse.custeio_pago !== null && repasse.capital_pago !== null,
       ).length,
+      ultimaDataPagamento: datasPrimeiraParcela[0] ?? null,
     },
     porPrograma,
   };
