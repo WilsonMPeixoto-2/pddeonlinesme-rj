@@ -1,0 +1,40 @@
+name: Fix Financial Migration Temp
+
+on:
+  push:
+    branches:
+      - feat/financial-publication-pipeline-v1
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.event.head_commit.message != 'fix: corrige identificador reservado no contrato financeiro'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/financial-publication-pipeline-v1
+      - name: Quote reserved JSON record field
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('supabase/migrations/20260910152000_financial_publication_pipeline_v1.sql')
+          s = p.read_text(encoding='utf-8')
+          before = s
+          s = s.replace('      primary boolean', '      "primary" boolean')
+          s = s.replace('          primary boolean', '          "primary" boolean')
+          s = s.replace('    primary boolean', '    "primary" boolean')
+          s = s.replace('           primary boolean', '           "primary" boolean')
+          s = s.replace('coalesce(a.primary, false)', 'coalesce(a."primary", false)')
+          if s == before:
+              raise SystemExit('nenhuma substituicao aplicada')
+          p.write_text(s, encoding='utf-8')
+      - name: Commit correction
+        run: |
+          git config user.name "Wilson Malafaia Peixoto"
+          git config user.email "wilsonmp2@gmail.com"
+          git add supabase/migrations/20260910152000_financial_publication_pipeline_v1.sql
+          git commit -m "fix: corrige identificador reservado no contrato financeiro"
+          git push origin HEAD:feat/financial-publication-pipeline-v1
