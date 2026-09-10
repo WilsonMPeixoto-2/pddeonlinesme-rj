@@ -258,7 +258,7 @@ BEGIN
       bank text,
       agency text,
       account text,
-      primary boolean
+      "primary" boolean
     )
    WHERE a.exercise = v_exercise
      AND nullif(btrim(a.bank), '') IS NOT NULL
@@ -281,7 +281,7 @@ BEGIN
           bank text,
           agency text,
           account text,
-          primary boolean
+          "primary" boolean
         )
        GROUP BY a.inep, a.program, a.bank, a.agency, a.account
       HAVING count(*) > 1
@@ -304,8 +304,8 @@ BEGIN
           bank text,
           agency text,
           account text,
-          primary boolean
-        ) ON a.inep = s.inep AND a.exercise = v_exercise AND coalesce(a.primary, false)
+          "primary" boolean
+        ) ON a.inep = s.inep AND a.exercise = v_exercise AND coalesce(a."primary", false)
        GROUP BY s.inep
       HAVING count(a.account) <> 1
     ) AS invalid_primary;
@@ -551,7 +551,7 @@ BEGIN
            bank text,
            agency text,
            account text,
-           primary boolean
+           "primary" boolean
          )
         WHERE a.inep = r.inep
           AND a.exercise = r.exercise
@@ -690,7 +690,7 @@ BEGIN
     a.bank,
     a.agency,
     a.account,
-    coalesce(a.primary, false),
+    coalesce(a."primary", false),
     a.program,
     a.exercise
   FROM jsonb_to_recordset(coalesce(p_payload->'accounts', '[]'::jsonb)) AS a(
@@ -700,7 +700,7 @@ BEGIN
     bank text,
     agency text,
     account text,
-    primary boolean
+    "primary" boolean
   )
   JOIN public.unidades_escolares AS u ON u.inep = a.inep
   ON CONFLICT (unidade_id, agencia, conta_corrente) DO UPDATE
@@ -727,7 +727,7 @@ BEGIN
            bank text,
            agency text,
            account text,
-           primary boolean
+           "primary" boolean
          )
          JOIN public.unidades_escolares AS u ON u.inep = a.inep
         WHERE u.id = cb.unidade_id
