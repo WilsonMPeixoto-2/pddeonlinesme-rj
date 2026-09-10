@@ -1,7 +1,6 @@
 import { gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 
-// @ts-expect-error RED: cliente de sincronização ainda não existe neste commit.
 import {
   hydratePublishedSnapshot,
   validatePublishedManifest,
