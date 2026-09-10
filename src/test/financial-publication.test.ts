@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-// @ts-expect-error RED: o módulo de produção ainda não existe neste commit.
 import { buildNormalizedPublicationPayload } from "../../scripts/lib/financial-publication.mjs";
 
 interface NormalizedAccount {
