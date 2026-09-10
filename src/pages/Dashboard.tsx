@@ -1,137 +1,240 @@
-import AppLayout from "@/components/AppLayout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowRight,
-  ArrowUpRight,
   AlertCircle,
   AlertTriangle,
+  ArrowRight,
+  ArrowUpRight,
   CheckCircle2,
   Coins,
   Inbox,
+  Landmark,
   Receipt,
   School,
-  Wallet,
+  WalletCards,
 } from "lucide-react";
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+} from "recharts";
+
+import AppLayout from "@/components/AppLayout";
+import { CentralDocumental } from "@/components/CentralDocumental";
+import { HistoricoGeracoesCard } from "@/components/HistoricoGeracoesCard";
 import { NumberTicker } from "@/components/NumberTicker";
 import { TiltCard } from "@/components/TiltCard";
-import { CentralDocumental } from "@/components/CentralDocumental";
-import { TopReprogramados } from "@/components/TopReprogramados";
-import { DistribuicaoDeRecursos } from "@/components/DistribuicaoDeRecursos";
-import { HistoricoGeracoesCard } from "@/components/HistoricoGeracoesCard";
-import { useDashboardBasico } from "@/hooks/useDashboardBasico";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
 import { useExercicio } from "@/hooks/useExercicio";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
+import {
+  buildDashboardFinanceiroOverview,
+  type ProgramaFinanceiroOverview,
+} from "@/lib/financeiroPDDE";
+import {
+  contasFinanceirasOptions,
+  repassesFinanceirosOptions,
+} from "@/lib/queryKeys";
+import { cn } from "@/lib/utils";
 
-const PROGRAMA_PADRAO = "basico";
+const fmtBRL = (value: number) =>
+  value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  });
 
-const fmtBRL = (n: number) =>
-  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+const fmtBRLDecimal = (value: number) =>
+  value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 
-const fmtBRLDecimal = (n: number) =>
-  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
-// Retorna "—" quando não há dado (indicadores sem linha na view).
-const fmtBRLOrDash = (n: number | null): string =>
-  n !== null ? fmtBRL(n) : "—";
+function formatDate(value: string | null) {
+  if (!value) return "—";
+  return dateFormatter.format(new Date(`${value}T00:00:00Z`));
+}
 
-type Tone = "primary" | "success" | "warning" | "muted";
+function formatMoneyOrDash(value: number | null) {
+  return value === null ? "—" : fmtBRL(value);
+}
+
+type Tone = "primary" | "violet" | "teal" | "muted";
+
 const toneRing: Record<Tone, string> = {
   primary: "bg-primary/10 text-primary ring-1 ring-primary/20",
-  success: "bg-success/10 text-success ring-1 ring-success/20",
-  warning: "bg-warning/10 text-warning ring-1 ring-warning/20",
+  violet: "bg-violet-500/10 text-violet-700 ring-1 ring-violet-500/20 dark:text-violet-300",
+  teal: "bg-teal-500/10 text-teal-700 ring-1 ring-teal-500/20 dark:text-teal-300",
   muted: "bg-muted text-muted-foreground ring-1 ring-border/50",
 };
+
+const PROGRAM_STYLE: Record<
+  string,
+  { dot: string; text: string; border: string; surface: string; chart: string }
+> = {
+  "PDDE BÁSICO": {
+    dot: "bg-primary",
+    text: "text-primary",
+    border: "border-primary/25",
+    surface: "bg-primary/[0.035]",
+    chart: "hsl(var(--primary))",
+  },
+  "PDDE QUALIDADE": {
+    dot: "bg-violet-500",
+    text: "text-violet-700 dark:text-violet-300",
+    border: "border-violet-500/25",
+    surface: "bg-violet-500/[0.035]",
+    chart: "rgb(139 92 246)",
+  },
+  "PDDE EQUIDADE": {
+    dot: "bg-teal-600",
+    text: "text-teal-700 dark:text-teal-300",
+    border: "border-teal-600/25",
+    surface: "bg-teal-600/[0.035]",
+    chart: "rgb(13 148 136)",
+  },
+};
+
+function ProgramCard({ program }: { program: ProgramaFinanceiroOverview }) {
+  const style = PROGRAM_STYLE[program.programa] ?? {
+    dot: "bg-muted-foreground",
+    text: "text-foreground",
+    border: "border-border",
+    surface: "bg-muted/20",
+    chart: "hsl(var(--muted-foreground))",
+  };
+
+  return (
+    <Card className={cn("overflow-hidden border", style.border, style.surface)}>
+      <CardContent className="p-5">
+        <div className="flex items-center gap-2">
+          <span className={cn("h-2.5 w-2.5 rounded-full", style.dot)} aria-hidden="true" />
+          <p className={cn("text-sm font-semibold tracking-wide", style.text)}>{program.programa}</p>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-4">
+          <div>
+            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Programado
+            </p>
+            <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
+              {formatMoneyOrDash(program.totalProgramado)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Pagamento identificado
+            </p>
+            <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
+              {formatMoneyOrDash(program.totalPago)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">Contas</p>
+            <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">{program.contas}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">Ações</p>
+            <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+              {program.acoes > 0 ? program.acoes : "—"}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { exercicio } = useExercicio();
+  const exercicioNumero = Number(exercicio);
 
-  const {
-    data: indicadores,
-    isLoading: loadingBasico,
-    error: errorBasico,
-  } = useDashboardBasico({ exercicio, programa: PROGRAMA_PADRAO });
-
+  const repassesQuery = useQuery(repassesFinanceirosOptions(exercicioNumero));
+  const contasQuery = useQuery(contasFinanceirasOptions(exercicioNumero));
   const {
     data: resumoUnidades,
     isLoading: loadingResumo,
     error: errorResumo,
   } = useDashboardUnidadesResumo();
 
-  const loading = loadingBasico || loadingResumo;
-  const queryError = errorBasico ?? errorResumo;
+  const overview = useMemo(
+    () => buildDashboardFinanceiroOverview(
+      repassesQuery.data ?? [],
+      contasQuery.data ?? [],
+      exercicioNumero,
+    ),
+    [contasQuery.data, exercicioNumero, repassesQuery.data],
+  );
 
-  // Marco 9B: total_unidades vem da view de indicadores; resumoUnidades.total
-  // funciona como fallback quando a view de dashboard ainda não retornou.
-  const totalUnidades =
-    indicadores?.total_unidades ?? resumoUnidades?.total ?? null;
-
-  // Manter null quando indicadores não retornou linha (exercício sem dados em
-  // execucao_financeira), para não exibir R$0,00 enganoso no Dashboard.
-  const totalReprogramado = indicadores?.total_reprogramado ?? null;
-  const totalParcelas = indicadores?.total_parcelas ?? null;
-  const totalDisponivelInicial = indicadores?.total_disponivel_inicial ?? null;
-  const reprogramadoCusteio = indicadores?.total_reprogramado_custeio ?? null;
-  const reprogramadoCapital = indicadores?.total_reprogramado_capital ?? null;
-
-  const cadastroIncompletoCount = resumoUnidades?.cadastroIncompletoCount ?? 0;
+  const loading = repassesQuery.isLoading || contasQuery.isLoading || loadingResumo;
+  const queryError = repassesQuery.error ?? contasQuery.error ?? errorResumo;
   const recentes = resumoUnidades?.recentes ?? [];
+  const cadastroIncompletoCount = resumoUnidades?.cadastroIncompletoCount ?? 0;
+  const totalUnidades = overview.totalEscolas > 0
+    ? overview.totalEscolas
+    : (resumoUnidades?.total ?? null);
 
-  // parcelasZeradas só faz sentido quando os indicadores foram carregados e a
-  // view retornou uma linha (indicadores != null); zero significa valor real = 0.
-  const parcelasZeradas = !loading && indicadores != null && totalParcelas === 0;
+  const programChartData = overview.porPrograma
+    .filter((program) => program.totalPago !== null && program.totalPago > 0)
+    .map((program) => ({
+      name: program.programa,
+      value: program.totalPago ?? 0,
+      color: PROGRAM_STYLE[program.programa]?.chart ?? "hsl(var(--muted-foreground))",
+    }));
 
-  const chartData = [
-    { name: "Reprogramado Custeio", value: reprogramadoCusteio || 0, color: "hsl(var(--primary))" },
-    { name: "Reprogramado Capital", value: reprogramadoCapital || 0, color: "hsl(var(--primary) / 0.5)" },
-    { name: "Parcelas", value: totalParcelas || 0, color: "hsl(var(--success))" },
-  ].filter((d) => d.value > 0);
-
-  const stats: {
+  const stats: Array<{
     label: string;
     value: number | null;
     icon: typeof School;
     hint: string;
     tone: Tone;
-    format?: (n: number) => string;
-  }[] = [
+    format?: (value: number) => string;
+    destination: string;
+  }> = [
     {
       label: "Unidades escolares",
       value: totalUnidades,
       icon: School,
-      hint: "Cadastradas na 4ª CRE",
+      hint: "Carteira da 4ª CRE no recorte financeiro",
       tone: "primary",
+      destination: "/escolas",
     },
     {
-      label: "Total reprogramado",
-      value: totalReprogramado,
-      icon: Coins,
-      hint: "Custeio + capital reprogramados",
-      tone: "primary",
-      format: fmtBRL,
-    },
-    {
-      label: "Parcelas lançadas",
-      value: totalParcelas,
+      label: "Repasse · 1ª parcela",
+      value: overview.primeiraParcela.totalPago,
       icon: Receipt,
-      hint: parcelasZeradas
-        ? "Nenhum valor lançado na BASE atual"
-        : "1ª e 2ª parcelas do exercício",
-      tone: parcelasZeradas ? "muted" : "primary",
+      hint: `${overview.primeiraParcela.escolas} escolas com pagamento identificado`,
+      tone: "primary",
       format: fmtBRL,
+      destination: "/repasses",
     },
     {
-      label: "Disponível inicial",
-      value: totalDisponivelInicial,
-      icon: Wallet,
-      hint: "Reprogramado + parcelas",
-      tone: "success",
+      label: "Custeio · 1ª parcela",
+      value: overview.primeiraParcela.custeioPago,
+      icon: Coins,
+      hint: overview.primeiraParcela.detalhamentoCompleto > 0
+        ? `${overview.primeiraParcela.detalhamentoCompleto}/${overview.primeiraParcela.escolas} repasses com composição completa`
+        : "Detalhamento ainda não informado",
+      tone: "violet",
       format: fmtBRL,
+      destination: "/repasses",
+    },
+    {
+      label: "Capital · 1ª parcela",
+      value: overview.primeiraParcela.capitalPago,
+      icon: Landmark,
+      hint: "Componente de capital do mesmo recorte",
+      tone: "teal",
+      format: fmtBRL,
+      destination: "/repasses",
     },
   ];
 
@@ -139,9 +242,14 @@ export default function Dashboard() {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
   };
+
   const item = {
     hidden: { opacity: 0, y: 14 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
+    },
   };
 
   if (queryError && !loading) {
@@ -152,13 +260,11 @@ export default function Dashboard() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
               <AlertCircle className="h-6 w-6" />
             </div>
-            <h2 className="text-lg font-semibold">Erro ao carregar indicadores do Dashboard</h2>
+            <h2 className="text-lg font-semibold">Erro ao carregar o Painel</h2>
             <p className="max-w-md text-sm text-muted-foreground">
-              Não foi possível consultar os dados do Supabase. Verifique sua sessão, conexão ou permissões.
+              Não foi possível consultar os dados financeiros e cadastrais no Supabase.
             </p>
-            <Button onClick={() => window.location.reload()}>
-              Tentar novamente
-            </Button>
+            <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
           </CardContent>
         </Card>
       </AppLayout>
@@ -168,18 +274,16 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="space-y-8">
-        {/* HERO — manifesto institucional */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 via-card/60 to-card/40 px-6 py-10 backdrop-blur-sm sm:px-10 sm:py-14"
         >
-          {/* Atmospheric glow */}
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-primary/8 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-violet-500/8 blur-3xl" />
 
-          <div className="relative grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+          <div className="relative grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-end">
             <div className="space-y-5">
               <div className="flex items-center gap-2">
                 <span className="ds-dot-success animate-pulse pulse-dot-success" />
@@ -189,142 +293,115 @@ export default function Dashboard() {
               </div>
 
               <div>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">Pagamentos identificados em 2026</p>
                 <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
                   {loading ? (
                     <Skeleton className="h-16 w-[80%]" />
-                  ) : totalDisponivelInicial !== null ? (
+                  ) : overview.totalPagoIdentificado !== null ? (
                     <NumberTicker
-                      value={totalDisponivelInicial}
+                      value={overview.totalPagoIdentificado}
                       format={fmtBRLDecimal}
                       className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
                     />
                   ) : (
-                    <span className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                      —
-                    </span>
+                    <span className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">—</span>
                   )}
                 </h1>
-                <p className="mt-3 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
-                  Disponibilidade inicial identificada na BASE para{" "}
-                  <span className="font-medium text-foreground">{totalUnidades ?? "—"}</span>{" "}
-                  unidades escolares da 4ª Coordenadoria Regional de Educação.
+                <p className="mt-3 max-w-[58ch] text-[15px] leading-relaxed text-muted-foreground">
+                  Recursos com pagamento informado para {totalUnidades ?? "—"} unidades escolares.
+                  {overview.ultimaDataPagamento
+                    ? ` Última data de pagamento registrada: ${formatDate(overview.ultimaDataPagamento)}.`
+                    : ""}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
-                <Button onClick={() => navigate("/escolas", { viewTransition: true })}>
-                  Ver unidades escolares
+                <Button onClick={() => navigate("/repasses", { viewTransition: true })}>
+                  Explorar repasses
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button variant="outline" onClick={() => navigate("/base", { viewTransition: true })}>
-                  Importar BASE
+                <Button variant="outline" onClick={() => navigate("/escolas", { viewTransition: true })}>
+                  Ver unidades escolares
                 </Button>
               </div>
             </div>
 
-            {/* Composição financeira com Recharts */}
             <div className="ds-card-elevated space-y-4 p-5 backdrop-blur-md">
-              <p className="ds-eyebrow">
-                Composição da disponibilidade
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="ds-eyebrow">Composição dos pagamentos</p>
+                <span className="text-[10px] tabular-nums text-muted-foreground">
+                  {overview.pagamentosIdentificados} registros
+                </span>
+              </div>
 
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                {/* Chart Area */}
-                <div className="h-[120px] w-[120px] shrink-0 relative">
-                  {!loading && chartData.length > 0 ? (
+              <div className="flex flex-col items-center gap-6 sm:flex-row">
+                <div className="relative h-[124px] w-[124px] shrink-0">
+                  {!loading && programChartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <defs>
-                          <linearGradient id="primaryGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="hsl(var(--primary))" />
-                            <stop offset="100%" stopColor="hsl(var(--primary) / 0.6)" />
-                          </linearGradient>
-                          <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="hsl(var(--warning))" stopOpacity={0.8} />
-                            <stop offset="100%" stopColor="hsl(var(--warning) / 0.3)" />
-                          </linearGradient>
-                          <linearGradient id="successGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="hsl(var(--success))" />
-                            <stop offset="100%" stopColor="hsl(var(--success) / 0.6)" />
-                          </linearGradient>
-                        </defs>
                         <Pie
-                          data={chartData}
+                          data={programChartData}
                           cx="50%"
                           cy="50%"
-                          innerRadius={42}
-                          outerRadius={55}
-                          paddingAngle={3.5}
+                          innerRadius={43}
+                          outerRadius={58}
+                          paddingAngle={3}
                           dataKey="value"
                           stroke="none"
                         >
-                          {chartData.map((entry, index) => {
-                            let fillUrl = "url(#primaryGrad)";
-                            if (entry.name.includes("Capital")) fillUrl = "url(#goldGrad)";
-                            if (entry.name.includes("Parcelas")) fillUrl = "url(#successGrad)";
-                            return <Cell key={`cell-${index}`} fill={fillUrl} />;
-                          })}
+                          {programChartData.map((entry) => (
+                            <Cell key={entry.name} fill={entry.color} />
+                          ))}
                         </Pie>
                         <RechartsTooltip
                           formatter={(value: number) => fmtBRL(value)}
                           contentStyle={{
-                            backgroundColor: "rgba(10, 16, 36, 0.75)",
-                            backdropFilter: "blur(12px)",
-                            border: "1px solid hsl(var(--border) / 0.5)",
-                            borderRadius: "12px",
-                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.5)",
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "10px",
                             fontSize: "11px",
-                            padding: "8px 12px"
                           }}
-                          itemStyle={{ color: "hsl(var(--foreground))", fontWeight: "600" }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-24 w-24 rounded-full border-4 border-muted/30 animate-pulse" />
+                      <div className="h-24 w-24 rounded-full border-4 border-muted/30" />
                     </div>
                   )}
                 </div>
 
-                {/* Legend & Details Area */}
-                <div className="flex-1 space-y-3 w-full">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-primary" />
-                        <span className="text-sm font-medium">Reprogramado</span>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground ml-4">
-                        Custeio {fmtBRLOrDash(reprogramadoCusteio)} · Capital {fmtBRLOrDash(reprogramadoCapital)}
-                      </span>
-                    </div>
-                    <span className="text-sm font-semibold tabular-nums text-foreground">
-                      {loading ? "—" : fmtBRLOrDash(totalReprogramado)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-baseline justify-between gap-4">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-success" />
-                        <span className="text-sm font-medium">Parcelas lançadas</span>
-                      </div>
-                      {parcelasZeradas && (
-                        <span className="text-[10px] text-muted-foreground ml-4">
-                          Sem valores na BASE atual
+                <div className="w-full flex-1 space-y-3">
+                  {overview.porPrograma.map((program) => {
+                    const style = PROGRAM_STYLE[program.programa] ?? PROGRAM_STYLE["PDDE BÁSICO"];
+                    return (
+                      <div key={program.programa} className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className={cn("h-2 w-2 rounded-full", style.dot)} aria-hidden="true" />
+                            <span className="truncate text-sm font-medium text-foreground">{program.programa}</span>
+                          </div>
+                          <p className="ml-4 mt-0.5 text-[10px] text-muted-foreground">
+                            {program.contas} {program.contas === 1 ? "conta" : "contas"}
+                            {program.acoes > 0 ? ` · ${program.acoes} ${program.acoes === 1 ? "ação" : "ações"}` : ""}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+                          {formatMoneyOrDash(program.totalPago)}
                         </span>
-                      )}
-                    </div>
-                    <span className="text-sm font-semibold tabular-nums text-foreground">
-                      {loading ? "—" : fmtBRLOrDash(totalParcelas)}
-                    </span>
-                  </div>
+                      </div>
+                    );
+                  })}
 
-                  <div className="border-t border-border/40 pt-2 flex items-baseline justify-between gap-4">
-                    <span className="text-sm font-semibold ml-4">Disponível inicial</span>
-                    <span className="text-base font-semibold tabular-nums text-primary">
-                      {loading ? "—" : fmtBRLOrDash(totalDisponivelInicial)}
+                  <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-3">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">Valor programado no exercício</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        {overview.totalContas} contas · {overview.totalRepasses} registros de repasse
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold tabular-nums text-primary">
+                      {formatMoneyOrDash(overview.totalProgramado)}
                     </span>
                   </div>
                 </div>
@@ -333,77 +410,99 @@ export default function Dashboard() {
           </div>
         </motion.section>
 
-        {/* CENTRAL DOCUMENTAL — Ação Executiva de Alto Valor (Marco 9B + Marco 15) */}
         <CentralDocumental />
 
-        {/* STAT GRID — staggered com Container Queries Tailwind v4 (@container) */}
         <motion.div
           variants={container}
           initial="hidden"
           animate="show"
           className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {stats.map((s) => {
-            const Icon = s.icon;
-            const isReady = s.value !== null && s.value !== undefined;
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            const isReady = stat.value !== null && stat.value !== undefined;
             return (
-              <motion.div key={s.label} variants={item} className="@container">
-                <TiltCard className="h-full">
-                  <Card className="ds-card-interactive ds-lift ds-glow-card group relative h-full transform-3d">
-                  <CardContent className="flex h-full flex-col gap-4 p-5 transform-3d @xs:gap-5">
-                    <div className="flex items-start justify-between gap-3 transform-3d">
-                      <p className="ds-label [transform:translateZ(12px)]">
-                        {s.label}
-                      </p>
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-md transition-transform duration-300 group-hover:scale-110 [transform:translateZ(24px)] ${toneRing[s.tone]}`}
-                      >
-                        <Icon className="h-4 w-4" aria-hidden />
-                      </div>
-                    </div>
-
-                    <div className="transform-3d">
-                      {loading ? (
-                        <Skeleton className="h-9 w-24 [transform:translateZ(16px)] animate-pulse" />
-                      ) : !isReady ? (
-                        <p className="ds-h1 ds-num [transform:translateZ(16px)]">
-                          —
-                        </p>
-                      ) : (
-                        <p className="ds-h1 ds-num text-foreground [transform:translateZ(18px)] tracking-tight">
-                          <NumberTicker
-                            value={s.value as number}
-                            format={s.format ?? ((n) => Math.round(n).toLocaleString("pt-BR"))}
-                          />
-                        </p>
-                      )}
-                      <p className="mt-1 text-[10px] text-muted-foreground leading-normal [transform:translateZ(10px)]">{s.hint}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                </TiltCard>
+              <motion.div key={stat.label} variants={item} className="@container">
+                <button
+                  type="button"
+                  onClick={() => navigate(stat.destination, { viewTransition: true })}
+                  className="block h-full w-full rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  aria-label={`${stat.label}: ${isReady ? stat.format?.(stat.value as number) ?? stat.value : "sem dado"}. Ver detalhamento`}
+                >
+                  <TiltCard className="h-full">
+                    <Card className="ds-card-interactive ds-lift ds-glow-card group relative h-full transform-3d">
+                      <CardContent className="flex h-full flex-col gap-4 p-5 transform-3d @xs:gap-5">
+                        <div className="flex items-start justify-between gap-3 transform-3d">
+                          <p className="ds-label [transform:translateZ(12px)]">{stat.label}</p>
+                          <div
+                            className={cn(
+                              "flex h-8 w-8 items-center justify-center rounded-md transition-transform duration-300 group-hover:scale-110 [transform:translateZ(24px)]",
+                              toneRing[stat.tone],
+                            )}
+                          >
+                            <Icon className="h-4 w-4" aria-hidden="true" />
+                          </div>
+                        </div>
+                        <div className="transform-3d">
+                          {loading ? (
+                            <Skeleton className="h-9 w-24 animate-pulse [transform:translateZ(16px)]" />
+                          ) : !isReady ? (
+                            <p className="ds-h1 ds-num [transform:translateZ(16px)]">—</p>
+                          ) : (
+                            <p className="ds-h1 ds-num tracking-tight text-foreground [transform:translateZ(18px)]">
+                              <NumberTicker
+                                value={stat.value as number}
+                                format={stat.format ?? ((n) => Math.round(n).toLocaleString("pt-BR"))}
+                              />
+                            </p>
+                          )}
+                          <div className="mt-1 flex items-center justify-between gap-2">
+                            <p className="text-[10px] leading-normal text-muted-foreground [transform:translateZ(10px)]">
+                              {stat.hint}
+                            </p>
+                            <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60 transition-colors group-hover:text-primary" aria-hidden="true" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TiltCard>
+                </button>
               </motion.div>
             );
           })}
         </motion.div>
 
-        {/* INSIGHTS INSTITUCIONAIS — Top reprogramados + Distribuição de recursos + Histórico */}
-        <div className="grid gap-4 lg:grid-cols-3">
-          <TopReprogramados />
-          <DistribuicaoDeRecursos />
-          <HistoricoGeracoesCard />
-        </div>
+        <section className="space-y-4" aria-labelledby="programas-pdde-title">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="ds-eyebrow">Carteira financeira</p>
+              <h2 id="programas-pdde-title" className="mt-1 text-xl font-semibold tracking-tight text-foreground">
+                Programas e recursos
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Valores programados, pagamentos identificados e contas por programa.
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/repasses", { viewTransition: true })}>
+              Explorar os repasses
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
+            </Button>
+          </div>
 
-        {/* RECENT ACTIVITY + ALERTS */}
+          <div className="grid gap-4 lg:grid-cols-3">
+            {loading
+              ? Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-44 w-full rounded-xl" />)
+              : overview.porPrograma.map((program) => <ProgramCard key={program.programa} program={program} />)}
+          </div>
+        </section>
+
         <div className="grid gap-4 lg:grid-cols-3">
           <Card className="ds-card lg:col-span-2">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div className="space-y-0.5">
                   <h2 className="ds-h3">Atualizadas recentemente</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Últimas modificações no cadastro das unidades.
-                  </p>
+                  <p className="text-xs text-muted-foreground">Últimas modificações no cadastro das unidades.</p>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => navigate("/escolas", { viewTransition: true })} className="text-xs">
                   Ver todas
@@ -413,8 +512,8 @@ export default function Dashboard() {
 
               {loading ? (
                 <ul className="divide-y divide-border/60">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <li key={i} className="flex items-center justify-between py-3">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <li key={index} className="flex items-center justify-between py-3">
                       <Skeleton className="h-4 w-1/2" />
                       <Skeleton className="h-7 w-16" />
                     </li>
@@ -426,41 +525,27 @@ export default function Dashboard() {
                     <Inbox className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <p className="text-sm font-medium">Nenhuma unidade cadastrada ainda</p>
-                  <p className="text-xs text-muted-foreground">
-                    Importe a BASE ou cadastre uma unidade para começar.
-                  </p>
+                  <p className="text-xs text-muted-foreground">Cadastre uma unidade para iniciar o acompanhamento.</p>
                 </div>
               ) : (
-                <motion.ul
-                  variants={container}
-                  initial="hidden"
-                  animate="show"
-                  className="divide-y divide-border/60"
-                >
-                  {recentes.map((r) => (
-                    <motion.li
-                      key={r.id}
-                      variants={item}
-                      className="group flex items-center justify-between gap-4 py-3 first:pt-1 last:pb-1"
-                    >
+                <motion.ul variants={container} initial="hidden" animate="show" className="divide-y divide-border/60">
+                  {recentes.map((row) => (
+                    <motion.li key={row.id} variants={item} className="group flex items-center justify-between gap-4 py-3 first:pt-1 last:pb-1">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 transition-all group-hover:bg-primary group-hover:shadow-[0_0_8px_hsl(var(--primary)/0.7)]" />
-                        <span className="truncate text-sm font-medium">{r.designacao}</span>
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 transition-all group-hover:bg-primary" />
+                        <span className="truncate text-sm font-medium">{row.designacao}</span>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
-                        {r.updated_at && (
+                        {row.updated_at ? (
                           <span className="hidden text-[11px] tabular-nums text-muted-foreground/70 xl:inline">
-                            {new Date(r.updated_at).toLocaleDateString("pt-BR", {
-                              day: "2-digit",
-                              month: "short",
-                            })}
+                            {new Date(row.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                           </span>
-                        )}
+                        ) : null}
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-                          onClick={() => navigate(`/escolas/${r.id}`, { viewTransition: true })}
+                          onClick={() => navigate(`/escolas/${row.id}`, { viewTransition: true })}
                         >
                           Abrir
                           <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
@@ -473,54 +558,36 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="ds-card">
-            <CardContent className="space-y-4 p-5">
-              <div>
-                <h2 className="ds-h3">Atenção operacional</h2>
-                <p className="text-xs text-muted-foreground">Indicadores que exigem revisão.</p>
-              </div>
-
-              <ul className="space-y-2">
-                {/* Cadastros incompletos — dado real de vw_unidades_localizador */}
+          <div className="space-y-4">
+            <HistoricoGeracoesCard />
+            <Card className="ds-card">
+              <CardContent className="space-y-4 p-5">
+                <div>
+                  <h2 className="ds-h3">Atenção operacional</h2>
+                  <p className="text-xs text-muted-foreground">Dados cadastrais que exigem revisão.</p>
+                </div>
                 {cadastroIncompletoCount > 0 ? (
-                  <li className="flex items-start gap-3 rounded-lg border border-warning/20 bg-warning/5 p-3">
+                  <div className="flex items-start gap-3 rounded-lg border border-warning/20 bg-warning/5 p-3">
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
                     <div className="space-y-0.5">
                       <p className="text-sm font-medium">
                         {cadastroIncompletoCount} cadastro{cadastroIncompletoCount === 1 ? "" : "s"} incompleto{cadastroIncompletoCount === 1 ? "" : "s"}
                       </p>
-                      <p className="text-[11px] text-muted-foreground">
-                        Unidades sem CNPJ, INEP ou diretor(a).
-                      </p>
+                      <p className="text-[11px] text-muted-foreground">Unidades sem CNPJ, INEP ou diretor(a).</p>
                     </div>
-                  </li>
+                  </div>
                 ) : !loading ? (
-                  <li className="flex items-start gap-3 rounded-lg border border-success/20 bg-success/5 p-3">
+                  <div className="flex items-start gap-3 rounded-lg border border-success/20 bg-success/5 p-3">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                     <div className="space-y-0.5">
-                      <p className="text-sm font-medium">Cadastros completos</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        Todas as unidades têm CNPJ, INEP e diretor(a) preenchidos.
-                      </p>
+                      <p className="text-sm font-medium">Cadastros essenciais completos</p>
+                      <p className="text-[11px] text-muted-foreground">Todas as unidades têm CNPJ, INEP e diretor(a) preenchidos.</p>
                     </div>
-                  </li>
+                  </div>
                 ) : null}
-
-                {/* Parcelas zeradas — informativo, não erro */}
-                {parcelasZeradas && (
-                  <li className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3">
-                    <Receipt className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div className="space-y-0.5">
-                      <p className="text-sm font-medium">Parcelas zeradas</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        As colunas de parcelas existem na BASE, mas não há valores lançados no arquivo atual.
-                      </p>
-                    </div>
-                  </li>
-                )}
-              </ul>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </AppLayout>
