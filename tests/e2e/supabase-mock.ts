@@ -59,6 +59,80 @@ const unidade2 = {
   total_disponivel_inicial: 0,
 };
 
+const contasFinanceiras = [
+  {
+    id: "00000000-0000-4000-8000-000000000201",
+    unidade_id: unidade.id,
+    programa: "PDDE BÁSICO",
+    exercicio: 2026,
+    banco: "001",
+    agencia: "1234",
+    conta_corrente: "12345-6",
+    principal: true,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000202",
+    unidade_id: unidade2.id,
+    programa: "PDDE BÁSICO",
+    exercicio: 2026,
+    banco: "001",
+    agencia: "4321",
+    conta_corrente: "65432-1",
+    principal: true,
+  },
+];
+
+const repassesFinanceiros = [
+  {
+    id: "00000000-0000-4000-8000-000000000301",
+    unidade_id: unidade.id,
+    designacao: unidade.designacao,
+    nome: unidade.nome,
+    inep: unidade.inep,
+    exercicio: 2026,
+    programa: "PDDE BÁSICO",
+    acao: "PDDE Básico",
+    parcela: "1ª Parcela",
+    ordem_exibicao: 1,
+    valor_programado: 10000,
+    valor_pago: 10000,
+    data_pagamento: "2026-08-05",
+    data_ordem_pagamento: "2026-08-04",
+    conta_bancaria_id: contasFinanceiras[0].id,
+    banco: "001",
+    agencia: "1234",
+    conta_corrente: "12345-6",
+    custeio_programado: 7000,
+    capital_programado: 3000,
+    custeio_pago: 7000,
+    capital_pago: 3000,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000302",
+    unidade_id: unidade2.id,
+    designacao: unidade2.designacao,
+    nome: unidade2.nome,
+    inep: unidade2.inep,
+    exercicio: 2026,
+    programa: "PDDE BÁSICO",
+    acao: "PDDE Básico — Primeira Infância",
+    parcela: "P1",
+    ordem_exibicao: 1,
+    valor_programado: 5000,
+    valor_pago: 5000,
+    data_pagamento: "2026-05-22",
+    data_ordem_pagamento: "2026-05-21",
+    conta_bancaria_id: contasFinanceiras[1].id,
+    banco: "001",
+    agencia: "4321",
+    conta_corrente: "65432-1",
+    custeio_programado: 3000,
+    capital_programado: 2000,
+    custeio_pago: 3000,
+    capital_pago: 2000,
+  },
+];
+
 function json(route: Route, body: unknown, headers: Record<string, string> = {}) {
   return route.fulfill({
     status: 200,
@@ -66,6 +140,11 @@ function json(route: Route, body: unknown, headers: Record<string, string> = {})
     headers,
     body: JSON.stringify(body),
   });
+}
+
+function eqValue(url: URL, key: string) {
+  const raw = url.searchParams.get(key);
+  return raw?.startsWith("eq.") ? raw.slice(3) : null;
 }
 
 export async function installSupabaseMock(page: Page) {
@@ -96,6 +175,26 @@ export async function installSupabaseMock(page: Page) {
 
     if (url.pathname === "/auth/v1/user") {
       return json(route, testUser);
+    }
+
+    if (url.pathname.includes("/rest/v1/vw_repasses_financeiros_unidade")) {
+      const unidadeId = eqValue(url, "unidade_id");
+      return json(
+        route,
+        unidadeId
+          ? repassesFinanceiros.filter((repasse) => repasse.unidade_id === unidadeId)
+          : repassesFinanceiros,
+      );
+    }
+
+    if (url.pathname.includes("/rest/v1/contas_bancarias")) {
+      const unidadeId = eqValue(url, "unidade_id");
+      return json(
+        route,
+        unidadeId
+          ? contasFinanceiras.filter((conta) => conta.unidade_id === unidadeId)
+          : contasFinanceiras,
+      );
     }
 
     if (url.pathname.includes("/rest/v1/vw_dashboard_basico")) {
