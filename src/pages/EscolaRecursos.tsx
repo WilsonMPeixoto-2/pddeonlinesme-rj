@@ -17,7 +17,7 @@ export default function EscolaRecursos() {
   const exercicioNumero = Number(exercicio);
   const [searchParams] = useSearchParams();
   const returnParam = searchParams.get("return");
-  const returnTo = returnParam?.startsWith("/") ? returnParam : (id ? `/escolas/${id}` : "/escolas");
+  const returnTo = returnParam?.startsWith("/") && !returnParam.startsWith("//") ? returnParam : (id ? `/escolas/${id}` : "/escolas");
 
   const {
     data: unidade,

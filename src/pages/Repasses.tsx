@@ -180,7 +180,7 @@ export default function Repasses() {
   const [selectedAction, setSelectedAction] = useState<string | null>(() => searchParams.get("acao"));
   const [selectedBandId, setSelectedBandId] = useState<ValueBandOverview["id"] | null>(() => {
     const value = searchParams.get("faixa");
-    return value === "ate-3000" || value === "3000-5000" || value === "5000-8000" || value === "acima-8000"
+    return value === "ate-3" || value === "3-5" || value === "5-8" || value === "acima-8"
       ? value
       : null;
   });
