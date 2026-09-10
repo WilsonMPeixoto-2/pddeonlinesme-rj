@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   type ColumnDef,
@@ -175,10 +175,26 @@ export default function Repasses() {
   const { exercicio } = useExercicio();
   const exercicioNumero = Number(exercicio);
   const repassesQuery = useQuery(repassesFinanceirosOptions(exercicioNumero));
-  const [search, setSearch] = useState("");
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
-  const [selectedBandId, setSelectedBandId] = useState<ValueBandOverview["id"] | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(() => searchParams.get("q") ?? "");
+  const [selectedAction, setSelectedAction] = useState<string | null>(() => searchParams.get("acao"));
+  const [selectedBandId, setSelectedBandId] = useState<ValueBandOverview["id"] | null>(() => {
+    const value = searchParams.get("faixa");
+    return value === "ate-3" || value === "3-5" || value === "5-8" || value === "acima-8"
+      ? value
+      : null;
+  });
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => searchParams.get("data"));
+
+  useEffect(() => {
+    const next = new URLSearchParams();
+    const term = search.trim();
+    if (term) next.set("q", term);
+    if (selectedAction) next.set("acao", selectedAction);
+    if (selectedBandId) next.set("faixa", selectedBandId);
+    if (selectedDate) next.set("data", selectedDate);
+    setSearchParams(next, { replace: true });
+  }, [search, selectedAction, selectedBandId, selectedDate, setSearchParams]);
 
   const overview = useMemo(
     () => buildPrimeiraParcelaOverview(repassesQuery.data ?? [], exercicioNumero),
@@ -221,7 +237,7 @@ export default function Repasses() {
         cell: ({ row }) => (
           <div className="min-w-[230px]">
             <Link
-              to={`/escolas/${row.original.unidadeId}/recursos`}
+              to={`/escolas/${row.original.unidadeId}/recursos?return=${encodeURIComponent(`/repasses${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}`}
               viewTransition
               className="font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
             >
@@ -294,7 +310,7 @@ export default function Repasses() {
         ),
       },
     ],
-    [maxValue],
+    [maxValue, searchParams],
   );
 
   const table = useTable({

@@ -1,6 +1,6 @@
 import { ArrowLeft, Landmark, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import AppLayout from "@/components/AppLayout";
 import { EmptyState } from "@/components/EmptyState";
@@ -15,6 +15,9 @@ export default function EscolaRecursos() {
   const { id } = useParams();
   const { exercicio } = useExercicio();
   const exercicioNumero = Number(exercicio);
+  const [searchParams] = useSearchParams();
+  const returnParam = searchParams.get("return");
+  const returnTo = returnParam?.startsWith("/") && !returnParam.startsWith("//") ? returnParam : (id ? `/escolas/${id}` : "/escolas");
 
   const {
     data: unidade,
@@ -40,12 +43,12 @@ export default function EscolaRecursos() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <nav className="flex items-center gap-1.5 text-sm" aria-label="Navegação estrutural">
             <Link
-              to={id ? `/escolas/${id}` : "/escolas"}
+              to={returnTo}
               viewTransition
               className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-              Ficha da unidade
+              {returnParam ? "Voltar aos repasses" : "Ficha da unidade"}
             </Link>
             <span className="text-muted-foreground/40">/</span>
             <span className="font-medium text-foreground">Recursos PDDE</span>

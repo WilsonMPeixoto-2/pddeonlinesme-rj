@@ -8,12 +8,14 @@ test("rota protegida redireciona usuário sem sessão para o login", async ({ pa
   await expect(page.getByRole("heading", { name: "Acesso ao sistema" })).toBeVisible();
 });
 
-test("login autenticado abre o dashboard e mantém sessão ao navegar", async ({ page }) => {
+test("login autenticado abre o dashboard canônico e mantém sessão ao navegar", async ({ page }) => {
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
 
   await expect(page.getByText("Painel Executivo-Operacional", { exact: false })).toBeVisible();
-  await expect(page.getByText("105.000", { exact: false }).first()).toBeVisible();
+  await expect(page.getByText("Pagamentos identificados em 2026", { exact: true })).toBeVisible();
+  await expect(page.getByText("15.000", { exact: false }).first()).toBeVisible();
+  await expect(page.getByText("Repasse · 1ª parcela", { exact: true })).toBeVisible();
 
   await page.getByRole("link", { name: "Manual" }).click();
   await expect(page).toHaveURL(/\/manual$/);
