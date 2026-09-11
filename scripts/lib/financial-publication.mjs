@@ -30,12 +30,29 @@ function stripExercise(value) {
     .trim();
 }
 
+const STANDALONE_QUALITY_ACTIONS = new Map([
+  ["EDUCACAO CONECTADA", "Educação Conectada"],
+  ["ESCOLA E COMUNIDADE", "Escola e Comunidade"],
+  ["ESCOLA DAS ADOLESCENCIAS", "Escola das Adolescências"],
+  ["CANTINHO DA LEITURA", "Cantinho da Leitura"],
+]);
+
 function classifyProgram(programName) {
   const raw = String(programName ?? "").trim();
   const text = normalizedText(raw);
+  const standaloneAction = normalizedText(stripExercise(raw));
 
   if (text.includes("PRIMEIRA INFANCIA")) {
     return { program: "PDDE BÁSICO", action: "PDDE Básico — Primeira Infância" };
+  }
+
+  const qualityAction = STANDALONE_QUALITY_ACTIONS.get(standaloneAction);
+  if (qualityAction) {
+    return { program: "PDDE QUALIDADE", action: qualityAction };
+  }
+
+  if (standaloneAction === "PDDE SRM") {
+    return { program: "PDDE EQUIDADE", action: "PDDE SRM" };
   }
 
   if (text.includes("QUALIDADE")) {
