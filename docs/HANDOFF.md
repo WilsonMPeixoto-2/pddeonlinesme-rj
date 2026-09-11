@@ -8,7 +8,7 @@
 
 ## 1. Estado verificado no fechamento do ciclo funcional
 
-Baseline funcional antes desta reconciliação documental:
+Baseline funcional anterior à PR documental #133:
 
 - `main`: `b60fb04b360eefb7dc0d92cc39064ee8a019724b`;
 - Production Vercel: `dpl_FdQY3St4xHQpSgept47jobMcvE4Y`;
@@ -18,7 +18,7 @@ Baseline funcional antes desta reconciliação documental:
 - erros de runtime observados após o deploy: nenhum no intervalo verificado;
 - Supabase oficial: `raluxyojqosfzrfozmpz`.
 
-A PR documental pode produzir um novo SHA de `main` sem alterar o baseline funcional acima.
+A PR #133 altera apenas documentação/continuidade; o SHA de `main` após seu merge pode diferir do baseline funcional acima sem mudança no código da aplicação.
 
 ## 2. Ciclo #129 → #132 concluído em Production
 
@@ -63,9 +63,28 @@ Entregue:
 - preservação do recorte da carteira ao voltar;
 - histórico do navegador sem entradas redundantes por digitação/retorno.
 
-No início desta reconciliação documental havia **0 PRs de produto abertos**.
+No início da reconciliação documental havia **0 PRs de produto abertos**.
 
-## 3. Estado financeiro atual
+## 3. Governança documental instituída na PR #133
+
+A documentação passa a usar uma hierarquia explícita:
+
+1. sistema real verificado;
+2. `docs/DECISIONS.md`;
+3. `.continuity/current-state.json` e `docs/HANDOFF.md`;
+4. documentação técnica do domínio;
+5. histórico.
+
+`docs/README.md` é a porta de entrada obrigatória.
+
+Foram classificados como históricos, sem apagar sua rastreabilidade:
+
+- Plano Global v4.2 como baseline estratégica de maio/2026;
+- `OPPORTUNITIES_BACKLOG.md` como snapshot de maio/2026;
+- `DECISIONS_LOG.md` como histórico de decisões antigas;
+- specs, planos e handoffs datados.
+
+## 4. Estado financeiro atual
 
 Validado no Supabase oficial:
 
@@ -83,7 +102,7 @@ Decisões obrigatórias:
 - dimensão coletada só vira informação operacional depois de contrato de maturidade/publicação;
 - saldo atual, movimentos posteriores, crédito localizado completo e conciliação documento × débito continuam fora da superfície operacional enquanto não houver contrato próprio e cobertura adequada.
 
-## 4. Sincronização financeira automática
+## 5. Sincronização financeira automática
 
 Workflow: `.github/workflows/sync-financial-snapshot.yml`.
 
@@ -97,7 +116,7 @@ Para o job agendado publicar, é obrigatório:
 
 Execução manual também valida o destino e exige os secrets. Não contornar ausência de credencial com chave pública/anon.
 
-## 5. CI atual
+## 6. CI atual
 
 `.github/workflows/ci.yml` possui dois jobs principais:
 
@@ -123,7 +142,7 @@ Execução manual também valida o destino e exige os secrets. Não contornar au
 
 Execuções obsoletas do mesmo PR são canceladas por `concurrency`.
 
-## 6. Decisões de produto vigentes
+## 7. Decisões de produto vigentes
 
 Fonte canônica: `docs/DECISIONS.md`.
 
@@ -140,9 +159,9 @@ Resumo do ciclo atual:
 - contexto da carteira deve sobreviver ao drill-down;
 - design deve ser institucional, claro e original, sem excesso decorativo.
 
-## 7. Pendências operacionais reais
+## 8. Pendências operacionais reais
 
-### 7.1. Ativação da sincronização financeira
+### 8.1. Ativação da sincronização financeira
 
 Não é bloqueio do funcionamento atual. É uma decisão operacional futura.
 
@@ -154,7 +173,7 @@ Antes de ativar:
 4. validar dry-run, publicação, idempotência e estado do banco;
 5. somente depois habilitar a variável de agendamento.
 
-### 7.2. Smoke autenticado periódico
+### 8.2. Smoke autenticado periódico
 
 CI/Preview não substituem smoke autenticado de fluxos críticos. Priorizar, quando houver mudança nessas áreas:
 
@@ -165,11 +184,11 @@ CI/Preview não substituem smoke autenticado de fluxos críticos. Priorizar, qua
 - geração documental;
 - permissões/RLS.
 
-### 7.3. Auth/RLS/auditoria
+### 8.3. Auth/RLS/auditoria
 
 Continuar hardening antes de ampliar o Portal do Diretor ou expor novos fluxos de escrita para perfis escolares.
 
-## 8. O que não deve ser reaberto por engano
+## 9. O que não deve ser reaberto por engano
 
 Não tratar como “próxima frente” itens já concluídos:
 
@@ -184,7 +203,7 @@ Não tratar como “próxima frente” itens já concluídos:
 
 Novas evoluções podem ampliar essas áreas, mas devem partir do estado atual, não dos planos de maio.
 
-## 9. Roteiro obrigatório para continuidade
+## 10. Roteiro obrigatório para continuidade
 
 1. `AGENTS.md`;
 2. `docs/README.md`;
@@ -197,9 +216,9 @@ Novas evoluções podem ampliar essas áreas, mas devem partir do estado atual, 
 
 `docs/PLANO_GLOBAL_V4_2.md`, `docs/OPPORTUNITIES_BACKLOG.md` e documentos em `docs/superpowers/` são referências estratégicas/históricas, não fotografia atual.
 
-## 10. Próximos movimentos recomendados
+## 11. Próximos movimentos recomendados
 
-1. concluir e mergear esta reconciliação documental;
+1. manter o roteiro obrigatório de leitura e evitar novas fontes concorrentes de estado/decisões;
 2. manter smoke autenticado proporcional ao risco das próximas mudanças;
 3. decidir quando vale ativar a sincronização financeira automática e, nesse momento, configurar secrets + gate com validação manual prévia;
 4. continuar hardening de Auth/RLS/auditoria antes de ampliar o Portal do Diretor;
