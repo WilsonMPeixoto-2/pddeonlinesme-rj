@@ -8,7 +8,8 @@ import {
   evaluatePublicationDimensions,
 } from "./lib/financial-publication.mjs";
 
-const ENGINE_DATA_ROOT = "https://raw.githubusercontent.com/WilsonMPeixoto-2/pdde-repasse-conciliador/main/public/data";
+const EXPECTED_SOURCE_REPOSITORY = "WilsonMPeixoto-2/pdde-repasse-conciliador";
+const ENGINE_DATA_ROOT = `https://raw.githubusercontent.com/${EXPECTED_SOURCE_REPOSITORY}/main/public/data`;
 const MANIFEST_URL = `${ENGINE_DATA_ROOT}/pdde-2026-snapshot.json`;
 const EXPECTED_ARTIFACT_NAME = "sigef-full-163-2026";
 const EXPECTED_SUPABASE_URL = "https://raluxyojqosfzrfozmpz.supabase.co";
@@ -47,6 +48,39 @@ export function validatePublishedManifest(manifest) {
     manifest.source.artifactName !== EXPECTED_ARTIFACT_NAME
   ) {
     throw new Error("Manifesto financeiro sem proveniência válida.");
+  }
+  return manifest;
+}
+
+function parseExpectedPositiveInteger(value, field) {
+  if (value === undefined || value === null || value === "") return null;
+  const parsed = Number(value);
+  if (!isPositiveInteger(parsed)) throw new Error(`${field} esperado é inválido.`);
+  return parsed;
+}
+
+export function assertExpectedManifestProvenance(manifestInput, expected = {}) {
+  const manifest = validatePublishedManifest(manifestInput);
+  const sourceRepository = String(expected.sourceRepository ?? "").trim();
+  const artifactName = String(expected.artifactName ?? "").trim();
+  const publishedAt = String(expected.publishedAt ?? "").trim();
+  const workflowRunId = parseExpectedPositiveInteger(expected.workflowRunId, "workflowRunId");
+  const artifactId = parseExpectedPositiveInteger(expected.artifactId, "artifactId");
+
+  if (sourceRepository && sourceRepository !== EXPECTED_SOURCE_REPOSITORY) {
+    throw new Error(`Repositório de origem inesperado: ${sourceRepository}`);
+  }
+  if (workflowRunId !== null && workflowRunId !== manifest.source.workflowRunId) {
+    throw new Error(`workflowRunId do evento diverge do manifesto: ${workflowRunId} != ${manifest.source.workflowRunId}`);
+  }
+  if (artifactId !== null && artifactId !== manifest.source.artifactId) {
+    throw new Error(`artifactId do evento diverge do manifesto: ${artifactId} != ${manifest.source.artifactId}`);
+  }
+  if (artifactName && artifactName !== manifest.source.artifactName) {
+    throw new Error(`artifactName do evento diverge do manifesto: ${artifactName} != ${manifest.source.artifactName}`);
+  }
+  if (publishedAt && publishedAt !== manifest.publishedAt) {
+    throw new Error(`publishedAt do evento diverge do manifesto: ${publishedAt} != ${manifest.publishedAt}`);
   }
   return manifest;
 }
@@ -205,6 +239,13 @@ export async function publishFinancialPayload(payload, env = process.env) {
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
   const { manifest, snapshot, snapshotDigest, rawBytes } = await fetchLatestPublishedSnapshot();
+  assertExpectedManifestProvenance(manifest, {
+    sourceRepository: process.env.EXPECTED_SOURCE_REPOSITORY,
+    workflowRunId: process.env.EXPECTED_WORKFLOW_RUN_ID,
+    artifactId: process.env.EXPECTED_ARTIFACT_ID,
+    artifactName: process.env.EXPECTED_ARTIFACT_NAME,
+    publishedAt: process.env.EXPECTED_PUBLISHED_AT,
+  });
   const payload = prepareFinancialPublicationPayload(snapshot, manifest, snapshotDigest);
   const summary = {
     mode: dryRun ? "dry-run" : "publish",
