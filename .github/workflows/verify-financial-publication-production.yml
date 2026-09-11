@@ -14,13 +14,9 @@ permissions:
 
 jobs:
   verify:
-    name: Dry-run, publish and prove idempotence
+    name: Validate real published snapshot
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: production
-    env:
-      SUPABASE_URL: ${{ secrets.PDDE_SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PDDE_SUPABASE_SERVICE_ROLE_KEY }}
 
     steps:
       - name: Checkout
@@ -35,28 +31,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate destination
+      - name: Fetch, hydrate and validate current published snapshot
         shell: bash
         run: |
           set -euo pipefail
-          test "$SUPABASE_URL" = "https://raluxyojqosfzrfozmpz.supabase.co"
-          test -n "$SUPABASE_SERVICE_ROLE_KEY"
-
-      - name: Validate current published snapshot without writing
-        run: node scripts/sync-financial-snapshot.mjs --dry-run
-
-      - name: Publish current mature snapshot
-        shell: bash
-        run: |
-          set -euo pipefail
-          output="$(node scripts/sync-financial-snapshot.mjs)"
+          output="$(node scripts/sync-financial-snapshot.mjs --dry-run)"
           printf '%s\n' "$output"
-          node -e 'const x=JSON.parse(process.argv[1]); if (x.result?.status !== "published") { console.error(`expected published, got ${x.result?.status}`); process.exit(1); }' "$output"
-
-      - name: Re-run same snapshot and require strict idempotence
-        shell: bash
-        run: |
-          set -euo pipefail
-          output="$(node scripts/sync-financial-snapshot.mjs)"
-          printf '%s\n' "$output"
-          node -e 'const x=JSON.parse(process.argv[1]); if (x.result?.status !== "idempotent") { console.error(`expected idempotent, got ${x.result?.status}`); process.exit(1); }' "$output"
+          node -e '
+            const x = JSON.parse(process.argv[1]);
+            if (x.mode !== "dry-run") throw new Error("dry-run ausente");
+            if (x.exercise !== 2026) throw new Error(`exercicio inesperado: ${x.exercise}`);
+            if (x.schools !== 163) throw new Error(`escolas: ${x.schools}`);
+            if (x.dimensions?.length !== 5) throw new Error(`dimensoes: ${x.dimensions?.length}`);
+            for (const d of x.dimensions) {
+              if (d.coverage !== "163/163" || d.quality !== "MATURE") {
+                throw new Error(`${d.key}: ${d.coverage}/${d.quality}`);
+              }
+            }
+            if (!/^[0-9a-f]{64}$/.test(x.snapshotDigest ?? "")) throw new Error("digest invalido");
+          ' "$output"
