@@ -71,6 +71,7 @@ Preservado por rastreabilidade, **não determina o estado atual**:
 
 - [`PLANO_GLOBAL_V4_2.md`](./PLANO_GLOBAL_V4_2.md) como baseline estratégica de maio/2026;
 - `PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md` e versões anteriores;
+- [`OPPORTUNITIES_BACKLOG.md`](./OPPORTUNITIES_BACKLOG.md) como snapshot de oportunidades de maio/2026;
 - [`DECISIONS_LOG.md`](./DECISIONS_LOG.md) como registro histórico;
 - `CODEX_HANDOFF_*.md`, relatórios de recovery/reconciliation e snapshots datados;
 - [`superpowers/plans/`](./superpowers/plans/) e [`superpowers/specs/`](./superpowers/specs/), que registram desenho e execução de mudanças específicas.
