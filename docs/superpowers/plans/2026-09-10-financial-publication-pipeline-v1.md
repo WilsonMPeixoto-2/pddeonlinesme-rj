@@ -45,7 +45,7 @@
 ### Task 2: Contrato SQL de dimensões e publicação atômica
 
 **Files:**
-- Create: `supabase/migrations/20260910152000_financial_publication_pipeline_v1.sql`
+- Create: `supabase/migrations/20260911065126_financial_publication_pipeline_v1.sql`
 - Create: `supabase/tests/financial_publication_pipeline_v1.sql`
 
 **Interfaces:**
