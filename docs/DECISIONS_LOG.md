@@ -1,13 +1,30 @@
-# Histórico de Decisões Arquiteturais e Estratégicas (ADR) — PDDE Online 2026
+# Histórico de decisões arquiteturais — PDDE Online 2026
 
-## Decisão — TypeScript Strict como requisito permanente
-**Data:** Abril de 2026
-**Contexto:** Preparação para criação do motor documental que lidará com planilhas de prestação de contas, valores monetários e regras rigorosas. Tipagem frouxa apresenta risco alto de bugs silenciosos.
-**Decisão:** O projeto passa a exigir TypeScript Strict Mode como requisito permanente antes da importação real da BASE e antes do motor documental. Qualquer agente que introduzir código incompatível com `strict`, `noImplicitAny` ou `strictNullChecks` deverá corrigir a alteração antes de prosseguir.
-**Consequências:** Aumenta a rigidez na criação de componentes, mas blinda o repositório contra nulos não checados e acesso a propriedades indefinidas.
+> **Documento histórico. Não é fonte canônica das decisões vigentes.**
+>
+> Para decisões atuais, consulte [`DECISIONS.md`](./DECISIONS.md). Para a hierarquia documental completa, consulte [`README.md`](./README.md).
 
-## Decisão — Separação de Experiência GAD vs Diretor
-**Data:** Abril de 2026
-**Contexto:** A GAD lida com 160+ escolas, enquanto o Diretor lida apenas com a sua unidade.
-**Decisão:** O Portal do Diretor será uma interface completamente separada e isolada, contendo apenas o que diz respeito à unidade logada.
-**Consequências:** O design atual concentra-se na GAD. O Portal do Diretor necessitará de rotas específicas blindadas por Auth/RLS.
+Este arquivo preserva decisões antigas que ajudam a explicar a evolução do projeto. Elas podem ter sido refinadas ou absorvidas por decisões posteriores.
+
+## Abril/2026 — TypeScript Strict como requisito permanente
+
+**Contexto:** preparação do motor documental e de fluxos financeiros com alto risco de bugs silenciosos.
+
+**Decisão histórica:** exigir TypeScript Strict Mode antes da importação real da BASE e da expansão do motor documental.
+
+**Legado vigente:** a exigência de tipagem estrita continua refletida no projeto e no gate de CI; detalhes operacionais atuais devem ser lidos em `AGENTS.md`, `package.json` e no próprio CI.
+
+## Abril/2026 — Separação de experiência GAD vs Diretor
+
+**Contexto:** a GAD trabalha com o universo da CRE, enquanto o Diretor deve enxergar apenas a sua unidade.
+
+**Decisão histórica:** o Portal do Diretor será uma experiência separada e restrita ao escopo da unidade autenticada.
+
+**Legado vigente:** qualquer evolução dessa frente continua condicionada a Auth/RLS/roles e à decisão atual registrada em `DECISIONS.md`.
+
+## Regra de uso
+
+- não adicionar novas decisões vigentes aqui;
+- não usar este arquivo para determinar prioridade atual;
+- novas decisões entram em `docs/DECISIONS.md`;
+- o histórico detalhado também permanece recuperável pelo Git.
