@@ -142,6 +142,28 @@ describe("buildNormalizedPublicationPayload", () => {
     ]);
   });
 
+  it("aceita ações canônicas isoladas emitidas pelo snapshot real", () => {
+    const realShape = JSON.parse(JSON.stringify(snapshot));
+    const installment = realShape.schools["33069093"].programs[1].installments[0];
+    realShape.schools["33069093"].programs = [
+      { name: "Educação Conectada", installments: [installment] },
+      { name: "Escola e Comunidade 2026", installments: [installment] },
+      { name: "Escola das Adolescências", installments: [installment] },
+      { name: "Cantinho da Leitura 2026", installments: [installment] },
+      { name: "PDDE SRM 2026", installments: [installment] },
+    ];
+
+    const payload = buildNormalizedPublicationPayload(realShape, manifest) as NormalizedPayload;
+
+    expect(payload.repasses.map((repasse) => [repasse.program, repasse.action])).toEqual([
+      ["PDDE QUALIDADE", "Educação Conectada"],
+      ["PDDE QUALIDADE", "Escola e Comunidade"],
+      ["PDDE QUALIDADE", "Escola das Adolescências"],
+      ["PDDE QUALIDADE", "Cantinho da Leitura"],
+      ["PDDE EQUIDADE", "PDDE SRM"],
+    ]);
+  });
+
   it("converte centavos para reais e mantém pagamento não informado como null", () => {
     const payload = buildNormalizedPublicationPayload(snapshot, manifest) as NormalizedPayload;
     const first = payload.repasses[0];
