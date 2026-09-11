@@ -46,8 +46,13 @@ describe("buildSchoolDetailPath", () => {
 });
 
 describe("resolveSafeEscolasReturn", () => {
-  it("aceita somente retorno interno para a carteira de escolas", () => {
-    expect(resolveSafeEscolasReturn("/escolas?q=abc")).toBe("/escolas?q=abc");
+  it("aceita somente a carteira de escolas e seus filtros", () => {
+    expect(resolveSafeEscolasReturn("/escolas")).toBe("/escolas");
+    expect(resolveSafeEscolasReturn("/escolas?q=abc&status=incompleto")).toBe("/escolas?q=abc&status=incompleto");
+  });
+
+  it("rejeita rotas filhas, externas e caminhos ambíguos", () => {
+    expect(resolveSafeEscolasReturn("/escolas/outra-unidade")).toBe("/escolas");
     expect(resolveSafeEscolasReturn("//malicioso.example")).toBe("/escolas");
     expect(resolveSafeEscolasReturn("/fiscal")).toBe("/escolas");
     expect(resolveSafeEscolasReturn("https://example.com")).toBe("/escolas");
