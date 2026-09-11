@@ -1,14 +1,16 @@
 # Integração financeira PDDE 2026 — V1
 
+**Atualizado em:** 11/09/2026 após consolidação do pipeline de publicação por dimensão (PR #129).
+
 ## Objetivo
 
 Incorporar ao PDDE Online dados financeiros reais e estruturados das 163 unidades da 4ª CRE, preservando a hierarquia operacional de programas, ações, parcelas e contas bancárias.
 
-A camada operacional da interface não deve exibir metadados técnicos de coleta. Proveniência, workflow e artefatos ficam restritos à auditoria interna.
+A camada operacional da interface não deve expor metadados técnicos de coleta. Proveniência, workflow e artefatos ficam restritos à auditoria interna.
 
 ## Escopo recebido
 
-Carga consolidada em 08/09/2026 a partir do snapshot publicado pelo projeto `pdde-repasse-conciliador`.
+Carga consolidada originalmente em 08/09/2026 a partir do snapshot publicado pelo projeto `pdde-repasse-conciliador`.
 
 - 163 unidades escolares conciliadas por INEP: 163/163
 - 335 contas bancárias
@@ -62,7 +64,7 @@ Passa a comportar:
 
 ### `repasses_financeiros`
 
-Novo contrato normalizado:
+Contrato normalizado:
 
 `unidade → exercício → programa → ação → parcela → valores → datas → conta vinculada`
 
@@ -122,15 +124,89 @@ Esses elementos permanecem disponíveis exclusivamente na camada de auditoria.
 - duplicidades de repasses: 0
 - repasses com conta órfã: 0
 - valores negativos: 0
-- importador temporário utilizado na carga: neutralizado após a conclusão
+- importador temporário utilizado na carga inicial: neutralizado após a conclusão
+
+## Estado pós-PR #129 — publicação por dimensão
+
+A carga inicial deixou de ser o único mecanismo de proteção da integração. O PDDE Online passou a possuir contrato versionado de publicação por dimensão.
+
+As cinco dimensões V1 estão atualmente `MATURE/PUBLISHED`, com cobertura 163/163:
+
+1. `bank_accounts`;
+2. `scheduled_repasses`;
+3. `pdde_basic_first_installment`;
+4. `pdde_basic_first_installment_breakdown`;
+5. `pdde_basic_second_installment_programmed`.
+
+A promoção de um snapshot ocorre por RPC transacional, que valida o universo das escolas, contas, repasses, vínculos e maturidade antes de substituir a projeção operacional.
+
+### Invariantes do pipeline
+
+- publicação atômica: falha bloqueante desfaz toda a transação;
+- idempotência por workflow/artifact;
+- execução mais antiga que a última publicação é rejeitada;
+- dimensão já publicada não pode regredir abaixo do contrato mínimo;
+- `NULL` continua sendo ausência;
+- publicação exige `service_role` e não é exposta ao frontend.
+
+Detalhes em `docs/technical/financial-publication-contract-v1.md`.
+
+## Classificação de ações canônicas
+
+O snapshot pode fornecer determinadas ações pelo nome isolado. O transformador reconhece explicitamente:
+
+### PDDE Qualidade
+
+- Educação Conectada
+- Escola e Comunidade
+- Escola das Adolescências
+- Cantinho da Leitura
+
+### PDDE Equidade
+
+- PDDE SRM
+
+Não existe fallback genérico para rótulo desconhecido.
+
+## Relação com o Painel e Repasses
+
+A interface não usa o total global de pagamentos como KPI principal quando esse total mistura universos com maturidade diferente.
+
+O recorte institucional principal vigente é a **1ª parcela paga do PDDE Básico**, no mesmo universo de:
+
+- valor;
+- cobertura;
+- data de pagamento;
+- composição custeio/capital quando disponível.
+
+A página `/repasses` e o Painel devem respeitar essa fronteira até que novas dimensões tenham contrato próprio de maturidade.
+
+## Sincronização futura
+
+Existe `.github/workflows/sync-financial-snapshot.yml` para validar e publicar snapshots maduros.
+
+O agendamento só publica quando:
+
+- `PDDE_FINANCIAL_SYNC_ENABLED=true`;
+- `PDDE_SUPABASE_URL` e `PDDE_SUPABASE_SERVICE_ROLE_KEY` estão configurados no environment `production`.
+
+Enquanto isso não ocorrer, a existência de `schedule` no workflow não significa sincronização automática ativa.
 
 ## Fora do escopo desta V1
 
-Não foram incorporados como dados operacionais atuais:
+Não são dados operacionais atuais, salvo futura decisão e contrato próprios:
 
 - saldo atual
 - movimentações posteriores à cobertura pública disponível
 - localização de crédito como indicador completo
-- reconciliação documento x débito bancário
+- aplicações/rendimentos sem cobertura madura
+- reconciliação documento × débito bancário
 
 Essas dimensões permanecem no motor financeiro até alcançarem cobertura e semântica adequadas para publicação operacional.
+
+## Documentos relacionados
+
+- `docs/technical/financial-publication-contract-v1.md`
+- `docs/technical/repasses-operacionais-2026-v1.md`
+- `docs/DECISIONS.md`
+- `docs/README.md`
