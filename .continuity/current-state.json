@@ -1,107 +1,107 @@
 {
   "project": "PDDE Online 2026",
-  "updated_at": "2026-09-08T16:56:22-03:00",
+  "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
+  "updated_at": "2026-09-11T13:00:00-03:00",
   "source_of_truth": {
-    "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
-    "base_branch": "main",
-    "base_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
-    "note": "Snapshot auxiliar. Confirmar sempre codigo, commits, testes, Supabase e deployments reais."
+    "rule": "Codigo, schema/migrations, banco verificado, CI e deployment real prevalecem sobre documentacao.",
+    "documentation_entrypoint": "docs/README.md",
+    "decisions": "docs/DECISIONS.md",
+    "operational_handoff": "docs/HANDOFF.md",
+    "note": "Este arquivo e snapshot operacional estruturado; confirmar estado dinamico antes de agir."
   },
-  "operational_north": {
-    "plan": "docs/PLANO_GLOBAL_V4_2.md",
-    "radar": "docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md",
-    "current_mode": "Backend restaurado e ACTIVE_HEALTHY; preservar estabilidade de Auth e manter evolucoes desacopladas ate smoke real."
+  "application_baseline": {
+    "main_commit_before_documentation_reconciliation": "b60fb04b360eefb7dc0d92cc39064ee8a019724b",
+    "production_commit_verified": "b60fb04b360eefb7dc0d92cc39064ee8a019724b",
+    "production_deployment": "dpl_FdQY3St4xHQpSgept47jobMcvE4Y",
+    "production_status": "READY",
+    "public_url": "https://pddeonlinesme-rj.vercel.app",
+    "public_smoke": "HTTP 200 verificado apos o deploy do ciclo #132",
+    "runtime_errors_observed": 0,
+    "note": "A PR documental pode alterar o SHA de main sem alterar o baseline funcional da aplicacao."
   },
-  "recent_pull_requests": [
+  "supabase": {
+    "project_ref": "raluxyojqosfzrfozmpz",
+    "schools": 163,
+    "bank_accounts": 335,
+    "financial_repasses": 537,
+    "financial_dimensions_v1": {
+      "mature_published": 5,
+      "coverage": "163/163"
+    }
+  },
+  "recent_product_cycle": [
     {
-      "number": 112,
-      "status": "merged",
-      "merge_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
-      "note": "Atualizacao segura de sete dependencias compativeis; package.json e package-lock.json sincronizados."
+      "pull_request": 129,
+      "status": "merged_and_production",
+      "title": "pipeline de publicacao financeira por dimensao",
+      "note": "Contrato V1, maturidade, publicacao transacional, idempotencia e protecao contra regressao."
     },
     {
-      "number": 111,
-      "status": "open",
-      "note": "Reconciliacao documental de Auth, dependencias e estado de Production."
+      "pull_request": 130,
+      "status": "merged_and_production",
+      "title": "recorte financeiro principal do Painel",
+      "note": "Hero usa 1a parcela paga do PDDE Basico no mesmo universo de data/cobertura/composicao."
     },
     {
-      "number": 110,
-      "status": "merged",
-      "merge_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
-      "note": "Hotfix de recuperacao de senha com rota dedicada e E2E."
+      "pull_request": 131,
+      "status": "merged_and_production",
+      "title": "busca global operacional",
+      "note": "Localizador de areas reais e escolas; remove rotas demo, acoes ficticias e pseudoatalhos."
     },
     {
-      "number": 109,
-      "status": "open",
-      "note": "Performance/code splitting. Nao misturar com Auth; reavaliar apenas depois da estabilizacao e com Preview visual."
+      "pull_request": 132,
+      "status": "merged_and_production",
+      "title": "contexto da carteira de escolas",
+      "note": "Preserva q/status ao abrir e retornar da ficha; return interno validado."
     }
   ],
-  "dependency_refresh_2026_09_08": {
-    "pull_request": 112,
-    "merge_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
-    "packages": {
-      "lucide-react": "1.40.0",
-      "react-hook-form": "7.87.0",
-      "@types/react-dom": "19.2.7",
-      "eslint-plugin-react-refresh": "0.5.6",
-      "globals": "17.12.0",
-      "knip": "6.34.0",
-      "typescript-eslint": "8.69.0"
-    },
-    "excluded": [
-      "@supabase/supabase-js",
-      "major upgrades de Vitest/jsdom/Framer Motion/TypeScript/Node"
+  "open_product_pull_requests_at_reconciliation_start": 0,
+  "financial_publication": {
+    "source_project": "WilsonMPeixoto-2/pdde-repasse-conciliador",
+    "workflow": ".github/workflows/sync-financial-snapshot.yml",
+    "schedule_defined": true,
+    "scheduled_publication_enabled": false,
+    "enable_condition": "vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'",
+    "required_secrets": [
+      "PDDE_SUPABASE_URL",
+      "PDDE_SUPABASE_SERVICE_ROLE_KEY"
     ],
-    "verification": {
-      "controlled_run": 34270447310,
-      "pull_request_ci_run": 34270901320,
-      "unit_tests": "130/130",
-      "e2e": "11/11",
-      "audit": "0 high, 0 critical; 2 moderate conhecidos na cadeia exceljs -> uuid",
-      "knip": "Achados de producao preexistentes e sem regressao em relacao a baseline."
-    }
+    "manual_execution": "Permitida pelo workflow_dispatch, mas falha antes de publicar se os secrets esperados nao estiverem configurados.",
+    "rule": "Nao descrever a sincronizacao automatica como ativa enquanto gate e credenciais nao estiverem configurados."
   },
-  "auth_incident": {
-    "detected_at": "2026-09-03T00:22:00-03:00",
-    "supabase_project_ref": "raluxyojqosfzrfozmpz",
-    "supabase_project_name": "pdde-online-2026-dev",
-    "backend_status_verified_at_2026_09_08_1656": "ACTIVE_HEALTHY",
-    "historical_cause": "O projeto estava INACTIVE e a restauracao havia sido inicialmente bloqueada pelo limite de projetos gratuitos ativos.",
-    "code_fix": {
-      "pull_request": 110,
-      "merge_commit": "48e1a77de901d8b5abf5db273c94639da6aebcc5",
-      "scope": [
-        "redirect de reset para /redefinir-senha",
-        "rota publica de redefinicao",
-        "updateUser para gravar nova senha",
-        "tratamento de link invalido/expirado",
-        "mensagem amigavel para indisponibilidade de autenticacao",
-        "E2E de recuperacao e redefinicao"
-      ],
-      "verification": "CI run 33711713326 integralmente aprovado."
-    }
+  "business_invariants": [
+    "Dados -> analise -> escola -> acao -> evidencia.",
+    "Ausencia de informacao nao e zero.",
+    "Publicar somente dimensoes maduras/validadas.",
+    "Nao expor universo parcial como completo.",
+    "Preservar multiplas contas por escola/programa.",
+    "Hierarquia financeira: programa -> acao -> parcela -> conta.",
+    "Proveniencia tecnica permanece fora da superficie operacional comum.",
+    "Indicadores relevantes devem conduzir a detalhe, filtro ou acao.",
+    "Busca global so anuncia areas e entidades reais.",
+    "Filtros/contexto operacional devem sobreviver ao drill-down quando reduzem retrabalho."
+  ],
+  "documentation_governance": {
+    "branch": "docs/governanca-documental-2026-09-11",
+    "entrypoint": "docs/README.md",
+    "canonical_decisions": "docs/DECISIONS.md",
+    "historical_decisions": "docs/DECISIONS_LOG.md",
+    "strategic_baseline": "docs/PLANO_GLOBAL_V4_2.md",
+    "rule": "Planos, specs e handoffs datados nao determinam estado corrente."
   },
-  "deployment_state": {
-    "vercel_project_id": "prj_dErjl7LdzTL2412fsw0pyzo3bdp1",
-    "runtime": "Node 24.x",
-    "production_confirmed_commit": "1722b4b50c5340b39a883220423cc40e2b315eeb",
-    "production_deployment": "dpl_EAAQ6mBgPQ1w6EbLXHg83yHasdPr",
-    "production_status": "READY",
-    "main_ahead_of_production": false,
-    "public_smoke": "https://pddeonlinesme-rj.vercel.app/ respondeu HTTP 200 em 08/09/2026 apos o deploy."
-  },
-  "blockers": [
-    "Executar smoke real de login, recuperacao de senha, Redirect URLs e e-mail agora que o backend esta ACTIVE_HEALTHY.",
-    "Somente depois reavaliar PR #109 ou majors de dependencias que alterem runtime/testes/UI."
+  "current_priorities": [
+    "Concluir reconciliacao documental e manter roteiro obrigatorio de leitura.",
+    "Executar smoke autenticado periodico dos fluxos criticos em Production.",
+    "Configurar secrets do workflow financeiro e realizar ativacao controlada somente quando houver decisao operacional para automatizar.",
+    "Continuar hardening de Auth/RLS/auditoria antes de ampliar o Portal do Diretor.",
+    "Tratar novas dimensoes financeiras, documentos e frente fiscal apenas quando houver contrato e cobertura adequados."
   ],
   "protected_scope": [
-    "Nao trocar o projeto Supabase.",
-    "Nao pausar ou alterar projetos externos ao PDDE Online sem autorizacao explicita.",
-    "Nao misturar o PR #109 de performance com o incidente de autenticacao.",
-    "Nao alterar migrations, RLS, dados financeiros ou regras de negocio para resolver Auth ou atualizacoes de dependencias."
-  ],
-  "next_priority": {
-    "step": "Validar o fluxo real de autenticacao/recuperacao de senha em Production com o Supabase ACTIVE_HEALTHY.",
-    "after": "Com Auth estabilizado, avaliar @supabase/supabase-js 2.114.x e, separadamente, majors de ferramentas/testes."
-  }
+    "Nao trocar o projeto Supabase oficial.",
+    "Nao misturar este repositorio com RADAR PDDE, POPs ou outros projetos.",
+    "Nao usar service_role no browser.",
+    "Nao converter NULL financeiro em zero.",
+    "Nao publicar dimensao financeira imatura.",
+    "Nao alterar Auth, RLS, secrets, regras financeiras ou templates oficiais sem revisao humana."
+  ]
 }
