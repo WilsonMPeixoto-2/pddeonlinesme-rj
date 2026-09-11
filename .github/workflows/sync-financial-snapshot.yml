@@ -2,8 +2,12 @@ name: Sync Financial Snapshot
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types:
+      - financial-snapshot-published-v1
   schedule:
-    - cron: "17 11 * * *"
+    # Fallback diário. GitHub cron usa UTC: 13:30 UTC = 10:30 America/Sao_Paulo.
+    - cron: "30 13 * * *"
 
 concurrency:
   group: sync-financial-snapshot-production
@@ -15,13 +19,21 @@ permissions:
 jobs:
   publish:
     name: Validate and publish financial snapshot
-    if: github.event_name == 'workflow_dispatch' || vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      ((github.event_name == 'repository_dispatch' || github.event_name == 'schedule') &&
+      vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production
     env:
       SUPABASE_URL: ${{ secrets.PDDE_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PDDE_SUPABASE_SERVICE_ROLE_KEY }}
+      EXPECTED_SOURCE_REPOSITORY: ${{ github.event.client_payload.sourceRepository || '' }}
+      EXPECTED_WORKFLOW_RUN_ID: ${{ github.event.client_payload.workflowRunId || '' }}
+      EXPECTED_ARTIFACT_ID: ${{ github.event.client_payload.artifactId || '' }}
+      EXPECTED_ARTIFACT_NAME: ${{ github.event.client_payload.artifactName || '' }}
+      EXPECTED_PUBLISHED_AT: ${{ github.event.client_payload.publishedAt || '' }}
 
     steps:
       - name: Checkout
