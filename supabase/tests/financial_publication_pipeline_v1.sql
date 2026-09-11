@@ -1,6 +1,6 @@
 begin;
 
-select plan(21);
+select plan(32);
 
 select ok(
   to_regclass('public.financial_dimension_contracts') is not null,
@@ -22,10 +22,46 @@ select ok(
   'publish_financial_snapshot_v1(jsonb) existe'
 );
 
+select has_column(
+  'public', 'financial_dimension_contracts', 'required_for_core_publication',
+  'contrato informa se dimensao e obrigatoria para publicacao do nucleo'
+);
+
+select has_column(
+  'public', 'financial_dimension_contracts', 'validator_key',
+  'contrato possui chave explicita de validador semantico'
+);
+
+select ok(
+  to_regprocedure('public.get_financial_dimension_contracts_v1(integer)') is not null,
+  'RPC backend de leitura dos contratos existe'
+);
+
 select is(
   (select count(*)::integer from public.financial_dimension_contracts where exercise = 2026 and enabled),
+  6,
+  'cinco dimensoes nucleares e uma opcional estao habilitadas para 2026'
+);
+
+select is(
+  (select count(*)::integer from public.financial_dimension_contracts where exercise = 2026 and enabled and required_for_core_publication),
   5,
-  'cinco dimensoes V1 estao habilitadas para 2026'
+  'cinco dimensoes continuam obrigatorias para publicar o nucleo'
+);
+
+select ok(
+  exists (
+    select 1
+      from public.financial_dimension_contracts
+     where exercise = 2026
+       and dimension_key = 'bank_balance_positions'
+       and enabled
+       and not required_for_core_publication
+       and validator_key = 'pending'
+       and coverage_expected = 163
+       and coverage_required_ratio = 1.000000
+  ),
+  'saldo bancario nasce como dimensao opcional pending, sem promocao automatica'
 );
 
 select is(
@@ -37,7 +73,7 @@ select is(
 select is(
   (select min(coverage_required_ratio) from public.financial_dimension_contracts where exercise = 2026 and enabled),
   1.000000::numeric,
-  'todas as dimensoes V1 exigem cobertura integral'
+  'contratos iniciais exigem cobertura integral'
 );
 
 select ok(
@@ -66,6 +102,21 @@ select ok(
 );
 
 select ok(
+  not has_function_privilege('anon', 'public.get_financial_dimension_contracts_v1(integer)', 'EXECUTE'),
+  'anon nao le contratos internos pela RPC'
+);
+
+select ok(
+  not has_function_privilege('authenticated', 'public.get_financial_dimension_contracts_v1(integer)', 'EXECUTE'),
+  'authenticated nao le contratos internos pela RPC'
+);
+
+select ok(
+  has_function_privilege('service_role', 'public.get_financial_dimension_contracts_v1(integer)', 'EXECUTE'),
+  'service_role pode ler contratos internos'
+);
+
+select ok(
   exists (
     select 1
     from pg_indexes
@@ -87,8 +138,8 @@ select ok(
   'ha no maximo uma versao publicada corrente por dimensao/exercicio'
 );
 
--- Prova funcional: o RPC precisa publicar 163 escolas de forma atômica e a
--- segunda chamada da mesma run/artifact precisa ser estritamente idempotente.
+-- Prova funcional: o RPC publica o nucleo 163/163 e registra uma dimensao
+-- opcional parcial sem promover nem bloquear o nucleo.
 insert into public.unidades_escolares (designacao, nome, inep)
 select
   'ZZ.TEST.' || lpad(i::text, 3, '0'),
@@ -185,7 +236,15 @@ select jsonb_build_object(
   ),
   'schools', payload_parts.schools,
   'accounts', payload_parts.accounts,
-  'repasses', repasses.repasses
+  'repasses', repasses.repasses,
+  'observedDimensions', jsonb_build_array(
+    jsonb_build_object(
+      'dimensionKey', 'bank_balance_positions',
+      'coverageObserved', 37,
+      'referenceDateMin', '2026-08-01',
+      'referenceDateMax', '2026-08-31'
+    )
+  )
 ) as payload
 from payload_parts cross join repasses;
 
@@ -196,7 +255,7 @@ from _financial_payload;
 select is(
   (select result->>'status' from _first_publication),
   'published',
-  'primeira chamada publica o snapshot maduro'
+  'primeira chamada publica o snapshot nuclear maduro'
 );
 
 select is(
@@ -214,7 +273,21 @@ select is(
 select is(
   (select count(*)::integer from public.financial_dimension_status where exercise = 2026 and publication_status = 'PUBLISHED' and quality_status = 'MATURE'),
   5,
-  'as cinco dimensoes ficam maduras e publicadas'
+  'as cinco dimensoes obrigatorias ficam maduras e publicadas'
+);
+
+select ok(
+  exists (
+    select 1
+      from public.financial_dimension_status
+     where exercise = 2026
+       and dimension_key = 'bank_balance_positions'
+       and coverage_observed = 37
+       and coverage_expected = 163
+       and quality_status = 'COLLECTING'
+       and publication_status = 'UNPUBLISHED'
+  ),
+  'saldo 37/163 e armazenado como collecting/unpublished sem bloquear o nucleo'
 );
 
 create temp table _second_publication as
@@ -237,6 +310,88 @@ select is(
   (select count(*)::integer from public.repasses_financeiros r join public.unidades_escolares u on u.id = r.unidade_id where u.inep like '99%'),
   326,
   'idempotencia nao duplica repasses'
+);
+
+-- Prova de que o threshold e lido do contrato: permitir 162/163 somente
+-- para a segunda parcela e publicar uma nova run sem editar a RPC.
+update public.financial_dimension_contracts
+   set coverage_required_ratio = 162::numeric / 163::numeric
+ where exercise = 2026
+   and dimension_key = 'pdde_basic_second_installment_programmed';
+
+create temp table _threshold_payload as
+select
+  jsonb_set(
+    jsonb_set(
+      jsonb_set(
+        payload,
+        '{source,workflowRunId}',
+        to_jsonb(999999999003::bigint)
+      ),
+      '{source,artifactId}',
+      to_jsonb(999999999004::bigint)
+    ),
+    '{source,snapshotDigest}',
+    to_jsonb(repeat('b', 64))
+  ) || jsonb_build_object(
+    'repasses', (
+      select jsonb_agg(item)
+        from jsonb_array_elements(payload->'repasses') as e(item)
+       where not (
+         item->>'inep' = '99000001'
+         and item->>'installment' = '2ª Parcela'
+       )
+    ),
+    'observedDimensions', '[]'::jsonb
+  ) as payload
+from _financial_payload;
+
+create temp table _threshold_publication as
+select public.publish_financial_snapshot_v1(payload) as result
+from _threshold_payload;
+
+select is(
+  (select result->>'status' from _threshold_publication),
+  'published',
+  'threshold configurado permite publicar segunda parcela com 162/163'
+);
+
+select is(
+  (
+    select coverage_observed
+      from public.financial_dimension_status
+     where exercise = 2026
+       and dimension_key = 'pdde_basic_second_installment_programmed'
+       and publication_status = 'PUBLISHED'
+  ),
+  162,
+  'status publicado preserva cobertura observada 162 definida pelo novo retrato'
+);
+
+-- Contrato obrigatorio ausente/desabilitado bloqueia uma nova publicação.
+update public.financial_dimension_contracts
+   set enabled = false
+ where exercise = 2026
+   and dimension_key = 'bank_accounts';
+
+select throws_ok(
+  $$
+    select public.publish_financial_snapshot_v1(
+      jsonb_set(
+        jsonb_set(
+          jsonb_set(
+            (select payload from _financial_payload),
+            '{source,workflowRunId}', to_jsonb(999999999005::bigint)
+          ),
+          '{source,artifactId}', to_jsonb(999999999006::bigint)
+        ),
+        '{source,snapshotDigest}', to_jsonb(repeat('c', 64))
+      )
+    )
+  $$,
+  '22023',
+  null,
+  'contrato obrigatorio desabilitado bloqueia publicacao'
 );
 
 select * from finish();
