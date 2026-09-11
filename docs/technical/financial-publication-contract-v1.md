@@ -21,7 +21,8 @@ A interface operacional consome apenas dados promovidos. Evidências, hashes, wo
 - qualidade e publicação são estados diferentes;
 - o contrato de maturidade é versionado e auditável;
 - o frontend não chama o motor de coleta em tempo real;
-- o Supabase permanece a fronteira operacional do PDDE Online.
+- o Supabase permanece a fronteira operacional do PDDE Online;
+- o `service_role` do PDDE Online não cruza para o motor externo.
 
 ## Estados
 
@@ -125,44 +126,50 @@ Essa classificação usa allowlist explícita. Rótulo desconhecido não é acei
 
 O PDDE Online possui `.github/workflows/sync-financial-snapshot.yml`, que pode:
 
-1. ler o manifesto publicado pelo `pdde-repasse-conciliador`;
-2. reidratar o snapshot `gzip-base64-parts`;
-3. transformar o contrato humano do motor no payload normalizado do PDDE Online;
-4. avaliar localmente as dimensões para diagnóstico antecipado;
-5. validar que o destino é `https://raluxyojqosfzrfozmpz.supabase.co`;
-6. chamar a RPC transacional com credencial de backend;
-7. encerrar de forma idempotente quando workflow/artifact já foi publicado.
+1. receber um evento de snapshot publicado pelo `pdde-repasse-conciliador`, uma execução manual ou o fallback agendado;
+2. ler o manifesto publicado pelo motor;
+3. quando houver evento, confrontar `sourceRepository`, `workflowRunId`, `artifactId`, `artifactName` e `publishedAt` com o manifesto;
+4. reidratar o snapshot `gzip-base64-parts`;
+5. transformar o contrato humano do motor no payload normalizado do PDDE Online;
+6. avaliar localmente as dimensões para diagnóstico antecipado;
+7. validar que o destino é `https://raluxyojqosfzrfozmpz.supabase.co`;
+8. chamar a RPC transacional com credencial de backend;
+9. encerrar de forma idempotente quando workflow/artifact já foi publicado.
 
-### Estado operacional da automação em 11/09/2026
+### Gatilhos V1
 
-O workflow possui dois gatilhos no YAML:
+- `workflow_dispatch`: homologação/execução humana controlada;
+- `repository_dispatch` do tipo `financial-snapshot-published-v1`: caminho automático primário após publicação do motor;
+- `schedule` diário às `13:30 UTC` (`10:30 America/Sao_Paulo`): reconciliação/fallback.
 
-- `workflow_dispatch`;
-- `schedule` diário (`17 11 * * *`).
+O evento não substitui a validação do manifesto. Payload de dispatch divergente é bloqueado antes da chamada ao Supabase.
 
-**Isso não significa que a publicação agendada esteja ativa.**
+### Kill-switch operacional
 
-O job possui esta condição:
+O job automático exige:
 
 ```text
-github.event_name == 'workflow_dispatch' || vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'
+vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'
 ```
 
-Portanto:
+A regra aplica-se tanto a `repository_dispatch` quanto a `schedule`. `workflow_dispatch` permanece disponível para homologação com o kill-switch desligado.
 
-- execução manual pode iniciar o job, mas a etapa `Validate destination` exige os secrets;
-- execução por `schedule` só entra no job se `PDDE_FINANCIAL_SYNC_ENABLED=true`;
-- o environment `production` precisa fornecer `PDDE_SUPABASE_URL` e `PDDE_SUPABASE_SERVICE_ROLE_KEY`;
-- ausência ou destino incorreto bloqueia a execução antes da publicação;
-- não existe fallback para chave `anon` nem autorização para ampliar permissões a fim de contornar secret ausente.
+O environment `production` precisa fornecer:
 
-### Procedimento para futura ativação agendada
+- `PDDE_SUPABASE_URL`;
+- `PDDE_SUPABASE_SERVICE_ROLE_KEY`.
+
+Ausência ou destino incorreto bloqueia a execução antes da publicação. Não existe fallback para chave `anon` nem autorização para ampliar permissões a fim de contornar secret ausente.
+
+### Procedimento de ativação
 
 1. configurar os dois secrets no environment `production`;
 2. manter `PDDE_FINANCIAL_SYNC_ENABLED` desabilitado/ausente;
 3. executar `workflow_dispatch` controlado;
-4. validar dry-run, publicação, idempotência e invariantes do banco;
-5. somente depois definir `PDDE_FINANCIAL_SYNC_ENABLED=true`.
+4. validar dry-run, primeira publicação e repetição idempotente;
+5. validar invariantes do banco;
+6. somente depois definir `PDDE_FINANCIAL_SYNC_ENABLED=true`;
+7. habilitar no motor o emissor de `repository_dispatch` com token dedicado de menor privilégio.
 
 ## Estado validado da V1
 
@@ -180,11 +187,11 @@ No fechamento do ciclo #129:
 
 ### `pdde-repasse-conciliador`
 
-Coleta, evidência, normalização, conciliação e produção do snapshot validado.
+Coleta, evidência, normalização, conciliação e produção do snapshot validado. Pode notificar que um novo snapshot foi publicado, mas não recebe credencial de banco do PDDE Online e não executa sua RPC.
 
 ### Pipeline do PDDE Online
 
-Transformação para o contrato operacional, avaliação de maturidade, publicação transacional, proteção contra regressão e auditoria.
+Validação de proveniência do evento/manifesto, transformação para o contrato operacional, avaliação de maturidade, publicação transacional, proteção contra regressão e auditoria.
 
 ### Frontend PDDE Online
 
@@ -195,4 +202,5 @@ Consumo do contrato já promovido. Não decide maturidade e não exibe metadados
 - `docs/technical/integracao-financeira-pdde-2026-v1.md`;
 - `docs/technical/repasses-operacionais-2026-v1.md`;
 - `docs/DECISIONS.md`;
-- `docs/README.md`.
+- `docs/README.md`;
+- `docs/superpowers/specs/2026-09-11-event-driven-financial-ingestion-v1-design.md`.
