@@ -13,7 +13,7 @@ test("login autenticado abre o dashboard canônico e mantém sessão ao navegar"
   await signInAsTestAdmin(page);
 
   await expect(page.getByText("Painel Executivo-Operacional", { exact: false })).toBeVisible();
-  await expect(page.getByText("Pagamentos identificados em 2026", { exact: true })).toBeVisible();
+  await expect(page.getByText("1ª parcela paga · PDDE Básico · 2026", { exact: true })).toBeVisible();
   await expect(page.getByText("15.000", { exact: false }).first()).toBeVisible();
   await expect(page.getByText("Repasse · 1ª parcela", { exact: true })).toBeVisible();
 
