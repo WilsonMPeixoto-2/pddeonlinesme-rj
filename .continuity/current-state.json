@@ -1,7 +1,7 @@
 {
   "project": "PDDE Online 2026",
   "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
-  "updated_at": "2026-09-11T13:00:00-03:00",
+  "updated_at": "2026-09-11T13:30:00-03:00",
   "source_of_truth": {
     "rule": "Codigo, schema/migrations, banco verificado, CI e deployment real prevalecem sobre documentacao.",
     "documentation_entrypoint": "docs/README.md",
@@ -17,7 +17,7 @@
     "public_url": "https://pddeonlinesme-rj.vercel.app",
     "public_smoke": "HTTP 200 verificado apos o deploy do ciclo #132",
     "runtime_errors_observed": 0,
-    "note": "A PR documental pode alterar o SHA de main sem alterar o baseline funcional da aplicacao."
+    "note": "PR documental posterior pode alterar o SHA de main sem alterar o baseline funcional da aplicacao."
   },
   "supabase": {
     "project_ref": "raluxyojqosfzrfozmpz",
@@ -82,15 +82,15 @@
     "Filtros/contexto operacional devem sobreviver ao drill-down quando reduzem retrabalho."
   ],
   "documentation_governance": {
-    "branch": "docs/governanca-documental-2026-09-11",
+    "reconciliation_pull_request": 133,
     "entrypoint": "docs/README.md",
     "canonical_decisions": "docs/DECISIONS.md",
     "historical_decisions": "docs/DECISIONS_LOG.md",
     "strategic_baseline": "docs/PLANO_GLOBAL_V4_2.md",
-    "rule": "Planos, specs e handoffs datados nao determinam estado corrente."
+    "rule": "Planos, specs, backlogs e handoffs datados nao determinam estado corrente."
   },
   "current_priorities": [
-    "Concluir reconciliacao documental e manter roteiro obrigatorio de leitura.",
+    "Manter o roteiro obrigatorio de leitura e evitar novas fontes concorrentes de estado/decisoes.",
     "Executar smoke autenticado periodico dos fluxos criticos em Production.",
     "Configurar secrets do workflow financeiro e realizar ativacao controlada somente quando houver decisao operacional para automatizar.",
     "Continuar hardening de Auth/RLS/auditoria antes de ampliar o Portal do Diretor.",
