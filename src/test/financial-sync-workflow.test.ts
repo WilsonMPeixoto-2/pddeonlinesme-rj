@@ -18,4 +18,12 @@ describe("workflow de sincronização financeira", () => {
     expect(workflow).not.toContain("SUPABASE_ANON_KEY");
     expect(workflow).not.toContain("pdde-repasse-conciliador.git");
   });
+
+  it("mantém o agendamento inerte até habilitação operacional explícita", async () => {
+    const workflow = await readFile(workflowPath, "utf8");
+
+    expect(workflow).toContain("PDDE_FINANCIAL_SYNC_ENABLED");
+    expect(workflow).toContain("github.event_name == 'workflow_dispatch'");
+    expect(workflow).toContain("vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'");
+  });
 });
