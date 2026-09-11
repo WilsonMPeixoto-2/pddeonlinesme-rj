@@ -15,6 +15,7 @@ permissions:
 jobs:
   publish:
     name: Validate and publish financial snapshot
+    if: github.event_name == 'workflow_dispatch' || vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production
