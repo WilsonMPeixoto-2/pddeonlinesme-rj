@@ -1,105 +1,287 @@
-# Decisoes Operacionais - PDDE Online 2026
+# Decisões vigentes — PDDE Online 2026
 
-Este documento registra decisoes operacionais vigentes. Ele complementa `docs/DECISIONS_LOG.md` e deve ser atualizado quando uma nova decisao mudar fluxo, prioridade, escopo ou criterio de aceite.
+> **Fonte canônica das decisões de negócio, dados, UX, segurança e governança do projeto.**
 
-## 2026-05-26 - Otimizações de Build, Zero-Latency e Governança Cadastral (Frente 1)
+Este documento registra decisões que continuam válidas. Para estado operacional corrente, consulte `.continuity/current-state.json` e `docs/HANDOFF.md`. Para saber qual documento prevalece em caso de conflito, consulte `docs/README.md`.
 
-**Decisao:** Adotar a divisão de bundle (Rollup `manualChunks`) para isolar recharts e framer-motion, aplicar prefetching do React Query baseado em hover de mouse para zerar latência de navegação, e impor validação reativa estrita com Zod (Modulo 11 para CNPJ) para governança.
+Decisões históricas que não precisam orientar novas tarefas podem permanecer em `docs/DECISIONS_LOG.md` ou no histórico Git.
 
-**Consequencia:** Redução imediata de 90% no chunk principal (TTI otimizado). Cadastros salvos tornam-se 100% íntegros a nível cadastral nacional. Interações com fichas de escolas tornam-se instantâneas.
+---
 
-**Restricao:** Todo novo componente visual pesado ou validador complexo deve ser isolado em chunks separados ou arquivos schema dedicados para não inflar o index.js.
+## 2026-09-11 — Governança documental e precedência obrigatória
 
-## 2026-05-07 - Plano Global v4.1 como norte
+**Contexto:** documentação de maio/junho e handoffs anteriores continuavam se apresentando como estado atual depois dos PRs #129–#132.
 
-**Decisao:** `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md` passa a ser o norte operacional para novas tarefas.
+**Decisão:** adotar `docs/README.md` como porta de entrada obrigatória e esta ordem de precedência:
 
-**Consequencia:** futuras frentes devem ser classificadas pelo marco funcional correspondente, evitando reabrir a Supabase Foundation v1 como frente generica.
+1. código, schema/migrations, banco verificado, CI e deployment real;
+2. `docs/DECISIONS.md`;
+3. `.continuity/current-state.json` e `docs/HANDOFF.md`;
+4. documentação técnica do domínio;
+5. planos, specs, handoffs e relatórios históricos.
 
-## 2026-05-07 - Backlog adaptativo como radar
+**Consequência:** documentos históricos podem continuar no repositório sem concorrer com a verdade operacional atual.
 
-**Decisao:** `docs/OPPORTUNITIES_BACKLOG.md` sera usado como radar de oportunidades.
+**Restrição:** não criar novas fontes paralelas de “decisões atuais” ou “estado atual”.
 
-**Consequencia:** um item no backlog nao autoriza implementacao. Cada item funcional deve virar PR proprio com escopo, arquivos permitidos, arquivos proibidos, validacao e handoff.
+---
 
-## 2026-05-07 - Demonstrativo Basico Individual como proximo sub-marco
+## 2026-09-11 — Dados → análise → escola → ação → evidência
 
-**Decisao:** o proximo sub-marco prioritario e o Demonstrativo Basico Individual.
+**Contexto:** o produto deixou de ser apenas um dashboard e passou a integrar dados financeiros, carteira de escolas, documentos e fluxos de análise.
 
-**Consequencia:** o proximo PR funcional recomendado e `feat(documentos): gerar Demonstrativo Basico individual via MEMORIA`.
+**Decisão:** a arquitetura de informação do PDDE Online deve seguir a narrativa operacional:
 
-## 2026-05-07 - Opcao B para Demonstrativo
+> **Dados → análise → escola → ação → evidência**
 
-**Decisao:** para o Demonstrativo Basico Individual, adotar a Opcao B: preencher a aba `MEMORIA` diretamente com dados do Supabase.
+**Consequência:** indicadores e agregados relevantes devem ter caminho para detalhe, filtro, escola ou ação operacional. Telas não devem funcionar como vitrines decorativas sem consequência prática.
 
-**Consequencia:** a implementacao funcional deve evitar caminhos intermediarios desnecessarios quando a aba `MEMORIA` puder ser preenchida de forma rastreavel, testavel e compativel com o template oficial.
+**Referências:** PRs #128–#132 e `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`.
 
-**Restricao:** o arquivo individual nao deve depender da aba `BASE` nem de `XLOOKUP`.
+---
 
-**Limite:** esta decisao nao autoriza alteracao de Supabase, RLS, auth, migrations, regras financeiras ou template oficial sem revisao humana.
+## 2026-09-11 — Publicar somente dimensões financeiras maduras
 
-## 2026-05-08 - Saneamento do template publico do Demonstrativo
+**Contexto:** o `pdde-repasse-conciliador` passou a fornecer conjuntos financeiros mais amplos, mas nem toda dimensão possui a mesma cobertura ou maturidade semântica.
 
-**Decisao:** templates documentais publicados em `public/` nao podem conter dados reais consolidados de unidades escolares.
+**Decisão:** o PDDE Online só promove para a superfície operacional dimensões que cumpram contrato explícito de maturidade e publicação.
 
-**Consequencia:** o template publico do Demonstrativo Basico deve conter apenas estrutura documental, layout e abas necessarias ao documento individual. Dados reais permanecem no Supabase e sao injetados pelo gerador.
+Na V1, as cinco dimensões formalizadas são:
 
-**Restricao:** arquivos individuais gerados nao podem conter a aba `BASE`, formulas `XLOOKUP`, referencias `BASE!` ou referencias estruturadas `BASE[...]`.
+- `bank_accounts`;
+- `scheduled_repasses`;
+- `pdde_basic_first_installment`;
+- `pdde_basic_first_installment_breakdown`;
+- `pdde_basic_second_installment_programmed`.
 
-**Regra operacional:** planilhas-mestras legadas com `BASE`, formulas de busca ou dados consolidados podem ser usadas apenas como referencia historica/documental, nunca como template publico nem como arquivo final entregue a uma unidade.
+**Consequência:** saldo atual, movimentos bancários, crédito localizado e conciliação documento × débito permanecem fora da interface até possuírem contrato próprio e cobertura suficiente.
 
-## 2026-05-07 - Continuidade obrigatoria
+**Restrição:** dado tecnicamente coletado não é automaticamente dado publicável.
 
-**Decisao:** todo agente deve ler os documentos de continuidade antes de agir e atualizar continuidade/handoff depois de tarefas relevantes.
+**Referência:** PR #129 e `docs/technical/financial-publication-contract-v1.md`.
 
-**Consequencia:** PRs futuros devem registrar estado, decisoes e proximo passo para reduzir perda de contexto entre ferramentas.
+---
 
-## 2026-05-07 - ExcelJS para Demonstrativo individual
+## 2026-09-11 — Ausência de informação não é zero
 
-**Decisao:** usar `exceljs` no gerador individual do Demonstrativo Basico.
+**Decisão:** `NULL`/ausência deve permanecer ausência. Zero só representa zero quando a fonte o informa explicitamente.
 
-**Consequencia:** a dependencia `xlsx` existente permanece disponivel para exportacoes tabulares simples, mas o Demonstrativo individual usa `exceljs` porque precisa preservar template, formulas, bordas e mesclagens com maior fidelidade.
+**Consequência:** a interface usa `—` ou estado equivalente para ausência de dado e não fabrica totais, composição custeio/capital ou situação financeira por preenchimento artificial.
 
-**Restricao:** `exceljs` deve ser carregado sob demanda, via `dynamic import()`, para nao aumentar desnecessariamente o bundle inicial.
+**Aplicação:** financeiro, documentos, importações e qualquer outro domínio em que ausência e zero tenham significados diferentes.
 
-## 2026-05-11 - DocumentsPanel integrado ao gerador real (Opcao B na listagem)
+---
 
-**Decisao:** o `DocumentsPanel` em `EscolaEditar.tsx` foi integrado ao gerador real `generateDemonstrativoBasico`, usando `useUnidadeDetalhe` para obter dados do Supabase e `file-saver saveAs` para download.
+## 2026-09-11 — Não iniciar exposição institucional com dados incompletos
 
-**Consequencia:** a listagem de documentos da unidade deixa de ser mockada e passa a gerar o Demonstrativo Basico real a partir dos dados da view `vw_unidade_detalhe`.
+**Contexto:** o objetivo institucional é demonstrar controle e confiabilidade. Expor dimensões parciais como se fossem retrato da rede comprometeria essa finalidade.
 
-**Restricao:** novos tipos documentais no painel devem seguir o mesmo padrao de integracao (hook de dados + gerador isolado + download). Nao acoplar logica de geracao ao componente visual.
+**Decisão:** a interface inicial deve priorizar informações cuja cobertura e semântica estejam completas para o universo apresentado.
 
-## 2026-05-11 - Fix estrutural anti-regressao na tabela /escolas
+**Consequência:** dimensões ainda em formação podem existir no motor ou na camada de auditoria sem aparecer como KPI principal ou informação conclusiva.
 
-**Decisao:** substituir `motion.tr` com classe `row-accent` por `TableRow` nativo com layout `table-fixed` e `colgroup` com larguras percentuais na pagina `/escolas`.
+**Restrição:** não preencher lacunas por inferência apenas para completar a interface.
 
-**Consequencia:** a tabela de escolas nao depende mais de `motion.tr` para renderizar linhas, eliminando o desalinhamento de colunas causado pela interacao entre Framer Motion e CSS de acento.
+---
 
-**Restricao:** futuras animacoes em linhas de tabela devem ser validadas contra `table-fixed` e `colgroup` antes de merge.
+## 2026-09-11 — 1ª parcela paga do PDDE Básico como recorte financeiro principal
 
-## 2026-05-11 - Admin bypass do Ruleset como procedimento excepcional
+**Contexto:** o total global de pagamentos podia misturar universos com maturidade diferente.
 
-**Decisao:** em PRs mantidos exclusivamente pelo proprietario do repositorio (solo-author), o bypass administrativo do Ruleset "Protect main" podera ser utilizado quando os checks tecnicos e validacoes operacionais estiverem documentados.
+**Decisão:** enquanto for o recorte integralmente validado, o maior KPI financeiro do Painel utiliza a **1ª parcela paga do PDDE Básico em 2026**, incluindo PDDE Básico e Primeira Infância conforme o contrato operacional.
 
-**Consequencia:** o PR #43 foi mergeado por admin bypass apos documentacao completa de checks tecnicos (tsc, lint, test, build) e validacao operacional local.
+**Consequência:** data, cobertura e composição custeio/capital do hero devem pertencer ao mesmo universo do valor principal.
 
-**Restricao:** a preferencia permanece por revisao externa quando houver colaborador disponivel. O bypass administrativo nao substitui revisao de codigo como pratica permanente; e um procedimento excepcional permitido ao mantenedor em contexto de PR solo validado.
+**Restrição:** pagamentos parciais de outros programas não contaminam o KPI principal.
 
-## 2026-05-11 - Protocolo de fonte de verdade tecnica
+**Referência:** PR #130.
 
-**Decisao:** a fonte de verdade primaria do projeto e a verificacao direta do codigo-fonte, branch, commit, diff, configuracao versionada e testes reais no GitHub. Relatorios de ferramentas, handoffs, `current-state.json`, roadmap, backlog, comentarios de PR e memorias sao snapshots auxiliares.
+---
 
-**Consequencia:** todo agente deve classificar cada afirmacao como FATO VERIFICADO NO CODIGO, HIPOTESE, RELATO DE OUTRA FERRAMENTA ou PENDENCIA A CONFIRMAR. Nenhuma ferramenta e fonte de verdade. Se houver conflito entre documento e codigo real, o codigo prevalece.
+## 2026-09-11 — Hierarquia financeira e múltiplas contas
 
-**Restricao:** nenhum agente pode tratar conteudo de `current-state.json`, `HANDOFF.md`, `ROADMAP_ADAPTIVE.md` ou qualquer outro documento operacional como prova definitiva de estado funcional sem conferir diretamente o repositorio.
+**Decisão:** a organização financeira operacional segue:
 
-## 2026-05-11 - Modelo de ferramentas por escopo, sem hierarquia fixa
+`escola → programa → ação → parcela → conta`
 
-**Decisao:** substituir o modelo rigido "Cursor define / Codex implementa / Cursor integra" por modelo por escopo. Qualquer ferramenta (Claude Code, Codex, Copilot, Cursor, Antigravity) pode liderar uma tarefa conforme sua capacidade e o escopo definido.
+Uma escola pode possuir múltiplas contas dentro do mesmo programa.
 
-**Consequencia:** a divisao de trabalho e determinada pelo tipo da tarefa (isolada vs integracao, funcional vs governanca, seguranca vs limpeza), nao pela identidade da ferramenta.
+**Consequência:** o modelo e a interface não podem reduzir a relação escola/programa a uma conta única. O atributo de conta principal existe apenas para compatibilidade com fluxos legados que ainda necessitam dele.
 
-**Restricao:** revisao humana continua obrigatoria para auth, RLS, roles, segredos, regras financeiras, templates oficiais e decisoes arquiteturais. Nenhuma ferramenta pode improvisar nessas areas.
+**Referências:** PRs #127–#129 e `docs/technical/integracao-financeira-pdde-2026-v1.md`.
 
+---
 
+## 2026-09-11 — Proveniência técnica fora da superfície operacional comum
+
+**Decisão:** workflow run, artifact id, hashes, parser, dataset técnico e metodologia de coleta ficam na camada de auditoria, não na interface cotidiana da GAD.
+
+**Consequência:** a superfície operacional prioriza nomes oficiais, valores, datas, contas, situação e ações úteis.
+
+**Restrição:** esconder metadado técnico da tela não significa descartá-lo da auditoria.
+
+---
+
+## 2026-09-11 — Publicação financeira transacional, idempotente e protegida contra regressão
+
+**Decisão:** a promoção de snapshot financeiro ocorre por uma única operação transacional no Supabase, com:
+
+- validação do destino e da fonte;
+- correspondência das 163 escolas;
+- validação de duplicidades e vínculos bancários;
+- cálculo de maturidade por dimensão;
+- proteção contra regressão de cobertura;
+- registro de execução/proveniência;
+- idempotência por workflow/artifact.
+
+**Consequência:** qualquer invariável bloqueante desfaz a publicação inteira.
+
+**Referência:** PR #129.
+
+---
+
+## 2026-09-11 — Automação financeira somente com gate e secrets de backend
+
+**Contexto:** existe workflow agendado de sincronização, mas o environment do GitHub ainda não possui as credenciais de publicação configuradas.
+
+**Decisão:** o agendamento só pode publicar quando `PDDE_FINANCIAL_SYNC_ENABLED=true` e os secrets `PDDE_SUPABASE_URL` e `PDDE_SUPABASE_SERVICE_ROLE_KEY` estiverem configurados corretamente no environment `production`.
+
+**Consequência:** a existência do `schedule` no YAML não autoriza afirmar que a sincronização automática está ativa.
+
+**Restrição:** nunca substituir credencial de backend por chave `anon` nem ampliar permissões para contornar secret ausente.
+
+---
+
+## 2026-09-11 — Busca global deve representar somente o produto real
+
+**Decisão:** `Ctrl/Cmd+K` funciona como localizador operacional para áreas reais e unidades escolares.
+
+**Consequência:** páginas demo, ações “Em breve” e pseudoatalhos não implementados não podem ser anunciados na paleta.
+
+A busca por escola pode usar designação, nome, diretor, INEP e CNPJ, sem carregar dados financeiros/bancários para esse fim.
+
+**Referência:** PR #131.
+
+---
+
+## 2026-09-11 — Preservar contexto entre carteira e ficha da escola
+
+**Contexto:** filtros usados para priorizar escolas eram perdidos ao abrir uma unidade e retornar para a carteira.
+
+**Decisão:** `q` e `status` da carteira são representados na URL e transportados para o detalhe por `return` interno validado.
+
+**Consequência:** breadcrumb e retorno da ficha restauram o mesmo recorte operacional. Digitação/filtros e retorno explícito usam `replace` quando necessário para não poluir o histórico do navegador.
+
+**Restrição:** `return` só aceita a própria carteira (`/escolas` ou `/escolas?...`), rejeitando URL externa, rota filha ou caminho ambíguo.
+
+**Referência:** PR #132.
+
+---
+
+## 2026-09-11 — Indicador relevante precisa de caminho para detalhe
+
+**Decisão:** KPIs, gráficos, cards e resumos relevantes devem, quando tecnicamente aplicável, conduzir ao conjunto de registros, filtro, escola ou ação que explica o indicador.
+
+**Consequência:** visualização agregada deixa de ser fim em si mesma e vira instrumento de priorização da GAD.
+
+**Referência:** Radar de Inteligência Institucional e evolução de Painel/Repasses.
+
+---
+
+## 2026-09-11 — Design institucional não deve reproduzir template genérico de IA
+
+**Decisão:** a interface deve ser moderna, sóbria e original, com hierarquia coerente com a relevância administrativa da informação. Evitar excesso de cards, glows, métricas decorativas e composições genéricas que prejudiquem navegação ou prioridade visual.
+
+**Consequência:** estética é subordinada à clareza, ação, acessibilidade e identidade institucional.
+
+**Referência:** `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`.
+
+---
+
+## 2026-05-26 — Otimizações de build, zero-latency e governança cadastral
+
+**Decisão:** adotar divisão de bundle para bibliotecas pesadas, prefetching seletivo via React Query e validação cadastral estrita com Zod.
+
+**Consequência:** bibliotecas pesadas devem continuar preferencialmente carregadas sob demanda quando isso trouxer ganho real sem instabilidade.
+
+**Nota de evolução:** decisões de performance devem ser verificadas contra o código atual; tentativas posteriores de code splitting por rota já exigiram rollback. Não tratar números de bundle de maio como baseline atual.
+
+---
+
+## 2026-05-07 — Plano Global e Radar como referência estratégica
+
+**Decisão:** o Plano Global v4.2 e o Radar de Inteligência Institucional estruturam a visão estratégica e os critérios transversais do projeto.
+
+**Consequência:** o Plano continua como baseline de marcos; o estado corrente não deve ser lido de seus status históricos, e sim pelo roteiro de `docs/README.md`.
+
+---
+
+## 2026-05-07 — Backlog adaptativo não autoriza implementação
+
+**Decisão:** backlog registra oportunidades, não autorização de execução.
+
+**Consequência:** toda nova frente exige verificação do estado real, escopo explícito, decisão adequada e PR próprio.
+
+---
+
+## 2026-05-07 — Demonstrativo Básico individual via MEMÓRIA
+
+**Decisão:** preencher a aba `MEMÓRIA` diretamente com dados estruturados, evitando dependência de `BASE`/`XLOOKUP` no arquivo individual.
+
+**Restrição:** arquivo individual não deve depender da aba `BASE`, fórmulas `XLOOKUP`, referências `BASE!` ou `BASE[...]`.
+
+---
+
+## 2026-05-08 — Template público sem dados reais consolidados
+
+**Decisão:** templates publicados em `public/` contêm estrutura e layout, nunca dados reais consolidados das unidades.
+
+**Consequência:** dados reais permanecem no Supabase e são injetados pelo gerador.
+
+---
+
+## 2026-05-07 — ExcelJS para documentos oficiais
+
+**Decisão:** usar `exceljs` no Demonstrativo Básico por necessidade de preservar estrutura, fórmulas, bordas e mesclagens.
+
+**Consequência:** carregamento deve ser sob demanda quando possível para não inflar o bundle inicial.
+
+---
+
+## 2026-05-11 — DocumentsPanel integrado ao gerador real
+
+**Decisão:** geração documental usa hook de dados + gerador isolado + download, sem acoplar regra de geração ao componente visual.
+
+**Consequência:** novos tipos documentais devem seguir separação equivalente.
+
+---
+
+## 2026-05-11 — Tabela `/escolas` com semântica de tabela preservada
+
+**Decisão:** evitar animações/estruturas que quebrem semântica e alinhamento de tabela.
+
+**Consequência:** qualquer animação em linhas deve ser validada visualmente e com acessibilidade antes do merge.
+
+---
+
+## 2026-05-11 — Admin bypass de ruleset é excepcional
+
+**Decisão:** bypass administrativo só pode ser usado de forma excepcional quando checks técnicos e validação operacional estiverem documentados.
+
+**Consequência:** bypass não substitui revisão de código nem CI.
+
+---
+
+## 2026-05-11 — Código e ambiente real prevalecem sobre ferramentas
+
+**Decisão:** nenhuma ferramenta, memória, relatório ou handoff é fonte definitiva de estado funcional.
+
+**Consequência:** código, diff, testes, banco e deployment devem ser consultados quando a decisão depender deles.
+
+---
+
+## 2026-05-11 — Ferramentas por escopo, sem hierarquia fixa
+
+**Decisão:** Codex, Claude Code, Copilot, Cursor, Antigravity ou outras ferramentas podem liderar conforme capacidade e escopo.
+
+**Restrição:** revisão humana permanece obrigatória em segurança, Auth/RLS, secrets, regras financeiras, templates oficiais e decisões arquiteturais.

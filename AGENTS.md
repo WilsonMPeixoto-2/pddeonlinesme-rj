@@ -1,190 +1,190 @@
 # AGENTS.md — PDDE Online 2026
 
-**Atualizado em:** 25/06/2026  
-**Plano vigente:** Plano Global v4.2 + Radar de Inteligência Institucional
+**Atualizado em:** 11/09/2026  
+**Repositório oficial:** `WilsonMPeixoto-2/pddeonlinesme-rj`  
+**Produto:** PDDE Online 2026 · GAD · 4ª CRE · SME-RJ
 
-## Fonte de verdade técnica
+## 1. Identidade e isolamento do projeto
 
-A fonte primária de verdade é a verificação direta do código-fonte, branch, commit, diff, configuração versionada e testes reais no GitHub.
+Antes de agir, confirme que o repositório é **`WilsonMPeixoto-2/pddeonlinesme-rj`**.
 
-Relatórios, handoffs, `current-state.json`, roadmaps, comentários de PR e memórias são snapshots auxiliares. Se houver conflito, o código e os testes prevalecem.
+Não misturar este projeto com:
 
-### Classificação obrigatória
+- RADAR PDDE;
+- `pdde-repasse-conciliador`;
+- POPs/SEI;
+- outros protótipos, bases ou projetos Supabase.
 
-Ao reportar informações, classificar cada afirmação como:
+O `pdde-repasse-conciliador` é fonte externa estruturada do pipeline financeiro, mas continua sendo um projeto separado.
 
-- **FATO VERIFICADO NO CÓDIGO** — confirmado por arquivo, commit, diff, teste ou deployment;
-- **HIPÓTESE** — inferência ainda não confirmada;
-- **RELATO DE OUTRA FERRAMENTA** — informação de relatório, log ou memória;
-- **PENDÊNCIA A CONFIRMAR** — item que exige verificação antes de orientar decisão.
+## 2. Fonte de verdade e precedência
 
-## Ferramentas e modelo de trabalho
+A documentação apoia a execução; não substitui o sistema real.
 
-O projeto pode ser mantido por Codex, Claude Code, Copilot, Cursor, Antigravity ou outras ferramentas. Nenhuma tem exclusividade.
+Quando houver divergência, a ordem obrigatória é:
 
-A ferramenta líder é definida pelo escopo:
+1. código em `main`, schema/migrations, banco verificado, CI e deployment real;
+2. `docs/DECISIONS.md`;
+3. `.continuity/current-state.json` e `docs/HANDOFF.md`;
+4. documentação técnica do domínio em `docs/technical/`;
+5. planos, specs, handoffs datados, relatórios e roadmaps históricos.
 
-- entrada, saída e teste claros: qualquer ferramenta pode liderar;
-- integração entre camadas ou decisão arquitetural: revisão humana obrigatória;
-- segurança, autenticação, RLS, roles, dados sensíveis, regras financeiras ou documentos oficiais: revisão humana obrigatória.
+Nunca declarar funcionalidade, Production, banco ou CI como íntegros apenas porque um documento afirma isso. Verifique o artefato correspondente.
 
-### Regra de bloqueio
+## 3. Roteiro obrigatório antes de qualquer tarefa substantiva
 
-Se a tarefa exigir mudar contrato, arquitetura, boundary ou decisão de segurança, o agente não deve improvisar. Deve registrar o bloqueio e devolver a decisão para revisão humana.
+Ler, nesta ordem:
 
-## Camada de dados e financeiro
+1. `AGENTS.md`;
+2. `docs/README.md`;
+3. `.continuity/current-state.json`;
+4. `docs/HANDOFF.md`;
+5. `docs/DECISIONS.md`;
+6. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
+7. documentação técnica específica da tarefa;
+8. `main`, PRs recentes/abertos, CI, Supabase e Production conforme o escopo.
 
-Para tarefas envolvendo dados financeiros, planilhas, importação/exportação, CNPJ, INEP, demonstrativos ou prestação de contas:
+`docs/PLANO_GLOBAL_V4_2.md`, `docs/OPPORTUNITIES_BACKLOG.md`, `docs/superpowers/plans/` e `docs/superpowers/specs/` são referências estratégicas/históricas. Não usar seus status internos como fotografia atual sem confronto com as fontes acima.
+
+## 4. Classificação obrigatória de afirmações
+
+Ao reportar estado ou recomendar ação, distinguir:
+
+- **FATO VERIFICADO** — confirmado em código, commit, diff, teste, banco ou deployment;
+- **INFERÊNCIA** — conclusão razoável ainda não comprovada diretamente;
+- **RELATO DOCUMENTAL** — informação lida em documento/handoff/log;
+- **PENDÊNCIA A CONFIRMAR** — exige verificação antes de orientar decisão.
+
+## 5. Decisões de negócio que não podem ser improvisadas
+
+As decisões completas ficam em `docs/DECISIONS.md`. Entre as invariantes vigentes:
+
+- narrativa operacional: **Dados → análise → escola → ação → evidência**;
+- publicar na interface apenas dimensões com contrato de maturidade validado;
+- ausência de informação **não é zero**;
+- não expor universo parcial como se fosse completo;
+- preservar múltiplas contas por escola/programa;
+- hierarquia financeira: `programa → ação → parcela → conta`;
+- metadados de coleta/proveniência ficam fora da superfície operacional comum;
+- indicadores relevantes devem conduzir a detalhe, filtro ou ação;
+- busca global só deve anunciar áreas/entidades reais;
+- não criar atalhos, botões, métricas ou estados fictícios;
+- filtros e contexto operacional devem sobreviver ao drill-down quando isso reduzir retrabalho;
+- publicação financeira deve ser transacional, idempotente e protegida contra regressão;
+- sincronização agendada só pode publicar com gate explícito e credenciais seguras de backend.
+
+Se a tarefa exigir mudar qualquer uma dessas regras, trate como decisão arquitetural/de negócio e devolva para revisão humana antes de implementar.
+
+## 6. Camada de dados e financeiro
+
+Para dados financeiros, planilhas, importação/exportação, CNPJ, INEP, demonstrativos ou prestação de contas:
 
 - inventariar a fonte de dados e o contrato esperado antes de alterar código;
-- preservar rastreabilidade entre valor bruto, valor normalizado e erro ou warning;
+- preservar rastreabilidade entre valor bruto, normalizado e erro/warning;
 - não inventar regra financeira, documental, de acesso ou identidade de escola;
-- tratar produção Supabase como somente leitura salvo autorização explícita;
-- preservar templates, fórmulas, bordas, células mescladas e regras oficiais.
+- preservar `NULL` quando a informação não existe;
+- não presumir relação 1:1 entre escola e conta bancária;
+- tratar Production Supabase como somente leitura salvo autorização explícita;
+- escritas financeiras devem ocorrer por fluxo controlado de integração;
+- preservar templates oficiais, fórmulas, bordas, células mescladas e regras documentais.
 
-## Validações mínimas
+## 7. Segurança e domínios protegidos
+
+Revisão humana continua obrigatória para:
+
+- autenticação, roles, guards e RLS;
+- migrations e funções `SECURITY DEFINER/INVOKER`;
+- secrets e credenciais;
+- regras financeiras e contratos de maturidade;
+- templates oficiais;
+- publicação/retirada de dados de Production;
+- decisões arquiteturais e mudanças de boundary.
+
+Nunca versionar secrets, tokens ou `.env`.
+
+## 8. Validações mínimas
 
 | Tipo de alteração | Validações mínimas |
 |---|---|
-| TypeScript | `npx tsc --noEmit` |
-| UI ou fluxo React | typecheck, lint, build e verificação visual |
-| Parser, importador ou motor documental | typecheck, testes e fixtures representativas |
-| Supabase, RLS ou auth | migration e types local + revisão humana |
-| Mudança substancial | `npm ci`, typecheck, lint, testes e build |
-| Dependências | sincronizar `package.json` e `package-lock.json`, executar auditoria |
-| Documentação pura | validar JSON e confirmar escopo pelo diff |
+| TypeScript | `npm run typecheck` |
+| UI / fluxo React | typecheck, lint, build, E2E/acessibilidade quando aplicável e Preview |
+| Parser/importador/motor documental | typecheck, testes e fixtures representativas |
+| Supabase/RLS/Auth | replay local das migrations + testes de contrato + revisão humana |
+| Mudança substancial | `npm ci`, typecheck, lint, testes, cobertura, build e gates do CI |
+| Dependências | package + lockfile sincronizados, build, testes e auditoria |
+| Documentação | JSON válido quando houver, links internos coerentes e diff restrito ao escopo |
 
-Não usar `--force`, `--legacy-peer-deps` ou desabilitar regras para obter CI artificialmente verde.
+Não usar `--force`, `--legacy-peer-deps`, desabilitar lint/testes ou relaxar políticas para fabricar um CI verde.
 
-## Estado atual verificado
+## 9. CI e Production
 
-**main HEAD verificada antes da branch `codex/security-center-truthfulness`:** `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8` — PR #101 de reconciliação documental pós-hotfix e produção.
+O workflow `.github/workflows/ci.yml` é o gate permanente de PR e inclui:
 
-**Último marco técnico de código de aplicação antes desta branch:** `ecfeb109146cbbd1856d26490b69bb8f633f6835` — PR #99.
+- typecheck;
+- lint;
+- testes unitários e cobertura;
+- auditoria do template do Demonstrativo;
+- build e bundle budget;
+- E2E/acessibilidade;
+- Knip de produção;
+- auditoria de vulnerabilidades;
+- replay completo do Supabase local e testes de contrato do banco.
 
-Este valor é snapshot. Confirmar novamente a `main` antes de agir.
+O workflow `.github/workflows/sync-financial-snapshot.yml` existe, mas a presença do `schedule` **não significa automação ativa**. Execução agendada só publica quando `PDDE_FINANCIAL_SYNC_ENABLED=true` e os secrets de backend esperados estão configurados no environment `production`.
 
-### Entregas recentes
+Nunca declarar Production sincronizada sem conferir SHA/deployment e smoke do domínio público.
 
-- PR #90 — gate permanente de lint, typecheck, testes e build restaurado;
-- PR #92 — atualização segura de dependências e lockfile reproduzível;
-- PR #94 — migração para plugin React padrão do Vite e code splitting do Rolldown;
-- PR #95 — reconciliação documental de continuidade;
-- PR #96 — alinhamento de tipos Node e runtime para Node 24;
-- PR #97 — queryOptions centralizadas e polimento visual seguro;
-- PR #98 — tentativa de code splitting por rota; causou tela vazia em produção e foi revertida;
-- PR #99 — hotfix para restaurar renderização estável;
-- PR #100 — fechado sem merge para não reintroduzir o incidente do PR #98;
-- PR #101 — reconciliação documental após hotfix e produção Vercel;
-- atualização parcial assistida da BASE;
-- geração individual e em lote do Demonstrativo Básico;
-- histórico de gerações;
-- Painel Executivo-Operacional;
-- gestão inicial de papéis;
-- Relação de Bens Adquiridos;
-- frente fiscal funcional em endurecimento;
-- Portal do Diretor em evolução.
+## 10. Radar de Inteligência Institucional
 
-### Dependências e segurança
-
-A auditoria reproduzível passou de cinco achados para dois moderados na cadeia `exceljs → uuid`. Não executar `npm audit fix --force`, pois a correção proposta rebaixa o ExcelJS.
-
-O `package.json` contém override restrito de `@rolldown/plugin-babel` para `0.1.7`, necessário para compatibilidade do peer opcional com Workbox/Babel 7. Não remover sem reproduzir a instalação limpa.
-
-O PR #96 alinhou o ambiente ao runtime real Node 24.x: `engines.node` e CI em Node 24, `@types/node` em `^24.13.2`. Não atualizar para 26.x sem decisão explícita de runtime.
-
-### Estado da produção
-
-Projeto Vercel principal:
-
-- runtime Node `24.x`;
-- produção confirmada antes da branch `codex/security-center-truthfulness` em `f5ad026e0d3d9ef099198f99c4c1bed3c1dbfcc8`;
-- deployment confirmado `READY`: `dpl_56wP3LvWJsmK3YziSoLbzGroGuqg`.
-
-A `main` e a produção principal da Vercel estavam sincronizadas no commit `f5ad026` antes da branch `codex/security-center-truthfulness`.
-
-Smoke público em `https://pddeonlinesme-rj.vercel.app/dashboard` redirecionou para login e renderizou sem erros de console.
-
-Nunca declarar produção sincronizada sem verificar o SHA do deployment e o domínio público.
-
-## Próxima fila
-
-### Frente funcional imediata em execução
-
-A branch `codex/security-center-truthfulness` corrige em PR isolado a veracidade institucional do `SecurityCenterPanel`, mantendo o componente como mapa/checklist visual do Marco 6B e removendo aparência de scanner RLS, MFA e logs reais.
-
-Após merge e deploy, escolher nova frente funcional com escopo fechado. Implementação real de Auth, RLS, MFA ou `audit_logs` continua exigindo revisão humana.
-
-Não retomar code splitting por rota sem diagnóstico específico do incidente #98/#99, validação visual real em Preview, teste com cache/service worker e plano explícito de rollback.
-
-### Frentes estruturais ainda relevantes
-
-- hardening de auth, roles, guards, RLS, auditoria e storage;
-- aquisição fiscal multicanal com preferência por fontes estruturadas;
-- Portal do Diretor mobile-first;
-- WCAG, observabilidade e hardening contínuo;
-- histórico e rastreabilidade documental onde ainda houver lacunas.
-
-## Política de documentação
-
-Documentação deve apoiar o desenvolvimento, não capturá-lo em ciclos de reconciliação.
-
-Atualizar documentação quando o drift puder:
-
-- induzir o próximo agente à tarefa errada;
-- listar como pendente algo concluído;
-- apontar caminho incorreto;
-- registrar prioridade incompatível com o plano;
-- criar risco real de replanejamento.
-
-## Formato de prompt operacional
-
-Todo prompt operacional deve declarar:
-
-- ferramenta líder;
-- objetivo;
-- arquivos que deve ler;
-- arquivos que pode alterar;
-- arquivos proibidos;
-- critérios de aceite;
-- validações mínimas.
-
-## Radar Transversal de Inteligência Institucional
-
-Toda tarefa deve aplicar `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`.
+Toda tarefa aplica `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`.
 
 Perguntas obrigatórias:
 
-1. Existe fonte estruturada antes de digitar ou usar OCR?
-2. Existe padrão consolidado em sistemas públicos, ERPs ou design systems?
-3. A tarefa pode virar alerta, status, histórico, gráfico, relatório ou evidência?
-4. A solução reduz clique, memória, retrabalho ou planilha paralela?
-5. A interface mostra o próximo passo?
-6. A entrega é segura para dados reais, perfis, arquivos e auditoria?
-7. O ganho é demonstrável para chefia e Alta Administração?
-8. A abordagem é adequada para 2026?
+1. Existe fonte estruturada antes de digitação/OCR?
+2. A solução reduz retrabalho, clique, memória ou planilha paralela?
+3. O indicador tem caminho para detalhe/ação?
+4. A informação está no lugar certo e com hierarquia compreensível?
+5. Há padrão atual em sistemas públicos, ERPs, dashboards ou design systems?
+6. A entrega respeita segurança, perfis, RLS, auditoria e dados reais?
+7. A interface é acessível, clara e institucionalmente sóbria?
+8. O ganho é demonstrável para gestão e Alta Administração?
+9. A abordagem é adequada para 2026, e não apenas funcional?
 
-## Antes de qualquer tarefa
+## 11. Política de documentação
 
-Ler:
+Use `docs/README.md` como índice oficial.
 
-1. `AGENTS.md`;
-2. `docs/PLANO_GLOBAL_V4_2.md`;
-3. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
-4. `.continuity/current-state.json`;
-5. `docs/HANDOFF.md`;
-6. `docs/CODEX_HANDOFF_2026-06-25.md`;
-7. `docs/DECISIONS.md`;
-8. `docs/ROADMAP_ADAPTIVE.md`;
-9. `docs/OPPORTUNITIES_BACKLOG.md`;
-10. GitHub `main`, PRs recentes e produção real.
+Atualize documentação quando uma mudança alterar:
 
-## Depois de qualquer tarefa
+- decisão de negócio/regra operacional;
+- contrato de dados;
+- arquitetura ou segurança;
+- prioridade apresentada como atual;
+- CI/deploy/automação;
+- fluxo relevante de usuário;
+- fonte de verdade ou roteiro obrigatório.
 
-Atualizar:
+Evite snapshots desnecessários que envelhecem sozinhos, como contagem fixa de testes ou versões duplicadas já disponíveis em `package.json`.
 
-1. `.continuity/current-state.json`;
-2. `.continuity/session-log.jsonl`;
-3. `docs/HANDOFF.md`.
+Depois de tarefa relevante:
 
-Se houver decisão nova ou mudança de prioridade, atualizar também `docs/DECISIONS.md`, `docs/ROADMAP_ADAPTIVE.md` e `docs/OPPORTUNITIES_BACKLOG.md`.
+1. atualizar `.continuity/current-state.json` e `docs/HANDOFF.md` se o estado operacional mudou;
+2. atualizar `docs/DECISIONS.md` se houve nova decisão ou mudança de regra;
+3. atualizar `docs/ROADMAP_ADAPTIVE.md` se mudou prioridade/fila curta;
+4. atualizar documentação técnica do domínio se o contrato mudou.
+
+Não criar novas fontes paralelas de “estado atual” ou “decisões atuais”.
+
+## 12. Formato de prompt operacional
+
+Todo prompt operacional para agente deve declarar:
+
+- repositório/projeto alvo;
+- objetivo;
+- arquivos obrigatórios de leitura;
+- arquivos permitidos;
+- arquivos proibidos;
+- decisões de negócio afetadas;
+- critérios de aceite;
+- validações mínimas;
+- condição de rollback quando houver risco de Production.

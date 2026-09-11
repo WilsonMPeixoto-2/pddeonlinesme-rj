@@ -1,142 +1,226 @@
 # Handoff Operacional — PDDE Online 2026
 
-**Atualizado em:** 08/09/2026 16:56 (America/Sao_Paulo)  
+**Atualizado em:** 11/09/2026 (America/Sao_Paulo)  
 **Repositório:** `WilsonMPeixoto-2/pddeonlinesme-rj`  
-**Fonte de verdade:** código, commits, CI, Supabase e deployments reais. Este documento é um snapshot auxiliar.
+**Entrada obrigatória da documentação:** `docs/README.md`
 
-## 1. Estado verificado
+> Este handoff é uma fotografia operacional. Código, banco, CI e deployment real prevalecem em caso de divergência.
 
-- `main`: `1722b4b50c5340b39a883220423cc40e2b315eeb`.
-- PR #112 — `chore(deps): atualizar lote seguro de dependências`: **merged**.
-- Vercel Production: `dpl_EAAQ6mBgPQ1w6EbLXHg83yHasdPr`, estado **READY**, commit `1722b4b50c5340b39a883220423cc40e2b315eeb`.
-- Domínio `https://pddeonlinesme-rj.vercel.app/`: HTTP 200 após o deploy.
-- Supabase oficial: `raluxyojqosfzrfozmpz` (`pdde-online-2026-dev`).
-- Estado do Supabase verificado em 08/09/2026 16:56: **ACTIVE_HEALTHY**.
-- Nenhum projeto Supabase externo ao PDDE Online foi pausado ou alterado nesta tarefa.
+## 1. Estado verificado no fechamento do ciclo funcional
 
-## 2. Incidente de autenticação
+Baseline funcional anterior à PR documental #133:
 
-Em 03/09/2026, o login e a recuperação de senha estavam indisponíveis porque o projeto Supabase oficial estava `INACTIVE`. A tentativa de restauração foi inicialmente bloqueada pelo limite de projetos gratuitos ativos.
+- `main`: `b60fb04b360eefb7dc0d92cc39064ee8a019724b`;
+- Production Vercel: `dpl_FdQY3St4xHQpSgept47jobMcvE4Y`;
+- estado do deployment: `READY`;
+- domínio público: `https://pddeonlinesme-rj.vercel.app`;
+- smoke público: HTTP 200;
+- erros de runtime observados após o deploy: nenhum no intervalo verificado;
+- Supabase oficial: `raluxyojqosfzrfozmpz`.
 
-O defeito independente do fluxo de recuperação foi corrigido no PR #110, merge `48e1a77de901d8b5abf5db273c94639da6aebcc5`:
+A PR #133 altera apenas documentação/continuidade; o SHA de `main` após seu merge pode diferir do baseline funcional acima sem mudança no código da aplicação.
 
-- redirect de recuperação para `/redefinir-senha`;
-- rota pública dedicada;
-- atualização de senha via `supabase.auth.updateUser()`;
-- tratamento de link inválido/expirado;
-- mensagem amigável para indisponibilidade do serviço;
-- cobertura E2E do fluxo.
+## 2. Ciclo #129 → #132 concluído em Production
 
-CI final do hotfix: run `33711713326`, integralmente aprovado.
+### PR #129 — pipeline de publicação financeira por dimensão
 
-O backend está novamente `ACTIVE_HEALTHY`, mas o incidente de Auth só deve ser considerado encerrado após smoke real de login, reset, Redirect URLs e entrega do e-mail.
+Entregue:
 
-## 3. Atualização de dependências — PR #112
+- contrato V1 de maturidade/publicação;
+- cinco dimensões financeiras com cobertura 163/163;
+- publicação transacional no Supabase;
+- proteção contra regressão de cobertura;
+- idempotência por workflow/artifact;
+- replay completo das migrations no CI;
+- testes de contrato SQL;
+- classificação de ações reais de PDDE Qualidade/Equidade;
+- gate operacional para sincronização agendada.
 
-Merge: `1722b4b50c5340b39a883220423cc40e2b315eeb`.
+### PR #130 — recorte financeiro principal do Painel
 
-Atualizações aplicadas:
+Entregue:
 
-- `lucide-react` → `1.40.0`;
-- `react-hook-form` → `7.87.0`;
-- `@types/react-dom` → `19.2.7`;
-- `eslint-plugin-react-refresh` → `0.5.6`;
-- `globals` → `17.12.0`;
-- `knip` → `6.34.0`;
-- `typescript-eslint` → `8.69.0`.
+- hero do Painel baseado na 1ª parcela paga do PDDE Básico;
+- data, cobertura e composição no mesmo universo do KPI principal;
+- remoção de visualização que misturava universos com maturidade desigual;
+- ausência de dado preservada sem virar zero.
 
-Ficaram deliberadamente fora do lote:
+### PR #131 — busca global operacional
 
-- `@supabase/supabase-js`, enquanto Auth não estiver validado de ponta a ponta;
-- majors de Vitest, jsdom, Framer Motion, TypeScript e Node.
+Entregue:
 
-### Evidência de validação
+- `Ctrl/Cmd+K` como localizador de áreas reais do produto;
+- pesquisa das 163 unidades por designação, nome, diretor, INEP e CNPJ;
+- remoção de rotas demo, ações fictícias e pseudoatalhos inexistentes.
 
-Workflow controlado pré-PR: run `34270447310`.
+### PR #132 — contexto da carteira de escolas
 
-- instalação da baseline com `npm ci`;
-- atualização exata das sete dependências;
-- remoção de `node_modules` e novo `npm ci` apenas pelo lockfile regenerado;
+Entregue:
+
+- `q` e `status` na URL da carteira;
+- transporte de contexto para a ficha;
+- retorno seguro apenas para `/escolas` ou `/escolas?...`;
+- preservação do recorte da carteira ao voltar;
+- histórico do navegador sem entradas redundantes por digitação/retorno.
+
+No início da reconciliação documental havia **0 PRs de produto abertos**.
+
+## 3. Governança documental instituída na PR #133
+
+A documentação passa a usar uma hierarquia explícita:
+
+1. sistema real verificado;
+2. `docs/DECISIONS.md`;
+3. `.continuity/current-state.json` e `docs/HANDOFF.md`;
+4. documentação técnica do domínio;
+5. histórico.
+
+`docs/README.md` é a porta de entrada obrigatória.
+
+Foram classificados como históricos, sem apagar sua rastreabilidade:
+
+- Plano Global v4.2 como baseline estratégica de maio/2026;
+- `OPPORTUNITIES_BACKLOG.md` como snapshot de maio/2026;
+- `DECISIONS_LOG.md` como histórico de decisões antigas;
+- specs, planos e handoffs datados.
+
+## 4. Estado financeiro atual
+
+Validado no Supabase oficial:
+
+- 163 escolas;
+- 335 contas bancárias;
+- 537 registros de repasse/parcela;
+- 5 dimensões V1 `MATURE/PUBLISHED`;
+- cobertura das dimensões: 163/163.
+
+Decisões obrigatórias:
+
+- ausência de informação não é zero;
+- uma escola pode ter múltiplas contas no mesmo programa;
+- hierarquia: `programa → ação → parcela → conta`;
+- dimensão coletada só vira informação operacional depois de contrato de maturidade/publicação;
+- saldo atual, movimentos posteriores, crédito localizado completo e conciliação documento × débito continuam fora da superfície operacional enquanto não houver contrato próprio e cobertura adequada.
+
+## 5. Sincronização financeira automática
+
+Workflow: `.github/workflows/sync-financial-snapshot.yml`.
+
+O YAML contém `workflow_dispatch` e `schedule`, mas a publicação agendada **não está habilitada operacionalmente**.
+
+Para o job agendado publicar, é obrigatório:
+
+- `vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'`;
+- `PDDE_SUPABASE_URL` configurado no environment `production`;
+- `PDDE_SUPABASE_SERVICE_ROLE_KEY` configurado no environment `production`.
+
+Execução manual também valida o destino e exige os secrets. Não contornar ausência de credencial com chave pública/anon.
+
+## 6. CI atual
+
+`.github/workflows/ci.yml` possui dois jobs principais:
+
+### Aplicação
+
+- `npm ci`;
 - typecheck;
 - lint;
-- 130/130 testes unitários;
-- cobertura;
+- testes unitários e cobertura;
 - auditoria do template do Demonstrativo;
 - build;
-- 11/11 E2E/acessibilidade;
-- `npm audit` e `npm audit --omit=dev`: 0 HIGH, 0 CRITICAL, 2 MODERATE conhecidos.
+- bundle budget;
+- Playwright E2E + acessibilidade;
+- Knip de produção;
+- auditoria de vulnerabilidades.
 
-CI oficial do PR #112: run `34270901320`, **success** em todas as etapas.
+### Contrato Supabase
 
-O diff final do PR #112 continha somente `package.json` e `package-lock.json`.
+- sobe Supabase local;
+- reconstrói todo o banco pelas migrations;
+- roda `supabase test db`;
+- encerra a stack local.
 
-## 4. Risco residual conhecido de dependências
+Execuções obsoletas do mesmo PR são canceladas por `concurrency`.
 
-Permanecem 2 vulnerabilidades moderadas na cadeia `exceljs -> uuid`. O `npm audit` propõe correção incompatível por downgrade/major de `exceljs`; não usar `npm audit fix --force`.
+## 7. Decisões de produto vigentes
 
-O `knip --production` continua encontrando a baseline preexistente:
+Fonte canônica: `docs/DECISIONS.md`.
 
-- 26 arquivos não usados;
-- 22 dependências não usadas;
-- 49 exports não usados;
-- 14 tipos exportados não usados.
+Resumo do ciclo atual:
 
-Esses achados foram comparados antes/depois e não são regressão do PR #112. Tratar limpeza de dependências mortas em PR próprio, com revisão de impacto no design system e rotas.
+- **Dados → análise → escola → ação → evidência**;
+- publicar somente dimensões maduras;
+- não completar lacunas por inferência;
+- 1ª parcela paga do PDDE Básico é o recorte financeiro principal enquanto for o universo integralmente validado;
+- preservar múltiplas contas;
+- manter proveniência técnica fora da superfície operacional comum;
+- agregados relevantes devem levar a detalhe/filtro/ação;
+- busca global só anuncia funcionalidades reais;
+- contexto da carteira deve sobreviver ao drill-down;
+- design deve ser institucional, claro e original, sem excesso decorativo.
 
-## 5. Produção Vercel
+## 8. Pendências operacionais reais
 
-Projeto principal:
+### 8.1. Ativação da sincronização financeira
 
-- Project ID: `prj_dErjl7LdzTL2412fsw0pyzo3bdp1`;
-- runtime: Node `24.x`;
-- domínio: `https://pddeonlinesme-rj.vercel.app`.
+Não é bloqueio do funcionamento atual. É uma decisão operacional futura.
 
-Produção confirmada em 08/09/2026:
+Antes de ativar:
 
-- deployment: `dpl_EAAQ6mBgPQ1w6EbLXHg83yHasdPr`;
-- commit: `1722b4b50c5340b39a883220423cc40e2b315eeb`;
-- estado: `READY`;
-- `main` e Production sincronizadas.
+1. configurar os dois secrets no environment `production`;
+2. manter `PDDE_FINANCIAL_SYNC_ENABLED=false`/ausente;
+3. executar manualmente o workflow;
+4. validar dry-run, publicação, idempotência e estado do banco;
+5. somente depois habilitar a variável de agendamento.
 
-## 6. Proteções técnicas que continuam válidas
+### 8.2. Smoke autenticado periódico
 
-### Node
+CI/Preview não substituem smoke autenticado de fluxos críticos. Priorizar, quando houver mudança nessas áreas:
 
-Manter Node 24.x e `@types/node` 24.x. Não migrar para Node/@types 26 sem decisão explícita de runtime e benefício comprovado.
+- login/recuperação;
+- carteira → ficha → retorno;
+- Repasses → detalhe da unidade;
+- edição cadastral;
+- geração documental;
+- permissões/RLS.
 
-### Code splitting
+### 8.3. Auth/RLS/auditoria
 
-O PR #98 aplicou `React.lazy()` por rota e causou tela vazia em Production; o PR #99 reverteu. O PR #109 retoma performance/code splitting e deve permanecer separado de Auth e de dependências.
+Continuar hardening antes de ampliar o Portal do Diretor ou expor novos fluxos de escrita para perfis escolares.
 
-Qualquer retomada exige:
+## 9. O que não deve ser reaberto por engano
 
-- Preview Vercel validado visualmente;
-- sessão limpa e sessão com cache/service worker anterior;
-- smoke de `/`, `/dashboard`, `/acesso-negado` e rota autenticada;
-- rollback explícito.
+Não tratar como “próxima frente” itens já concluídos:
 
-### Supabase/Auth
+- Painel Executivo-Operacional básico;
+- geração em lote dos 163 Demonstrativos;
+- integração financeira V1;
+- página operacional de Repasses V1;
+- busca global operacional;
+- preservação de contexto da carteira;
+- stack React/Vite/Vitest atualizada;
+- Supabase Foundation como frente genérica.
 
-- não trocar o projeto Supabase oficial;
-- não pausar ou alterar outro projeto sem autorização explícita;
-- não misturar migrations, RLS, dados financeiros ou regras de negócio com correções de Auth;
-- não atualizar `@supabase/supabase-js` antes do smoke real de Auth.
+Novas evoluções podem ampliar essas áreas, mas devem partir do estado atual, não dos planos de maio.
 
-## 7. Próxima prioridade
-
-1. Validar em Production login, recuperação de senha, Redirect URLs e e-mail de recuperação com `raluxyojqosfzrfozmpz` em `ACTIVE_HEALTHY`.
-2. Com Auth estabilizado, avaliar atualização do cliente `@supabase/supabase-js` em PR isolado.
-3. Depois, avaliar majors de ferramentas/testes separadamente.
-4. Só então retomar PR #109 ou nova frente de performance.
-
-## 8. Leitura para continuidade
+## 10. Roteiro obrigatório para continuidade
 
 1. `AGENTS.md`;
-2. `.continuity/current-state.json`;
-3. `.continuity/session-log.jsonl`;
-4. `docs/PLANO_GLOBAL_V4_2.md`;
-5. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
-6. `docs/DECISIONS.md`;
-7. `docs/ROADMAP_ADAPTIVE.md`.
+2. `docs/README.md`;
+3. `.continuity/current-state.json`;
+4. `docs/HANDOFF.md`;
+5. `docs/DECISIONS.md`;
+6. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
+7. documentação técnica da tarefa;
+8. `main`, PRs, CI, Supabase e Production conforme o escopo.
 
-Histórico detalhado anterior permanece preservado no Git e no `session-log.jsonl`; este handoff foi consolidado para eliminar snapshots conflitantes e permitir leitura operacional rápida.
+`docs/PLANO_GLOBAL_V4_2.md`, `docs/OPPORTUNITIES_BACKLOG.md` e documentos em `docs/superpowers/` são referências estratégicas/históricas, não fotografia atual.
+
+## 11. Próximos movimentos recomendados
+
+1. manter o roteiro obrigatório de leitura e evitar novas fontes concorrentes de estado/decisões;
+2. manter smoke autenticado proporcional ao risco das próximas mudanças;
+3. decidir quando vale ativar a sincronização financeira automática e, nesse momento, configurar secrets + gate com validação manual prévia;
+4. continuar hardening de Auth/RLS/auditoria antes de ampliar o Portal do Diretor;
+5. publicar novas dimensões financeiras apenas quando tiverem contrato próprio e cobertura madura;
+6. tratar novos documentos oficiais, importador e frente fiscal em PRs isolados, com fonte estruturada e revisão humana.

@@ -1,83 +1,182 @@
-# Roadmap Adaptativo - PDDE Online 2026
+# Roadmap Adaptativo — PDDE Online 2026
 
-Atualizado em: 2026-05-17 (pós PRs #72 → #79 — sessão noturna fechada)
+**Atualizado em:** 11/09/2026  
+**Papel:** fila curta e prioridades após o estado atual.  
+**Não substitui:** `docs/DECISIONS.md`, `docs/README.md` ou verificação direta de `main`/Production.
 
-## Norte
+## 1. Norte atual
 
-O **Plano Global v4.2**, em `docs/PLANO_GLOBAL_V4_2.md`, é o norte operacional atual. A versão anterior (v4.1, `docs/PLANO_GLOBAL_V4_ATUALIZADO_POS_SUPABASE.md`) permanece como referência histórica — não foi revogada, apenas atualizada.
+- `docs/README.md` define a hierarquia documental e o roteiro obrigatório de leitura.
+- `docs/DECISIONS.md` contém as decisões vigentes.
+- `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md` continua como diretriz transversal.
+- `docs/PLANO_GLOBAL_V4_2.md` permanece como **baseline estratégica histórica de maio/2026**, não como fotografia do estado corrente.
 
-O **Radar de Inteligência Institucional** em `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md` é diretriz transversal: aplica-se a toda tarefa, independentemente do marco.
+Este roadmap registra apenas a fila operacional adaptativa a partir do estado real de setembro/2026.
 
-Este roadmap adaptativo não substitui o plano. Ele organiza a fila curta e registra ajustes pragmáticos entre PRs pequenos.
+## 2. Estado consolidado
 
-## Estado atual
+### Entregue em Production
 
-- `main` é fonte oficial de continuidade, atualmente em `fac1d9b` (merge PR #79).
-- **Polimento visual sóbrio** entregue no PR #79 — 10 ajustes cirúrgicos sem redesign (hero subtitle, donut, font-mono → tabular-nums, TopReprogramados rail, glow CentralDocumental, etc.).
-- **Polish microcopy** entregue no PR #78 — "Em breve" misleading em `/escolas` corrigido.
-- **UI admin de papeis** (Marco 6B v0) entregue no PR #75. Migration `20260517130000_admin_user_management` aplicada em produção. Configuracoes deixou de ser mock.
-- **Histórico de gerações documentais** (Marco 9B v2) entregue no PR #76 — card no Painel consumindo `document_generation_runs`.
-- **Painel Executivo-Operacional GAD v1** (Marco 9B) + **Geração em Lote dos 163 Demonstrativos** (Marco 15 reclassificado) entregues no PR #73. Migration `20260517120000_document_generation_runs` aplicada em produção. Types regenerados.
-- **Plano Global v4.2 + Radar de Inteligência Institucional** adotados no PR #72.
-- PR #43 (Demonstrativo Básico Individual) entregue, hardneado (PR #57) e em produção.
-- **Fase 2B (edição cadastral mínima) implementada e endurecida**: PRs #63 (motor), #66 (optimistic + React 19), #70 (polimento), #71 (RPC transacional). Migration aplicada em produção. Falta apenas smoke UI operacional.
-- **Stack modernizada**: React 19, Vite 7, Vitest 4, jsdom 29 (PRs #65–#68).
-- **xlsx removido, ExcelJS consolidado** (PR #69). `npm audit` zerado. Bundle inicial reduzido em 21%.
-- **POC fiscal isolada** com governança e validators (PRs #58, #59, #61, #62). Reposicionada como "Aquisição Fiscal Multicanal" — congelada até MVP CRE.
-- PR de reconciliação documental em andamento (este).
+- Supabase Foundation e contratos estruturais básicos;
+- edição cadastral mínima e RPC transacional;
+- atualização assistida da BASE;
+- Demonstrativo Básico individual;
+- geração em lote dos 163 Demonstrativos;
+- histórico de gerações;
+- Painel Executivo-Operacional;
+- stack modernizada para Node 24 / React 19 / Vite 8 / TypeScript 6 / Vitest 5;
+- hardening progressivo de CI, bundle, E2E e acessibilidade;
+- integração financeira V1 com 163 escolas, 335 contas e 537 repasses;
+- página de Repasses V1 com recorte completo da 1ª parcela do PDDE Básico;
+- Recursos PDDE por programa/ação/parcela/conta;
+- pipeline de publicação financeira por dimensão com maturidade, idempotência e proteção contra regressão;
+- recorte financeiro principal do Painel alinhado ao universo maduro da 1ª parcela;
+- busca global como localizador operacional real;
+- preservação de filtros/contexto entre carteira de escolas e ficha individual.
 
-## Próximo passo: smoke manual (não abrir nova frente)
+### Estado financeiro V1
 
-Antes de qualquer nova frente funcional, executar smoke real como usuário. Política consolidada com a auditoria externa (ChatGPT, 17/05): após 8 PRs e 2 migrations em produção, próximo movimento é **validação operacional**, não mais código.
+- 5 dimensões `MATURE/PUBLISHED`;
+- cobertura 163/163;
+- ausência de informação preservada como ausência;
+- novas dimensões só entram na interface após contrato próprio de maturidade.
 
-## Próximas frentes funcionais candidatas (pós-smoke)
+## 3. Próxima fila operacional
 
-Marcos 9B + 15 (PR #73), 6B v0 (PR #75), 9B v2 (PR #76), polish visual (PR #79) entregues. Frentes candidatas, em ordem de impacto institucional:
+As prioridades abaixo são recomendações adaptativas, não autorização automática de implementação.
 
-1. **Marco 11 — Relação de Bens Adquiridos**: 2º documento oficial. Reaproveita motor documental. Depende de template oficial real.
-2. **Sub-Marco 6B — `audit_logs`**: trilha de mutações sensíveis. Pré-requisito para Portal do Diretor.
-3. **Marco 10B — Importador via UI** (dry-run, diff, hash): substitui upload simples atual.
-4. **Página dedicada `/painel/historico`** (Marco 9B v3): filtros + paginação se uso do card top 5 crescer.
-8. Rename menu lateral: `Dashboard` → `Painel`. H1 da página: `Painel Executivo-Operacional · GAD · 4ª CRE`.
-9. Cleanup `index.html` (remover `<meta author="Lovable">`, comentários TODO residuais).
-10. Testes unitários da lib + smoke headless.
+### P0 — manter integridade operacional
 
-## Marcos funcionais maiores (v4.2)
+1. **Smoke autenticado proporcional ao risco**
+   - login/recuperação quando Auth mudar;
+   - carteira → ficha → retorno quando navegação mudar;
+   - Repasses → escola quando financeiro mudar;
+   - edição cadastral quando RPC/RLS mudar;
+   - geração documental quando template/gerador mudar.
 
-| Marco | Tema | Status |
-|---|---|---|
-| 6B | Auth/roles/guards/RLS final + UI admin de roles | Sobe em prioridade pois sistema já escreve dados |
-| **9B** | **Painel Executivo-Operacional GAD v1** | **Próxima frente funcional** |
-| 10B | Importador institucional com dry-run/diff/hash | Substitui upload simples; nunca service_role no browser |
-| 11+12 | Demais documentos (Relação de Bens, Termo, Parecer) | Templates oficiais + revisão humana |
-| 13 | Portal do Diretor mobile-first | Depende Marco 6B + diretor-escola link |
-| 14 | Hardening pré-produção (WCAG 2.2, perf, logs, SLOs) | Contínuo |
-| **15** | **Geração em lote dos 163 Demonstrativos** | **Reclassificado: Ação Executiva de Alto Valor (entra no 9B)** |
-| Frente fiscal v1 | **Aquisição Fiscal Multicanal** (XML > chave > QR > URL > barcode > PDF textual > OCR > digitação) | Spike pós-MVP CRE |
+2. **Manter documentação canônica sincronizada**
+   - atualizar estado/handoff quando uma frente relevante for concluída;
+   - registrar novas decisões somente em `docs/DECISIONS.md`;
+   - evitar criar novos snapshots concorrentes.
 
-## Melhorias acessórias (não bloqueantes)
+### P1 — ativação controlada da sincronização financeira automática
 
-- Ampliar cobertura do gerador documental e dos hooks.
-- Validar telas em viewport mobile (375px, 768px) antes do Portal do Diretor.
-- Rotacionar credenciais Supabase antes de uso em produção real.
-- Limpar branches locais já mergeadas (após confirmação individual).
+Status atual: **workflow existe; agendamento não publica enquanto o gate estiver desabilitado/ausente**.
 
-## Lessons learned recentes
+Pré-condições:
 
-1. **Reconcile pós-merge é obrigatório**: documentos de continuidade divergem rapidamente de `main` após cada merge significativo. Atualizar HANDOFF/current-state/ROADMAP imediatamente.
+1. configurar `PDDE_SUPABASE_URL` no environment `production`;
+2. configurar `PDDE_SUPABASE_SERVICE_ROLE_KEY`;
+3. manter `PDDE_FINANCIAL_SYNC_ENABLED` desabilitado;
+4. executar workflow manualmente;
+5. validar dry-run, publicação, idempotência, contagens e regressão;
+6. só então habilitar o gate agendado.
 
-2. **Smoke operacional é necessário além de checks técnicos**: `tsc`, `lint`, `test` e `build` não detectam problemas de integração visual ou silent failures de RLS. Validação autenticada em browser é complementar.
+Não é bloqueio para o funcionamento atual do produto.
 
-3. **Comments de PR vs blob atual**: comentários de revisão referem-se ao diff no momento da revisão, não ao blob final. Ao retomar PR, ler sempre o blob atual via `gh api ...?ref=<head>`.
+### P1 — Auth/RLS/auditoria antes de expansão de perfis
 
-4. **RLS silencioso (PR #71)**: UPDATE retornando HTTP 200 com 0 linhas afetadas é o padrão de falha de RLS no Supabase. Sempre encadear `.select("id")` e validar `length > 0` no client.
+Antes de ampliar o Portal do Diretor ou novos fluxos de escrita:
 
-5. **Modernização pode ser rápida quando isolada por camada**: 4 PRs de stack consecutivos (#65–#68) levaram a stack inteira a 2026 sem regressão funcional. A chave foi um PR por camada (React, Vite, Vitest, deps), não tudo junto.
+- validar guards por perfil;
+- revisar RLS no banco real;
+- ampliar `audit_logs` onde a mutação justificar;
+- garantir vínculo diretor ↔ unidade;
+- validar recuperação de senha e fluxos de sessão;
+- manter `service_role` fora do browser.
 
-6. **xlsx HIGH não tem patch**: quando uma dependência crítica não tem fix upstream, migrar para alternativa já presente no projeto (ExcelJS) é mais seguro que esperar.
+### P2 — novas dimensões financeiras
 
-## Regra de uso
+Candidatas, sem autorização automática:
 
-Cada item funcional deve virar PR pequeno e próprio. Mudanças de código, Supabase, migrations, UI, regras financeiras ou documentos oficiais não devem ser acopladas a PRs de governança documental.
+- saldo atual;
+- movimentos bancários posteriores;
+- localização de crédito;
+- aplicações/rendimentos;
+- conciliação documento × débito.
 
-Documentação deve apoiar o desenvolvimento, não capturá-lo em ciclos de reconciliação.
+Regra: nenhuma delas entra no Painel/Repasses apenas porque foi coletada. Cada uma exige contrato de maturidade, cobertura, semântica de ausência e caminho operacional de uso.
+
+### P2 — evolução documental
+
+Candidatas:
+
+- Relação de Bens Adquiridos e demais documentos oficiais;
+- ampliação de pré-checagens antes da geração;
+- evolução do histórico e evidências documentais.
+
+Pré-condição: template oficial real + revisão humana da regra documental.
+
+### P2 — importador institucional
+
+Evoluir apenas quando houver demanda operacional clara:
+
+- dry-run;
+- diff;
+- hash do arquivo;
+- erros bloqueantes e warnings;
+- confirmação humana;
+- trilha de auditoria.
+
+### P3 — frente fiscal multicanal
+
+Mantém a ordem de preferência:
+
+`XML > chave > QR > URL oficial > barcode > PDF textual > OCR > digitação assistida`
+
+A POC permanece isolada até haver caso de uso institucional e corpus representativo suficiente.
+
+## 4. Evolução de UX e arquitetura da informação
+
+Diretriz atual:
+
+> **Dados → análise → escola → ação → evidência**
+
+Qualquer nova evolução visual deve:
+
+- reforçar hierarquia da informação;
+- evitar métricas decorativas;
+- preservar contexto entre telas;
+- oferecer drill-down em agregados relevantes;
+- reduzir memória/retrabalho;
+- manter acessibilidade e clareza para usuários com menor familiaridade digital;
+- evitar aparência de template genérico de dashboard/IA.
+
+## 5. Itens que não devem reaparecer como “próxima frente”
+
+- construir Painel Executivo-Operacional básico;
+- gerar os 163 Demonstrativos como novidade;
+- criar a primeira integração financeira;
+- criar Repasses V1;
+- tornar busca global operacional;
+- preservar contexto carteira/ficha;
+- migrar para React 19/Vite 8/Vitest 5;
+- reabrir Supabase Foundation como frente genérica.
+
+Essas áreas podem evoluir, mas o ponto de partida é o que já está em Production.
+
+## 6. Riscos contínuos
+
+| Risco | Regra de mitigação |
+|---|---|
+| `NULL` financeiro convertido em zero | preservar ausência até a fonte informar valor explícito |
+| dimensão parcial promovida cedo demais | contrato de maturidade + gate de publicação |
+| `service_role` no browser | proibido; backend/workflow controlado somente |
+| RLS silencioso | conferir linhas afetadas/retorno e testar no banco |
+| migration histórica reaplicada em Production | conferir histórico remoto antes de qualquer push/manual DDL |
+| contexto perdido entre telas | URL/return seguro quando o fluxo exigir retorno ao mesmo recorte |
+| dashboard decorativo | todo indicador relevante deve apontar para detalhe/ação quando aplicável |
+| documentação concorrente | `docs/README.md` + precedência explícita |
+
+## 7. Regra para promover um item a PR
+
+1. confirmar o problema operacional real;
+2. verificar se a frente já existe em Production;
+3. ler o contrato técnico do domínio;
+4. aplicar o Radar de Inteligência Institucional;
+5. definir decisão de negócio afetada;
+6. definir arquivos permitidos/proibidos;
+7. escrever critérios de aceite técnicos e operacionais;
+8. criar PR isolado;
+9. validar CI/Preview/banco conforme o risco;
+10. atualizar documentação canônica se o estado ou decisão mudou.
