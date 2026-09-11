@@ -92,8 +92,8 @@ const repasses: RepasseFinanceiro[] = [
     ordem_exibicao: 1,
     valor_programado: 50,
     valor_pago: 50,
-    data_pagamento: "2026-05-12",
-    data_ordem_pagamento: "2026-05-11",
+    data_pagamento: "2026-06-12",
+    data_ordem_pagamento: "2026-06-11",
     conta_bancaria_id: "c3",
     banco: "001",
     agencia: "0001",
@@ -123,7 +123,7 @@ describe("buildDashboardFinanceiroOverview", () => {
     expect(overview.totalRepasses).toBe(4);
     expect(overview.totalContas).toBe(5);
     expect(overview.totalEscolas).toBe(2);
-    expect(overview.ultimaDataPagamento).toBe("2026-05-22");
+    expect(overview.ultimaDataPagamento).toBe("2026-06-12");
 
     expect(overview.primeiraParcela).toEqual({
       totalPago: 300,
@@ -131,6 +131,7 @@ describe("buildDashboardFinanceiroOverview", () => {
       custeioPago: 180,
       capitalPago: 120,
       detalhamentoCompleto: 2,
+      ultimaDataPagamento: "2026-05-22",
     });
 
     expect(overview.porPrograma).toEqual([

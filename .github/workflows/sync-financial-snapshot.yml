@@ -1,0 +1,50 @@
+name: Sync Financial Snapshot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 11 * * *"
+
+concurrency:
+  group: sync-financial-snapshot-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Validate and publish financial snapshot
+    if: github.event_name == 'workflow_dispatch' || vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      SUPABASE_URL: ${{ secrets.PDDE_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PDDE_SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate destination
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = "https://raluxyojqosfzrfozmpz.supabase.co"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - name: Validate snapshot without publishing
+        run: npm run sync:financial:snapshot -- --dry-run
+
+      - name: Publish mature dimensions
+        run: npm run sync:financial:snapshot
