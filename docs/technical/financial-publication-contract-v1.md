@@ -2,14 +2,14 @@
 
 ## Objetivo
 
-Transformar o `pdde-repasse-conciliador` de fornecedor ocasional de snapshots em motor contínuo de dados do PDDE Online, sem permitir que uma dimensão tecnicamente válida, porém incompleta ou imatura, altere silenciosamente a experiência operacional.
+Transformar o `pdde-repasse-conciliador` de fornecedor ocasional de snapshots em motor de dados do PDDE Online, sem permitir que uma dimensão tecnicamente válida, porém incompleta ou imatura, altere silenciosamente a experiência operacional.
 
 A publicação separa duas decisões:
 
 1. **qualidade técnica** da dimensão;
 2. **estado de publicação** da dimensão.
 
-A interface operacional continua consumindo apenas dados promovidos. Evidências, hashes, workflow IDs e detalhes de validação permanecem na camada interna de auditoria.
+A interface operacional consome apenas dados promovidos. Evidências, hashes, workflow IDs e detalhes de validação permanecem na camada interna de auditoria.
 
 ## Princípios
 
@@ -112,18 +112,69 @@ Como a chamada é uma função PostgreSQL única, qualquer exceção desfaz a op
 - uma dimensão atualmente `PUBLISHED` não pode cair abaixo do `coverage_required_ratio` sem mecanismo explícito de retirada/override, que fica fora da V1;
 - zero é valor somente quando veio explicitamente da fonte; `NULL` continua representando ausência de informação.
 
-## Automação
+## Taxonomia de programas e ações
 
-O PDDE Online possui um workflow próprio que:
+O transformador aceita os nomes canônicos que o motor publica, inclusive ações que podem chegar sem prefixo do programa:
 
-1. lê o manifesto publicado pelo `pdde-repasse-conciliador`;
-2. reidrata o snapshot `gzip-base64-parts`;
-3. transforma o contrato humano do motor no payload normalizado do PDDE Online;
-4. avalia localmente as dimensões para diagnóstico antecipado;
-5. chama a RPC transacional com credencial de backend;
-6. encerra sem alterações quando o workflow/artifact já foi publicado.
+- `Educação Conectada`, `Escola e Comunidade`, `Escola das Adolescências` e `Cantinho da Leitura` → PDDE Qualidade;
+- `PDDE SRM` → PDDE Equidade.
 
-A execução é **diária e também manual**, com `concurrency` para impedir publicações concorrentes. O workflow opera somente no projeto Supabase `raluxyojqosfzrfozmpz` e exige segredo de backend próprio. A ausência desse segredo bloqueia a automação, sem recorrer a escrita com chave `anon` ou permissões ampliadas.
+Essa classificação usa allowlist explícita. Rótulo desconhecido não é aceito por fallback genérico.
+
+## Workflow de sincronização
+
+O PDDE Online possui `.github/workflows/sync-financial-snapshot.yml`, que pode:
+
+1. ler o manifesto publicado pelo `pdde-repasse-conciliador`;
+2. reidratar o snapshot `gzip-base64-parts`;
+3. transformar o contrato humano do motor no payload normalizado do PDDE Online;
+4. avaliar localmente as dimensões para diagnóstico antecipado;
+5. validar que o destino é `https://raluxyojqosfzrfozmpz.supabase.co`;
+6. chamar a RPC transacional com credencial de backend;
+7. encerrar de forma idempotente quando workflow/artifact já foi publicado.
+
+### Estado operacional da automação em 11/09/2026
+
+O workflow possui dois gatilhos no YAML:
+
+- `workflow_dispatch`;
+- `schedule` diário (`17 11 * * *`).
+
+**Isso não significa que a publicação agendada esteja ativa.**
+
+O job possui esta condição:
+
+```text
+github.event_name == 'workflow_dispatch' || vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'
+```
+
+Portanto:
+
+- execução manual pode iniciar o job, mas a etapa `Validate destination` exige os secrets;
+- execução por `schedule` só entra no job se `PDDE_FINANCIAL_SYNC_ENABLED=true`;
+- o environment `production` precisa fornecer `PDDE_SUPABASE_URL` e `PDDE_SUPABASE_SERVICE_ROLE_KEY`;
+- ausência ou destino incorreto bloqueia a execução antes da publicação;
+- não existe fallback para chave `anon` nem autorização para ampliar permissões a fim de contornar secret ausente.
+
+### Procedimento para futura ativação agendada
+
+1. configurar os dois secrets no environment `production`;
+2. manter `PDDE_FINANCIAL_SYNC_ENABLED` desabilitado/ausente;
+3. executar `workflow_dispatch` controlado;
+4. validar dry-run, publicação, idempotência e invariantes do banco;
+5. somente depois definir `PDDE_FINANCIAL_SYNC_ENABLED=true`.
+
+## Estado validado da V1
+
+No fechamento do ciclo #129:
+
+- 163 escolas;
+- 335 contas;
+- 537 repasses;
+- cinco dimensões `MATURE/PUBLISHED` com cobertura 163/163;
+- RPC provada com primeira execução `published` e segunda `idempotent` em transação de teste com `ROLLBACK`;
+- execução da função restrita ao `service_role`;
+- replay completo das migrations e testes de contrato incorporados ao CI.
 
 ## Fronteira de responsabilidade
 
@@ -138,3 +189,10 @@ Transformação para o contrato operacional, avaliação de maturidade, publica�
 ### Frontend PDDE Online
 
 Consumo do contrato já promovido. Não decide maturidade e não exibe metadados técnicos na interface comum.
+
+## Documentos relacionados
+
+- `docs/technical/integracao-financeira-pdde-2026-v1.md`;
+- `docs/technical/repasses-operacionais-2026-v1.md`;
+- `docs/DECISIONS.md`;
+- `docs/README.md`.
