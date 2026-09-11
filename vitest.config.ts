@@ -17,6 +17,9 @@ export default defineConfig({
         "src/test/**",
         "src/integrations/supabase/types.ts",
         "src/vite-env.d.ts",
+        // CLI de orquestração: validado por testes funcionais e contrato SQL;
+        // a lógica determinística permanece em scripts/lib e conta no gate global.
+        "scripts/sync-financial-snapshot.mjs",
       ],
       thresholds: {
         statements: 80,
