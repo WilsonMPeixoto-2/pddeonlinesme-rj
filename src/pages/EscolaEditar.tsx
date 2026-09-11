@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,6 +30,7 @@ import { useUpdateUnidadeCadastro } from "@/hooks/useUpdateUnidadeCadastro";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
 import { getErrorMessage } from "@/lib/errors";
+import { resolveSafeEscolasReturn } from "@/lib/escolasNavigation";
 import { financeiroUnidadeOptions } from "@/lib/queryKeys";
 import type { UnidadeCadastroFormValues } from "@/lib/unidadeCadastro";
 import { cn } from "@/lib/utils";
@@ -87,6 +88,8 @@ export default function EscolaEditar() {
   const queryClient = useQueryClient();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = resolveSafeEscolasReturn(searchParams.get("return"));
   const { exercicio } = useExercicio();
   const [activeSection, setActiveSection] = useState<string>("identificacao");
   const [docsOpen, setDocsOpen] = useState(false);
@@ -335,7 +338,7 @@ export default function EscolaEditar() {
             icon={AlertCircle}
             title={`Unidade escolar não encontrada para o exercício ${exercicio} e programa ${programaLabel}.`}
             action={
-              <Button variant="outline" onClick={() => navigate("/escolas", { viewTransition: true })}>
+              <Button variant="outline" onClick={() => navigate(returnTo, { replace: true, viewTransition: true })}>
                 Voltar para o localizador
               </Button>
             }
@@ -354,7 +357,8 @@ export default function EscolaEditar() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <nav className="flex items-center gap-1.5 text-sm">
             <Link
-              to="/escolas"
+              to={returnTo}
+              replace
               viewTransition
               className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
             >

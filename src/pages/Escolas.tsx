@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useEffect, useDeferredValue } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,12 @@ import { useGerarDemonstrativosLote } from "@/hooks/useGerarDemonstrativosLote";
 import type { UnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { hasCadastroEssencialCompleto } from "@/lib/demonstrativo/mapUnidadeToMemoria";
 import { cn } from "@/lib/utils";
+import {
+  buildEscolasSearchParams,
+  buildSchoolDetailPath,
+  parseEscolasSearchParams,
+  type EscolasStatusFilter,
+} from "@/lib/escolasNavigation";
 import { saveAs } from "file-saver";
 
 const PROGRAMA = "basico";
@@ -52,7 +58,7 @@ const PROGRAMA = "basico";
 // O tipo vem do hook, que ja faz o narrowing de id/designacao no boundary.
 type Unidade = UnidadeLocalizador;
 
-type StatusFilter = "todas" | "completo" | "incompleto";
+type StatusFilter = EscolasStatusFilter;
 
 /* ─── Helpers ─── */
 
@@ -136,10 +142,24 @@ function SecondaryActions({
 
 export default function Escolas() {
   const navigate = useNavigate();
-  const [q, setQ] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = parseEscolasSearchParams(searchParams);
+  const q = filters.q;
+  const statusFilter: StatusFilter = filters.status;
   const [confirmLote, setConfirmLote] = useState(false);
   const { exercicio } = useExercicio();
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("todas");
+
+  const updateFilters = (next: { q?: string; status?: StatusFilter }) => {
+    const current = parseEscolasSearchParams(searchParams);
+    setSearchParams(buildEscolasSearchParams({ ...current, ...next }), { replace: true });
+  };
+  const setQ = (value: string) => updateFilters({ q: value });
+  const setStatusFilter = (value: StatusFilter) => updateFilters({ status: value });
+  const schoolDetailPath = (schoolId: string) =>
+    buildSchoolDetailPath(
+      schoolId,
+      buildEscolasSearchParams({ q, status: statusFilter }),
+    );
 
   // Documents panel state
   const [docsPanelOpen, setDocsPanelOpen] = useState(false);
@@ -197,6 +217,13 @@ export default function Escolas() {
   }, [error]);
 
   useEffect(() => {
+    const canonical = buildEscolasSearchParams({ q, status: statusFilter });
+    if (canonical.toString() !== searchParams.toString()) {
+      setSearchParams(canonical, { replace: true });
+    }
+  }, [q, searchParams, setSearchParams, statusFilter]);
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "/") return;
 
@@ -215,7 +242,7 @@ export default function Escolas() {
 
   const deferredQ = useDeferredValue(q);
 
-  const lista = useMemo(() => {
+  const lista = (() => {
     let filtered = unidades;
     if (deferredQ.trim()) {
       const lower = deferredQ.toLowerCase();
@@ -237,14 +264,13 @@ export default function Escolas() {
       filtered = filtered.filter((e) => getStatus(e, detalheByUnidadeId.get(e.id)) === statusFilter);
     }
     return filtered;
-  }, [detalheByUnidadeId, deferredQ, statusFilter, unidades]);
+  })();
 
   const isSearching =
     q.trim().length > 0 || statusFilter !== "todas";
 
   const clearFilters = () => {
-    setQ("");
-    setStatusFilter("todas");
+    setSearchParams(new URLSearchParams(), { replace: true });
   };
 
   const statusCounts = useMemo(() => {
@@ -587,7 +613,7 @@ export default function Escolas() {
                             <div className="flex flex-col gap-1">
                               <button
                                 type="button"
-                                onClick={() => navigate(`/escolas/${e.id}`, { viewTransition: true })}
+                                onClick={() => navigate(schoolDetailPath(e.id), { viewTransition: true })}
                                 title="Abrir cadastro completo"
                                 className="group/link inline-flex items-center gap-1.5 self-start rounded-sm text-left font-medium text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 transition-colors hover:decoration-primary hover:decoration-solid focus-visible:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                 aria-label={`Abrir cadastro de ${e.designacao}`}
@@ -638,8 +664,8 @@ export default function Escolas() {
                           </TableCell>
                           <TableCell className="text-right">
                             <SecondaryActions
-                              onEdit={() => navigate(`/escolas/${e.id}`, { viewTransition: true })}
-                              onView={() => navigate(`/escolas/${e.id}`, { viewTransition: true })}
+                              onEdit={() => navigate(schoolDetailPath(e.id), { viewTransition: true })}
+                              onView={() => navigate(schoolDetailPath(e.id), { viewTransition: true })}
                               onDelete={() => {
                                 toast.info(`Em breve: remover ${e.designacao}`);
                               }}
