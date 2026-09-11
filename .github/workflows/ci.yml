@@ -63,3 +63,34 @@ jobs:
 
       - name: Production vulnerability audit
         run: npm audit --omit=dev --audit-level=high
+
+  database-contract:
+    name: Supabase financial publication contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start local Supabase
+        run: npx supabase start
+
+      - name: Rebuild database from migrations
+        run: npx supabase db reset --local
+
+      - name: Database contract tests
+        run: npx supabase test db
+
+      - name: Stop local Supabase
+        if: always()
+        run: npx supabase stop --no-backup

@@ -23,7 +23,16 @@ GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticate
 GRANT EXECUTE ON FUNCTION public.list_admin_users() TO authenticated;
 
 -- Funções exclusivamente internas: não devem ser invocáveis via RPC.
-REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
+-- rls_auto_enable existe no projeto remoto por histórico operacional, mas não faz
+-- parte da cadeia local versionada. O replay deve continuar seguro nas duas formas.
+DO $$
+BEGIN
+  IF to_regprocedure('public.rls_auto_enable()') IS NOT NULL THEN
+    REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
+  END IF;
+END
+$$;
+
 REVOKE EXECUTE ON FUNCTION public.set_updated_at() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.tg_audit_contas_bancarias() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.tg_audit_unidades_escolares() FROM PUBLIC, anon, authenticated;

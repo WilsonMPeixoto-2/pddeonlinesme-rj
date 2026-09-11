@@ -21,6 +21,7 @@
     "supa:push": "supabase db push",
     "bootstrap:operator": "node scripts/bootstrap-operator.mjs",
     "import:base:remote": "node scripts/import-base-remote.mjs",
+    "sync:financial:snapshot": "node scripts/sync-financial-snapshot.mjs",
     "typecheck": "tsc --noEmit",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
