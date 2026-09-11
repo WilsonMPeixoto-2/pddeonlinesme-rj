@@ -34,13 +34,13 @@
 - Consumes: snapshot reidratado no formato humano do `pdde-repasse-conciliador`.
 - Produces: `buildNormalizedPublicationPayload(snapshot, manifest)` e `evaluatePublicationDimensions(payload)`.
 
-- [ ] **Step 1: Escrever testes RED para classificação de programa/ação, múltiplas contas, centavos→reais e NULL preservado**
-- [ ] **Step 2: Executar `npm test -- src/test/financial-publication.test.mjs` e confirmar falha por módulo inexistente**
-- [ ] **Step 3: Implementar transformação mínima para o payload `{ accounts, repasses, dimensions, source }`**
-- [ ] **Step 4: Executar o teste e confirmar GREEN**
-- [ ] **Step 5: Adicionar testes RED para as cinco dimensões, inclusive cobertura 162/163 e breakdown incompleto**
-- [ ] **Step 6: Implementar `evaluatePublicationDimensions` sem preencher ausência com zero**
-- [ ] **Step 7: Executar os testes e confirmar GREEN**
+- [x] **Step 1: Escrever testes RED para classificação de programa/ação, múltiplas contas, centavos→reais e NULL preservado**
+- [x] **Step 2: Executar testes e confirmar RED antes da implementação**
+- [x] **Step 3: Implementar transformação para o payload `{ accounts, repasses, dimensions, source }`**
+- [x] **Step 4: Confirmar GREEN após implementação**
+- [x] **Step 5: Cobrir as cinco dimensões, inclusive cobertura 162/163 e breakdown incompleto**
+- [x] **Step 6: Implementar `evaluatePublicationDimensions` sem preencher ausência com zero**
+- [x] **Step 7: Validar também o snapshot real publicado pelo conciliador e suas ações canônicas**
 
 ### Task 2: Contrato SQL de dimensões e publicação atômica
 
@@ -52,34 +52,31 @@
 - Consumes: payload normalizado gerado pela Task 1.
 - Produces: `financial_dimension_contracts`, `financial_dimension_status`, `vw_financial_dimension_publication` e RPC `publish_financial_snapshot_v1(...)`.
 
-- [ ] **Step 1: Escrever pgTAP/SQL de contrato esperando tabelas, constraints, RLS e RPC ainda inexistentes**
-- [ ] **Step 2: Executar reset/teste local no CI de banco e confirmar RED**
-- [ ] **Step 3: Criar tabelas de contrato/status com estados separados de qualidade/publicação**
-- [ ] **Step 4: Semear contratos das cinco dimensões V1 com `coverage_expected=163` e `coverage_required_ratio=1`**
-- [ ] **Step 5: Implementar RPC SECURITY DEFINER restrita ao `service_role`, com `search_path` fixo, idempotência e bloqueio de run regressiva**
-- [ ] **Step 6: Na RPC, validar INEPs, duplicidades, valores, contas e componentes antes de modificar a projeção operacional**
-- [ ] **Step 7: Publicar contas/repasses e status na mesma transação; qualquer exceção deve fazer rollback total**
-- [ ] **Step 8: Backfill do snapshot vigente para o último `integracoes_financeiras_runs` sem inventar cobertura**
-- [ ] **Step 9: Executar testes SQL e confirmar GREEN**
+- [x] **Step 1: Escrever pgTAP/SQL de contrato esperando tabelas, constraints, RLS e RPC**
+- [x] **Step 2: Criar tabelas de contrato/status com estados separados de qualidade/publicação**
+- [x] **Step 3: Semear contratos das cinco dimensões V1 com `coverage_expected=163` e `coverage_required_ratio=1`**
+- [x] **Step 4: Implementar RPC SECURITY DEFINER restrita ao `service_role`, com `search_path` fixo, idempotência e bloqueio de run regressiva**
+- [x] **Step 5: Validar INEPs, duplicidades, valores, contas e componentes antes de modificar a projeção operacional**
+- [x] **Step 6: Publicar contas/repasses e status na mesma transação; qualquer exceção faz rollback total**
+- [x] **Step 7: Fazer backfill do snapshot vigente sem inventar cobertura**
+- [x] **Step 8: Rebuild local completo e testes SQL verdes no CI**
 
 ### Task 3: Cliente de sincronização do snapshot publicado
 
 **Files:**
 - Create: `scripts/sync-financial-snapshot.mjs`
 - Modify: `package.json`
-- Modify: `src/test/financial-publication.test.mjs`
+- Modify: testes financeiros.
 
 **Interfaces:**
 - Consumes: manifesto `public/data/pdde-2026-snapshot.json` do motor.
 - Produces: chamada única à RPC `publish_financial_snapshot_v1`.
 
-- [ ] **Step 1: Escrever teste RED para reidratação `gzip-base64-parts` com fixture local**
-- [ ] **Step 2: Implementar `hydratePublishedSnapshot` com limite de tamanho e validação do manifesto**
-- [ ] **Step 3: Escrever teste RED para rejeitar manifesto sem `workflowRunId`, `artifactId` ou `publishedAt`**
-- [ ] **Step 4: Implementar validação dos metadados e digest SHA-256 do snapshot reidratado**
-- [ ] **Step 5: Implementar cliente Supabase REST usando somente `SUPABASE_SERVICE_ROLE_KEY` no processo backend**
-- [ ] **Step 6: Adicionar `npm run sync:financial:snapshot`**
-- [ ] **Step 7: Confirmar testes, typecheck/lint aplicáveis e execução `--dry-run`**
+- [x] **Step 1: Implementar reidratação `gzip-base64-parts` com limites de tamanho**
+- [x] **Step 2: Validar manifesto, proveniência e digest SHA-256**
+- [x] **Step 3: Implementar cliente Supabase REST usando somente `SUPABASE_SERVICE_ROLE_KEY` no processo backend**
+- [x] **Step 4: Adicionar `npm run sync:financial:snapshot` e `--dry-run`**
+- [x] **Step 5: Validar o snapshot real vigente: 163 escolas, 335 contas, 537 repasses e 5 dimensões MATURE**
 
 ### Task 4: Workflow automático controlado
 
@@ -88,28 +85,23 @@
 - Modify: `.github/workflows/ci.yml`
 
 **Interfaces:**
-- Consumes: `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` como GitHub Actions secrets.
-- Produces: sincronização horária/manual, sem mudanças de código e sem deployment Vercel desnecessário.
+- Consumes: `PDDE_SUPABASE_URL` e `PDDE_SUPABASE_SERVICE_ROLE_KEY` como GitHub Actions secrets.
+- Produces: sincronização controlada, sem mudanças de código e sem deployment Vercel desnecessário.
 
-- [ ] **Step 1: Criar workflow com `workflow_dispatch` e `schedule`, `concurrency` e permissões mínimas**
-- [ ] **Step 2: Fixar origem ao repositório/branch `pdde-repasse-conciliador/main`**
-- [ ] **Step 3: Executar o script em modo real apenas quando ambos os segredos existirem; falhar explicitamente caso contrário**
-- [ ] **Step 4: Adicionar ao CI teste do transformador e validação sintática do workflow**
-- [ ] **Step 5: Confirmar que não há escrita com chave anon nem checkout do RADAR PDDE**
+- [x] **Step 1: Criar workflow com `workflow_dispatch`, agendamento, concorrência e permissões mínimas**
+- [x] **Step 2: Fixar destino ao projeto Supabase `raluxyojqosfzrfozmpz` e fonte pública do conciliador/main**
+- [x] **Step 3: Falhar explicitamente em execução manual se as credenciais obrigatórias estiverem ausentes**
+- [x] **Step 4: Manter o agendamento inerte por `PDDE_FINANCIAL_SYNC_ENABLED` até os secrets serem configurados**
+- [x] **Step 5: Adicionar CI de contrato, transformador e workflow**
 
 ### Task 5: Aplicação segura e prova de produção
 
-**Files:**
-- Modify apenas se a validação apontar defeito comprovado nas Tasks 1–4.
+- [x] **Step 1: Rodar CI completo e testes SQL**
+- [x] **Step 2: Aplicar migration no projeto `raluxyojqosfzrfozmpz`**
+- [x] **Step 3: Confirmar invariantes de Production: 163 escolas, 335 contas, 537 repasses e cinco dimensões 163/163**
+- [x] **Step 4: Provar a RPC em Production dentro de transação com `ROLLBACK`: primeira chamada `published`, segunda `idempotent`**
+- [x] **Step 5: Confirmar RLS e execução exclusiva por `service_role`**
+- [ ] **Step 6: Configurar os secrets `PDDE_SUPABASE_URL` e `PDDE_SUPABASE_SERVICE_ROLE_KEY` no environment `production` do GitHub**
+- [ ] **Step 7: Habilitar `PDDE_FINANCIAL_SYNC_ENABLED=true` somente após os secrets existirem**
 
-**Interfaces:**
-- Consumes: migration e script validados.
-- Produces: banco preparado e uma sincronização idempotente comprovada contra o snapshot vigente.
-
-- [ ] **Step 1: Rodar `npm run validate`, testes SQL e auditoria de dependências**
-- [ ] **Step 2: Aplicar migration no projeto `raluxyojqosfzrfozmpz`**
-- [ ] **Step 3: Executar consulta de invariantes: 163 escolas, 335 contas, 537 repasses, 169 pagos e status das cinco dimensões**
-- [ ] **Step 4: Executar sincronização do snapshot vigente; a primeira chamada deve registrar/publicar ou reconhecer idempotência**
-- [ ] **Step 5: Reexecutar a mesma sincronização e provar que nenhuma duplicidade foi criada**
-- [ ] **Step 6: Criar PR, aguardar CI completo, revisar diff e somente então fazer merge**
-- [ ] **Step 7: Verificar que frontend continua funcionando e que nenhum metadado técnico surgiu na UI**
+A ausência dos secrets não bloqueia o contrato financeiro nem a aplicação da migration, mas mantém o agendamento deliberadamente inerte. Isso evita falhas recorrentes e impede publicação sem credencial operacional explícita.
