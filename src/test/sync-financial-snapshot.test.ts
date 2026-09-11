@@ -2,6 +2,7 @@ import { gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 
 import {
+  assertExpectedManifestProvenance,
   hydratePublishedSnapshot,
   validatePublishedManifest,
 } from "../../scripts/sync-financial-snapshot.mjs";
@@ -40,6 +41,48 @@ describe("snapshot financeiro publicado", () => {
 
     expect(() => validatePublishedManifest({ ...manifest, parts: ["../secret"] })).toThrow(/parte.*inválida/i);
     expect(() => validatePublishedManifest({ ...manifest, source: { ...source, artifactId: undefined } })).toThrow(/proveniência/i);
+  });
+
+  it("confere a proveniência esperada de um disparo orientado a evento", () => {
+    const { manifest } = fixture();
+
+    expect(
+      assertExpectedManifestProvenance(manifest, {
+        sourceRepository: "WilsonMPeixoto-2/pdde-repasse-conciliador",
+        workflowRunId: String(source.workflowRunId),
+        artifactId: String(source.artifactId),
+        artifactName: source.artifactName,
+        publishedAt: manifest.publishedAt,
+      }),
+    ).toEqual(manifest);
+
+    expect(() =>
+      assertExpectedManifestProvenance(manifest, {
+        sourceRepository: "outra-org/outro-repo",
+        workflowRunId: String(source.workflowRunId),
+      }),
+    ).toThrow(/repositório.*origem/i);
+
+    expect(() =>
+      assertExpectedManifestProvenance(manifest, {
+        sourceRepository: "WilsonMPeixoto-2/pdde-repasse-conciliador",
+        workflowRunId: "999",
+      }),
+    ).toThrow(/workflowRunId/i);
+
+    expect(() =>
+      assertExpectedManifestProvenance(manifest, {
+        sourceRepository: "WilsonMPeixoto-2/pdde-repasse-conciliador",
+        artifactId: "999",
+      }),
+    ).toThrow(/artifactId/i);
+
+    expect(() =>
+      assertExpectedManifestProvenance(manifest, {
+        sourceRepository: "WilsonMPeixoto-2/pdde-repasse-conciliador",
+        publishedAt: "2026-09-10T00:00:00.000Z",
+      }),
+    ).toThrow(/publishedAt/i);
   });
 
   it("reidrata gzip-base64-parts e calcula digest SHA-256 do JSON publicado", async () => {
