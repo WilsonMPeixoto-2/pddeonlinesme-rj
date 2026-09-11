@@ -1,5 +1,7 @@
 # PDDE Online 2026 — Plano Global v4.2
 
+> **STATUS DOCUMENTAL EM 11/09/2026:** este arquivo é a **baseline estratégica de maio/2026**. Seus marcos e decisões de direção continuam úteis para compreender a evolução do produto, mas os status, “próximas frentes” e sequência operacional abaixo são históricos. Para o estado corrente, use `docs/README.md` → `.continuity/current-state.json` → `docs/HANDOFF.md` → `docs/DECISIONS.md` → `docs/ROADMAP_ADAPTIVE.md`.
+
 Atualização estratégica após PRs #57–#71, modernização da stack e incorporação do Radar de Inteligência Institucional.
 
 | Campo | Informação |
