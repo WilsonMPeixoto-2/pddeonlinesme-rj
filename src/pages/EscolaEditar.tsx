@@ -338,7 +338,7 @@ export default function EscolaEditar() {
             icon={AlertCircle}
             title={`Unidade escolar não encontrada para o exercício ${exercicio} e programa ${programaLabel}.`}
             action={
-              <Button variant="outline" onClick={() => navigate(returnTo, { viewTransition: true })}>
+              <Button variant="outline" onClick={() => navigate(returnTo, { replace: true, viewTransition: true })}>
                 Voltar para o localizador
               </Button>
             }
@@ -358,6 +358,7 @@ export default function EscolaEditar() {
           <nav className="flex items-center gap-1.5 text-sm">
             <Link
               to={returnTo}
+              replace
               viewTransition
               className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
             >

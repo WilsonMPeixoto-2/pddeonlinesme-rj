@@ -242,7 +242,7 @@ export default function Escolas() {
 
   const deferredQ = useDeferredValue(q);
 
-  const lista = useMemo(() => {
+  const lista = (() => {
     let filtered = unidades;
     if (deferredQ.trim()) {
       const lower = deferredQ.toLowerCase();
@@ -264,7 +264,7 @@ export default function Escolas() {
       filtered = filtered.filter((e) => getStatus(e, detalheByUnidadeId.get(e.id)) === statusFilter);
     }
     return filtered;
-  }, [detalheByUnidadeId, deferredQ, statusFilter, unidades]);
+  })();
 
   const isSearching =
     q.trim().length > 0 || statusFilter !== "todas";
