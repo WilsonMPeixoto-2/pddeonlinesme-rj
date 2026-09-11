@@ -36,6 +36,6 @@ export function buildSchoolDetailPath(schoolId: string, searchParams: URLSearchP
 }
 
 export function resolveSafeEscolasReturn(value: string | null | undefined) {
-  if (!value || !value.startsWith("/escolas") || value.startsWith("//")) return "/escolas";
-  return value;
+  if (value === "/escolas" || value?.startsWith("/escolas?")) return value;
+  return "/escolas";
 }
