@@ -154,6 +154,128 @@ REVOKE ALL ON FUNCTION public.assert_financial_dimension_contract_v2(text, integ
 GRANT EXECUTE ON FUNCTION public.assert_financial_dimension_contract_v2(text, integer, integer)
   TO service_role;
 
+CREATE OR REPLACE FUNCTION public.record_optional_financial_dimensions_v2(
+  p_payload jsonb,
+  p_exercise integer,
+  p_run_id uuid,
+  p_digest text
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+BEGIN
+  IF p_payload ? 'observedDimensions'
+     AND jsonb_typeof(p_payload->'observedDimensions') IS DISTINCT FROM 'array' THEN
+    RAISE EXCEPTION 'observedDimensions deve ser um array JSON'
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+      FROM jsonb_to_recordset(coalesce(p_payload->'observedDimensions', '[]'::jsonb)) AS o(
+        "dimensionKey" text,
+        "coverageObserved" integer,
+        "referenceDateMin" date,
+        "referenceDateMax" date
+      )
+      LEFT JOIN public.financial_dimension_contracts AS c
+        ON c.dimension_key = o."dimensionKey"
+       AND c.exercise = p_exercise
+     WHERE c.dimension_key IS NULL
+        OR NOT c.enabled
+        OR c.required_for_core_publication
+        OR c.validator_key <> 'pending'
+        OR o."coverageObserved" IS NULL
+        OR o."coverageObserved" < 0
+        OR o."coverageObserved" > c.coverage_expected
+        OR (
+          o."referenceDateMin" IS NOT NULL
+          AND o."referenceDateMax" IS NOT NULL
+          AND o."referenceDateMin" > o."referenceDateMax"
+        )
+  ) THEN
+    RAISE EXCEPTION 'observacao de dimensao opcional invalida ou sem contrato pending habilitado'
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+      FROM jsonb_to_recordset(coalesce(p_payload->'observedDimensions', '[]'::jsonb)) AS o(
+        "dimensionKey" text,
+        "coverageObserved" integer,
+        "referenceDateMin" date,
+        "referenceDateMax" date
+      )
+     GROUP BY o."dimensionKey"
+    HAVING count(*) > 1
+  ) THEN
+    RAISE EXCEPTION 'observedDimensions contem dimensao duplicada'
+      USING ERRCODE = '23505';
+  END IF;
+
+  INSERT INTO public.financial_dimension_status (
+    dimension_key,
+    exercise,
+    integration_run_id,
+    coverage_observed,
+    coverage_expected,
+    coverage_ratio,
+    reference_date_min,
+    reference_date_max,
+    quality_status,
+    publication_status,
+    source_snapshot_digest,
+    validated_at,
+    published_at
+  )
+  SELECT
+    c.dimension_key,
+    p_exercise,
+    p_run_id,
+    o."coverageObserved",
+    c.coverage_expected,
+    least(o."coverageObserved"::numeric / c.coverage_expected::numeric, 1),
+    o."referenceDateMin",
+    o."referenceDateMax",
+    'COLLECTING',
+    'UNPUBLISHED',
+    p_digest,
+    now(),
+    NULL
+  FROM jsonb_to_recordset(coalesce(p_payload->'observedDimensions', '[]'::jsonb)) AS o(
+    "dimensionKey" text,
+    "coverageObserved" integer,
+    "referenceDateMin" date,
+    "referenceDateMax" date
+  )
+  JOIN public.financial_dimension_contracts AS c
+    ON c.dimension_key = o."dimensionKey"
+   AND c.exercise = p_exercise
+   AND c.enabled
+   AND NOT c.required_for_core_publication
+   AND c.validator_key = 'pending'
+  ON CONFLICT (dimension_key, integration_run_id) DO UPDATE
+    SET coverage_observed = EXCLUDED.coverage_observed,
+        coverage_expected = EXCLUDED.coverage_expected,
+        coverage_ratio = EXCLUDED.coverage_ratio,
+        reference_date_min = EXCLUDED.reference_date_min,
+        reference_date_max = EXCLUDED.reference_date_max,
+        quality_status = 'COLLECTING',
+        publication_status = 'UNPUBLISHED',
+        source_snapshot_digest = EXCLUDED.source_snapshot_digest,
+        validated_at = EXCLUDED.validated_at,
+        published_at = NULL,
+        withdrawn_at = NULL;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.record_optional_financial_dimensions_v2(jsonb, integer, uuid, text)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.record_optional_financial_dimensions_v2(jsonb, integer, uuid, text)
+  TO service_role;
+
 CREATE OR REPLACE FUNCTION public.publish_financial_snapshot_v1(p_payload jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -597,6 +719,10 @@ BEGIN
         USING ERRCODE = '23514';
     END IF;
 
+    PERFORM public.record_optional_financial_dimensions_v2(
+      p_payload, v_exercise, v_existing_run_id, v_digest
+    );
+
     IF (
       SELECT count(*) = (
         SELECT count(*)
@@ -876,108 +1002,9 @@ BEGIN
         withdrawn_at = NULL;
 
 
-  IF p_payload ? 'observedDimensions'
-     AND jsonb_typeof(p_payload->'observedDimensions') IS DISTINCT FROM 'array' THEN
-    RAISE EXCEPTION 'observedDimensions deve ser um array JSON'
-      USING ERRCODE = '22023';
-  END IF;
-
-  IF EXISTS (
-    SELECT 1
-      FROM jsonb_to_recordset(coalesce(p_payload->'observedDimensions', '[]'::jsonb)) AS o(
-        "dimensionKey" text,
-        "coverageObserved" integer,
-        "referenceDateMin" date,
-        "referenceDateMax" date
-      )
-      LEFT JOIN public.financial_dimension_contracts AS c
-        ON c.dimension_key = o."dimensionKey"
-       AND c.exercise = v_exercise
-     WHERE c.dimension_key IS NULL
-        OR NOT c.enabled
-        OR c.required_for_core_publication
-        OR c.validator_key <> 'pending'
-        OR o."coverageObserved" IS NULL
-        OR o."coverageObserved" < 0
-        OR o."coverageObserved" > c.coverage_expected
-        OR (
-          o."referenceDateMin" IS NOT NULL
-          AND o."referenceDateMax" IS NOT NULL
-          AND o."referenceDateMin" > o."referenceDateMax"
-        )
-  ) THEN
-    RAISE EXCEPTION 'observacao de dimensao opcional invalida ou sem contrato pending habilitado'
-      USING ERRCODE = '22023';
-  END IF;
-
-  IF EXISTS (
-    SELECT 1
-      FROM jsonb_to_recordset(coalesce(p_payload->'observedDimensions', '[]'::jsonb)) AS o(
-        "dimensionKey" text,
-        "coverageObserved" integer,
-        "referenceDateMin" date,
-        "referenceDateMax" date
-      )
-     GROUP BY o."dimensionKey"
-    HAVING count(*) > 1
-  ) THEN
-    RAISE EXCEPTION 'observedDimensions contem dimensao duplicada'
-      USING ERRCODE = '23505';
-  END IF;
-
-  INSERT INTO public.financial_dimension_status (
-    dimension_key,
-    exercise,
-    integration_run_id,
-    coverage_observed,
-    coverage_expected,
-    coverage_ratio,
-    reference_date_min,
-    reference_date_max,
-    quality_status,
-    publication_status,
-    source_snapshot_digest,
-    validated_at,
-    published_at
-  )
-  SELECT
-    c.dimension_key,
-    v_exercise,
-    v_run_id,
-    o."coverageObserved",
-    c.coverage_expected,
-    least(o."coverageObserved"::numeric / c.coverage_expected::numeric, 1),
-    o."referenceDateMin",
-    o."referenceDateMax",
-    'COLLECTING',
-    'UNPUBLISHED',
-    v_digest,
-    now(),
-    NULL
-  FROM jsonb_to_recordset(coalesce(p_payload->'observedDimensions', '[]'::jsonb)) AS o(
-    "dimensionKey" text,
-    "coverageObserved" integer,
-    "referenceDateMin" date,
-    "referenceDateMax" date
-  )
-  JOIN public.financial_dimension_contracts AS c
-    ON c.dimension_key = o."dimensionKey"
-   AND c.exercise = v_exercise
-   AND c.enabled
-   AND NOT c.required_for_core_publication
-   AND c.validator_key = 'pending'
-  ON CONFLICT (dimension_key, integration_run_id) DO UPDATE
-    SET coverage_observed = EXCLUDED.coverage_observed,
-        coverage_expected = EXCLUDED.coverage_expected,
-        coverage_ratio = EXCLUDED.coverage_ratio,
-        reference_date_min = EXCLUDED.reference_date_min,
-        reference_date_max = EXCLUDED.reference_date_max,
-        quality_status = 'COLLECTING',
-        publication_status = 'UNPUBLISHED',
-        source_snapshot_digest = EXCLUDED.source_snapshot_digest,
-        validated_at = EXCLUDED.validated_at,
-        published_at = NULL,
-        withdrawn_at = NULL;
+  PERFORM public.record_optional_financial_dimensions_v2(
+    p_payload, v_exercise, v_run_id, v_digest
+  );
 
   RETURN jsonb_build_object(
     'status', 'published',

@@ -1,6 +1,6 @@
 begin;
 
-select plan(33);
+select plan(34);
 
 select ok(
   to_regclass('public.financial_dimension_contracts') is not null,
@@ -290,6 +290,12 @@ select ok(
   'saldo 37/163 e armazenado como collecting/unpublished sem bloquear o nucleo'
 );
 
+delete from public.financial_dimension_status
+ where integration_run_id = (
+   select (result->>'integrationRunId')::uuid from _first_publication
+ )
+   and dimension_key = 'bank_balance_positions';
+
 create temp table _second_publication as
 select public.publish_financial_snapshot_v1(payload) as result
 from _financial_payload;
@@ -298,6 +304,21 @@ select is(
   (select result->>'status' from _second_publication),
   'idempotent',
   'segunda chamada da mesma proveniencia e idempotente'
+);
+
+select ok(
+  exists (
+    select 1
+      from public.financial_dimension_status
+     where integration_run_id = (
+       select (result->>'integrationRunId')::uuid from _second_publication
+     )
+       and dimension_key = 'bank_balance_positions'
+       and coverage_observed = 37
+       and quality_status = 'COLLECTING'
+       and publication_status = 'UNPUBLISHED'
+  ),
+  'chamada idempotente reconcilia observacao opcional ausente da mesma proveniencia'
 );
 
 select is(
