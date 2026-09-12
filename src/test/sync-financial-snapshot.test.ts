@@ -14,17 +14,23 @@ const source = {
   artifactName: "sigef-full-163-2026",
 };
 
-const coreContract = {
-  dimensionKey: "bank_accounts",
+const coreContracts = [
+  ["bank_accounts", "bank_accounts_v1"],
+  ["scheduled_repasses", "scheduled_repasses_v1"],
+  ["pdde_basic_first_installment", "pdde_basic_first_installment_v1"],
+  ["pdde_basic_first_installment_breakdown", "pdde_basic_first_installment_breakdown_v1"],
+  ["pdde_basic_second_installment_programmed", "pdde_basic_second_installment_programmed_v1"],
+].map(([dimensionKey, validatorKey]) => ({
+  dimensionKey,
   exercise: 2026,
   contractVersion: 2,
   coverageExpected: 163,
   coverageRequiredRatio: 1,
-  requirements: { requires_account_identity: true },
+  requirements: {},
   enabled: true,
   requiredForCorePublication: true,
-  validatorKey: "bank_accounts_v1",
-};
+  validatorKey,
+}));
 
 function fixture() {
   const snapshot = {
@@ -133,8 +139,7 @@ describe("snapshot financeiro publicado", () => {
   it("busca contratos financeiros somente no Supabase oficial com service_role", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => [coreContract],
-      text: async () => JSON.stringify([coreContract]),
+      text: async () => JSON.stringify(coreContracts),
     });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -143,7 +148,7 @@ describe("snapshot financeiro publicado", () => {
         SUPABASE_URL: "https://raluxyojqosfzrfozmpz.supabase.co",
         SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
       }),
-    ).resolves.toEqual([coreContract]);
+    ).resolves.toEqual(coreContracts);
 
     expect(fetchMock).toHaveBeenCalledWith(
       "https://raluxyojqosfzrfozmpz.supabase.co/rest/v1/rpc/get_financial_dimension_contracts_v1",
