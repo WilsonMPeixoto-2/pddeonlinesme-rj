@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import {
   buildNormalizedPublicationPayload,
   evaluatePublicationDimensions,
+  validateFinancialDimensionContracts,
 } from "./lib/financial-publication.mjs";
 
 const EXPECTED_SOURCE_REPOSITORY = "WilsonMPeixoto-2/pdde-repasse-conciliador";
@@ -13,6 +14,7 @@ const ENGINE_DATA_ROOT = `https://raw.githubusercontent.com/${EXPECTED_SOURCE_RE
 const MANIFEST_URL = `${ENGINE_DATA_ROOT}/pdde-2026-snapshot.json`;
 const EXPECTED_ARTIFACT_NAME = "sigef-full-163-2026";
 const EXPECTED_SUPABASE_URL = "https://raluxyojqosfzrfozmpz.supabase.co";
+const CURRENT_EXERCISE = 2026;
 const DEFAULT_LIMITS = {
   maxEncodedBytes: 20 * 1024 * 1024,
   maxCompressedBytes: 10 * 1024 * 1024,
@@ -184,6 +186,16 @@ async function fetchText(url) {
   return response.text();
 }
 
+function backendCredentials(env) {
+  const supabaseUrl = String(env.SUPABASE_URL ?? "").replace(/\/$/, "");
+  const serviceRoleKey = String(env.SUPABASE_SERVICE_ROLE_KEY ?? "");
+  if (supabaseUrl !== EXPECTED_SUPABASE_URL) {
+    throw new Error("SUPABASE_URL não corresponde ao projeto PDDE Online autorizado.");
+  }
+  if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada.");
+  return { supabaseUrl, serviceRoleKey };
+}
+
 export async function fetchLatestPublishedSnapshot() {
   const manifest = validatePublishedManifest(await fetchJson(MANIFEST_URL));
   const hydrated = await hydratePublishedSnapshot(
@@ -193,9 +205,37 @@ export async function fetchLatestPublishedSnapshot() {
   return { manifest, ...hydrated };
 }
 
-export function prepareFinancialPublicationPayload(snapshot, manifest, snapshotDigest) {
+export async function fetchFinancialDimensionContracts(env = process.env) {
+  const { supabaseUrl, serviceRoleKey } = backendCredentials(env);
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/get_financial_dimension_contracts_v1`, {
+    method: "POST",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ p_exercise: CURRENT_EXERCISE }),
+    redirect: "error",
+    signal: AbortSignal.timeout(30_000),
+  });
+  const responseText = await response.text();
+  if (!response.ok) {
+    throw new Error(`Supabase recusou a leitura dos contratos financeiros: HTTP ${response.status} ${responseText.slice(0, 500)}`);
+  }
+
+  let contracts;
+  try {
+    contracts = responseText ? JSON.parse(responseText) : null;
+  } catch (error) {
+    throw new Error(`Supabase retornou contratos financeiros inválidos: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  return validateFinancialDimensionContracts(contracts);
+}
+
+export function prepareFinancialPublicationPayload(snapshot, manifest, snapshotDigest, contracts) {
   const payload = buildNormalizedPublicationPayload(snapshot, manifest);
-  const dimensions = evaluatePublicationDimensions(payload);
+  const dimensions = evaluatePublicationDimensions(payload, contracts);
   const blocked = dimensions.filter((dimension) => dimension.qualityStatus !== "MATURE");
   if (blocked.length > 0) {
     throw new Error(
@@ -210,13 +250,7 @@ export function prepareFinancialPublicationPayload(snapshot, manifest, snapshotD
 }
 
 export async function publishFinancialPayload(payload, env = process.env) {
-  const supabaseUrl = String(env.SUPABASE_URL ?? "").replace(/\/$/, "");
-  const serviceRoleKey = String(env.SUPABASE_SERVICE_ROLE_KEY ?? "");
-  if (supabaseUrl !== EXPECTED_SUPABASE_URL) {
-    throw new Error("SUPABASE_URL não corresponde ao projeto PDDE Online autorizado.");
-  }
-  if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada.");
-
+  const { supabaseUrl, serviceRoleKey } = backendCredentials(env);
   const response = await fetch(`${supabaseUrl}/rest/v1/rpc/publish_financial_snapshot_v1`, {
     method: "POST",
     headers: {
@@ -246,7 +280,8 @@ async function main() {
     artifactName: process.env.EXPECTED_ARTIFACT_NAME,
     publishedAt: process.env.EXPECTED_PUBLISHED_AT,
   });
-  const payload = prepareFinancialPublicationPayload(snapshot, manifest, snapshotDigest);
+  const contracts = await fetchFinancialDimensionContracts();
+  const payload = prepareFinancialPublicationPayload(snapshot, manifest, snapshotDigest, contracts);
   const summary = {
     mode: dryRun ? "dry-run" : "publish",
     exercise: payload.exercise,

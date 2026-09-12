@@ -22,6 +22,24 @@ type Account = {
   account: string | null;
 };
 
+const contracts = [
+  ["bank_accounts", "bank_accounts_v1"],
+  ["scheduled_repasses", "scheduled_repasses_v1"],
+  ["pdde_basic_first_installment", "pdde_basic_first_installment_v1"],
+  ["pdde_basic_first_installment_breakdown", "pdde_basic_first_installment_breakdown_v1"],
+  ["pdde_basic_second_installment_programmed", "pdde_basic_second_installment_programmed_v1"],
+].map(([dimensionKey, validatorKey]) => ({
+  dimensionKey,
+  exercise: 2026,
+  contractVersion: 2,
+  coverageExpected: 163,
+  coverageRequiredRatio: 1,
+  requirements: {},
+  enabled: true,
+  requiredForCorePublication: true,
+  validatorKey,
+}));
+
 function buildPayload(count = 163) {
   const schools = Array.from({ length: count }, (_, index) => ({
     inep: String(33000000 + index).padStart(8, "0"),
@@ -79,7 +97,7 @@ function byKey(statuses: Array<{ dimensionKey: string }>, key: string) {
 
 describe("evaluatePublicationDimensions", () => {
   it("marca como MATURE as cinco dimensões V1 quando a cobertura é 163/163", () => {
-    const statuses = evaluatePublicationDimensions(buildPayload());
+    const statuses = evaluatePublicationDimensions(buildPayload(), contracts);
 
     expect(statuses.map((item: { dimensionKey: string }) => item.dimensionKey)).toEqual([
       "bank_accounts",
@@ -107,7 +125,10 @@ describe("evaluatePublicationDimensions", () => {
       !(row.inep === payload.schools[162].inep && row.installment === "1ª Parcela"),
     );
 
-    const status = byKey(evaluatePublicationDimensions(payload), "pdde_basic_first_installment");
+    const status = byKey(
+      evaluatePublicationDimensions(payload, contracts),
+      "pdde_basic_first_installment",
+    );
 
     expect(status.coverageObserved).toBe(162);
     expect(status.coverageRatio).toBeCloseTo(162 / 163);
@@ -121,7 +142,7 @@ describe("evaluatePublicationDimensions", () => {
     if (!first) throw new Error("fixture inválida");
     first.paidCapital = null;
 
-    const statuses = evaluatePublicationDimensions(payload);
+    const statuses = evaluatePublicationDimensions(payload, contracts);
 
     expect(byKey(statuses, "pdde_basic_first_installment").qualityStatus).toBe("MATURE");
     const breakdown = byKey(statuses, "pdde_basic_first_installment_breakdown");
@@ -136,7 +157,7 @@ describe("evaluatePublicationDimensions", () => {
     first.paidCapital = 3999;
 
     const breakdown = byKey(
-      evaluatePublicationDimensions(payload),
+      evaluatePublicationDimensions(payload, contracts),
       "pdde_basic_first_installment_breakdown",
     );
 
@@ -154,7 +175,7 @@ describe("evaluatePublicationDimensions", () => {
       account: "99999-9",
     });
 
-    const accounts = byKey(evaluatePublicationDimensions(payload), "bank_accounts");
+    const accounts = byKey(evaluatePublicationDimensions(payload, contracts), "bank_accounts");
 
     expect(accounts.coverageObserved).toBe(163);
     expect(accounts.qualityStatus).toBe("REJECTED");

@@ -1,7 +1,7 @@
 {
   "project": "PDDE Online 2026",
   "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
-  "updated_at": "2026-09-11T13:30:00-03:00",
+  "updated_at": "2026-09-11T21:15:00-03:00",
   "source_of_truth": {
     "rule": "Codigo, schema/migrations, banco verificado, CI e deployment real prevalecem sobre documentacao.",
     "documentation_entrypoint": "docs/README.md",
@@ -10,24 +10,24 @@
     "note": "Este arquivo e snapshot operacional estruturado; confirmar estado dinamico antes de agir."
   },
   "application_baseline": {
-    "main_commit_before_documentation_reconciliation": "b60fb04b360eefb7dc0d92cc39064ee8a019724b",
-    "production_commit_verified": "b60fb04b360eefb7dc0d92cc39064ee8a019724b",
-    "production_deployment": "dpl_FdQY3St4xHQpSgept47jobMcvE4Y",
-    "production_status": "READY",
+    "main_commit_verified": "83f069a1f1f0d38c3937fc76fa001bb602bf315b",
+    "production_scope": "PR #134 integrada: receptor orientado a evento para snapshot financeiro, com validacao de proveniencia e fallback agendado.",
     "public_url": "https://pddeonlinesme-rj.vercel.app",
-    "public_smoke": "HTTP 200 verificado apos o deploy do ciclo #132",
-    "runtime_errors_observed": 0,
-    "note": "PR documental posterior pode alterar o SHA de main sem alterar o baseline funcional da aplicacao."
+    "vercel_checks": "success no commit da PR #134",
+    "runtime_errors_observed": 0
   },
   "supabase": {
     "project_ref": "raluxyojqosfzrfozmpz",
-    "schools": 163,
-    "bank_accounts": 335,
-    "financial_repasses": 537,
-    "financial_dimensions_v1": {
-      "mature_published": 5,
+    "last_verified_v1_baseline": {
+      "schools": 163,
+      "bank_accounts": 335,
+      "financial_repasses": 537,
+      "mature_published_dimensions": 5,
       "coverage": "163/163"
-    }
+    },
+    "production_connector_status": "indisponivel nesta sessao: Connection terminated due to connection timeout inclusive para SELECT 1",
+    "v2_migration_applied_to_production": false,
+    "rule": "Nao interpretar timeout do conector como falha do banco e nao aplicar/mergear V2 sem preflight e postflight remotos."
   },
   "recent_product_cycle": [
     {
@@ -53,21 +53,66 @@
       "status": "merged_and_production",
       "title": "contexto da carteira de escolas",
       "note": "Preserva q/status ao abrir e retornar da ficha; return interno validado."
+    },
+    {
+      "pull_request": 134,
+      "status": "merged_and_deployed",
+      "title": "receber publicacao financeira por evento",
+      "merge_commit": "83f069a1f1f0d38c3937fc76fa001bb602bf315b",
+      "note": "Repository dispatch validado contra manifesto; service_role permanece no PDDE Online; fallback diario preservado."
+    },
+    {
+      "pull_request": 135,
+      "status": "draft_ci_green_pending_production_database_rollout",
+      "title": "contrato financeiro por dimensao V2",
+      "head": "c5e4b2ad670339dfcd9ff3472159adc4c4417824",
+      "ci_run": 34661683179,
+      "note": "CI completo verde, incluindo replay de migrations e 33/33 pgTAP. Migration V2 ainda nao aplicada ao Supabase de Production por timeout do conector; nao mergear antes de preflight, apply e postflight remotos."
     }
   ],
-  "open_product_pull_requests_at_reconciliation_start": 0,
+  "external_financial_engine": {
+    "repository": "WilsonMPeixoto-2/pdde-repasse-conciliador",
+    "handoff_pull_request": 63,
+    "merge_commit": "493675bb9ab1489de7cf2a54f3c1daec9a167b9c",
+    "validation_before_merge": {
+      "full_163_run": 34650468953,
+      "artifact_id": 10284956280,
+      "artifact_name": "sigef-full-163-2026",
+      "result": "success"
+    },
+    "post_merge_full_163_run": 34660888836,
+    "post_merge_run_status_at_checkpoint": "in_progress",
+    "schedule": "07:05 America/Sao_Paulo",
+    "schedule_enabled": false,
+    "enable_condition": "vars.PDDE_FULL_163_SCHEDULE_ENABLED == 'true'",
+    "dispatch_secret": "PDDE_ONLINE_DISPATCH_TOKEN"
+  },
   "financial_publication": {
     "source_project": "WilsonMPeixoto-2/pdde-repasse-conciliador",
     "workflow": ".github/workflows/sync-financial-snapshot.yml",
-    "schedule_defined": true,
-    "scheduled_publication_enabled": false,
+    "automatic_primary_trigger": "repository_dispatch financial-snapshot-published-v1",
+    "fallback_schedule": "10:30 America/Sao_Paulo",
+    "automatic_publication_enabled": false,
     "enable_condition": "vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'",
     "required_secrets": [
       "PDDE_SUPABASE_URL",
       "PDDE_SUPABASE_SERVICE_ROLE_KEY"
     ],
-    "manual_execution": "Permitida pelo workflow_dispatch, mas falha antes de publicar se os secrets esperados nao estiverem configurados.",
-    "rule": "Nao descrever a sincronizacao automatica como ativa enquanto gate e credenciais nao estiverem configurados."
+    "manual_execution": "Permitida para homologacao, mas exige os secrets e destino oficial antes de publicar.",
+    "rule": "Nao descrever a sincronizacao automatica como ativa enquanto gates e credenciais externas nao estiverem configurados."
+  },
+  "financial_dimension_contract_v2": {
+    "status": "implemented_and_ci_validated_not_in_production",
+    "pull_request": 135,
+    "migration": "20260911220000_financial_dimension_contract_v2.sql",
+    "core_required_dimensions": 5,
+    "optional_initial_dimension": "bank_balance_positions",
+    "optional_initial_state": "validator_key=pending, required_for_core_publication=false",
+    "worker_reads_contracts_from_backend": true,
+    "thresholds_from_database": true,
+    "semantic_validators_remain_in_code_sql": true,
+    "ci_evidence": "run 34661683179 success: app/E2E/accessibility + full migration replay + 33/33 pgTAP",
+    "production_gate": "Aplicar migration e validar invariantes remotos antes de mergear a PR #135."
   },
   "business_invariants": [
     "Dados -> analise -> escola -> acao -> evidencia.",
@@ -75,33 +120,28 @@
     "Publicar somente dimensoes maduras/validadas.",
     "Nao expor universo parcial como completo.",
     "Preservar multiplas contas por escola/programa.",
-    "Hierarquia financeira: programa -> acao -> parcela -> conta.",
+    "Hierarquia financeira: escola -> programa -> acao -> parcela -> conta.",
     "Proveniencia tecnica permanece fora da superficie operacional comum.",
     "Indicadores relevantes devem conduzir a detalhe, filtro ou acao.",
-    "Busca global so anuncia areas e entidades reais.",
+    "Contrato quantitativo no banco nao substitui validador semantico deterministico.",
+    "Dimensao opcional pending nunca e promovida automaticamente.",
     "Filtros/contexto operacional devem sobreviver ao drill-down quando reduzem retrabalho."
   ],
-  "documentation_governance": {
-    "reconciliation_pull_request": 133,
-    "entrypoint": "docs/README.md",
-    "canonical_decisions": "docs/DECISIONS.md",
-    "historical_decisions": "docs/DECISIONS_LOG.md",
-    "strategic_baseline": "docs/PLANO_GLOBAL_V4_2.md",
-    "rule": "Planos, specs, backlogs e handoffs datados nao determinam estado corrente."
-  },
   "current_priorities": [
-    "Manter o roteiro obrigatorio de leitura e evitar novas fontes concorrentes de estado/decisoes.",
-    "Executar smoke autenticado periodico dos fluxos criticos em Production.",
-    "Configurar secrets do workflow financeiro e realizar ativacao controlada somente quando houver decisao operacional para automatizar.",
+    "Restaurar acesso de administracao ao Supabase oficial e concluir rollout controlado da PR #135.",
+    "Depois do rollout V2, executar homologacao manual da sincronizacao financeira antes de habilitar qualquer recorrencia automatica.",
+    "Configurar externamente, quando aprovado, os secrets/variables do motor e do PDDE Online sem registrar valores em codigo ou chat.",
     "Continuar hardening de Auth/RLS/auditoria antes de ampliar o Portal do Diretor.",
-    "Tratar novas dimensoes financeiras, documentos e frente fiscal apenas quando houver contrato e cobertura adequados."
+    "Adicionar novas dimensoes financeiras somente com observacao confiavel, contrato e validador semantico explicito."
   ],
   "protected_scope": [
     "Nao trocar o projeto Supabase oficial.",
     "Nao misturar este repositorio com RADAR PDDE, POPs ou outros projetos.",
-    "Nao usar service_role no browser.",
+    "Nao usar service_role no browser nem no motor externo.",
     "Nao converter NULL financeiro em zero.",
     "Nao publicar dimensao financeira imatura.",
+    "Nao promover validator_key=pending.",
+    "Nao mergear schema que ainda nao foi aplicado/verificado no banco remoto quando o rollout exigir migration-first.",
     "Nao alterar Auth, RLS, secrets, regras financeiras ou templates oficiais sem revisao humana."
   ]
 }
