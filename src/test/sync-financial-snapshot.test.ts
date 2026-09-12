@@ -1,8 +1,9 @@
 import { gzipSync } from "node:zlib";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   assertExpectedManifestProvenance,
+  fetchFinancialDimensionContracts,
   hydratePublishedSnapshot,
   validatePublishedManifest,
 } from "../../scripts/sync-financial-snapshot.mjs";
@@ -11,6 +12,18 @@ const source = {
   workflowRunId: 34355577593,
   artifactId: 10107480089,
   artifactName: "sigef-full-163-2026",
+};
+
+const coreContract = {
+  dimensionKey: "bank_accounts",
+  exercise: 2026,
+  contractVersion: 2,
+  coverageExpected: 163,
+  coverageRequiredRatio: 1,
+  requirements: { requires_account_identity: true },
+  enabled: true,
+  requiredForCorePublication: true,
+  validatorKey: "bank_accounts_v1",
 };
 
 function fixture() {
@@ -33,6 +46,10 @@ function fixture() {
   const values = new Map(manifest.parts.map((path, index) => [path, parts[index]]));
   return { snapshot, raw, manifest, values };
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("snapshot financeiro publicado", () => {
   it("valida proveniência e restringe partes ao diretório público esperado", () => {
@@ -111,5 +128,38 @@ describe("snapshot financeiro publicado", () => {
         { maxRawBytes: 16 },
       ),
     ).rejects.toThrow(/limite/i);
+  });
+
+  it("busca contratos financeiros somente no Supabase oficial com service_role", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [coreContract],
+      text: async () => JSON.stringify([coreContract]),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      fetchFinancialDimensionContracts({
+        SUPABASE_URL: "https://raluxyojqosfzrfozmpz.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+      }),
+    ).resolves.toEqual([coreContract]);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://raluxyojqosfzrfozmpz.supabase.co/rest/v1/rpc/get_financial_dimension_contracts_v1",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ p_exercise: 2026 }),
+      }),
+    );
+  });
+
+  it("falha fechado para destino Supabase não autorizado", async () => {
+    await expect(
+      fetchFinancialDimensionContracts({
+        SUPABASE_URL: "https://outro-projeto.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+      }),
+    ).rejects.toThrow(/projeto PDDE Online autorizado/i);
   });
 });
