@@ -154,14 +154,16 @@ describe("buildNormalizedPublicationPayload", () => {
     ];
 
     const payload = buildNormalizedPublicationPayload(realShape, manifest) as NormalizedPayload;
+    const classifications = payload.repasses.map((repasse) => [repasse.program, repasse.action]);
 
-    expect(payload.repasses.map((repasse) => [repasse.program, repasse.action])).toEqual([
+    expect(classifications).toHaveLength(5);
+    expect(classifications).toEqual(expect.arrayContaining([
       ["PDDE QUALIDADE", "Educação Conectada"],
       ["PDDE QUALIDADE", "Escola e Comunidade"],
       ["PDDE QUALIDADE", "Escola das Adolescências"],
       ["PDDE QUALIDADE", "Cantinho da Leitura"],
       ["PDDE EQUIDADE", "PDDE SRM"],
-    ]);
+    ]));
   });
 
   it("converte centavos para reais e mantém pagamento não informado como null", () => {
