@@ -7,15 +7,12 @@ export type {
 } from "@/lib/queryKeys";
 
 /**
- * Marco 9B: resumo das unidades para o Dashboard a partir de
- * public.vw_unidades_localizador.
+ * Resumo cadastral do Dashboard a partir de public.vw_unidades_localizador.
  *
- * Usa três queries paralelas para minimizar payload e latência:
- *   1. 5 mais recentes por updated_at (limit server-side).
- *   2. Contagem total via HEAD (sem transferência de linhas).
- *   3. Contagem de cadastros completos (INEP + CNPJ + diretor não-nulos) via HEAD.
- *
- * Não consulta unidades_escolares diretamente.
+ * A carteira da 4ª CRE é pequena e predominantemente estática. Uma única
+ * leitura consolidada substitui as três chamadas anteriores (lista recente +
+ * dois COUNT exact), e o React Query mantém o resultado fresco por 15 minutos.
+ * O resumo e os cinco registros recentes são derivados em memória.
  */
 export function useDashboardUnidadesResumo() {
   return useQuery(dashboardUnidadesResumoOptions());
