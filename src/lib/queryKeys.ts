@@ -8,6 +8,7 @@ import {
   type ProgramaFinanceiro,
   type RepasseFinanceiro,
 } from "@/lib/financeiroPDDE";
+import { DASHBOARD_QUERY_POLICY } from "@/lib/queryPolicy";
 
 export type DashboardBasico = Tables<"vw_dashboard_basico">;
 export type UnidadeDetalhe = Tables<"vw_unidade_detalhe">;
@@ -64,8 +65,6 @@ const REPASSE_COLUMNS = [
   "id", "unidade_id", "designacao", "nome", "inep", "exercicio", "programa", "acao", "parcela", "ordem_exibicao", "valor_programado", "valor_pago", "data_pagamento", "data_ordem_pagamento", "conta_bancaria_id", "banco", "agencia", "conta_corrente", "custeio_programado", "capital_programado", "custeio_pago", "capital_pago",
 ].join(", ");
 
-const DASHBOARD_STALE_TIME = 15 * 60 * 1000;
-
 function toRepasseFinanceiro(row: Tables<"vw_repasses_financeiros_unidade">): RepasseFinanceiro | null {
   if (!row.id || !row.unidade_id || row.exercicio === null || !row.programa || !row.acao || !row.parcela || row.ordem_exibicao === null || row.valor_programado === null) return null;
   return {
@@ -102,7 +101,7 @@ export const dashboardBasicoOptions = (exercicio: number, programa: string) => q
     if (error) throw new Error(error.message);
     return data ?? null;
   },
-  staleTime: DASHBOARD_STALE_TIME,
+  ...DASHBOARD_QUERY_POLICY,
 });
 
 const RECENTES_LIMIT = 5;
@@ -131,7 +130,7 @@ export const dashboardUnidadesResumoOptions = () => queryOptions<DashboardUnidad
       cadastroIncompletoCount: unidades.length - cadastroCompletoCount,
     };
   },
-  staleTime: DASHBOARD_STALE_TIME,
+  ...DASHBOARD_QUERY_POLICY,
 });
 
 export const unidadesDetalheListaOptions = (exercicio: number, programa: string) => queryOptions<UnidadeDetalhe[], Error>({
