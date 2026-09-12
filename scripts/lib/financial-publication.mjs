@@ -1,6 +1,14 @@
 const CURRENT_EXERCISE = 2026;
 const EXPECTED_SCHOOLS = 163;
 
+const CORE_DIMENSION_VALIDATORS = new Map([
+  ["bank_accounts", "bank_accounts_v1"],
+  ["scheduled_repasses", "scheduled_repasses_v1"],
+  ["pdde_basic_first_installment", "pdde_basic_first_installment_v1"],
+  ["pdde_basic_first_installment_breakdown", "pdde_basic_first_installment_breakdown_v1"],
+  ["pdde_basic_second_installment_programmed", "pdde_basic_second_installment_programmed_v1"],
+]);
+
 function normalizedText(value) {
   return String(value ?? "")
     .normalize("NFD")
@@ -209,13 +217,85 @@ function dateBounds(rows) {
   };
 }
 
-function dimensionStatus(dimensionKey, coverageObserved, { rejected = false, dates = [] } = {}) {
-  const coverageRatio = Math.min(coverageObserved / EXPECTED_SCHOOLS, 1);
-  const mature = !rejected && coverageObserved >= EXPECTED_SCHOOLS;
+function normalizeContract(contract) {
+  if (!contract || typeof contract !== "object" || Array.isArray(contract)) {
+    throw new Error("Contrato financeiro inválido.");
+  }
+
+  const normalized = {
+    dimensionKey: String(contract.dimensionKey ?? "").trim(),
+    exercise: Number(contract.exercise),
+    contractVersion: Number(contract.contractVersion),
+    coverageExpected: Number(contract.coverageExpected),
+    coverageRequiredRatio: Number(contract.coverageRequiredRatio),
+    requirements: contract.requirements ?? {},
+    enabled: contract.enabled === true,
+    requiredForCorePublication: contract.requiredForCorePublication === true,
+    validatorKey: String(contract.validatorKey ?? "").trim(),
+  };
+
+  if (
+    !normalized.dimensionKey ||
+    normalized.exercise !== CURRENT_EXERCISE ||
+    !Number.isInteger(normalized.contractVersion) ||
+    normalized.contractVersion <= 0 ||
+    !Number.isInteger(normalized.coverageExpected) ||
+    normalized.coverageExpected <= 0 ||
+    !Number.isFinite(normalized.coverageRequiredRatio) ||
+    normalized.coverageRequiredRatio <= 0 ||
+    normalized.coverageRequiredRatio > 1 ||
+    !normalized.validatorKey
+  ) {
+    throw new Error(`Contrato financeiro inválido: ${normalized.dimensionKey || "(sem chave)"}.`);
+  }
+
+  return normalized;
+}
+
+export function validateFinancialDimensionContracts(contracts) {
+  if (!Array.isArray(contracts)) {
+    throw new Error("Lista de contratos financeiros não informada.");
+  }
+
+  const normalized = contracts.map(normalizeContract);
+  const byKey = new Map();
+  for (const contract of normalized) {
+    if (byKey.has(contract.dimensionKey)) {
+      throw new Error(`Contrato financeiro duplicado: ${contract.dimensionKey}.`);
+    }
+    byKey.set(contract.dimensionKey, contract);
+  }
+
+  for (const [dimensionKey, validatorKey] of CORE_DIMENSION_VALIDATORS) {
+    const contract = byKey.get(dimensionKey);
+    if (!contract || !contract.enabled || !contract.requiredForCorePublication) {
+      throw new Error(`Contrato financeiro obrigatório ausente ou desabilitado: ${dimensionKey}.`);
+    }
+    if (contract.validatorKey !== validatorKey) {
+      throw new Error(`Validador financeiro incompatível para ${dimensionKey}: ${contract.validatorKey || "(vazio)"}.`);
+    }
+  }
+
+  for (const contract of normalized) {
+    if (
+      contract.enabled &&
+      contract.requiredForCorePublication &&
+      !CORE_DIMENSION_VALIDATORS.has(contract.dimensionKey)
+    ) {
+      throw new Error(`Dimensão obrigatória sem validador semântico conhecido: ${contract.dimensionKey}.`);
+    }
+  }
+
+  return normalized;
+}
+
+function dimensionStatus(contract, coverageObserved, { rejected = false, dates = [] } = {}) {
+  const coverageRatio = Math.min(coverageObserved / contract.coverageExpected, 1);
+  const mature = !rejected && coverageRatio >= contract.coverageRequiredRatio;
   return {
-    dimensionKey,
+    dimensionKey: contract.dimensionKey,
     coverageObserved,
-    coverageExpected: EXPECTED_SCHOOLS,
+    coverageExpected: contract.coverageExpected,
     coverageRatio,
     qualityStatus: rejected ? "REJECTED" : mature ? "MATURE" : "VALIDATED",
     publicationStatus: "UNPUBLISHED",
@@ -223,10 +303,17 @@ function dimensionStatus(dimensionKey, coverageObserved, { rejected = false, dat
   };
 }
 
-export function evaluatePublicationDimensions(payload) {
+export function evaluatePublicationDimensions(payload, contracts) {
   if (Number(payload?.exercise) !== CURRENT_EXERCISE) {
     throw new Error(`Exercício financeiro inesperado: ${payload?.exercise}`);
   }
+
+  const contractList = validateFinancialDimensionContracts(contracts);
+  const requiredContracts = new Map(
+    contractList
+      .filter((contract) => contract.enabled && contract.requiredForCorePublication)
+      .map((contract) => [contract.dimensionKey, contract]),
+  );
 
   const schools = Array.isArray(payload?.schools) ? payload.schools : [];
   const accounts = Array.isArray(payload?.accounts) ? payload.accounts : [];
@@ -290,21 +377,41 @@ export function evaluatePublicationDimensions(payload) {
   );
   const invalidFinancialRows = invalidMoney || invalidExplicitAccountRows;
 
-  return [
-    dimensionStatus("bank_accounts", accountCoverage, { rejected: globalRejected || invalidAccountRows }),
-    dimensionStatus("scheduled_repasses", scheduledCoverage, { rejected: globalRejected || invalidFinancialRows }),
-    dimensionStatus("pdde_basic_first_installment", firstCoverage, {
-      rejected: globalRejected || invalidFinancialRows,
-      dates: validFirstRows,
-    }),
-    dimensionStatus("pdde_basic_first_installment_breakdown", breakdownCoverage, {
-      rejected: globalRejected || invalidFinancialRows || breakdownRejected,
-      dates: validBreakdownRows,
-    }),
-    dimensionStatus("pdde_basic_second_installment_programmed", secondCoverage, {
-      rejected: globalRejected || invalidFinancialRows,
-    }),
-  ];
+  const observations = new Map([
+    [
+      "bank_accounts",
+      { coverageObserved: accountCoverage, rejected: globalRejected || invalidAccountRows, dates: [] },
+    ],
+    [
+      "scheduled_repasses",
+      { coverageObserved: scheduledCoverage, rejected: globalRejected || invalidFinancialRows, dates: [] },
+    ],
+    [
+      "pdde_basic_first_installment",
+      { coverageObserved: firstCoverage, rejected: globalRejected || invalidFinancialRows, dates: validFirstRows },
+    ],
+    [
+      "pdde_basic_first_installment_breakdown",
+      {
+        coverageObserved: breakdownCoverage,
+        rejected: globalRejected || invalidFinancialRows || breakdownRejected,
+        dates: validBreakdownRows,
+      },
+    ],
+    [
+      "pdde_basic_second_installment_programmed",
+      { coverageObserved: secondCoverage, rejected: globalRejected || invalidFinancialRows, dates: [] },
+    ],
+  ]);
+
+  return [...CORE_DIMENSION_VALIDATORS.keys()].map((dimensionKey) => {
+    const contract = requiredContracts.get(dimensionKey);
+    const observation = observations.get(dimensionKey);
+    if (!contract || !observation) {
+      throw new Error(`Contrato ou observação financeira ausente: ${dimensionKey}.`);
+    }
+    return dimensionStatus(contract, observation.coverageObserved, observation);
+  });
 }
 
 export function buildNormalizedPublicationPayload(snapshot, manifest) {
