@@ -1,6 +1,6 @@
 begin;
 
-select plan(32);
+select plan(33);
 
 select ok(
   to_regclass('public.financial_dimension_contracts') is not null,
