@@ -1,0 +1,36 @@
+name: Fix Financial Test Plan Count
+
+on:
+  push:
+    branches:
+      - feat/financial-dimension-contract-v2
+    paths:
+      - '.github/workflows/fix-financial-test-plan.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/financial-dimension-contract-v2
+      - name: Correct pgTAP plan count
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -qx 'select plan(32);' <(sed -n '3p' supabase/tests/financial_publication_pipeline_v1.sql)
+          sed -i 's/^select plan(32);$/select plan(33);/' supabase/tests/financial_publication_pipeline_v1.sql
+          grep -qx 'select plan(33);' <(sed -n '3p' supabase/tests/financial_publication_pipeline_v1.sql)
+      - name: Commit correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add supabase/tests/financial_publication_pipeline_v1.sql
+          git commit -m 'test: corrigir contagem do contrato financeiro v2'
+          git push origin HEAD:feat/financial-dimension-contract-v2
