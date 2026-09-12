@@ -1,0 +1,53 @@
+name: Harden Financial Optional Idempotency V2
+
+on:
+  push:
+    branches:
+      - feat/financial-dimension-contract-v2
+    paths:
+      - '.github/scripts/harden_financial_optional_idempotency_v2.py'
+      - '.github/workflows/harden-financial-optional-idempotency-v2.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: harden-financial-optional-idempotency-v2
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/financial-dimension-contract-v2
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Apply guarded hardening
+        run: python .github/scripts/harden_financial_optional_idempotency_v2.py
+      - name: Assert scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- . \
+            ':(exclude)supabase/migrations/20260911220000_financial_dimension_contract_v2.sql' \
+            ':(exclude)supabase/tests/financial_publication_pipeline_v1.sql'
+          grep -q 'record_optional_financial_dimensions_v2' supabase/migrations/20260911220000_financial_dimension_contract_v2.sql
+          grep -q 'select plan(34);' supabase/tests/financial_publication_pipeline_v1.sql
+          grep -q 'chamada idempotente reconcilia observacao opcional' supabase/tests/financial_publication_pipeline_v1.sql
+      - name: Commit hardening
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add supabase/migrations/20260911220000_financial_dimension_contract_v2.sql supabase/tests/financial_publication_pipeline_v1.sql
+          if git diff --cached --quiet; then
+            echo 'Hardening already applied.'
+            exit 0
+          fi
+          git commit -m 'fix: reconciliar dimensoes opcionais em chamadas idempotentes'
+          git push origin HEAD:feat/financial-dimension-contract-v2
