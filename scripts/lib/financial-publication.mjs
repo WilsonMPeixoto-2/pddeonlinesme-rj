@@ -47,13 +47,8 @@ function classifyProgram(programName) {
   }
 
   const qualityAction = STANDALONE_QUALITY_ACTIONS.get(standaloneAction);
-  if (qualityAction) {
-    return { program: "PDDE QUALIDADE", action: qualityAction };
-  }
-
-  if (standaloneAction === "PDDE SRM") {
-    return { program: "PDDE EQUIDADE", action: "PDDE SRM" };
-  }
+  if (qualityAction) return { program: "PDDE QUALIDADE", action: qualityAction };
+  if (standaloneAction === "PDDE SRM") return { program: "PDDE EQUIDADE", action: "PDDE SRM" };
 
   if (text.includes("QUALIDADE")) {
     let action = raw.split("/").slice(1).join("/").trim();
@@ -97,8 +92,7 @@ function installmentOrder(value, index) {
 }
 
 function informedPayment(installment) {
-  if (installment?.paymentInformedDate) return centsToReais(installment.paymentInformedCents);
-  return null;
+  return installment?.paymentInformedDate ? centsToReais(installment.paymentInformedCents) : null;
 }
 
 function normalizeAccount(account, inep, exercise) {
@@ -121,7 +115,7 @@ function hasCompleteAccountIdentity(account) {
 
 function accountSortKey(account) {
   return [
-    account.program === "PDDE BÁSICO" ? "0" : "1",
+    account.program === "PDDE BÁSICO" ? "0" : account.program === "PDDE QUALIDADE" ? "1" : "2",
     account.program,
     account.bank ?? "",
     account.agency ?? "",
@@ -203,10 +197,7 @@ function uniqueCoverage(rows, predicate = () => true) {
 
 function dateBounds(rows) {
   const dates = rows.map((row) => row.paymentDate).filter(Boolean).sort();
-  return {
-    referenceDateMin: dates[0] ?? null,
-    referenceDateMax: dates.at(-1) ?? null,
-  };
+  return { referenceDateMin: dates[0] ?? null, referenceDateMax: dates.at(-1) ?? null };
 }
 
 function dimensionStatus(dimensionKey, coverageObserved, { rejected = false, dates = [] } = {}) {
@@ -257,9 +248,7 @@ export function evaluatePublicationDimensions(payload) {
 
   let breakdownRejected = false;
   const validBreakdownRows = validFirstRows.filter((row) => {
-    if (row.paidCusteio === null || row.paidCusteio === undefined || row.paidCapital === null || row.paidCapital === undefined) {
-      return false;
-    }
+    if (row.paidCusteio === null || row.paidCusteio === undefined || row.paidCapital === null || row.paidCapital === undefined) return false;
     if (
       typeof row.paidCusteio !== "number" ||
       typeof row.paidCapital !== "number" ||
@@ -307,6 +296,31 @@ export function evaluatePublicationDimensions(payload) {
   ];
 }
 
+function compareSchools(a, b) {
+  return String(a.inep).localeCompare(String(b.inep));
+}
+
+function compareAccounts(a, b) {
+  return compareSchools(a, b) || accountSortKey(a).localeCompare(accountSortKey(b), "pt-BR");
+}
+
+const PROGRAM_SORT = new Map([
+  ["PDDE BÁSICO", 0],
+  ["PDDE QUALIDADE", 1],
+  ["PDDE EQUIDADE", 2],
+]);
+
+function compareRepasses(a, b) {
+  return (
+    compareSchools(a, b) ||
+    (PROGRAM_SORT.get(a.program) ?? 99) - (PROGRAM_SORT.get(b.program) ?? 99) ||
+    a.program.localeCompare(b.program, "pt-BR") ||
+    a.action.localeCompare(b.action, "pt-BR") ||
+    a.displayOrder - b.displayOrder ||
+    a.installment.localeCompare(b.installment, "pt-BR")
+  );
+}
+
 export function buildNormalizedPublicationPayload(snapshot, manifest) {
   validateSource(snapshot, manifest);
   const exercise = Number(snapshot?.portfolio?.fiscalYear ?? CURRENT_EXERCISE);
@@ -314,11 +328,11 @@ export function buildNormalizedPublicationPayload(snapshot, manifest) {
     throw new Error(`Exercício financeiro inesperado: ${exercise}`);
   }
 
-  const schools = Object.values(snapshot?.schools ?? {});
+  const schoolRecords = Object.values(snapshot?.schools ?? {});
   const accounts = [];
   const repasses = [];
 
-  for (const schoolRecord of schools) {
+  for (const schoolRecord of schoolRecords) {
     const school = schoolRecord?.school;
     if (!school?.inep) throw new Error("Prontuário financeiro sem INEP.");
 
@@ -332,6 +346,17 @@ export function buildNormalizedPublicationPayload(snapshot, manifest) {
     }
   }
 
+  const schools = schoolRecords
+    .map((record) => ({
+      inep: record.school.inep,
+      sme: record.school.sme,
+      name: record.school.name,
+    }))
+    .sort(compareSchools);
+
+  accounts.sort(compareAccounts);
+  repasses.sort(compareRepasses);
+
   return {
     exercise,
     source: {
@@ -341,11 +366,7 @@ export function buildNormalizedPublicationPayload(snapshot, manifest) {
       artifactId: manifest.source.artifactId,
       artifactName: manifest.source.artifactName ?? "sigef-full-163-2026",
     },
-    schools: schools.map((record) => ({
-      inep: record.school.inep,
-      sme: record.school.sme,
-      name: record.school.name,
-    })),
+    schools,
     accounts,
     repasses,
   };

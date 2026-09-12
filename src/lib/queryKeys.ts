@@ -8,6 +8,7 @@ import {
   type ProgramaFinanceiro,
   type RepasseFinanceiro,
 } from "@/lib/financeiroPDDE";
+import { DASHBOARD_QUERY_POLICY } from "@/lib/queryPolicy";
 
 export type DashboardBasico = Tables<"vw_dashboard_basico">;
 export type UnidadeDetalhe = Tables<"vw_unidade_detalhe">;
@@ -100,8 +101,7 @@ export const dashboardBasicoOptions = (exercicio: number, programa: string) => q
     if (error) throw new Error(error.message);
     return data ?? null;
   },
-  staleTime: 0,
-  refetchOnMount: "always",
+  ...DASHBOARD_QUERY_POLICY,
 });
 
 const RECENTES_LIMIT = 5;
@@ -109,21 +109,28 @@ const RECENTES_LIMIT = 5;
 export const dashboardUnidadesResumoOptions = () => queryOptions<DashboardUnidadesResumo, Error>({
   queryKey: queryKeys.dashboardUnidadesResumo(),
   queryFn: async () => {
-    const [recentesResult, totalResult, completosResult] = await Promise.all([
-      supabase.from("vw_unidades_localizador").select("id, designacao, nome, inep, cnpj, diretor, updated_at").order("updated_at", { ascending: false, nullsFirst: false }).limit(RECENTES_LIMIT),
-      supabase.from("vw_unidades_localizador").select("id", { count: "exact", head: true }),
-      supabase.from("vw_unidades_localizador").select("id", { count: "exact", head: true }).not("inep", "is", null).not("cnpj", "is", null).not("diretor", "is", null),
-    ]);
-    if (recentesResult.error) throw new Error(recentesResult.error.message);
-    if (totalResult.error) throw new Error(totalResult.error.message);
-    if (completosResult.error) throw new Error(completosResult.error.message);
-    const recentes = (recentesResult.data ?? []).filter((u): u is DashboardUnidadeResumo => u.id !== null && u.designacao !== null);
-    const total = totalResult.count ?? 0;
-    const cadastroCompletoCount = completosResult.count ?? 0;
-    return { total, recentes, cadastroCompletoCount, cadastroIncompletoCount: total - cadastroCompletoCount };
+    const { data, error } = await supabase
+      .from("vw_unidades_localizador")
+      .select("id, designacao, nome, inep, cnpj, diretor, updated_at")
+      .order("updated_at", { ascending: false, nullsFirst: false });
+
+    if (error) throw new Error(error.message);
+
+    const unidades = (data ?? []).filter(
+      (unidade): unidade is DashboardUnidadeResumo => unidade.id !== null && unidade.designacao !== null,
+    );
+    const cadastroCompletoCount = unidades.filter(
+      (unidade) => unidade.inep !== null && unidade.cnpj !== null && unidade.diretor !== null,
+    ).length;
+
+    return {
+      total: unidades.length,
+      recentes: unidades.slice(0, RECENTES_LIMIT),
+      cadastroCompletoCount,
+      cadastroIncompletoCount: unidades.length - cadastroCompletoCount,
+    };
   },
-  staleTime: 0,
-  refetchOnMount: "always",
+  ...DASHBOARD_QUERY_POLICY,
 });
 
 export const unidadesDetalheListaOptions = (exercicio: number, programa: string) => queryOptions<UnidadeDetalhe[], Error>({
