@@ -1,7 +1,7 @@
 {
   "project": "PDDE Online 2026",
   "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
-  "updated_at": "2026-09-13T01:35:00-03:00",
+  "updated_at": "2026-09-13",
   "source_of_truth": {
     "rule": "Codigo, schema/migrations, banco verificado, CI e deployment real prevalecem sobre documentacao.",
     "documentation_entrypoint": "docs/README.md",
@@ -36,6 +36,13 @@
       "active_connections_observed": 1,
       "cache_hit_pct_observed": 99.94,
       "incident_note": "Disk IO chegou a 100% em compute Nano e houve CONNECT_TIMEOUT antes da recuperacao; causa exata nao deve ser reduzida a um unico query sem evidencia."
+    },
+    "fiscal_contract_verified_2026_09_13": {
+      "despesas_fiscais_table": false,
+      "homologar_despesa_fiscal_rpc": false,
+      "estornar_despesa_fiscal_rpc": false,
+      "migrations_20260527000200_and_20260527000300_present_remote": false,
+      "verification_mode": "read_only"
     }
   },
   "recent_product_cycle": [
@@ -68,6 +75,18 @@
       "status": "merged_main_database_contract_verified",
       "title": "publicacao financeira incremental e reducao de carga Supabase",
       "note": "Delta semantico, advisory lock, idempotencia sem reescrita e politica de consulta do Dashboard."
+    },
+    {
+      "pull_request": 137,
+      "status": "draft_hardening_in_progress",
+      "title": "hardening de dados e contrato Supabase",
+      "branch": "fix/data-governance-hardening-2026-09-13",
+      "verified": [
+        "DG-01 branch verified: homologacao/estorno nao fabricam sucesso local quando contrato remoto falta",
+        "DG-03 branch verified: RPC desconhecida no mock retorna 404/PGRST202",
+        "CI principal run 332 verde apos commit d3460997202f38804948166407aecc3b297af663"
+      ],
+      "next": "DG-02 migration/object drift contract"
     }
   ],
   "financial_publication": {
@@ -87,18 +106,22 @@
     "status": "ACTIVE",
     "register": "docs/technical/DATA_GOVERNANCE_HARDENING_2026.md",
     "branch": "fix/data-governance-hardening-2026-09-13",
+    "pull_request": 137,
     "baseline_main": "578b94c1ae0e3709aaa597b124f0a1e89833a972",
     "rule": "Nao reiniciar a auditoria do zero. Ler o registro, comparar o topico com codigo/schema/banco atuais, continuar do ultimo estado verificado e atualizar registro + continuidade ao concluir cada etapa.",
+    "completed_on_branch": [
+      "DG-01 false fiscal success blocked and E2E verified",
+      "DG-03 strict Supabase RPC mock and E2E verified"
+    ],
     "next_focus": [
-      "DG-01 bloquear falso sucesso/persistencia fiscal local em fluxo operacional",
-      "DG-03 tornar mock Supabase estrito e capaz de revelar infraestrutura fiscal ausente",
-      "DG-02 decidir e testar estrategia de drift fiscal sem aplicar migration produtiva automaticamente"
+      "DG-02 criar contrato automatizado para detectar drift de migrations e objetos fiscais sem alterar Production",
+      "DG-02 registrar decisao operacional explicita: Frente Fiscal permanece bloqueada enquanto contrato oficial nao for deliberadamente ativado",
+      "DG-05 tornar edicao cadastral atomica apos DG-02"
     ]
   },
   "verified_open_risks": [
-    "Frente Fiscal possui fallback que persiste suposta homologacao em localStorage quando RPC/tabela nao existem no banco real.",
-    "Migrations fiscais existem no repositorio, mas nao constam no historico de migrations do Supabase oficial.",
-    "Mock E2E responde sucesso generico para RPCs desconhecidas e mascara contrato ausente.",
+    "Migrations fiscais 20260527000200 e 20260527000300 existem no repositorio, mas nao constam no historico de migrations nem nos objetos do Supabase oficial.",
+    "DG-01 e DG-03 estao corrigidos apenas na branch/draft PR #137; ainda exigem merge/deploy para verificacao de Production.",
     "Importacao da BASE faz upserts amplos em duas etapas independentes e sem delta semantico.",
     "Edicao cadastral separa parte dos campos e email em duas gravacoes independentes.",
     "vw_unidade_detalhe escolhe conta por unidade sem amarrar programa/exercicio.",
@@ -130,7 +153,7 @@
   },
   "current_priorities": [
     "Executar a campanha de hardening de dados/Supabase sem reiniciar investigacao ja verificada.",
-    "Eliminar falso sucesso fiscal e tornar testes capazes de detectar contrato Supabase ausente.",
+    "Resolver DG-02 por contrato automatizado de drift sem aplicar migrations fiscais em Production por impulso.",
     "Eliminar gravacoes parciais e reescritas amplas desnecessarias em cadastro/importacao.",
     "Corrigir relacao conta/programa/exercicio e unificar autoridade financeira do Portal Diretor.",
     "Endurecer Auth/RLS antes de ampliar perfis e criar observabilidade real de saude do sistema.",
@@ -143,6 +166,7 @@
     "Nao converter NULL financeiro em zero.",
     "Nao publicar dimensao financeira imatura.",
     "Nao aplicar migrations fiscais em Production apenas porque existem no repositorio.",
+    "Nao usar migration repair para mascarar drift deliberado sem decisao sobre o contrato fiscal.",
     "Nao alterar Auth, RLS, secrets, regras financeiras ou templates oficiais sem revisao humana."
   ]
 }
