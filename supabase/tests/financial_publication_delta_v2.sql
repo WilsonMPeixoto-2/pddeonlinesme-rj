@@ -152,13 +152,13 @@ select is(
 );
 
 create temp table _delta_baseline as
-select r.unidade_id, r.exercicio, r.acao, r.parcela, r.id, r.ctid::text as ctid
+select r.unidade_id, r.exercicio, r.acao, r.parcela, r.id, r.ctid::text as tuple_ctid
 from public.repasses_financeiros r
 join public.unidades_escolares u on u.id = r.unidade_id
 where u.inep like '98%';
 
 create temp table _account_baseline as
-select cb.id, cb.ctid::text as ctid
+select cb.id, cb.ctid::text as tuple_ctid
 from public.contas_bancarias cb
 join public.unidades_escolares u on u.id = cb.unidade_id
 where u.inep like '98%';
@@ -190,7 +190,7 @@ select is(
       and r.exercicio = b.exercicio
       and r.acao = b.acao
       and r.parcela = b.parcela
-    where r.id = b.id and r.ctid::text = b.ctid),
+    where r.id = b.id and r.ctid::text = b.tuple_ctid),
   327,
   'snapshot semanticamente igual preserva identidade e tuplas dos repasses'
 );
@@ -199,7 +199,7 @@ select is(
   (select count(*)::integer
      from _account_baseline b
      join public.contas_bancarias cb on cb.id = b.id
-    where cb.ctid::text = b.ctid),
+    where cb.ctid::text = b.tuple_ctid),
   163,
   'snapshot semanticamente igual nao atualiza contas bancarias'
 );
@@ -293,7 +293,7 @@ select is(
       and r.acao = b.acao
       and r.parcela = b.parcela
     where r.id = b.id
-      and r.ctid::text is distinct from b.ctid),
+      and r.ctid::text is distinct from b.tuple_ctid),
   1,
   'delta altera fisicamente apenas o repasse cujo conteudo mudou'
 );
