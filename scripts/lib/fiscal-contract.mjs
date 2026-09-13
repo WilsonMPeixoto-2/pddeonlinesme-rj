@@ -1,7 +1,14 @@
 const VALID_OPERATIONAL_STATES = new Set(["blocked", "enabled"]);
+const MIGRATION_FILE_PATTERN = /^(\d{14})_.+\.sql$/;
 
 function pushIssue(issues, code, subject) {
   issues.push({ code, subject });
+}
+
+export function extractMigrationVersions(fileNames) {
+  return fileNames
+    .map((fileName) => fileName.match(MIGRATION_FILE_PATTERN)?.[1] ?? null)
+    .filter((version) => version !== null);
 }
 
 export function evaluateFiscalContract({
