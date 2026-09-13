@@ -284,7 +284,17 @@ export async function installSupabaseMock(page: Page) {
     }
 
     if (url.pathname.includes("/rest/v1/rpc/")) {
-      return json(route, null);
+      const rpcName = url.pathname.split("/").filter(Boolean).at(-1) ?? "unknown_rpc";
+      return route.fulfill({
+        status: 404,
+        contentType: "application/json",
+        body: JSON.stringify({
+          code: "PGRST202",
+          details: null,
+          hint: null,
+          message: `Could not find the function public.${rpcName} in the schema cache`,
+        }),
+      });
     }
 
     if (method === "HEAD") {
