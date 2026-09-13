@@ -1,6 +1,6 @@
 # AGENTS.md — PDDE Online 2026
 
-**Atualizado em:** 11/09/2026  
+**Atualizado em:** 13/09/2026  
 **Repositório oficial:** `WilsonMPeixoto-2/pddeonlinesme-rj`  
 **Produto:** PDDE Online 2026 · GAD · 4ª CRE · SME-RJ
 
@@ -41,10 +41,25 @@ Ler, nesta ordem:
 4. `docs/HANDOFF.md`;
 5. `docs/DECISIONS.md`;
 6. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
-7. documentação técnica específica da tarefa;
-8. `main`, PRs recentes/abertos, CI, Supabase e Production conforme o escopo.
+7. **enquanto a campanha estiver ativa:** `docs/technical/DATA_GOVERNANCE_HARDENING_2026.md`;
+8. documentação técnica específica da tarefa;
+9. `main`, PRs recentes/abertos, CI, Supabase e Production conforme o escopo.
 
 `docs/PLANO_GLOBAL_V4_2.md`, `docs/OPPORTUNITIES_BACKLOG.md`, `docs/superpowers/plans/` e `docs/superpowers/specs/` são referências estratégicas/históricas. Não usar seus status internos como fotografia atual sem confronto com as fontes acima.
+
+### 3.1. Campanha ativa de hardening de dados/Supabase
+
+Enquanto `docs/technical/DATA_GOVERNANCE_HARDENING_2026.md` estiver com `Status: ATIVO`:
+
+- nenhuma ferramenta, agente ou novo chat deve reiniciar a auditoria do zero;
+- a primeira ação após a leitura é **comparar o registro de cada tópico relevante com o código, migrations, banco, CI e deployment atuais**;
+- item já concluído não deve ser reaberto sem evidência nova de regressão/divergência;
+- item não pode ser encerrado apenas por passar em mock; para dados/Supabase deve haver validação de contrato real compatível com o risco;
+- ao concluir uma etapa ou tópico, atualizar o registro técnico com status, evidência, commit/PR e próximo ponto de retomada;
+- quando houver mudança operacional relevante, atualizar também `.continuity/current-state.json`, `.continuity/session-log.jsonl` e `docs/HANDOFF.md`;
+- se a correção mudar decisão permanente, atualizar `docs/DECISIONS.md`; se mudar a fila curta, atualizar `docs/ROADMAP_ADAPTIVE.md`.
+
+A campanha só deixa de ser leitura obrigatória quando seu próprio procedimento de encerramento tiver sido executado e a obrigatoriedade removida deste arquivo.
 
 ## 4. Classificação obrigatória de afirmações
 
@@ -168,12 +183,14 @@ Evite snapshots desnecessários que envelhecem sozinhos, como contagem fixa de t
 
 Depois de tarefa relevante:
 
-1. atualizar `.continuity/current-state.json` e `docs/HANDOFF.md` se o estado operacional mudou;
-2. atualizar `docs/DECISIONS.md` se houve nova decisão ou mudança de regra;
-3. atualizar `docs/ROADMAP_ADAPTIVE.md` se mudou prioridade/fila curta;
-4. atualizar documentação técnica do domínio se o contrato mudou.
+1. atualizar `docs/technical/DATA_GOVERNANCE_HARDENING_2026.md` enquanto a campanha estiver ativa;
+2. atualizar `.continuity/current-state.json` e `docs/HANDOFF.md` se o estado operacional mudou;
+3. anexar evento em `.continuity/session-log.jsonl` quando houver marco, correção concluída, bloqueio ou próximo ponto de retomada relevante;
+4. atualizar `docs/DECISIONS.md` se houve nova decisão ou mudança de regra;
+5. atualizar `docs/ROADMAP_ADAPTIVE.md` se mudou prioridade/fila curta;
+6. atualizar documentação técnica do domínio se o contrato mudou.
 
-Não criar novas fontes paralelas de “estado atual” ou “decisões atuais”.
+Não criar outras fontes paralelas de “estado atual” ou “decisões atuais”. O registro temporário da campanha de hardening é a única exceção deliberada e deve ser encerrado conforme sua seção de fechamento.
 
 ## 12. Formato de prompt operacional
 
