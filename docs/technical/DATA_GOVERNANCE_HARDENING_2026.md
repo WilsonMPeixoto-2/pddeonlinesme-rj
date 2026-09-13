@@ -142,17 +142,36 @@ A prova observada mostrou uma publicação alterada em aproximadamente 398 ms e 
 ### DG-02 — Migration drift entre GitHub e Supabase no domínio fiscal
 
 **Severidade:** CRÍTICA  
-**Status:** `IN_PROGRESS`
+**Status:** `BRANCH_VERIFIED`
 
 **Evidência reconfirmada em 13/09/2026:** o repositório contém `20260527000200_despesas_fiscais.sql` e `20260527000300_estorno_despesas.sql`, mas a listagem real de migrations do projeto oficial continua sem essas versões; a sequência remota salta de `20260527000100` para `20260909002935`. Consulta somente leitura também confirmou `to_regclass('public.despesas_fiscais') = NULL` e ausência das RPCs fiscais.
 
-**Risco:** CI/replay local e E2E podem validar um contrato que Production não possui.
+**Correção implementada na branch/PR #137:**
 
-**Correção exigida:** instituir verificação explícita de drift de migrations/objetos críticos e decidir conscientemente se a Frente Fiscal será ativada no banco ou permanecerá bloqueada. **Não aplicar migrations fiscais em Production apenas porque existem no repositório.**
+- `config/fiscal-contract.json` passou a declarar explicitamente o estado operacional `blocked`, o projeto Supabase esperado, as duas migrations fiscais versionadas e os três objetos críticos;
+- `.continuity/evidence/fiscal-contract-production.json` registra o snapshot de evidência read-only do Supabase oficial em 13/09/2026, incluindo o histórico remoto de migrations e a ausência dos objetos fiscais;
+- `scripts/lib/fiscal-contract.mjs` avalia coerência entre estado declarado, migrations locais, migrations remotas e objetos críticos;
+- `scripts/check-fiscal-contract.mjs` transforma esse contrato em auditoria executável e falha com código não-zero em combinações incoerentes;
+- `package.json` expõe `npm run check:fiscal-contract`, também incluído em `validate`;
+- `.github/workflows/ci.yml` executa `Fiscal contract drift audit` em todo PR para `main`.
 
-**Diretriz técnica atual:** a documentação oficial do Supabase confirma que migrations locais e o histórico remoto em `supabase_migrations.schema_migrations` são sistemas separados e recomenda `supabase migration list` para diagnosticar divergência. `migration repair` altera histórico e, portanto, não deve ser usado nesta campanha para “apagar” deliberadamente o drift fiscal sem decisão explícita sobre o domínio.
+**TDD:** o primeiro RED ocorreu no run 336 porque o avaliador ainda não existia. Depois do avaliador, foi adicionado um segundo requisito para extração determinística de versões de migration; o run 338 ficou vermelho exatamente com `extractMigrationVersions is not a function`. A implementação seguinte adicionou a extração restrita ao padrão `14 dígitos + _ + nome + .sql`.
 
-**Critério de aceite:** contrato automatizado detecta ausência/divergência de migration/objeto crítico; estado da Frente Fiscal fica deliberado e documentado.
+**Validação final da branch:** CI run **344**, head `6bc17bae84db3c05a492eef6498b8835a406da25`, concluiu com `success`. O job principal passou typecheck, lint, unitários, cobertura, **Fiscal contract drift audit**, auditoria do template, build, bundle budget, E2E/acessibilidade, Knip e auditoria de vulnerabilidades. O job `Supabase financial publication contract` também passou integralmente, incluindo `supabase db reset --local` e testes de contrato SQL.
+
+**Decisão operacional desta campanha:** a Frente Fiscal permanece deliberadamente **bloqueada**. A ausência das duas migrations e dos três objetos no Supabase oficial não deve ser “corrigida” automaticamente com `db push` ou `migration repair`. Antes de eventual ativação, as migrations fiscais precisam de revisão própria, inclusive de RLS e aderência ao modelo financeiro atual.
+
+**Limite da automação:** o CI usa uma evidência versionada do último snapshot remoto verificado; ele não possui autorização para alterar Production e não deve fingir monitoramento contínuo. Cada sessão que tocar esse contrato deve comparar o snapshot com o Supabase real antes de promover status para Production ou alterar a decisão operacional.
+
+**Critério de aceite:**
+
+- [x] migrations fiscais obrigatórias são verificadas no repositório;
+- [x] estado esperado do domínio fiscal é explícito e versionado;
+- [x] divergência incoerente entre estado declarado, histórico remoto e objetos críticos faz a auditoria falhar;
+- [x] estado real do Supabase foi conferido em modo read-only;
+- [x] CI executa a auditoria automaticamente;
+- [x] nenhuma migration/DDL fiscal foi aplicada em Production nesta etapa;
+- [ ] merge da PR #137 e reconciliação pós-merge.
 
 ---
 
@@ -167,7 +186,7 @@ A prova observada mostrou uma publicação alterada em aproximadamente 398 ms e 
 
 **Validação:** RED real observado antes da correção de cada fluxo; após as correções, o job principal do CI do run 332 passou typecheck, lint, unitários, cobertura, auditoria do template, build, budget, E2E/acessibilidade, Knip e `npm audit --omit=dev --audit-level=high`.
 
-**Risco residual:** o replay local contém migrations fiscais que Production não possui. Essa diferença é exatamente o foco de DG-02; portanto, DG-03 não deve ser promovido a `CLOSED` antes de existir uma camada explícita de contrato/drift.
+**Risco residual:** o replay local contém migrations fiscais que Production não possui. DG-02 agora impede que essa diferença permaneça silenciosa e registra a decisão de manter o domínio bloqueado, mas DG-03 só poderá ser promovido a `CLOSED` depois de merge/deploy da PR e verificação do frontend publicado.
 
 ---
 
@@ -191,11 +210,11 @@ A prova observada mostrou uma publicação alterada em aproximadamente 398 ms e 
 **Severidade:** ALTA  
 **Status:** `OPEN_VERIFIED`
 
-**Evidência confirmada:** `useUpdateUnidadeCadastro.ts` chama RPC para parte do cadastro e realiza update separado do e-mail.
+**Evidência confirmada:** `useUpdateUnidadeCadastro.ts` chama `update_unidade_cadastro_minima` para nome/diretor/endereço e, em seguida, executa `UPDATE unidades_escolares SET email = ...` em uma segunda requisição. O RPC curto atual foi definido em `20260909043122_financeiro_contrato_v1_hardening.sql` justamente para manter a identidade bancária fora do cadastro geral, mas não inclui e-mail.
 
-**Risco:** primeira escrita pode persistir e a segunda falhar; UI pode tratar a mutation como falha única apesar de o banco já ter mudado parcialmente.
+**Risco:** a primeira escrita pode persistir e a segunda falhar; o frontend então desfaz apenas o cache otimista, enquanto o banco já ficou parcialmente alterado.
 
-**Correção exigida:** uma operação lógica de cadastro deve corresponder a uma transação/RPC única, inclusive e-mail.
+**Correção exigida:** uma operação lógica de cadastro deve corresponder a uma única transação/RPC, incluindo e-mail e preservando a separação entre cadastro geral e contas bancárias.
 
 **Critério de aceite:** todos os campos editáveis do mesmo submit são atômicos e o teste de falha comprova rollback.
 
@@ -448,6 +467,17 @@ Antes de marcar um item como concluído:
 **Banco oficial:** reconferido somente por leitura; as duas migrations fiscais e os três objetos fiscais continuam ausentes. Nenhuma migration/DDL foi aplicada.  
 **Status:** DG-01 e DG-03 `BRANCH_VERIFIED`; DG-02 promovido a `IN_PROGRESS`.  
 **Próximo ponto de retomada:** DG-02. Criar contrato automatizado de drift que compare migrations/objetos críticos sem alterar Production e registrar decisão explícita sobre manter a Frente Fiscal bloqueada ou ativá-la futuramente por migration revisada.
+
+### 2026-09-13 — DG-02 verificado na branch
+
+**TDD RED 1:** CI run 336 falhou porque `scripts/lib/fiscal-contract.mjs` ainda não existia.  
+**TDD RED 2:** CI run 338 falhou somente no novo requisito `extractMigrationVersions is not a function`; os demais testes continuaram verdes.  
+**Implementação:** criado manifesto de estado fiscal, snapshot versionado de evidência read-only, avaliador de coerência, auditoria executável e integração ao `package.json`/CI.  
+**Verificação real:** `list_migrations` do projeto `raluxyojqosfzrfozmpz` e SQL somente leitura confirmaram que `20260527000200`, `20260527000300`, `despesas_fiscais`, `homologar_despesa_fiscal` e `estornar_despesa_fiscal` continuam ausentes.  
+**GREEN final:** CI run 344, head `6bc17bae84db3c05a492eef6498b8835a406da25`, concluiu `success` nos dois jobs. A auditoria `Fiscal contract drift audit` passou e o replay/teste local de contrato Supabase também passou.  
+**Decisão:** Frente Fiscal segue bloqueada; nenhuma migration fiscal ou `migration repair` foi aplicado em Production.  
+**Status:** DG-02 `BRANCH_VERIFIED`.  
+**Próximo ponto de retomada:** DG-05. Escrever primeiro teste que demonstre a persistência parcial atual do cadastro quando a atualização principal é confirmada e a gravação separada de e-mail falha; em seguida mover o e-mail para a mesma fronteira transacional do RPC sem voltar a misturar conta bancária ao cadastro geral.
 
 ---
 
