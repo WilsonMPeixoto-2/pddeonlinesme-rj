@@ -23,7 +23,7 @@ import {
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { saveAs } from "file-saver";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { useUpdateUnidadeCadastro } from "@/hooks/useUpdateUnidadeCadastro";
@@ -47,6 +47,19 @@ const formatMoney = (val: number | null | undefined) => {
   return moneyFormatter.format(val);
 };
 
+const FISCAL_REVERSAL_UNAVAILABLE_MESSAGE =
+  "O estorno fiscal está indisponível porque o contrato de persistência não está ativo. Nenhum dado foi alterado.";
+
+function isMissingFiscalPersistenceContract(error: { code?: string; message?: string }): boolean {
+  if (error.code === "PGRST202" || error.code === "42883" || error.code === "42P01") return true;
+
+  const message = error.message?.toLowerCase() ?? "";
+  return (
+    message.includes("estornar_despesa_fiscal") ||
+    message.includes("despesas_fiscais") ||
+    (message.includes("function") && message.includes("does not exist"))
+  );
+}
 
 /* ─── Section navigation ─── */
 const SECTIONS = [
@@ -85,7 +98,6 @@ function SectionHeader({
 /* ─── Main component ─── */
 
 export default function EscolaEditar() {
-  const queryClient = useQueryClient();
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -159,56 +171,24 @@ export default function EscolaEditar() {
     const toastId = toast.loading("Processando estorno e reconciliando saldos...");
 
     try {
-      const { data, error } = await supabase.rpc("estornar_despesa_fiscal", {
+      const { error } = await supabase.rpc("estornar_despesa_fiscal", {
         p_despesa_id: despesaId
       });
 
       if (error) {
-        // Fallback local resiliente se a RPC não existir no banco de dados remoto
-        if (error.message.includes("does not exist") || error.message.includes("function")) {
-          console.warn("RPC inexistente em produção. Ativando estorno assistido local.");
-          handleEstornoLocalFallback(despesaId);
-          toast.success("Despesa estornada localmente! (Modo Sandbox)", { id: toastId });
-        } else {
-          throw error;
+        if (isMissingFiscalPersistenceContract(error)) {
+          throw new Error(FISCAL_REVERSAL_UNAVAILABLE_MESSAGE);
         }
-      } else {
-        toast.success("Despesa fiscal estornada com sucesso!", { id: toastId });
+        throw error;
       }
 
-      refetch(); // recarrega limites da escola
-      refetchDespesas(); // recarrega lista de despesas
+      toast.success("Despesa fiscal estornada com sucesso!", { id: toastId });
+      await Promise.all([refetch(), refetchDespesas()]);
     } catch (err: unknown) {
       console.error(err);
       toast.error(getErrorMessage(err, "Erro ao estornar despesa fiscal."), { id: toastId });
     } finally {
       setIsEstornandoId(null);
-    }
-  };
-
-  const handleEstornoLocalFallback = (despesaId: string) => {
-    // 1. Remove do localStorage de sandbox
-    const parsedDespesas: unknown = JSON.parse(
-      localStorage.getItem("sandbox_despesas_fiscais") || "[]",
-    );
-    const despesasLocais = Array.isArray(parsedDespesas)
-      ? parsedDespesas.filter(
-          (item): item is Record<string, unknown> =>
-            typeof item === "object" && item !== null,
-        )
-      : [];
-    const filtradas = despesasLocais.filter(
-      (despesa) => despesa.id !== despesaId,
-    );
-    localStorage.setItem("sandbox_despesas_fiscais", JSON.stringify(filtradas));
-
-    // 2. Desconta do cache do React Query
-    const valorEstornado = despesasFiscais?.find(d => d.id === despesaId)?.valor || 0;
-    if (u) {
-      queryClient.setQueryData(["unidade-detalhe", id, Number(exercicio), PROGRAMA_PADRAO], {
-        ...u,
-        gasto: Math.max(0, (u.gasto || 0) - Number(valorEstornado))
-      });
     }
   };
 
