@@ -109,41 +109,48 @@ A prova observada mostrou uma publicação alterada em aproximadamente 398 ms e 
 ### DG-01 — Frente Fiscal pode “homologar” somente no navegador
 
 **Severidade:** CRÍTICA  
-**Status:** `OPEN_VERIFIED`
+**Status:** `BRANCH_VERIFIED`
 
-**Evidência confirmada:**
+**Evidência original confirmada:**
 
 - o banco real não possui `public.despesas_fiscais`;
 - o banco real não possui `public.homologar_despesa_fiscal(...)`;
 - o banco real não possui `public.estornar_despesa_fiscal(...)`;
-- `src/pages/FiscalConferencia.tsx` captura erro de RPC inexistente e executa `handleHomologacaoLocalFallback`;
-- o fallback altera cache local e persiste a suposta despesa em `localStorage['sandbox_despesas_fiscais']`;
-- `src/pages/EscolaEditar.tsx` possui fallback equivalente para estorno;
-- a UI apresenta a operação como sucesso em “Modo Sandbox”.
+- a baseline de `FiscalConferencia.tsx` e `EscolaEditar.tsx` transformava ausência do contrato remoto em sucesso local e usava `localStorage['sandbox_despesas_fiscais']`.
 
-**Risco:** estado visual divergente do registro institucional; perda ao trocar navegador/dispositivo; usuários diferentes enxergarem verdades distintas; operação fiscal aparente sem trilha oficial.
+**Correção implementada na branch/PR #137:**
 
-**Correção exigida:** em build/ambiente operacional, inexistência da RPC/tabela deve ser **erro bloqueante e explícito**. Sandbox só pode existir em superfície isolada de demonstração/desenvolvimento e nunca produzir estado confundível com persistência oficial.
+- `FiscalConferencia.tsx` não possui mais fallback de homologação local; ausência da tabela/RPC gera erro bloqueante e preserva o formulário;
+- `EscolaEditar.tsx` não possui mais fallback de estorno local nem alteração artificial de cache; ausência da RPC gera erro bloqueante e a despesa permanece inalterada;
+- códigos `PGRST202`, `42883` e `42P01`, além das mensagens equivalentes de contrato ausente, são tratados como indisponibilidade real de persistência, nunca como sucesso;
+- o banco oficial foi reconferido por leitura em 13/09/2026 e continua deliberadamente sem `despesas_fiscais`, `homologar_despesa_fiscal` e `estornar_despesa_fiscal`.
+
+**Validação:** o teste de homologação ficou vermelho antes da correção e passou depois. O teste de estorno foi introduzido em RED no run 331, falhando exatamente porque o comportamento bloqueante ainda não existia; após o commit `d3460997202f38804948166407aecc3b297af663`, o job `Typecheck, Lint, Test, Build & E2E` do run 332 passou integralmente, incluindo E2E/acessibilidade, Knip e auditoria de vulnerabilidades de produção.
+
+**Risco residual:** a correção ainda está em branch/draft PR. Não marcar como `PRODUCTION_VERIFIED` ou `CLOSED` antes de merge/deploy e verificação do comportamento publicado.
 
 **Critério de aceite:**
 
-- Production não grava domínio fiscal em localStorage;
-- RPC/tabela ausente gera erro operacional, não sucesso;
-- E2E cobre resposta `404/PGRST202` ou equivalente para RPC inexistente;
-- qualquer sandbox remanescente é explicitamente isolado e não acessível como fluxo produtivo.
+- [x] branch não grava domínio fiscal em localStorage quando o contrato remoto está ausente;
+- [x] RPC/tabela ausente gera erro operacional, não sucesso;
+- [x] E2E cobre `404/PGRST202` para homologação e estorno;
+- [x] falso cache/sandbox operacional foi removido dos dois fluxos identificados;
+- [ ] merge/deploy e verificação em Production.
 
 ---
 
 ### DG-02 — Migration drift entre GitHub e Supabase no domínio fiscal
 
 **Severidade:** CRÍTICA  
-**Status:** `OPEN_VERIFIED`
+**Status:** `IN_PROGRESS`
 
-**Evidência confirmada:** o repositório contém `20260527000200_despesas_fiscais.sql` e `20260527000300_estorno_despesas.sql`, mas `supabase_migrations.schema_migrations` do projeto oficial não registra essas versões; a sequência remota salta de `20260527000100` para `20260909002935`.
+**Evidência reconfirmada em 13/09/2026:** o repositório contém `20260527000200_despesas_fiscais.sql` e `20260527000300_estorno_despesas.sql`, mas a listagem real de migrations do projeto oficial continua sem essas versões; a sequência remota salta de `20260527000100` para `20260909002935`. Consulta somente leitura também confirmou `to_regclass('public.despesas_fiscais') = NULL` e ausência das RPCs fiscais.
 
 **Risco:** CI/replay local e E2E podem validar um contrato que Production não possui.
 
 **Correção exigida:** instituir verificação explícita de drift de migrations/objetos críticos e decidir conscientemente se a Frente Fiscal será ativada no banco ou permanecerá bloqueada. **Não aplicar migrations fiscais em Production apenas porque existem no repositório.**
+
+**Diretriz técnica atual:** a documentação oficial do Supabase confirma que migrations locais e o histórico remoto em `supabase_migrations.schema_migrations` são sistemas separados e recomenda `supabase migration list` para diagnosticar divergência. `migration repair` altera histórico e, portanto, não deve ser usado nesta campanha para “apagar” deliberadamente o drift fiscal sem decisão explícita sobre o domínio.
 
 **Critério de aceite:** contrato automatizado detecta ausência/divergência de migration/objeto crítico; estado da Frente Fiscal fica deliberado e documentado.
 
@@ -152,15 +159,15 @@ A prova observada mostrou uma publicação alterada em aproximadamente 398 ms e 
 ### DG-03 — Mock E2E mascara ausência real de infraestrutura fiscal
 
 **Severidade:** CRÍTICA  
-**Status:** `OPEN_VERIFIED`
+**Status:** `BRANCH_VERIFIED`
 
-**Evidência confirmada:** `tests/e2e/supabase-mock.ts` responde `[]` para `despesas_fiscais` e, para RPCs genéricas não reconhecidas, retorna `200/null`.
+**Evidência original:** o mock E2E retornava sucesso genérico para RPCs desconhecidas, permitindo falso verde mesmo sem contrato remoto.
 
-**Risco:** a suíte pode ficar verde mesmo quando o Supabase real não oferece a tabela/RPC esperada.
+**Correção implementada na branch/PR #137:** `tests/e2e/supabase-mock.ts` passou a devolver `404/PGRST202` para RPC desconhecida; somente RPCs explicitamente modeladas podem retornar sucesso. Os testes específicos de homologação e estorno fiscal exercitam esse comportamento.
 
-**Correção exigida:** o mock deve ser estrito: somente endpoints/RPCs explicitamente definidos podem retornar sucesso; rota desconhecida deve falhar. Deve haver uma camada de testes de contrato contra Supabase real/efêmero, além de mocks.
+**Validação:** RED real observado antes da correção de cada fluxo; após as correções, o job principal do CI do run 332 passou typecheck, lint, unitários, cobertura, auditoria do template, build, budget, E2E/acessibilidade, Knip e `npm audit --omit=dev --audit-level=high`.
 
-**Critério de aceite:** teste criado para o comportamento ausente falha antes da correção e passa depois; chamadas desconhecidas não recebem sucesso genérico.
+**Risco residual:** o replay local contém migrations fiscais que Production não possui. Essa diferença é exatamente o foco de DG-02; portanto, DG-03 não deve ser promovido a `CLOSED` antes de existir uma camada explícita de contrato/drift.
 
 ---
 
@@ -307,7 +314,7 @@ O banco possui contas distintas de Básico e Qualidade para todas as 163 escolas
 **Severidade:** ALTA por causa do fiscal  
 **Status:** `OPEN_VERIFIED`
 
-**Evidência:** cliente Supabase persiste sessão Auth em `localStorage`, comportamento normal para SPA; não foi identificada base operacional em IndexedDB/sessionStorage; domínio fiscal de sandbox é a exceção problemática.
+**Evidência:** cliente Supabase persiste sessão Auth em `localStorage`, comportamento normal para SPA; não foi identificada base operacional em IndexedDB/sessionStorage. Os dois fallbacks fiscais conhecidos foram removidos na branch da campanha e passam por E2E estrito, mas este item permanece aberto até a revisão final de persistência no navegador após integração da correção.
 
 **Correção:** eliminar persistência operacional fiscal em Production e manter apenas preferências/sessão compatíveis com o modelo de segurança.
 
@@ -431,6 +438,16 @@ Antes de marcar um item como concluído:
 **Baseline:** `main@578b94c1ae0e3709aaa597b124f0a1e89833a972` (PR #136 já incorporada).  
 **Resultado:** achados DG-01 a DG-20 consolidados; DG-13 já classificado como controle verificado; demais itens permanecem abertos ou dependentes de decisão.  
 **Próximo ponto de retomada:** DG-01/DG-03, impedindo falso sucesso fiscal e endurecendo o mock para que infraestrutura inexistente não seja mascarada.
+
+### 2026-09-13 — DG-01/DG-03 verificados na branch
+
+**Branch/PR:** `fix/data-governance-hardening-2026-09-13`, draft PR #137.  
+**TDD:** homologação e estorno receberam cenários E2E de contrato ausente; o estorno foi confirmado em RED no run 331 antes da alteração de `EscolaEditar.tsx`.  
+**Implementação:** removidos fallbacks operacionais de homologação/estorno em `localStorage` e cache; RPC ausente passa a gerar erro bloqueante explícito. O mock passou a falhar RPC desconhecida com `404/PGRST202`.  
+**Prova de branch:** commit de estorno `d3460997202f38804948166407aecc3b297af663`; job principal do CI run 332 integralmente verde, inclusive E2E/acessibilidade.  
+**Banco oficial:** reconferido somente por leitura; as duas migrations fiscais e os três objetos fiscais continuam ausentes. Nenhuma migration/DDL foi aplicada.  
+**Status:** DG-01 e DG-03 `BRANCH_VERIFIED`; DG-02 promovido a `IN_PROGRESS`.  
+**Próximo ponto de retomada:** DG-02. Criar contrato automatizado de drift que compare migrations/objetos críticos sem alterar Production e registrar decisão explícita sobre manter a Frente Fiscal bloqueada ou ativá-la futuramente por migration revisada.
 
 ---
 
