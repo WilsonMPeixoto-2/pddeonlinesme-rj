@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateFiscalContract } from "../../scripts/lib/fiscal-contract.mjs";
+import {
+  evaluateFiscalContract,
+  extractMigrationVersions,
+} from "../../scripts/lib/fiscal-contract.mjs";
 
 const manifest = {
   operationalState: "blocked",
@@ -12,6 +15,18 @@ const manifest = {
 };
 
 describe("fiscal contract drift", () => {
+  it("extrai somente versoes validas de arquivos de migration", () => {
+    expect(
+      extractMigrationVersions([
+        "20260527000200_despesas_fiscais.sql",
+        "README.md",
+        "20260527000300_estorno_despesas.sql",
+        "migration_sem_timestamp.sql",
+        "20260913033820_financial_publication_delta_v2.sql",
+      ]),
+    ).toEqual(["20260527000200", "20260527000300", "20260913033820"]);
+  });
+
   it("aceita estado bloqueado quando migrations existem apenas no repositorio e objetos remotos continuam ausentes", () => {
     const report = evaluateFiscalContract({
       manifest,
