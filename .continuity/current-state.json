@@ -1,32 +1,48 @@
 {
   "project": "PDDE Online 2026",
   "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
-  "updated_at": "2026-09-11T13:30:00-03:00",
+  "updated_at": "2026-09-13",
   "source_of_truth": {
     "rule": "Codigo, schema/migrations, banco verificado, CI e deployment real prevalecem sobre documentacao.",
     "documentation_entrypoint": "docs/README.md",
     "decisions": "docs/DECISIONS.md",
     "operational_handoff": "docs/HANDOFF.md",
-    "note": "Este arquivo e snapshot operacional estruturado; confirmar estado dinamico antes de agir."
+    "active_hardening_register": "docs/technical/DATA_GOVERNANCE_HARDENING_2026.md",
+    "note": "Este arquivo e snapshot operacional estruturado; confirmar estado dinamico antes de agir. Durante a campanha ativa, ler o registro de hardening e comparar o topico com codigo/banco atuais antes de continuar."
   },
   "application_baseline": {
-    "main_commit_before_documentation_reconciliation": "b60fb04b360eefb7dc0d92cc39064ee8a019724b",
-    "production_commit_verified": "b60fb04b360eefb7dc0d92cc39064ee8a019724b",
-    "production_deployment": "dpl_FdQY3St4xHQpSgept47jobMcvE4Y",
-    "production_status": "READY",
+    "main_commit_verified": "578b94c1ae0e3709aaa597b124f0a1e89833a972",
+    "main_change": "PR #136: publicacao financeira incremental/delta e reducao de carga Supabase",
+    "last_frontend_production_commit_previously_verified": "b60fb04b360eefb7dc0d92cc39064ee8a019724b",
+    "last_frontend_production_deployment_previously_verified": "dpl_FdQY3St4xHQpSgept47jobMcvE4Y",
     "public_url": "https://pddeonlinesme-rj.vercel.app",
-    "public_smoke": "HTTP 200 verificado apos o deploy do ciclo #132",
-    "runtime_errors_observed": 0,
-    "note": "PR documental posterior pode alterar o SHA de main sem alterar o baseline funcional da aplicacao."
+    "production_frontend_after_pr136": "PENDENTE_DE_REVERIFICACAO_NESTA_CAMPANHA",
+    "note": "Nao inferir SHA/deployment de Production a partir de main. Revalidar quando a etapa exigir comportamento do frontend publicado."
   },
   "supabase": {
     "project_ref": "raluxyojqosfzrfozmpz",
     "schools": 163,
     "bank_accounts": 335,
     "financial_repasses": 537,
+    "execution_rows": 163,
+    "audit_log_rows_observed": 500,
     "financial_dimensions_v1": {
       "mature_published": 5,
       "coverage": "163/163"
+    },
+    "health_after_incident": {
+      "database_responding_at_last_probe": true,
+      "connections_observed": 13,
+      "active_connections_observed": 1,
+      "cache_hit_pct_observed": 99.94,
+      "incident_note": "Disk IO chegou a 100% em compute Nano e houve CONNECT_TIMEOUT antes da recuperacao; causa exata nao deve ser reduzida a um unico query sem evidencia."
+    },
+    "fiscal_contract_verified_2026_09_13": {
+      "despesas_fiscais_table": false,
+      "homologar_despesa_fiscal_rpc": false,
+      "estornar_despesa_fiscal_rpc": false,
+      "migrations_20260527000200_and_20260527000300_present_remote": false,
+      "verification_mode": "read_only"
     }
   },
   "recent_product_cycle": [
@@ -53,9 +69,26 @@
       "status": "merged_and_production",
       "title": "contexto da carteira de escolas",
       "note": "Preserva q/status ao abrir e retornar da ficha; return interno validado."
+    },
+    {
+      "pull_request": 136,
+      "status": "merged_main_database_contract_verified",
+      "title": "publicacao financeira incremental e reducao de carga Supabase",
+      "note": "Delta semantico, advisory lock, idempotencia sem reescrita e politica de consulta do Dashboard."
+    },
+    {
+      "pull_request": 137,
+      "status": "draft_hardening_in_progress",
+      "title": "hardening de dados e contrato Supabase",
+      "branch": "fix/data-governance-hardening-2026-09-13",
+      "verified": [
+        "DG-01 branch verified: homologacao/estorno nao fabricam sucesso local quando contrato remoto falta",
+        "DG-03 branch verified: RPC desconhecida no mock retorna 404/PGRST202",
+        "CI principal run 332 verde apos commit d3460997202f38804948166407aecc3b297af663"
+      ],
+      "next": "DG-02 migration/object drift contract"
     }
   ],
-  "open_product_pull_requests_at_reconciliation_start": 0,
   "financial_publication": {
     "source_project": "WilsonMPeixoto-2/pdde-repasse-conciliador",
     "workflow": ".github/workflows/sync-financial-snapshot.yml",
@@ -66,9 +99,37 @@
       "PDDE_SUPABASE_URL",
       "PDDE_SUPABASE_SERVICE_ROLE_KEY"
     ],
-    "manual_execution": "Permitida pelo workflow_dispatch, mas falha antes de publicar se os secrets esperados nao estiverem configurados.",
+    "publication_contract": "delta_v2",
     "rule": "Nao descrever a sincronizacao automatica como ativa enquanto gate e credenciais nao estiverem configurados."
   },
+  "active_data_hardening_campaign": {
+    "status": "ACTIVE",
+    "register": "docs/technical/DATA_GOVERNANCE_HARDENING_2026.md",
+    "branch": "fix/data-governance-hardening-2026-09-13",
+    "pull_request": 137,
+    "baseline_main": "578b94c1ae0e3709aaa597b124f0a1e89833a972",
+    "rule": "Nao reiniciar a auditoria do zero. Ler o registro, comparar o topico com codigo/schema/banco atuais, continuar do ultimo estado verificado e atualizar registro + continuidade ao concluir cada etapa.",
+    "completed_on_branch": [
+      "DG-01 false fiscal success blocked and E2E verified",
+      "DG-03 strict Supabase RPC mock and E2E verified"
+    ],
+    "next_focus": [
+      "DG-02 criar contrato automatizado para detectar drift de migrations e objetos fiscais sem alterar Production",
+      "DG-02 registrar decisao operacional explicita: Frente Fiscal permanece bloqueada enquanto contrato oficial nao for deliberadamente ativado",
+      "DG-05 tornar edicao cadastral atomica apos DG-02"
+    ]
+  },
+  "verified_open_risks": [
+    "Migrations fiscais 20260527000200 e 20260527000300 existem no repositorio, mas nao constam no historico de migrations nem nos objetos do Supabase oficial.",
+    "DG-01 e DG-03 estao corrigidos apenas na branch/draft PR #137; ainda exigem merge/deploy para verificacao de Production.",
+    "Importacao da BASE faz upserts amplos em duas etapas independentes e sem delta semantico.",
+    "Edicao cadastral separa parte dos campos e email em duas gravacoes independentes.",
+    "vw_unidade_detalhe escolhe conta por unidade sem amarrar programa/exercicio.",
+    "Portal do Diretor usa programa PDDE enquanto execucao_financeira real usa basico e ainda consulta campos financeiros legados.",
+    "RLS de leitura usa USING true em tabelas operacionais, inadequado para futura expansao de perfis Diretor.",
+    "UI anuncia estados Conectado/Realtime sem health-check e sem tabelas publicadas no supabase_realtime no snapshot verificado.",
+    "Observabilidade externa de disponibilidade/latencia/falhas ainda nao existe."
+  ],
   "business_invariants": [
     "Dados -> analise -> escola -> acao -> evidencia.",
     "Ausencia de informacao nao e zero.",
@@ -79,22 +140,24 @@
     "Proveniencia tecnica permanece fora da superficie operacional comum.",
     "Indicadores relevantes devem conduzir a detalhe, filtro ou acao.",
     "Busca global so anuncia areas e entidades reais.",
-    "Filtros/contexto operacional devem sobreviver ao drill-down quando reduzem retrabalho."
+    "Filtros/contexto operacional devem sobreviver ao drill-down quando reduzem retrabalho.",
+    "Estado visual nao pode declarar persistencia, conectividade ou realtime sem evidencia real correspondente."
   ],
   "documentation_governance": {
-    "reconciliation_pull_request": 133,
     "entrypoint": "docs/README.md",
     "canonical_decisions": "docs/DECISIONS.md",
     "historical_decisions": "docs/DECISIONS_LOG.md",
     "strategic_baseline": "docs/PLANO_GLOBAL_V4_2.md",
-    "rule": "Planos, specs, backlogs e handoffs datados nao determinam estado corrente."
+    "temporary_active_register": "docs/technical/DATA_GOVERNANCE_HARDENING_2026.md",
+    "rule": "Planos, specs, backlogs e handoffs datados nao determinam estado corrente. O registro de hardening e excecao operacional temporaria e deve sempre ser confrontado com o sistema real."
   },
   "current_priorities": [
-    "Manter o roteiro obrigatorio de leitura e evitar novas fontes concorrentes de estado/decisoes.",
-    "Executar smoke autenticado periodico dos fluxos criticos em Production.",
-    "Configurar secrets do workflow financeiro e realizar ativacao controlada somente quando houver decisao operacional para automatizar.",
-    "Continuar hardening de Auth/RLS/auditoria antes de ampliar o Portal do Diretor.",
-    "Tratar novas dimensoes financeiras, documentos e frente fiscal apenas quando houver contrato e cobertura adequados."
+    "Executar a campanha de hardening de dados/Supabase sem reiniciar investigacao ja verificada.",
+    "Resolver DG-02 por contrato automatizado de drift sem aplicar migrations fiscais em Production por impulso.",
+    "Eliminar gravacoes parciais e reescritas amplas desnecessarias em cadastro/importacao.",
+    "Corrigir relacao conta/programa/exercicio e unificar autoridade financeira do Portal Diretor.",
+    "Endurecer Auth/RLS antes de ampliar perfis e criar observabilidade real de saude do sistema.",
+    "Manter sincronizacao financeira automatica desativada ate decisao operacional especifica."
   ],
   "protected_scope": [
     "Nao trocar o projeto Supabase oficial.",
@@ -102,6 +165,8 @@
     "Nao usar service_role no browser.",
     "Nao converter NULL financeiro em zero.",
     "Nao publicar dimensao financeira imatura.",
+    "Nao aplicar migrations fiscais em Production apenas porque existem no repositorio.",
+    "Nao usar migration repair para mascarar drift deliberado sem decisao sobre o contrato fiscal.",
     "Nao alterar Auth, RLS, secrets, regras financeiras ou templates oficiais sem revisao humana."
   ]
 }

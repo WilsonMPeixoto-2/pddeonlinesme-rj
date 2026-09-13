@@ -1,0 +1,39 @@
+{
+  "projectRef": "raluxyojqosfzrfozmpz",
+  "checkedAt": "2026-09-13",
+  "source": "Supabase list_migrations + SQL read-only com to_regclass/to_regprocedure",
+  "remoteMigrationVersions": [
+    "20260421040958",
+    "20260421041017",
+    "20260427004801",
+    "20260430000100",
+    "20260430000200",
+    "20260430000300",
+    "20260430000400",
+    "20260430000500",
+    "20260516120000",
+    "20260517120000",
+    "20260517130000",
+    "20260518060000",
+    "20260526000000",
+    "20260527000000",
+    "20260527000100",
+    "20260909002935",
+    "20260909003133",
+    "20260909003233",
+    "20260909003327",
+    "20260909003359",
+    "20260909004734",
+    "20260909043122",
+    "20260909053739",
+    "20260909054718",
+    "20260911065126",
+    "20260913033820"
+  ],
+  "remoteCriticalObjectPaths": [],
+  "criticalObjectEvidence": {
+    "public.despesas_fiscais": false,
+    "public.homologar_despesa_fiscal": false,
+    "public.estornar_despesa_fiscal": false
+  }
+}
