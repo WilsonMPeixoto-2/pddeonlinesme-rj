@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,14 +16,16 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft,
   ArrowRight,
+  BarChart3,
   Eye,
   EyeOff,
+  FileText,
   Loader2,
   LockKeyhole,
   ShieldCheck,
   UserRound,
+  UsersRound,
 } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
 import loginBackground from "@/assets/login-pdde-rio-4k.avif";
@@ -34,28 +35,14 @@ const loginSchema = z.object({
   senha: z.string().min(1, "Senha é obrigatória"),
 });
 
-const signUpSchema = z.object({
-  email: z
-    .string()
-    .min(1, "E-mail é obrigatório")
-    .email("E-mail inválido")
-    .refine((email) => email.endsWith("@sme.rio") || email.endsWith("@rioeduca.net"), {
-      message: "Apenas e-mails institucionais @sme.rio ou @rioeduca.net são permitidos",
-    }),
-  senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-});
-
 type LoginFormValues = z.infer<typeof loginSchema>;
-type SignUpFormValues = z.infer<typeof signUpSchema>;
-type AuthMode = "signin" | "signup";
 
 const inputClassName =
-  "h-14 rounded-2xl border-slate-200/90 bg-slate-50/80 text-[0.98rem] text-slate-900 shadow-none transition-colors placeholder:text-slate-400 hover:bg-white focus-visible:border-[#1466c3] focus-visible:bg-white focus-visible:ring-[#1466c3]/15 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-white";
+  "h-12 rounded-lg border-slate-200 bg-white text-[0.92rem] text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:border-[#0d75d8] focus-visible:ring-[#0d75d8]/20 dark:bg-white dark:text-slate-900";
 
 const Login = () => {
   const navigate = useNavigate();
   const [isPending, startTransition] = useTransition();
-  const [mode, setMode] = useState<AuthMode>("signin");
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
@@ -66,11 +53,6 @@ const Login = () => {
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", senha: "" },
-  });
-
-  const signUpForm = useForm<SignUpFormValues>({
-    resolver: zodResolver(signUpSchema),
     defaultValues: { email: "", senha: "" },
   });
 
@@ -85,22 +67,6 @@ const Login = () => {
 
       toast.success("Bem-vindo(a)!");
       navigate("/dashboard");
-    });
-  };
-
-  const onSignUp = (values: SignUpFormValues) => {
-    startTransition(async () => {
-      const { error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.senha,
-        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-      });
-
-      if (error) return toast.error(mensagemErroAuth(error.message));
-
-      toast.success("Conta criada! Você já pode entrar.");
-      setMode("signin");
-      loginForm.setValue("email", values.email);
     });
   };
 
@@ -136,280 +102,179 @@ const Login = () => {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#082844] text-slate-950">
+    <main className="relative min-h-screen overflow-hidden bg-[#0a4e6d] text-white">
       <div
         aria-hidden
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat lg:bg-[position:center_center]"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${loginBackground})` }}
       />
 
       <div
         aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,22,42,0.20)_0%,rgba(6,22,42,0.08)_44%,rgba(6,22,42,0.28)_100%)] lg:bg-[linear-gradient(90deg,rgba(5,21,38,0.06)_0%,rgba(5,21,38,0.02)_48%,rgba(5,21,38,0.22)_72%,rgba(5,21,38,0.40)_100%)]"
+        className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,91,124,0.74)_0%,rgba(0,110,148,0.52)_37%,rgba(0,95,133,0.22)_63%,rgba(3,31,57,0.16)_100%)]"
       />
 
-      <section className="sr-only" aria-label="Identidade institucional">
-        <h1>PDDE Online</h1>
-        <p>4ª CRE</p>
-        <p>Recursos que fortalecem a educação de uma cidade inteira.</p>
-        <p>Dados, controle e transparência para as unidades escolares da 4ª CRE.</p>
-      </section>
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[radial-gradient(circle_at_16%_22%,rgba(0,210,255,0.20),transparent_26%),linear-gradient(180deg,rgba(4,40,68,0.06)_0%,rgba(4,40,68,0.02)_55%,rgba(4,40,68,0.32)_100%)]"
+      />
 
-      <div className="relative z-10 grid min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(31rem,41rem)]">
-        <div aria-hidden className="hidden lg:block" />
+      <div className="absolute right-7 top-5 z-20 hidden text-[0.66rem] font-medium tracking-[0.03em] text-white/75 md:block">
+        Sistema interno&nbsp;&nbsp;|&nbsp;&nbsp;4ª Coordenadoria Regional de Educação
+      </div>
 
-        <section className="flex min-h-screen items-center justify-center px-4 py-7 sm:px-7 lg:bg-[linear-gradient(90deg,rgba(236,245,250,0.00)_0%,rgba(236,245,250,0.62)_16%,rgba(243,248,252,0.92)_48%,rgba(247,250,252,0.97)_100%)] lg:px-8 xl:px-12">
-          <div
-            aria-labelledby="login-title"
-            className="w-full max-w-[30rem] rounded-[1.75rem] border border-white/75 bg-white/[0.94] p-5 shadow-[0_28px_90px_rgba(7,35,60,0.24)] backdrop-blur-2xl sm:p-8 lg:border-slate-200/70 lg:bg-white/[0.91] lg:p-9 lg:shadow-[0_26px_85px_rgba(7,35,60,0.18)]"
-          >
-            <div className="mb-8 flex items-center gap-3 lg:hidden">
-              <BrandMark size={48} className="ring-1 ring-slate-200/90" />
-              <div className="min-w-0">
-                <p className="truncate text-lg font-semibold tracking-[-0.02em] text-[#0d215d]">PDDE Online</p>
-                <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  4ª CRE
-                </p>
+      <div className="relative z-10 grid min-h-screen lg:grid-cols-[56%_44%]">
+        <section className="hidden min-h-screen flex-col justify-between px-[5.5vw] py-[5vh] lg:flex">
+          <div className="max-w-[31rem]">
+            <div className="flex items-center gap-3.5">
+              <BrandMark size={58} className="ring-1 ring-white/25 shadow-[0_0_24px_rgba(0,210,255,0.18)]" />
+              <div>
+                <h1 className="text-[2rem] font-semibold leading-none tracking-[-0.035em] text-white">PDDE Online</h1>
+                <p className="mt-1 text-sm font-medium tracking-[0.04em] text-cyan-100/85">4ª CRE</p>
               </div>
             </div>
 
-            {mode === "signin" ? (
-              <>
-                <header className="mb-7">
-                  <h2
-                    id="login-title"
-                    className="text-[2rem] font-semibold tracking-[-0.04em] text-[#0d215d] sm:text-[2.3rem]"
-                  >
-                    Bem-vindo
-                  </h2>
-                  <p className="mt-2 max-w-sm text-[0.96rem] leading-6 text-slate-600">
-                    Acesse sua conta para continuar no PDDE Online.
-                  </p>
-                </header>
+            <div className="mt-6 h-[2px] w-20 rounded-full bg-cyan-300/80" />
 
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onSignIn)} className="space-y-5" noValidate>
-                    <FormField
-                      control={loginForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[0.9rem] font-semibold text-slate-700">
-                            E-mail institucional
-                          </FormLabel>
-                          <div className="relative">
-                            <UserRound
-                              aria-hidden
-                              className="pointer-events-none absolute left-4 top-1/2 h-[1.1rem] w-[1.1rem] -translate-y-1/2 text-slate-400"
-                            />
-                            <FormControl>
-                              <Input
-                                placeholder="nome@sme.rio ou @rioeduca.net"
-                                type="email"
-                                autoComplete="email"
-                                className={`${inputClassName} pl-11`}
-                                {...field}
-                              />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+            <h2 className="mt-5 max-w-[28rem] text-[clamp(2rem,3vw,3.15rem)] font-semibold leading-[1.05] tracking-[-0.04em] text-white">
+              Recursos que fortalecem a educação de uma cidade inteira.
+            </h2>
 
-                    <FormField
-                      control={loginForm.control}
-                      name="senha"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-center justify-between gap-4">
-                            <FormLabel className="text-[0.9rem] font-semibold text-slate-700">Senha</FormLabel>
-                            <button
-                              type="button"
-                              className="rounded-md text-xs font-semibold text-[#0c63bd] underline-offset-4 transition hover:text-[#084f99] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1466c3]/30 disabled:opacity-50"
-                              onClick={handleEsqueciSenha}
-                              disabled={isPending}
-                            >
-                              Esqueci minha senha
-                            </button>
-                          </div>
+            <p className="mt-3 max-w-[28rem] text-[0.95rem] leading-6 text-cyan-50/86">
+              Dados, controle e transparência para as 163 unidades escolares da 4ª CRE.
+            </p>
 
-                          <div className="relative">
-                            <LockKeyhole
-                              aria-hidden
-                              className="pointer-events-none absolute left-4 top-1/2 h-[1.1rem] w-[1.1rem] -translate-y-1/2 text-slate-400"
-                            />
-                            <FormControl>
-                              <Input
-                                placeholder="Digite sua senha"
-                                type={showPassword ? "text" : "password"}
-                                autoComplete="current-password"
-                                className={`${inputClassName} pl-11 pr-12`}
-                                {...field}
-                              />
-                            </FormControl>
-                            <button
-                              type="button"
-                              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                              className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1466c3]/30"
-                              onClick={() => setShowPassword((value) => !value)}
-                            >
-                              {showPassword ? <EyeOff className="h-[1.1rem] w-[1.1rem]" /> : <Eye className="h-[1.1rem] w-[1.1rem]" />}
-                            </button>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+            <div className="mt-7 space-y-3.5">
+              <FeatureItem icon={<BarChart3 className="h-5 w-5" />} title="Informação confiável" text="para melhores decisões" />
+              <FeatureItem icon={<FileText className="h-5 w-5" />} title="Gestão eficiente" text="dos recursos públicos" />
+              <FeatureItem icon={<UsersRound className="h-5 w-5" />} title="Mais qualidade" text="para nossas escolas" />
+            </div>
+          </div>
 
-                    <Button
-                      type="submit"
-                      className="h-14 w-full rounded-2xl bg-[#0865d8] text-[0.98rem] font-semibold text-white shadow-[0_12px_26px_rgba(8,101,216,0.22)] transition hover:bg-[#075cc5] hover:shadow-[0_14px_30px_rgba(8,101,216,0.27)] focus-visible:ring-[#1466c3] dark:bg-[#0865d8] dark:text-white dark:hover:bg-[#075cc5]"
-                      disabled={isPending}
-                    >
-                      {isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Entrando…
-                        </>
-                      ) : (
-                        <>
-                          Entrar <ArrowRight className="ml-2 h-[1.1rem] w-[1.1rem]" />
-                        </>
-                      )}
-                    </Button>
+          <div className="flex items-center gap-3 text-white/90">
+            <BrandMark size={44} className="ring-1 ring-white/20" />
+            <div>
+              <p className="text-sm font-semibold">4ª CRE</p>
+              <p className="text-[0.68rem] leading-4 text-white/70">4ª Coordenadoria Regional de Educação</p>
+            </div>
+          </div>
+        </section>
 
-                    <div className="pt-1 text-center">
-                      <button
-                        type="button"
-                        aria-label="Primeiro acesso? Criar conta institucional"
-                        className="rounded-lg px-2 py-1 text-sm font-medium text-slate-500 underline-offset-4 transition hover:text-[#0c63bd] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1466c3]/30"
-                        onClick={() => setMode("signup")}
-                      >
-                        Primeiro acesso? <span className="font-semibold">Criar conta institucional</span>
-                      </button>
-                    </div>
-                  </form>
-                </Form>
-              </>
-            ) : (
-              <>
-                <header className="mb-7">
+        <section className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8 lg:px-[4vw]">
+          <div
+            aria-labelledby="login-title"
+            className="w-full max-w-[26.5rem] rounded-[1.15rem] border border-white/55 bg-white/[0.96] px-6 py-7 text-slate-950 shadow-[0_22px_70px_rgba(1,28,51,0.30)] backdrop-blur-xl sm:px-8 sm:py-8"
+          >
+            <div className="mb-7 flex items-center gap-3 lg:hidden">
+              <BrandMark size={44} className="ring-1 ring-slate-200" />
+              <div>
+                <p className="text-lg font-semibold tracking-[-0.02em] text-[#0d215d]">PDDE Online</p>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">4ª CRE</p>
+              </div>
+            </div>
+
+            <header className="mb-6">
+              <h2 id="login-title" className="text-[2rem] font-semibold tracking-[-0.04em] text-[#132764] sm:text-[2.15rem]">
+                Bem-vindo
+              </h2>
+              <p className="mt-1.5 max-w-xs text-[0.88rem] leading-5 text-slate-500">
+                Acesse sua conta para continuar no PDDE Online.
+              </p>
+            </header>
+
+            <Form {...loginForm}>
+              <form onSubmit={loginForm.handleSubmit(onSignIn)} className="space-y-4" noValidate>
+                <FormField
+                  control={loginForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[0.78rem] font-semibold text-slate-700">E-mail institucional</FormLabel>
+                      <div className="relative">
+                        <UserRound aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <FormControl>
+                          <Input
+                            placeholder="Digite seu e-mail institucional"
+                            type="email"
+                            autoComplete="email"
+                            className={`${inputClassName} pl-10`}
+                            {...field}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={loginForm.control}
+                  name="senha"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[0.78rem] font-semibold text-slate-700">Senha</FormLabel>
+                      <div className="relative">
+                        <LockKeyhole aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <FormControl>
+                          <Input
+                            placeholder="Digite sua senha"
+                            type={showPassword ? "text" : "password"}
+                            autoComplete="current-password"
+                            className={`${inputClassName} pl-10 pr-11`}
+                            {...field}
+                          />
+                        </FormControl>
+                        <button
+                          type="button"
+                          aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d75d8]/25"
+                          onClick={() => setShowPassword((value) => !value)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  className="mt-1 h-12 w-full rounded-lg bg-[#0874dc] text-[0.9rem] font-semibold text-white shadow-[0_8px_22px_rgba(8,116,220,0.28)] transition hover:bg-[#0768c6] focus-visible:ring-[#0d75d8] dark:bg-[#0874dc] dark:text-white dark:hover:bg-[#0768c6]"
+                  disabled={isPending}
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Entrando…
+                    </>
+                  ) : (
+                    <>
+                      Entrar <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+
+                <div className="text-center">
                   <button
                     type="button"
-                    aria-label="Já possui acesso? Entrar"
-                    className="mb-5 inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-slate-500 transition hover:text-[#0d215d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1466c3]/30"
-                    onClick={() => setMode("signin")}
+                    className="rounded-md text-[0.74rem] font-semibold text-[#0874dc] underline underline-offset-2 transition hover:text-[#075aa9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d75d8]/25 disabled:opacity-50"
+                    onClick={handleEsqueciSenha}
+                    disabled={isPending}
                   >
-                    <ArrowLeft className="h-4 w-4" /> Voltar para entrar
+                    Esqueci minha senha
                   </button>
-                  <h2
-                    id="login-title"
-                    className="text-[1.95rem] font-semibold tracking-[-0.04em] text-[#0d215d] sm:text-[2.2rem]"
-                  >
-                    Criar conta
-                  </h2>
-                  <p className="mt-2 max-w-sm text-[0.94rem] leading-6 text-slate-600">
-                    Use seu e-mail institucional para solicitar acesso ao PDDE Online.
-                  </p>
-                </header>
+                </div>
+              </form>
+            </Form>
 
-                <Form {...signUpForm}>
-                  <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-5" noValidate>
-                    <FormField
-                      control={signUpForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[0.9rem] font-semibold text-slate-700">
-                            E-mail institucional
-                          </FormLabel>
-                          <div className="relative">
-                            <UserRound
-                              aria-hidden
-                              className="pointer-events-none absolute left-4 top-1/2 h-[1.1rem] w-[1.1rem] -translate-y-1/2 text-slate-400"
-                            />
-                            <FormControl>
-                              <Input
-                                placeholder="nome@sme.rio ou @rioeduca.net"
-                                type="email"
-                                autoComplete="email"
-                                className={`${inputClassName} pl-11`}
-                                {...field}
-                              />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={signUpForm.control}
-                      name="senha"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[0.9rem] font-semibold text-slate-700">Senha</FormLabel>
-                          <div className="relative">
-                            <LockKeyhole
-                              aria-hidden
-                              className="pointer-events-none absolute left-4 top-1/2 h-[1.1rem] w-[1.1rem] -translate-y-1/2 text-slate-400"
-                            />
-                            <FormControl>
-                              <Input
-                                placeholder="Mínimo de 6 caracteres"
-                                type={showPassword ? "text" : "password"}
-                                autoComplete="new-password"
-                                className={`${inputClassName} pl-11 pr-12`}
-                                {...field}
-                              />
-                            </FormControl>
-                            <button
-                              type="button"
-                              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                              className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1466c3]/30"
-                              onClick={() => setShowPassword((value) => !value)}
-                            >
-                              {showPassword ? <EyeOff className="h-[1.1rem] w-[1.1rem]" /> : <Eye className="h-[1.1rem] w-[1.1rem]" />}
-                            </button>
-                          </div>
-                          <FormDescription className="text-xs leading-5 text-slate-500">
-                            Use pelo menos 6 caracteres. Recomenda-se combinar letras e números.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button
-                      type="submit"
-                      className="h-14 w-full rounded-2xl bg-[#0865d8] text-[0.98rem] font-semibold text-white shadow-[0_12px_26px_rgba(8,101,216,0.22)] transition hover:bg-[#075cc5] hover:shadow-[0_14px_30px_rgba(8,101,216,0.27)] focus-visible:ring-[#1466c3] dark:bg-[#0865d8] dark:text-white dark:hover:bg-[#075cc5]"
-                      disabled={isPending}
-                    >
-                      {isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Criando conta…
-                        </>
-                      ) : (
-                        "Criar conta"
-                      )}
-                    </Button>
-
-                    <p className="text-center text-xs leading-5 text-slate-500">
-                      Após o cadastro, um administrador atribuirá seu papel de operador.
-                    </p>
-                  </form>
-                </Form>
-              </>
-            )}
-
-            <div className="mt-7 border-t border-slate-200/80 pt-5">
-              <div className="flex items-start gap-3 text-slate-500">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100">
-                  <ShieldCheck aria-hidden className="h-4 w-4 text-slate-500" />
+            <div className="mt-6 border-t border-slate-200 pt-4">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-50">
+                  <ShieldCheck aria-hidden className="h-3.5 w-3.5 text-slate-500" />
                 </span>
                 <div>
-                  <p className="text-xs font-semibold text-slate-700">Ambiente seguro</p>
-                  <p className="mt-0.5 text-[0.72rem] leading-5 text-slate-500">
+                  <p className="text-[0.72rem] font-semibold text-slate-700">Ambiente seguro</p>
+                  <p className="mt-0.5 text-[0.68rem] leading-4 text-slate-500">
                     Seus dados são utilizados exclusivamente para acesso e operação do sistema.
                   </p>
                 </div>
@@ -421,6 +286,20 @@ const Login = () => {
     </main>
   );
 };
+
+function FeatureItem({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
+  return (
+    <div className="flex items-center gap-3.5 text-white">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cyan-200/25 bg-cyan-300/10 text-cyan-100 backdrop-blur-sm">
+        {icon}
+      </span>
+      <div>
+        <p className="text-[0.78rem] font-semibold leading-4">{title}</p>
+        <p className="text-[0.72rem] leading-4 text-white/72">{text}</p>
+      </div>
+    </div>
+  );
+}
 
 function mensagemErroAuth(message: string): string {
   if (message.includes("Invalid login credentials")) return "E-mail ou senha incorretos";
