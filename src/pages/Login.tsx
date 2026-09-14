@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, Eye, EyeOff, Loader2, LockKeyhole, ShieldCheck, UserRound } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
-import loginBackground from "@/assets/login-pdde-rio.webp";
+import loginBackground from "@/assets/login-pdde-rio-4k.avif";
 
 const loginSchema = z.object({
   email: z.string().min(1, "E-mail é obrigatório").email("E-mail inválido"),
