@@ -1,0 +1,19 @@
+# Conteúdo sem participação no build/runtime do frontend Vite
+.github/
+.continuity/
+.codex/
+docs/
+supabase/
+tests/
+coverage/
+playwright-report/
+test-results/
+
+# Artefatos locais e relatórios
+*.log
+*.md
+!README.md
+
+# Arquivos de desenvolvimento local
+.env*
+!.env.example
