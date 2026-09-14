@@ -1,13 +1,13 @@
 # Conteúdo sem participação no build/runtime do frontend Vite
-.github/
-.continuity/
-.codex/
-docs/
-supabase/
-tests/
-coverage/
-playwright-report/
-test-results/
+/.github/
+/.continuity/
+/.codex/
+/docs/
+/supabase/
+/tests/
+/coverage/
+/playwright-report/
+/test-results/
 
 # Artefatos locais e relatórios
 *.log
