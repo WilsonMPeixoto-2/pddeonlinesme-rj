@@ -104,12 +104,11 @@ const Login = () => {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden bg-[#0b5d92] text-slate-950"
+      className="relative min-h-screen overflow-hidden bg-[#0b5d92] bg-cover text-slate-950 lg:bg-[length:100%_100%]"
       style={{
         backgroundImage: `url(${loginBackground})`,
         backgroundPosition: "center center",
         backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
       }}
     >
       <div aria-hidden className="absolute inset-0 bg-slate-950/10 lg:bg-transparent" />
