@@ -4,7 +4,8 @@
     "deploymentEnabled": {
       "main": true,
       "preview-ready-*": true,
-      "*": false
+      "*": false,
+      "**": false
     }
   },
   "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
