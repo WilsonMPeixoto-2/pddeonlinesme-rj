@@ -7,9 +7,12 @@
     "node": "24.x"
   },
   "scripts": {
+    "predev": "node scripts/materialize-login-background.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/materialize-login-background.mjs",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "check:login-background": "node scripts/materialize-login-background.mjs --check",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
