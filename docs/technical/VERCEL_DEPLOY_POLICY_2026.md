@@ -17,7 +17,7 @@ A integração Git da Vercel fica limitada a dois tipos de branch:
 
 Todas as demais branches ficam sem deployment automático, inclusive `fix/*`, `feat/*`, `chore/*`, `dependabot/*`, branches de documentação e branches experimentais.
 
-A regra está versionada em `vercel.json`:
+A regra principal está versionada em `vercel.json`:
 
 ```json
 "git": {
@@ -30,6 +30,16 @@ A regra está versionada em `vercel.json`:
 ```
 
 A Vercel aplica regras de branch por glob/minimatch. Quando mais de uma regra coincide, basta uma regra `true` para autorizar o deployment. Assim `main` e `preview-ready-*` continuam habilitadas e o catch-all `*` bloqueia o restante.
+
+Há também um segundo gate por `ignoreCommand`:
+
+```json
+"ignoreCommand": "node scripts/vercel-ignore-build.mjs"
+```
+
+Esse script autoriza build somente no projeto Vercel oficial `pddeonlinesme-rj` (`prj_dErjl7LdzTL2412fsw0pyzo3bdp1`) e somente para `main` ou `preview-ready-*`. Qualquer outro projeto Vercel ligado ao mesmo repositório é ignorado, inclusive o projeto legado `pddeonlinesme-rj-pr8-validate` (`prj_6xhfrAEbhDZCdcz4VrcVxwxlZdch`).
+
+O GitHub CI executa `node scripts/vercel-ignore-build.mjs --self-test` para evitar regressão silenciosa dessa política.
 
 ## Fluxo de trabalho
 
@@ -61,14 +71,15 @@ O GitHub CI continua sendo o gate técnico principal. Vercel Preview passa a ser
 
 ## Projeto Vercel duplicado
 
-Há dois projetos Vercel ligados ao mesmo repositório (`pddeonlinesme-rj` e `pddeonlinesme-rj-pr8-validate`). A política versionada reduz os gatilhos automáticos para ambos, mas o projeto `pddeonlinesme-rj-pr8-validate` deve ser tratado como legado e desconectado do Git caso não exista mais uma função específica de validação. Enquanto permanecer conectado, um branch autorizado pode gerar builds nos dois projetos.
+Há dois projetos Vercel ligados ao mesmo repositório. A política acima bloqueia o projeto legado em nível de `ignoreCommand`, mesmo que ele continue conectado ao GitHub. A desconexão posterior continua recomendável para reduzir ruído de integração, mas deixa de ser necessária para impedir builds duplicados.
 
 ## Critério de sucesso
 
 A política é considerada efetiva quando:
 
-- commits em branches comuns não criam deployments Vercel;
-- `preview-ready-*` cria Preview sob demanda;
-- merge em `main` cria o deployment de produção;
+- commits em branches comuns não criam builds Vercel;
+- `preview-ready-*` cria Preview sob demanda no projeto oficial;
+- merge em `main` cria o deployment de produção no projeto oficial;
+- o projeto legado não executa build mesmo quando um branch autorizado existe;
 - GitHub CI continua validando cada PR independentemente da existência de Preview;
-- o número mensal/diário de deployments passa a refletir entregas e previews deliberados, não o número de commits.
+- o número de deployments passa a refletir entregas e previews deliberados, não o número de commits.
