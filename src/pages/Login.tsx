@@ -303,6 +303,7 @@ const Login = () => {
                 <header className="mb-7">
                   <button
                     type="button"
+                    aria-label="Já possui acesso? Entrar"
                     className="mb-5 inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-slate-500 transition hover:text-[#0d215d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1466c3]/30"
                     onClick={() => setMode("signin")}
                   >
@@ -414,7 +415,7 @@ const Login = () => {
                   <ShieldCheck aria-hidden className="h-4 w-4 text-slate-500" />
                 </span>
                 <div>
-                  <p className="text-xs font-semibold text-slate-700">Ambiente institucional seguro</p>
+                  <p className="text-xs font-semibold text-slate-700">Ambiente seguro</p>
                   <p className="mt-0.5 text-[0.72rem] leading-5 text-slate-500">
                     Seus dados são utilizados exclusivamente para acesso e operação do sistema.
                   </p>
