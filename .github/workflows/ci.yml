@@ -31,6 +31,17 @@ jobs:
       - name: Vercel deployment policy
         run: node scripts/vercel-ignore-build.mjs --self-test
 
+      - name: Vercel upload contract
+        run: |
+          if git check-ignore -q --no-index --exclude-from=.vercelignore src/integrations/supabase/client.ts; then
+            echo "::error::.vercelignore está excluindo o cliente Supabase usado pelo frontend"
+            exit 1
+          fi
+          if git check-ignore -q --no-index --exclude-from=.vercelignore src/integrations/supabase/types.ts; then
+            echo "::error::.vercelignore está excluindo os tipos Supabase usados pelo frontend"
+            exit 1
+          fi
+
       - name: Typecheck
         run: npm run typecheck
 
