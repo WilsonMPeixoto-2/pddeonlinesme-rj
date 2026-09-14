@@ -42,6 +42,15 @@ jobs:
             exit 1
           fi
 
+      - name: Login institutional image contract
+        run: |
+          test -f src/assets/login-pdde-rio.webp
+          bytes=$(wc -c < src/assets/login-pdde-rio.webp)
+          if [ "$bytes" -lt 40000 ]; then
+            echo "::error::Imagem institucional do login está ausente ou foi substituída por asset reduzido ($bytes bytes)"
+            exit 1
+          fi
+
       - name: Typecheck
         run: npm run typecheck
 
