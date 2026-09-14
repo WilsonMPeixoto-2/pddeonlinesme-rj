@@ -10,15 +10,11 @@ test("renderiza a tela pública de acesso institucional", async ({ page }) => {
   await expect(page.getByLabel("E-mail institucional").first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Esqueci minha senha" })).toBeVisible();
   await expect(page.getByText("Ambiente seguro")).toBeVisible();
-});
-
-test("preserva o fluxo de criação de conta institucional", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Primeiro acesso? Criar conta institucional" }).click();
-
-  await expect(page.getByRole("heading", { name: "Criar conta" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Criar conta" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Já possui acesso? Entrar" })).toBeVisible();
+  await expect(page.getByText("Recursos que fortalecem a educação de uma cidade inteira.")).toBeVisible();
+  await expect(page.getByText("Informação confiável")).toBeVisible();
+  await expect(page.getByText("Gestão eficiente")).toBeVisible();
+  await expect(page.getByText("Mais qualidade")).toBeVisible();
+  await expect(page.getByText("Criar conta institucional")).toHaveCount(0);
 });
 
 test("valida credenciais obrigatórias antes de chamar o backend", async ({ page }) => {
