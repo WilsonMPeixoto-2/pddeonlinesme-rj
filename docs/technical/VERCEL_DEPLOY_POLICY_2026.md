@@ -24,12 +24,13 @@ A regra principal está versionada em `vercel.json`:
   "deploymentEnabled": {
     "main": true,
     "preview-ready-*": true,
-    "*": false
+    "*": false,
+    "**": false
   }
 }
 ```
 
-A Vercel aplica regras de branch por glob/minimatch. Quando mais de uma regra coincide, basta uma regra `true` para autorizar o deployment. Assim `main` e `preview-ready-*` continuam habilitadas e o catch-all `*` bloqueia o restante.
+A Vercel aplica regras de branch por glob/minimatch. Quando mais de uma regra coincide, basta uma regra `true` para autorizar o deployment. `*` cobre nomes simples e `**` protege também nomes de branch que contenham `/`; `main` e `preview-ready-*` continuam explicitamente autorizadas.
 
 Há também um segundo gate por `ignoreCommand`:
 
@@ -50,6 +51,7 @@ O GitHub CI executa `node scripts/vercel-ignore-build.mjs --self-test` para evit
 5. Essa branch gera exatamente um Preview enquanto não receber novos commits.
 6. Se o Preview exigir correções, continuar trabalhando na branch original. Depois da nova validação, criar outro snapshot `preview-ready-<assunto>-r2` em vez de usar a Preview como branch de desenvolvimento.
 7. Produção é gerada somente quando a entrega aprovada é incorporada a `main`.
+8. Branches criadas antes desta política devem incorporar a `main` atual antes de gerar um `preview-ready-*`, para carregar também o gate versionado.
 
 ## Regra de economia
 
