@@ -45,9 +45,10 @@ jobs:
       - name: Login institutional image contract
         run: |
           test -f src/assets/login-pdde-rio.webp
-          bytes=$(wc -c < src/assets/login-pdde-rio.webp)
-          if [ "$bytes" -lt 40000 ]; then
-            echo "::error::Imagem institucional do login está ausente ou foi substituída por asset reduzido ($bytes bytes)"
+          expected="edafb0757e3d689545c4a67dc1385dd59319f070ef69848fde4d13deee009038"
+          actual=$(sha256sum src/assets/login-pdde-rio.webp | cut -d' ' -f1)
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::A composição institucional aprovada do login foi alterada ($actual)"
             exit 1
           fi
 
