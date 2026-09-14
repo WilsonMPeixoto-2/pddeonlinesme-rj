@@ -37,7 +37,10 @@ export default defineConfig(() => ({
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
-        globPatterns: ["**/*.{js,css,html,png,svg,xlsx,ico}"],
+        // O shell HTML deve vir sempre da Vercel. Os assets versionados podem permanecer em precache,
+        // mas index.html não pode prender o usuário a uma interface anterior após novo deploy.
+        globPatterns: ["**/*.{js,css,png,svg,xlsx,ico}"],
+        navigateFallback: null,
         // Não armazenar respostas da API Supabase no Service Worker.
         // Dados administrativos/financeiros precisam refletir o estado atual do backend;
         // o cache de sessão é controlado pelo React Query, com política explícita de staleTime.
