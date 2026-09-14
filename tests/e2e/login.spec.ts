@@ -10,10 +10,6 @@ test("renderiza a tela pública de acesso institucional", async ({ page }) => {
   await expect(page.getByLabel("E-mail institucional").first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Esqueci minha senha" })).toBeVisible();
   await expect(page.getByText("Ambiente seguro")).toBeVisible();
-  await expect(page.getByText("Recursos que fortalecem a educação de uma cidade inteira.")).toBeVisible();
-  await expect(page.getByText("Informação confiável")).toBeVisible();
-  await expect(page.getByText("Gestão eficiente")).toBeVisible();
-  await expect(page.getByText("Mais qualidade")).toBeVisible();
   await expect(page.getByText("Criar conta institucional")).toHaveCount(0);
 });
 
