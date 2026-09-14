@@ -5,7 +5,7 @@ test("rota protegida redireciona usuário sem sessão para o login", async ({ pa
   await page.goto("/manual");
 
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole("heading", { name: "Acesso ao sistema" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Bem-vindo" })).toBeVisible();
 });
 
 test("login autenticado abre o dashboard canônico e mantém sessão ao navegar", async ({ page }) => {

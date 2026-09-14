@@ -1,13 +1,24 @@
 import { expect, test } from "@playwright/test";
 import { installSupabaseMock, signInAsTestAdmin, TEST_EMAIL } from "./supabase-mock";
 
-test("renderiza a tela pública de acesso", async ({ page }) => {
+test("renderiza a tela pública de acesso institucional", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { name: "PDDE Online" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Acesso ao sistema" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Bem-vindo" })).toBeVisible();
+  await expect(page.getByText("Acesse sua conta para continuar no PDDE Online.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible();
   await expect(page.getByLabel("E-mail institucional").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Esqueci minha senha" })).toBeVisible();
+  await expect(page.getByText("Ambiente seguro")).toBeVisible();
+});
+
+test("preserva o fluxo de criação de conta institucional", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Primeiro acesso? Criar conta institucional" }).click();
+
+  await expect(page.getByRole("heading", { name: "Criar conta" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Criar conta" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Já possui acesso? Entrar" })).toBeVisible();
 });
 
 test("valida credenciais obrigatórias antes de chamar o backend", async ({ page }) => {
