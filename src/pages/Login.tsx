@@ -183,7 +183,7 @@ const Login = () => {
                     Bem-vindo
                   </h2>
                   <p className="mt-2 max-w-sm text-[0.96rem] leading-6 text-slate-600">
-                    Entre com sua conta institucional para acessar o PDDE Online.
+                    Acesse sua conta para continuar no PDDE Online.
                   </p>
                 </header>
 
@@ -289,6 +289,7 @@ const Login = () => {
                     <Button
                       type="button"
                       variant="outline"
+                      aria-label="Primeiro acesso? Criar conta institucional"
                       className="h-12 w-full rounded-2xl border-slate-200 bg-white/65 text-sm font-semibold text-slate-700 shadow-none hover:border-slate-300 hover:bg-slate-50 hover:text-[#0d215d]"
                       onClick={() => setMode("signup")}
                     >
@@ -426,5 +427,14 @@ const Login = () => {
     </main>
   );
 };
+
+function mensagemErroAuth(message: string): string {
+  if (message.includes("Invalid login credentials")) return "E-mail ou senha incorretos";
+  if (message.includes("Email not confirmed")) return "Confirme seu e-mail antes de entrar";
+  if (message.includes("User already registered")) return "Este e-mail já está cadastrado";
+  if (message.includes("Password should be")) return "A senha deve ter pelo menos 6 caracteres";
+  if (message.includes("rate limit")) return "Muitas tentativas. Aguarde alguns minutos e tente novamente";
+  return `Erro na autenticação: ${message}`;
+}
 
 export default Login;
