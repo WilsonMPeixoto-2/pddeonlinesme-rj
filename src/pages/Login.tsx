@@ -150,7 +150,7 @@ const Login = () => {
 
       <section className="sr-only" aria-label="Identidade institucional">
         <h1>PDDE Online</h1>
-        <p>4ª CRE · SME-RJ</p>
+        <p>4ª CRE</p>
         <p>Recursos que fortalecem a educação de uma cidade inteira.</p>
         <p>Dados, controle e transparência para as unidades escolares da 4ª CRE.</p>
       </section>
@@ -168,7 +168,7 @@ const Login = () => {
               <div className="min-w-0">
                 <p className="truncate text-lg font-semibold tracking-[-0.02em] text-[#0d215d]">PDDE Online</p>
                 <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  4ª CRE · SME-RJ
+                  4ª CRE
                 </p>
               </div>
             </div>
@@ -278,23 +278,16 @@ const Login = () => {
                       )}
                     </Button>
 
-                    <div className="flex items-center gap-3 py-1" aria-hidden>
-                      <div className="h-px flex-1 bg-slate-200" />
-                      <span className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Primeiro acesso
-                      </span>
-                      <div className="h-px flex-1 bg-slate-200" />
+                    <div className="pt-1 text-center">
+                      <button
+                        type="button"
+                        aria-label="Primeiro acesso? Criar conta institucional"
+                        className="rounded-lg px-2 py-1 text-sm font-medium text-slate-500 underline-offset-4 transition hover:text-[#0c63bd] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1466c3]/30"
+                        onClick={() => setMode("signup")}
+                      >
+                        Primeiro acesso? <span className="font-semibold">Criar conta institucional</span>
+                      </button>
                     </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      aria-label="Primeiro acesso? Criar conta institucional"
-                      className="h-12 w-full rounded-2xl border-slate-200 bg-white/65 text-sm font-semibold text-slate-700 shadow-none hover:border-slate-300 hover:bg-slate-50 hover:text-[#0d215d]"
-                      onClick={() => setMode("signup")}
-                    >
-                      Criar conta institucional
-                    </Button>
                   </form>
                 </Form>
               </>
