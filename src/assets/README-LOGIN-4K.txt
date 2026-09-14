@@ -1,0 +1,1 @@
+Fundo de login 4K (3840x2160) em AVIF, derivado da arte aprovada para reduzir o recorte/zoom em telas widescreen e preservar nitidez visual. SHA-256 da origem gerada nesta etapa: efa8ec87d08bf0d67ca559d7e3bbc6211da2156400cf1f923d2f363697048024.
