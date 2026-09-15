@@ -108,22 +108,22 @@ const Login = () => {
 
       <div aria-hidden className="absolute inset-0 overflow-hidden bg-[#0b5d92] lg:hidden">
         <div
-          className="absolute inset-x-0 top-0 h-[66dvh] bg-no-repeat"
+          className="absolute inset-y-0 left-1/2 w-[min(76vw,20rem)] -translate-x-1/2 bg-no-repeat [mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)]"
           style={{
             backgroundImage: `url(${loginBackground})`,
-            backgroundPosition: "25% top",
-            backgroundSize: "auto 66dvh",
+            backgroundPosition: "47% center",
+            backgroundSize: "auto 100%",
           }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(6,39,72,0.08)_0%,rgba(6,39,72,0.05)_48%,rgba(11,93,146,0.42)_66%,#0b5d92_84%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,39,72,0.02)_0%,rgba(6,39,72,0.10)_52%,rgba(11,93,146,0.42)_100%)]" />
       </div>
 
       <div aria-hidden className="absolute inset-0 bg-slate-950/10 lg:bg-transparent" />
 
-      <div className="relative z-10 flex min-h-[100dvh] items-center justify-center px-4 py-8 sm:px-6 lg:justify-end lg:px-[7vw] lg:py-10">
+      <div className="relative z-10 flex min-h-[100dvh] items-center justify-center px-4 py-6 sm:px-6 sm:py-8 lg:justify-end lg:px-[7vw] lg:py-10">
         <section
           aria-labelledby="login-title"
-          className="w-full max-w-[28rem] rounded-[1.35rem] border border-white/70 bg-white/[0.96] p-6 shadow-[0_24px_80px_rgba(15,23,42,0.22)] backdrop-blur-xl sm:p-8 lg:min-h-[40rem] lg:-translate-y-4 lg:p-10"
+          className="w-full max-w-none rounded-[1.35rem] border border-white/70 bg-white/[0.96] p-6 shadow-[0_24px_80px_rgba(15,23,42,0.22)] backdrop-blur-xl sm:p-8 md:max-w-[42rem] lg:min-h-[40rem] lg:max-w-[28rem] lg:-translate-y-4 lg:p-10"
         >
           <div className="mb-7 flex items-center gap-3 lg:hidden">
             <BrandMark size={44} className="ring-1 ring-slate-200" />
