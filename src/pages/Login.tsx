@@ -17,12 +17,15 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowRight,
+  ChartNoAxesColumnIncreasing,
+  ClipboardList,
   Eye,
   EyeOff,
   Loader2,
   LockKeyhole,
   ShieldCheck,
   UserRound,
+  UsersRound,
 } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
 import loginBackground from "@/assets/login-pdde-rio.webp";
@@ -35,7 +38,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const inputClassName =
-  "h-[3.25rem] rounded-lg border-slate-200 bg-white text-[0.92rem] text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:border-[#0d75d8] focus-visible:ring-[#0d75d8]/20 dark:bg-white dark:text-slate-900";
+  "h-[3.25rem] rounded-[0.6rem] border-[#DCE4ED] bg-white text-[0.92rem] text-[#071A3D] shadow-sm placeholder:text-[#7B899B] focus-visible:border-[#0057D9] focus-visible:ring-[#0057D9]/10 dark:bg-white dark:text-[#071A3D]";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -99,45 +102,51 @@ const Login = () => {
   };
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[#0b5d92] text-slate-950">
+    <main className="relative min-h-[100dvh] overflow-x-hidden bg-[#004C70] text-slate-950">
       <div
         aria-hidden
         className="absolute inset-0 hidden bg-cover bg-center bg-no-repeat lg:block"
         style={{ backgroundImage: `url(${loginBackground})` }}
       />
 
-      <div aria-hidden className="absolute inset-0 overflow-hidden bg-[#0b5d92] lg:hidden">
+      <div aria-hidden className="absolute inset-0 overflow-hidden bg-[#004C70] lg:hidden">
         <div
-          className="absolute inset-y-0 left-1/2 w-[min(76vw,20rem)] -translate-x-1/2 bg-no-repeat [mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)]"
-          style={{
-            backgroundImage: `url(${loginBackground})`,
-            backgroundPosition: "47% center",
-            backgroundSize: "auto 100%",
-          }}
+          className="absolute inset-0 bg-[position:47%_center] bg-[length:auto_175dvh] bg-no-repeat sm:bg-[length:auto_200dvh]"
+          style={{ backgroundImage: `url(${loginBackground})` }}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,39,72,0.02)_0%,rgba(6,39,72,0.10)_52%,rgba(11,93,146,0.42)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,76,112,0.82)_0%,rgba(0,76,112,0.52)_28%,rgba(0,76,112,0.38)_55%,rgba(0,76,112,0.72)_100%)]" />
       </div>
 
-      <div aria-hidden className="absolute inset-0 bg-slate-950/10 lg:bg-transparent" />
+      <div aria-hidden className="absolute inset-0 bg-slate-950/5 lg:bg-transparent" />
 
-      <div className="relative z-10 flex min-h-[100dvh] items-center justify-center px-4 py-6 sm:px-6 sm:py-8 lg:justify-end lg:px-[7vw] lg:py-10">
-        <section
-          aria-labelledby="login-title"
-          className="w-full max-w-none rounded-[1.35rem] border border-white/70 bg-white/[0.96] p-6 shadow-[0_24px_80px_rgba(15,23,42,0.22)] backdrop-blur-xl sm:p-8 md:max-w-[42rem] lg:min-h-[40rem] lg:max-w-[28rem] lg:-translate-y-4 lg:p-10"
-        >
-          <div className="mb-7 flex items-center gap-3 lg:hidden">
-            <BrandMark size={44} className="ring-1 ring-slate-200" />
+      <div className="relative z-10 flex min-h-[100dvh] flex-col items-center px-4 py-7 sm:px-8 sm:py-10 lg:items-end lg:justify-center lg:px-[7vw] lg:py-10">
+        <section className="w-full max-w-[38rem] text-white lg:hidden" aria-label="Identidade do PDDE Online">
+          <div className="flex items-center gap-3">
+            <BrandMark size={48} className="ring-1 ring-white/35" />
             <div>
-              <p className="text-lg font-semibold tracking-tight text-slate-900">PDDE Online</p>
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">4ª CRE</p>
+              <p className="text-[1.15rem] font-semibold tracking-[-0.02em]">PDDE Online</p>
+              <p className="mt-0.5 text-[0.72rem] font-medium uppercase tracking-[0.16em] text-white/72">4ª CRE</p>
             </div>
           </div>
 
-          <header className="mb-9">
-            <h1 id="login-title" className="text-[2.05rem] font-bold tracking-[-0.035em] text-[#0d215d] sm:text-[2.25rem]">
+          <div className="mt-7 h-[2px] w-8 rounded-full bg-[#22B8CF]" />
+          <h1 className="mt-4 max-w-[31rem] text-[1.8rem] font-bold leading-[1.13] tracking-[-0.025em] sm:text-[2.25rem]">
+            Recursos que fortalecem a educação de uma cidade inteira.
+          </h1>
+          <p className="mt-3 max-w-[30rem] text-[0.94rem] leading-6 text-white/82">
+            Dados, controle e transparência para as 163 unidades escolares da 4ª CRE.
+          </p>
+        </section>
+
+        <section
+          aria-labelledby="login-title"
+          className="mt-7 w-full max-w-[28rem] rounded-[1rem] border border-white/55 bg-white/[0.96] p-6 shadow-[0_8px_28px_rgba(7,26,61,0.10)] backdrop-blur-xl sm:max-w-[34rem] sm:p-8 md:max-w-[38rem] lg:mt-0 lg:min-h-[40rem] lg:max-w-[28rem] lg:-translate-y-4 lg:rounded-[1.35rem] lg:p-10 lg:shadow-[0_24px_80px_rgba(15,23,42,0.22)]"
+        >
+          <header className="mb-8 lg:mb-9">
+            <h2 id="login-title" className="text-[2rem] font-bold tracking-[-0.035em] text-[#071A3D] sm:text-[2.2rem]">
               Bem-vindo
-            </h1>
-            <p className="mt-2 max-w-[17rem] text-[0.94rem] leading-6 text-slate-600">
+            </h2>
+            <p className="mt-2 max-w-[18rem] text-[0.94rem] leading-6 text-[#52637A]">
               Acesse sua conta para continuar no PDDE Online.
             </p>
           </header>
@@ -149,9 +158,9 @@ const Login = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[0.9rem] font-semibold text-slate-700">Usuário</FormLabel>
+                    <FormLabel className="text-[0.9rem] font-semibold text-[#52637A]">Usuário</FormLabel>
                     <div className="relative">
-                      <UserRound aria-hidden className="pointer-events-none absolute left-4 top-1/2 h-[1.05rem] w-[1.05rem] -translate-y-1/2 text-slate-400" />
+                      <UserRound aria-hidden className="pointer-events-none absolute left-4 top-1/2 h-[1.05rem] w-[1.05rem] -translate-y-1/2 text-[#6B7C91]" />
                       <FormControl>
                         <Input
                           placeholder="Digite seu usuário"
@@ -172,9 +181,9 @@ const Login = () => {
                 name="senha"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[0.9rem] font-semibold text-slate-700">Senha</FormLabel>
+                    <FormLabel className="text-[0.9rem] font-semibold text-[#52637A]">Senha</FormLabel>
                     <div className="relative">
-                      <LockKeyhole aria-hidden className="pointer-events-none absolute left-4 top-1/2 h-[1.05rem] w-[1.05rem] -translate-y-1/2 text-slate-400" />
+                      <LockKeyhole aria-hidden className="pointer-events-none absolute left-4 top-1/2 h-[1.05rem] w-[1.05rem] -translate-y-1/2 text-[#6B7C91]" />
                       <FormControl>
                         <Input
                           placeholder="Digite sua senha"
@@ -187,7 +196,7 @@ const Login = () => {
                       <button
                         type="button"
                         aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d75d8]/25"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-[#6B7C91] transition hover:text-[#071A3D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0057D9]/20"
                         onClick={() => setShowPassword((value) => !value)}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -200,7 +209,7 @@ const Login = () => {
 
               <Button
                 type="submit"
-                className="h-[3.25rem] w-full rounded-lg bg-[#0874dc] text-[0.92rem] font-semibold text-white shadow-[0_8px_22px_rgba(8,116,220,0.28)] transition hover:bg-[#0768c6] focus-visible:ring-[#0d75d8] dark:bg-[#0874dc] dark:text-white dark:hover:bg-[#0768c6]"
+                className="h-[3rem] w-full rounded-[0.6rem] bg-[linear-gradient(90deg,#0067E8_0%,#0057D9_100%)] text-[0.92rem] font-semibold text-white shadow-[0_8px_22px_rgba(0,87,217,0.22)] transition hover:brightness-105 focus-visible:ring-[#22B8CF] dark:text-white"
                 disabled={isPending}
               >
                 {isPending ? (
@@ -217,7 +226,7 @@ const Login = () => {
               <div className="text-center">
                 <button
                   type="button"
-                  className="rounded-md text-[0.75rem] font-semibold text-[#0874dc] underline underline-offset-2 transition hover:text-[#075aa9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d75d8]/25 disabled:opacity-50"
+                  className="min-h-11 rounded-md px-2 text-[0.76rem] font-semibold text-[#0057D9] underline underline-offset-2 transition hover:text-[#004C70] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0057D9]/20 disabled:opacity-50"
                   onClick={handleEsqueciSenha}
                   disabled={isPending}
                 >
@@ -227,18 +236,33 @@ const Login = () => {
             </form>
           </Form>
 
-          <div className="mt-7 border-t border-slate-200 pt-5">
+          <div className="mt-6 border-t border-[#DCE4ED] pt-5 lg:mt-7">
             <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-50">
-                <ShieldCheck aria-hidden className="h-3.5 w-3.5 text-slate-500" />
+              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#F2F6FA]">
+                <ShieldCheck aria-hidden className="h-3.5 w-3.5 text-[#52637A]" />
               </span>
               <div>
-                <p className="text-[0.72rem] font-semibold text-slate-700">Ambiente seguro</p>
-                <p className="mt-0.5 text-[0.68rem] leading-4 text-slate-500">
+                <p className="text-[0.72rem] font-semibold text-[#071A3D]">Ambiente seguro</p>
+                <p className="mt-0.5 text-[0.68rem] leading-4 text-[#7B899B]">
                   Seus dados são protegidos e utilizados apenas para fins institucionais.
                 </p>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="mt-7 grid w-full max-w-[38rem] gap-4 pb-2 text-white/90 sm:grid-cols-3 lg:hidden" aria-label="Benefícios do PDDE Online">
+          <div className="flex items-center gap-3">
+            <ChartNoAxesColumnIncreasing aria-hidden className="h-5 w-5 shrink-0 text-[#22B8CF]" strokeWidth={1.8} />
+            <p className="text-[0.78rem] leading-5">Informação confiável para melhores decisões</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <ClipboardList aria-hidden className="h-5 w-5 shrink-0 text-[#22B8CF]" strokeWidth={1.8} />
+            <p className="text-[0.78rem] leading-5">Gestão eficiente dos recursos públicos</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <UsersRound aria-hidden className="h-5 w-5 shrink-0 text-[#22B8CF]" strokeWidth={1.8} />
+            <p className="text-[0.78rem] leading-5">Mais qualidade para nossas escolas</p>
           </div>
         </section>
       </div>
