@@ -100,18 +100,16 @@ const Login = () => {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden bg-[#0b5d92] text-slate-950"
+      className="relative min-h-[100dvh] overflow-hidden bg-[#0b5d92] bg-cover bg-[position:40%_center] text-slate-950 sm:bg-[position:42%_center] lg:bg-center"
       style={{
         backgroundImage: `url(${loginBackground})`,
-        backgroundPosition: "center center",
         backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
       }}
     >
       <div aria-hidden className="absolute inset-0 bg-slate-950/10 lg:bg-transparent" />
       <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-slate-950/10 via-transparent to-slate-950/20 lg:hidden" />
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:justify-end lg:px-[7vw] lg:py-10">
+      <div className="relative z-10 flex min-h-[100dvh] items-center justify-center px-4 py-8 sm:px-6 lg:justify-end lg:px-[7vw] lg:py-10">
         <section
           aria-labelledby="login-title"
           className="w-full max-w-[28rem] rounded-[1.35rem] border border-white/70 bg-white/[0.96] p-6 shadow-[0_24px_80px_rgba(15,23,42,0.22)] backdrop-blur-xl sm:p-8 lg:min-h-[40rem] lg:-translate-y-4 lg:p-10"
