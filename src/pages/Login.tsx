@@ -105,11 +105,11 @@ const Login = () => {
     <main className="relative min-h-[100dvh] overflow-x-hidden bg-[#004C70] text-slate-950">
       <div
         aria-hidden
-        className="absolute inset-0 hidden bg-cover bg-center bg-no-repeat lg:block"
+        className="absolute inset-0 hidden bg-cover bg-center bg-no-repeat xl:block"
         style={{ backgroundImage: `url(${loginBackground})` }}
       />
 
-      <div aria-hidden className="absolute inset-0 overflow-hidden bg-[#004C70] lg:hidden">
+      <div aria-hidden className="absolute inset-0 overflow-hidden bg-[#004C70] xl:hidden">
         <div
           className="absolute inset-0 bg-[position:47%_center] bg-[length:auto_175dvh] bg-no-repeat sm:bg-[length:auto_200dvh]"
           style={{ backgroundImage: `url(${loginBackground})` }}
@@ -117,10 +117,10 @@ const Login = () => {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,76,112,0.82)_0%,rgba(0,76,112,0.52)_28%,rgba(0,76,112,0.38)_55%,rgba(0,76,112,0.72)_100%)]" />
       </div>
 
-      <div aria-hidden className="absolute inset-0 bg-slate-950/5 lg:bg-transparent" />
+      <div aria-hidden className="absolute inset-0 bg-slate-950/5 xl:bg-transparent" />
 
-      <div className="relative z-10 flex min-h-[100dvh] flex-col items-center px-4 py-7 sm:px-8 sm:py-10 lg:items-end lg:justify-center lg:px-[7vw] lg:py-10">
-        <section className="w-full max-w-[38rem] text-white lg:hidden" aria-label="Identidade do PDDE Online">
+      <div className="relative z-10 flex min-h-[100dvh] flex-col items-center px-4 py-7 sm:px-8 sm:py-10 xl:items-end xl:justify-center xl:px-[7vw] xl:py-10">
+        <section className="w-full max-w-[38rem] text-white xl:hidden" aria-label="Identidade do PDDE Online">
           <div className="flex items-center gap-3">
             <BrandMark size={48} className="ring-1 ring-white/35" />
             <div>
@@ -140,9 +140,9 @@ const Login = () => {
 
         <section
           aria-labelledby="login-title"
-          className="mt-7 w-full max-w-[28rem] rounded-[1rem] border border-white/55 bg-white/[0.96] p-6 shadow-[0_8px_28px_rgba(7,26,61,0.10)] backdrop-blur-xl sm:max-w-[34rem] sm:p-8 md:max-w-[38rem] lg:mt-0 lg:min-h-[40rem] lg:max-w-[28rem] lg:-translate-y-4 lg:rounded-[1.35rem] lg:p-10 lg:shadow-[0_24px_80px_rgba(15,23,42,0.22)]"
+          className="mt-7 w-full max-w-[28rem] rounded-[1rem] border border-white/55 bg-white/[0.96] p-6 shadow-[0_8px_28px_rgba(7,26,61,0.10)] backdrop-blur-xl sm:max-w-[34rem] sm:p-8 md:max-w-[38rem] xl:mt-0 xl:min-h-[40rem] xl:max-w-[28rem] xl:-translate-y-4 xl:rounded-[1.35rem] xl:p-10 xl:shadow-[0_24px_80px_rgba(15,23,42,0.22)]"
         >
-          <header className="mb-8 lg:mb-9">
+          <header className="mb-8 xl:mb-9">
             <h2 id="login-title" className="text-[2rem] font-bold tracking-[-0.035em] text-[#071A3D] sm:text-[2.2rem]">
               Bem-vindo
             </h2>
@@ -236,7 +236,7 @@ const Login = () => {
             </form>
           </Form>
 
-          <div className="mt-6 border-t border-[#DCE4ED] pt-5 lg:mt-7">
+          <div className="mt-6 border-t border-[#DCE4ED] pt-5 xl:mt-7">
             <div className="flex items-start gap-3">
               <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#F2F6FA]">
                 <ShieldCheck aria-hidden className="h-3.5 w-3.5 text-[#52637A]" />
@@ -251,7 +251,7 @@ const Login = () => {
           </div>
         </section>
 
-        <section className="mt-7 grid w-full max-w-[38rem] gap-4 pb-2 text-white/90 sm:grid-cols-3 lg:hidden" aria-label="Benefícios do PDDE Online">
+        <section className="mt-7 grid w-full max-w-[38rem] gap-4 pb-2 text-white/90 sm:grid-cols-3 xl:hidden" aria-label="Benefícios do PDDE Online">
           <div className="flex items-center gap-3">
             <ChartNoAxesColumnIncreasing aria-hidden className="h-5 w-5 shrink-0 text-[#22B8CF]" strokeWidth={1.8} />
             <p className="text-[0.78rem] leading-5">Informação confiável para melhores decisões</p>
