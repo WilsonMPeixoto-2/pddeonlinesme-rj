@@ -7,9 +7,10 @@ test("renderiza a tela pública de acesso institucional", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Bem-vindo" })).toBeVisible();
   await expect(page.getByText("Acesse sua conta para continuar no PDDE Online.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible();
-  await expect(page.getByLabel("E-mail institucional").first()).toBeVisible();
+  await expect(page.getByLabel("Usuário").first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Esqueci minha senha" })).toBeVisible();
   await expect(page.getByText("Ambiente seguro")).toBeVisible();
+  await expect(page.getByText("Seus dados são protegidos e utilizados apenas para fins institucionais.")).toBeVisible();
   await expect(page.getByText("Criar conta institucional")).toHaveCount(0);
 });
 
@@ -20,7 +21,7 @@ test("valida credenciais obrigatórias antes de chamar o backend", async ({ page
   });
 
   await page.goto("/");
-  await page.getByLabel("E-mail institucional").first().fill("email-invalido");
+  await page.getByLabel("Usuário").first().fill("email-invalido");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.getByText("E-mail inválido")).toBeVisible();
@@ -31,7 +32,7 @@ test("valida credenciais obrigatórias antes de chamar o backend", async ({ page
 test("recuperação de senha direciona para a tela de redefinição", async ({ page }) => {
   await installSupabaseMock(page);
   await page.goto("/");
-  await page.getByLabel("E-mail institucional").first().fill(TEST_EMAIL);
+  await page.getByLabel("Usuário").first().fill(TEST_EMAIL);
 
   const recoverRequestPromise = page.waitForRequest((request) =>
     request.url().includes("/auth/v1/recover"),
