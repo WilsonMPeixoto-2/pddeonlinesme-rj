@@ -293,7 +293,7 @@ export async function installSupabaseMock(page: Page) {
 
 export async function signInAsTestAdmin(page: Page) {
   await page.goto("/");
-  await page.getByLabel("E-mail institucional").first().fill(TEST_EMAIL);
+  await page.getByLabel("Usuário").first().fill(TEST_EMAIL);
   await page.getByLabel("Senha").first().fill(TEST_PASSWORD);
   await page.getByRole("button", { name: "Entrar" }).click();
   await page.waitForURL("**/dashboard");
