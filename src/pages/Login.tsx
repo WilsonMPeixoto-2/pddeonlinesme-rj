@@ -99,15 +99,26 @@ const Login = () => {
   };
 
   return (
-    <main
-      className="relative min-h-[100dvh] overflow-hidden bg-[#0b5d92] bg-cover bg-[position:40%_center] text-slate-950 sm:bg-[position:42%_center] lg:bg-center"
-      style={{
-        backgroundImage: `url(${loginBackground})`,
-        backgroundRepeat: "no-repeat",
-      }}
-    >
+    <main className="relative min-h-[100dvh] overflow-hidden bg-[#0b5d92] text-slate-950">
+      <div
+        aria-hidden
+        className="absolute inset-0 hidden bg-cover bg-center bg-no-repeat lg:block"
+        style={{ backgroundImage: `url(${loginBackground})` }}
+      />
+
+      <div aria-hidden className="absolute inset-0 overflow-hidden bg-[#0b5d92] lg:hidden">
+        <div
+          className="absolute inset-x-0 top-0 h-[66dvh] bg-no-repeat"
+          style={{
+            backgroundImage: `url(${loginBackground})`,
+            backgroundPosition: "25% top",
+            backgroundSize: "auto 66dvh",
+          }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(6,39,72,0.08)_0%,rgba(6,39,72,0.05)_48%,rgba(11,93,146,0.42)_66%,#0b5d92_84%)]" />
+      </div>
+
       <div aria-hidden className="absolute inset-0 bg-slate-950/10 lg:bg-transparent" />
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-slate-950/10 via-transparent to-slate-950/20 lg:hidden" />
 
       <div className="relative z-10 flex min-h-[100dvh] items-center justify-center px-4 py-8 sm:px-6 lg:justify-end lg:px-[7vw] lg:py-10">
         <section
