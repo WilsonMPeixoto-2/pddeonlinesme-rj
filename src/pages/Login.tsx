@@ -102,7 +102,7 @@ const Login = () => {
   };
 
   return (
-    <main className="relative min-h-[100dvh] overflow-x-hidden bg-[#004C70] text-slate-950">
+    <main className="relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-[#004C70] text-slate-950">
       <div
         aria-hidden
         className="absolute inset-0 hidden bg-cover bg-center bg-no-repeat xl:block"
@@ -119,7 +119,7 @@ const Login = () => {
 
       <div aria-hidden className="absolute inset-0 bg-slate-950/5 xl:bg-transparent" />
 
-      <div className="relative z-10 flex min-h-[100dvh] flex-col items-center px-4 py-7 sm:px-8 sm:py-10 xl:items-end xl:justify-center xl:px-[7vw] xl:py-10">
+      <div className="relative z-10 flex min-h-[100dvh] flex-col items-center px-4 py-7 sm:px-8 sm:py-10 xl:items-end xl:justify-center xl:px-[7vw] xl:py-10 [@media(max-height:700px)]:xl:py-4">
         <section className="w-full max-w-[38rem] text-white xl:hidden" aria-label="Identidade do PDDE Online">
           <div className="flex items-center gap-3">
             <BrandMark size={48} className="ring-1 ring-white/35" />
@@ -140,9 +140,9 @@ const Login = () => {
 
         <section
           aria-labelledby="login-title"
-          className="mt-7 w-full max-w-[28rem] rounded-[1rem] border border-white/55 bg-white/[0.96] p-6 shadow-[0_8px_28px_rgba(7,26,61,0.10)] backdrop-blur-xl sm:max-w-[34rem] sm:p-8 md:max-w-[38rem] xl:mt-0 xl:min-h-[40rem] xl:max-w-[28rem] xl:-translate-y-4 xl:rounded-[1.35rem] xl:p-10 xl:shadow-[0_24px_80px_rgba(15,23,42,0.22)]"
+          className="mt-7 w-full max-w-[28rem] rounded-[1rem] border border-white/55 bg-white/[0.96] p-6 shadow-[0_8px_28px_rgba(7,26,61,0.10)] backdrop-blur-xl sm:max-w-[34rem] sm:p-8 md:max-w-[38rem] xl:mt-0 xl:min-h-[40rem] xl:max-w-[28rem] xl:-translate-y-4 xl:rounded-[1.35rem] xl:p-10 xl:shadow-[0_24px_80px_rgba(15,23,42,0.22)] [@media(max-height:700px)]:xl:min-h-0 [@media(max-height:700px)]:xl:translate-y-0 [@media(max-height:700px)]:xl:p-7"
         >
-          <header className="mb-8 xl:mb-9">
+          <header className="mb-8 xl:mb-9 [@media(max-height:700px)]:xl:mb-6">
             <h2 id="login-title" className="text-[2rem] font-bold tracking-[-0.035em] text-[#071A3D] sm:text-[2.2rem]">
               Bem-vindo
             </h2>
@@ -152,7 +152,7 @@ const Login = () => {
           </header>
 
           <Form {...loginForm}>
-            <form onSubmit={loginForm.handleSubmit(onSignIn)} className="space-y-5" noValidate>
+            <form onSubmit={loginForm.handleSubmit(onSignIn)} className="space-y-5 [@media(max-height:700px)]:xl:space-y-4" noValidate>
               <FormField
                 control={loginForm.control}
                 name="email"
@@ -236,7 +236,7 @@ const Login = () => {
             </form>
           </Form>
 
-          <div className="mt-6 border-t border-[#DCE4ED] pt-5 xl:mt-7">
+          <div className="mt-6 border-t border-[#DCE4ED] pt-5 xl:mt-7 [@media(max-height:700px)]:xl:mt-5 [@media(max-height:700px)]:xl:pt-4">
             <div className="flex items-start gap-3">
               <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#F2F6FA]">
                 <ShieldCheck aria-hidden className="h-3.5 w-3.5 text-[#52637A]" />

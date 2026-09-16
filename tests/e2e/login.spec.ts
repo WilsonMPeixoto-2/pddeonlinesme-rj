@@ -14,6 +14,38 @@ test("renderiza a tela pública de acesso institucional", async ({ page }) => {
   await expect(page.getByText("Criar conta institucional")).toHaveCount(0);
 });
 
+test("mantém o card inteiro visível em viewport desktop equivalente a zoom elevado", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await page.goto("/");
+
+  const card = page.locator('section[aria-labelledby="login-title"]');
+  await expect(card).toBeVisible();
+  await expect(page.getByText("Ambiente seguro")).toBeVisible();
+
+  const box = await card.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(650);
+});
+
+test("permite reflow vertical sem corte ou overflow horizontal em zoom muito alto", async ({ page }) => {
+  await page.setViewportSize({ width: 960, height: 540 });
+  await page.goto("/");
+
+  await page.getByText("Ambiente seguro").scrollIntoViewIfNeeded();
+  await expect(page.getByText("Ambiente seguro")).toBeVisible();
+
+  const metrics = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+    scrollHeight: document.documentElement.scrollHeight,
+    innerHeight: window.innerHeight,
+  }));
+
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth);
+  expect(metrics.scrollHeight).toBeGreaterThanOrEqual(metrics.innerHeight);
+});
+
 test("valida credenciais obrigatórias antes de chamar o backend", async ({ page }) => {
   let authRequests = 0;
   page.on("request", (request) => {
