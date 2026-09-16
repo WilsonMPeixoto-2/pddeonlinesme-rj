@@ -38,7 +38,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const inputClassName =
-  "h-12 rounded-[10px] border-[#D8E1EA] bg-white text-[0.92rem] text-[#0A2A43] shadow-sm placeholder:text-[#7C8C9E] focus-visible:border-[#0B63CE] focus-visible:ring-[#0B63CE]/10 dark:bg-white dark:text-[#0A2A43]";
+  "h-12 rounded-[10px] border-[#D8E1EA] bg-white text-[0.92rem] text-[#0A2A43] shadow-sm placeholder:text-[#7C8C9E] focus-visible:border-[#0B63CE] focus-visible:ring-[#0B63CE]/10 dark:bg-white dark:text-[#0A2A43] [@media(max-height:700px)]:xl:h-11";
 
 const benefits = [
   { icon: ChartNoAxesColumnIncreasing, text: "Informação confiável para melhores decisões" },
@@ -99,7 +99,7 @@ const Login = () => {
       <div aria-hidden className="fixed inset-0 bg-[linear-gradient(90deg,rgba(4,38,66,0.96)_0%,rgba(4,66,96,0.82)_32%,rgba(6,83,116,0.44)_57%,rgba(7,26,61,0.10)_78%,rgba(7,26,61,0.18)_100%)]" />
       <div aria-hidden className="fixed inset-0 bg-slate-950/5" />
 
-      <div className="relative z-10 mx-auto grid min-h-[100dvh] w-full max-w-[1920px] grid-cols-1 items-center gap-8 px-5 py-8 sm:px-8 lg:px-12 xl:grid-cols-[minmax(0,1.35fr)_minmax(31rem,0.8fr)] xl:gap-16 xl:px-[5.5vw] xl:py-10 2xl:gap-24">
+      <div className="relative z-10 mx-auto grid min-h-[100dvh] w-full max-w-[1920px] grid-cols-1 items-center gap-8 px-5 py-8 sm:px-8 lg:px-12 xl:grid-cols-[minmax(0,1.35fr)_minmax(31rem,0.8fr)] xl:gap-16 xl:px-[5.5vw] xl:py-10 2xl:gap-24 [@media(max-height:700px)]:xl:py-3">
         <section className="mx-auto w-full max-w-[48rem] text-white xl:mx-0" aria-label="Identidade da Inteligência Financeira PDDE">
           <div className="flex items-center gap-4">
             <BrandMark size={64} className="ring-1 ring-white/40 shadow-[0_8px_28px_rgba(0,0,0,0.18)]" />
@@ -109,30 +109,30 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="mt-8 h-[3px] w-12 rounded-full bg-[#22B8CF] xl:mt-12" />
-          <h1 className="mt-5 max-w-[42rem] text-[2.2rem] font-bold leading-[1.08] tracking-[-0.035em] sm:text-[3rem] lg:text-[3.6rem] xl:text-[clamp(2.9rem,3.6vw,4.7rem)]">Recursos que fortalecem a educação de uma cidade inteira.</h1>
-          <p className="mt-5 max-w-[39rem] text-[1rem] leading-7 text-white/82 sm:text-[1.12rem] xl:text-[1.22rem]">Dados, controle e transparência para as 163 unidades escolares da 4ª CRE.</p>
+          <div className="mt-8 h-[3px] w-12 rounded-full bg-[#22B8CF] xl:mt-12 [@media(max-height:700px)]:xl:mt-7" />
+          <h1 className="mt-5 max-w-[42rem] text-[2.2rem] font-bold leading-[1.08] tracking-[-0.035em] sm:text-[3rem] lg:text-[3.6rem] xl:text-[clamp(2.9rem,3.6vw,4.7rem)] [@media(max-height:700px)]:xl:text-[2.8rem]">Recursos que fortalecem a educação de uma cidade inteira.</h1>
+          <p className="mt-5 max-w-[39rem] text-[1rem] leading-7 text-white/82 sm:text-[1.12rem] xl:text-[1.22rem] [@media(max-height:700px)]:xl:mt-3 [@media(max-height:700px)]:xl:text-[1rem]">Dados, controle e transparência para as 163 unidades escolares da 4ª CRE.</p>
 
-          <div className="mt-8 grid max-w-[43rem] gap-4 sm:grid-cols-3 xl:mt-10 xl:grid-cols-1 xl:gap-5">
+          <div className="mt-8 grid max-w-[43rem] gap-4 sm:grid-cols-3 xl:mt-10 xl:grid-cols-1 xl:gap-5 [@media(max-height:700px)]:xl:mt-6 [@media(max-height:700px)]:xl:gap-3">
             {benefits.map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-4">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#22B8CF]/55 bg-[#003D5C]/35 backdrop-blur-sm"><Icon aria-hidden className="h-6 w-6 text-[#8BE6E6]" strokeWidth={1.8} /></span>
-                <p className="max-w-[15rem] text-[0.9rem] leading-6 text-white/92 sm:text-[0.94rem] xl:text-[1rem]">{text}</p>
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#22B8CF]/55 bg-[#003D5C]/35 backdrop-blur-sm [@media(max-height:700px)]:xl:h-10 [@media(max-height:700px)]:xl:w-10"><Icon aria-hidden className="h-6 w-6 text-[#8BE6E6] [@media(max-height:700px)]:xl:h-5 [@media(max-height:700px)]:xl:w-5" strokeWidth={1.8} /></span>
+                <p className="max-w-[15rem] text-[0.9rem] leading-6 text-white/92 sm:text-[0.94rem] xl:text-[1rem] [@media(max-height:700px)]:xl:text-[0.9rem]">{text}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section aria-labelledby="login-title" className="mx-auto w-full max-w-[35rem] rounded-[20px] border border-white/65 bg-white/[0.965] p-6 shadow-[0_20px_60px_rgba(7,26,61,0.22)] backdrop-blur-xl sm:p-8 xl:mx-0 xl:justify-self-end xl:p-10 [@media(max-height:760px)]:xl:p-7">
-          <header className="mb-7 [@media(max-height:760px)]:xl:mb-5">
-            <h2 id="login-title" className="text-[2rem] font-bold tracking-[-0.04em] text-[#0A2A43] sm:text-[2.35rem]">Bem-vindo</h2>
-            <p className="mt-2 max-w-[24rem] text-[0.95rem] leading-6 text-[#5E7186]">Acesse sua conta para continuar na Inteligência Financeira PDDE.</p>
+        <section aria-labelledby="login-title" className="mx-auto w-full max-w-[35rem] rounded-[20px] border border-white/65 bg-white/[0.965] p-6 shadow-[0_20px_60px_rgba(7,26,61,0.22)] backdrop-blur-xl sm:p-8 xl:mx-0 xl:justify-self-end xl:p-10 [@media(max-height:760px)]:xl:p-7 [@media(max-height:700px)]:xl:p-5">
+          <header className="mb-7 [@media(max-height:760px)]:xl:mb-5 [@media(max-height:700px)]:xl:mb-3">
+            <h2 id="login-title" className="text-[2rem] font-bold tracking-[-0.04em] text-[#0A2A43] sm:text-[2.35rem] [@media(max-height:700px)]:xl:text-[2rem]">Bem-vindo</h2>
+            <p className="mt-2 max-w-[24rem] text-[0.95rem] leading-6 text-[#5E7186] [@media(max-height:700px)]:xl:mt-1 [@media(max-height:700px)]:xl:text-[0.88rem] [@media(max-height:700px)]:xl:leading-5">Acesse sua conta para continuar na Inteligência Financeira PDDE.</p>
           </header>
 
           <Form {...loginForm}>
-            <form onSubmit={loginForm.handleSubmit(onSignIn)} className="space-y-5 [@media(max-height:760px)]:xl:space-y-4" noValidate>
+            <form onSubmit={loginForm.handleSubmit(onSignIn)} className="space-y-5 [@media(max-height:760px)]:xl:space-y-4 [@media(max-height:700px)]:xl:space-y-3" noValidate>
               <FormField control={loginForm.control} name="email" render={({ field }) => (
-                <FormItem>
+                <FormItem className="[@media(max-height:700px)]:xl:space-y-1">
                   <FormLabel className="text-[0.88rem] font-semibold text-[#0A2A43]">Usuário</FormLabel>
                   <div className="relative">
                     <UserRound aria-hidden className="pointer-events-none absolute left-4 top-1/2 h-[1.05rem] w-[1.05rem] -translate-y-1/2 text-[#6B7C91]" />
@@ -143,7 +143,7 @@ const Login = () => {
               )} />
 
               <FormField control={loginForm.control} name="senha" render={({ field }) => (
-                <FormItem>
+                <FormItem className="[@media(max-height:700px)]:xl:space-y-1">
                   <FormLabel className="text-[0.88rem] font-semibold text-[#0A2A43]">Senha</FormLabel>
                   <div className="relative">
                     <LockKeyhole aria-hidden className="pointer-events-none absolute left-4 top-1/2 h-[1.05rem] w-[1.05rem] -translate-y-1/2 text-[#6B7C91]" />
@@ -156,17 +156,17 @@ const Login = () => {
                 </FormItem>
               )} />
 
-              <Button type="submit" className="h-12 w-full rounded-[10px] bg-[linear-gradient(90deg,#0B6FE8_0%,#0B63CE_100%)] text-[0.94rem] font-semibold text-white shadow-[0_8px_22px_rgba(11,99,206,0.24)] transition hover:brightness-105 focus-visible:ring-[#22B8CF] dark:text-white" disabled={isPending}>
+              <Button type="submit" className="h-12 w-full rounded-[10px] bg-[linear-gradient(90deg,#0B6FE8_0%,#0B63CE_100%)] text-[0.94rem] font-semibold text-white shadow-[0_8px_22px_rgba(11,99,206,0.24)] transition hover:brightness-105 focus-visible:ring-[#22B8CF] dark:text-white [@media(max-height:700px)]:xl:h-11" disabled={isPending}>
                 {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Entrando…</> : <>Entrar <ArrowRight className="ml-2 h-4 w-4" /></>}
               </Button>
 
               <div className="text-center">
-                <button type="button" className="min-h-11 rounded-md px-2 text-[0.78rem] font-semibold text-[#0B63CE] underline underline-offset-2 transition hover:text-[#0F8B8D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/20 disabled:opacity-50" onClick={handleEsqueciSenha} disabled={isPending}>Esqueci minha senha</button>
+                <button type="button" className="min-h-11 rounded-md px-2 text-[0.78rem] font-semibold text-[#0B63CE] underline underline-offset-2 transition hover:text-[#0F8B8D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B63CE]/20 disabled:opacity-50 [@media(max-height:700px)]:xl:min-h-8" onClick={handleEsqueciSenha} disabled={isPending}>Esqueci minha senha</button>
               </div>
             </form>
           </Form>
 
-          <div className="mt-6 border-t border-[#D8E1EA] pt-5 [@media(max-height:760px)]:xl:mt-4 [@media(max-height:760px)]:xl:pt-4">
+          <div className="mt-6 border-t border-[#D8E1EA] pt-5 [@media(max-height:760px)]:xl:mt-4 [@media(max-height:760px)]:xl:pt-4 [@media(max-height:700px)]:xl:mt-3 [@media(max-height:700px)]:xl:pt-3">
             <div className="flex items-start gap-3">
               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#EEF3F8]"><ShieldCheck aria-hidden className="h-4 w-4 text-[#0F8B8D]" /></span>
               <div>
