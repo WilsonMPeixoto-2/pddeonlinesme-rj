@@ -102,4 +102,42 @@ describe("RecursosPDDEPanel", () => {
     expect(screen.queryByText(/BASE importada/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Total Parcelas/i)).not.toBeInTheDocument();
   });
+
+  it("distingue ordem emitida de pagamento com data confirmada", () => {
+    const comOrdem: ProgramaFinanceiro[] = [
+      {
+        programa: "PDDE BÁSICO",
+        contas: [],
+        acoes: [
+          {
+            acao: "PDDE Básico — Primeira Infância",
+            label: "Primeira Infância",
+            parcelas: [
+              {
+                id: "p2",
+                parcela: "P2",
+                ordem: 2,
+                valorProgramado: 4185,
+                valorPago: 4185,
+                dataPagamento: null,
+                dataOrdemPagamento: "2026-09-14",
+                contaBancariaId: null,
+                custeioProgramado: 837,
+                capitalProgramado: 3348,
+                custeioPago: 837,
+                capitalPago: 3348,
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    render(<RecursosPDDEPanel programas={comOrdem} />);
+
+    expect(screen.getByText("Ordem de pagamento emitida")).toBeVisible();
+    expect(screen.getByText("Ordem emitida")).toBeVisible();
+    expect(screen.getByText("14/09/2026")).toBeVisible();
+    expect(screen.queryByText("Pago")).not.toBeInTheDocument();
+  });
 });
