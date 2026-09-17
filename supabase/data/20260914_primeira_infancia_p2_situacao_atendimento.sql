@@ -4,6 +4,7 @@
 -- Ordem de pagamento informada pela fonte: 2026-09-14
 -- Este arquivo é DML operacional auditável, NÃO uma migration estrutural.
 -- Pré-requisito: migration 20260917103000_financial_external_evidence_v1.sql aplicada.
+-- Política conservadora: evidência já existente nunca é sobrescrita; divergência aborta a transação.
 
 begin;
 
@@ -140,14 +141,14 @@ insert into public.repasse_evidencias_financeiras (
 select
   r.id,
   'SITUACAO_ATENDIMENTO_FNDE',
-  'FNDE - Situação de Atendimento',
-  'cre04.pdf.xlsx#sha256=eb310b02b4bfa9f074f795eb28c0b022887ec0ff56f432a9ec9afd18f86dd4df',
+  'FNDE - Situação de Atendimento da Entidade',
+  'cre04.pdf.xlsx',
   s.total,
   s.custeio,
   s.capital,
   null::date,
   '2026-09-14'::date,
-  'Relatório recebido em 16/09/2026. Conferência 52/52 contra os P2 já existentes; zero divergências. Ordem de pagamento não equivale a crédito bancário.'
+  'Relatório recebido em 16/09/2026; SHA-256 eb310b02b4bfa9f074f795eb28c0b022887ec0ff56f432a9ec9afd18f86dd4df. Conferência 52/52 contra os P2 já existentes; zero divergências. Ordem de pagamento não equivale a crédito bancário.'
 from _src_primeira_infancia_p2_20260914 s
 join public.unidades_escolares u on u.inep = s.inep
 join public.repasses_financeiros r
@@ -156,16 +157,7 @@ join public.repasses_financeiros r
  and r.programa = 'PDDE BÁSICO'
  and r.acao = 'PDDE Básico — Primeira Infância'
  and r.parcela = 'P2'
-on conflict (repasse_financeiro_id, tipo_evidencia) do update
-set fonte = excluded.fonte,
-    referencia = excluded.referencia,
-    valor_pago_informado = excluded.valor_pago_informado,
-    custeio_pago_informado = excluded.custeio_pago_informado,
-    capital_pago_informado = excluded.capital_pago_informado,
-    data_pagamento = excluded.data_pagamento,
-    data_ordem_pagamento = excluded.data_ordem_pagamento,
-    observacao = excluded.observacao,
-    updated_at = now();
+on conflict (repasse_financeiro_id, tipo_evidencia) do nothing;
 
 do $$
 declare
@@ -175,6 +167,7 @@ declare
   v_total numeric(14,2);
   v_bad_dates integer;
   v_invented_payment_dates integer;
+  v_value_divergences integer;
 begin
   select
     count(*),
@@ -182,9 +175,14 @@ begin
     sum(e.capital_pago_informado),
     sum(e.valor_pago_informado),
     count(*) filter (where e.data_ordem_pagamento <> '2026-09-14'::date),
-    count(*) filter (where e.data_pagamento is not null)
+    count(*) filter (where e.data_pagamento is not null),
+    count(*) filter (
+      where e.valor_pago_informado is distinct from s.total
+         or e.custeio_pago_informado is distinct from s.custeio
+         or e.capital_pago_informado is distinct from s.capital
+    )
   into
-    v_count, v_custeio, v_capital, v_total, v_bad_dates, v_invented_payment_dates
+    v_count, v_custeio, v_capital, v_total, v_bad_dates, v_invented_payment_dates, v_value_divergences
   from public.repasse_evidencias_financeiras e
   join public.repasses_financeiros r on r.id = e.repasse_financeiro_id
   join public.unidades_escolares u on u.id = r.unidade_id
@@ -196,10 +194,11 @@ begin
      or v_capital <> 51596.00
      or v_total <> 132630.00
      or v_bad_dates <> 0
-     or v_invented_payment_dates <> 0 then
+     or v_invented_payment_dates <> 0
+     or v_value_divergences <> 0 then
     raise exception
-      'Pós-condição inválida: count=%, custeio=%, capital=%, total=%, ordens_incorretas=%, datas_pagamento_inventadas=%',
-      v_count, v_custeio, v_capital, v_total, v_bad_dates, v_invented_payment_dates;
+      'Pós-condição inválida: count=%, custeio=%, capital=%, total=%, ordens_incorretas=%, datas_pagamento_inventadas=%, divergencias_valor=%',
+      v_count, v_custeio, v_capital, v_total, v_bad_dates, v_invented_payment_dates, v_value_divergences;
   end if;
 end
 $$;
@@ -216,4 +215,4 @@ select
   count(*) filter (where data_pagamento is not null) as datas_pagamento_distintas
 from public.repasse_evidencias_financeiras
 where tipo_evidencia = 'SITUACAO_ATENDIMENTO_FNDE'
-  and referencia = 'cre04.pdf.xlsx#sha256=eb310b02b4bfa9f074f795eb28c0b022887ec0ff56f432a9ec9afd18f86dd4df';
+  and referencia = 'cre04.pdf.xlsx';
