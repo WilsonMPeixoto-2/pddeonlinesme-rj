@@ -227,6 +227,17 @@ export default function Dashboard() {
       format: fmtBRL,
       destination: "/repasses",
     },
+    {
+      label: "2º ciclo · PDDE Básico",
+      value: overview.segundaParcela.totalPagamentoInformado,
+      icon: Receipt,
+      hint: overview.segundaParcela.totalPagamentoInformado !== null
+        ? `${overview.segundaParcela.escolas} escolas · ${overview.segundaParcela.ordensIdentificadas} ordens${overview.segundaParcela.ultimaDataOrdem ? ` · última em ${formatDate(overview.segundaParcela.ultimaDataOrdem)}` : ""}${overview.segundaParcela.ultimaDataPagamento ? ` · pagamento em ${formatDate(overview.segundaParcela.ultimaDataPagamento)}` : " · sem data distinta de pagamento"}`
+        : "Nenhum pagamento informado no 2º ciclo",
+      tone: "muted",
+      format: fmtBRL,
+      destination: "/repasses",
+    },
   ];
 
   const container = {
@@ -399,7 +410,7 @@ export default function Dashboard() {
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
         >
           {stats.map((stat) => {
             const Icon = stat.icon;
