@@ -10,17 +10,33 @@ select id
 from public.unidades_escolares
 where inep = '97999992';
 
+insert into public.integracoes_financeiras_runs (
+  exercicio, origem, publicado_em, workflow_run_id, artifact_id,
+  total_unidades, total_contas, total_repasses
+) values (
+  2026, 'pdde-repasse-conciliador', now(), 999999996001, 999999996101,
+  163, 1, 1
+);
+
+create temp table _evidence_run as
+select id
+from public.integracoes_financeiras_runs
+where workflow_run_id = 999999996001
+  and artifact_id = 999999996101;
+
 insert into public.repasses_financeiros (
   unidade_id, exercicio, programa, acao, parcela, ordem_exibicao,
   valor_programado, valor_pago,
   custeio_programado, capital_programado,
   custeio_pago, capital_pago,
-  data_pagamento, data_ordem_pagamento
+  data_pagamento, data_ordem_pagamento,
+  integracao_run_id
 )
 select
-  id, 2026, 'PDDE BÁSICO', 'PDDE Básico — Primeira Infância', 'P2', 2,
-  100, null, 60, 40, null, null, null, null
-from _evidence_school;
+  s.id, 2026, 'PDDE BÁSICO', 'PDDE Básico — Primeira Infância', 'P2', 2,
+  100, null, 60, 40, null, null, null, null,
+  r.id
+from _evidence_school s cross join _evidence_run r;
 
 create temp table _evidence_repasse as
 select id
