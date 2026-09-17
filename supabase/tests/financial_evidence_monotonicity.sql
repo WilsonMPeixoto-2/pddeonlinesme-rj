@@ -3,13 +3,12 @@ begin;
 select plan(6);
 
 insert into public.unidades_escolares (designacao, nome, inep)
-values ('ZY.MONO.001', 'Escola monotonicidade', '97999991')
-returning id into temporary table _mono_school;
+values ('ZY.MONO.001', 'Escola monotonicidade', '97999991');
 
-create temp table _mono_runs as
-select
-  (select id from public.integracoes_financeiras_runs where false) as run_1,
-  (select id from public.integracoes_financeiras_runs where false) as run_2;
+create temp table _mono_school as
+select id
+from public.unidades_escolares
+where inep = '97999991';
 
 insert into public.integracoes_financeiras_runs (
   exercicio, origem, publicado_em, workflow_run_id, artifact_id,
@@ -17,8 +16,12 @@ insert into public.integracoes_financeiras_runs (
 ) values (
   2026, 'pdde-repasse-conciliador', now(), 999999997001, 999999997101,
   163, 1, 1
-)
-returning id into temporary table _mono_run_1;
+);
+
+create temp table _mono_run_1 as
+select id
+from public.integracoes_financeiras_runs
+where workflow_run_id = 999999997001;
 
 insert into public.integracoes_financeiras_runs (
   exercicio, origem, publicado_em, workflow_run_id, artifact_id,
@@ -26,8 +29,12 @@ insert into public.integracoes_financeiras_runs (
 ) values (
   2026, 'pdde-repasse-conciliador', now(), 999999997002, 999999997102,
   163, 1, 1
-)
-returning id into temporary table _mono_run_2;
+);
+
+create temp table _mono_run_2 as
+select id
+from public.integracoes_financeiras_runs
+where workflow_run_id = 999999997002;
 
 insert into public.repasses_financeiros (
   unidade_id, exercicio, programa, acao, parcela, ordem_exibicao,
