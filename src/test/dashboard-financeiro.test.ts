@@ -152,4 +152,43 @@ describe("buildDashboardFinanceiroOverview", () => {
     expect(overview.primeiraParcela.capitalPago).toBe(120);
     expect(overview.primeiraParcela.detalhamentoCompleto).toBe(1);
   });
+
+  it("resume a P2 de Primeira Infância com ordem emitida sem inventar data de pagamento", () => {
+    const p2: RepasseFinanceiro = {
+      id: "r5",
+      unidade_id: "u2",
+      designacao: "04.10.002 — Escola B",
+      nome: "Escola B",
+      inep: "2",
+      exercicio: 2026,
+      programa: "PDDE BÁSICO",
+      acao: "PDDE Básico — Primeira Infância",
+      parcela: "P2",
+      ordem_exibicao: 2,
+      valor_programado: 200,
+      valor_pago: 200,
+      data_pagamento: null,
+      data_ordem_pagamento: "2026-09-14",
+      conta_bancaria_id: "c2",
+      banco: "001",
+      agencia: "0001",
+      conta_corrente: "200",
+      custeio_programado: 120,
+      capital_programado: 80,
+      custeio_pago: 120,
+      capital_pago: 80,
+    };
+
+    const overview = buildDashboardFinanceiroOverview([...repasses, p2], contas, 2026);
+
+    expect(overview.segundaParcelaPrimeiraInfancia).toEqual({
+      totalPago: 200,
+      escolas: 1,
+      custeioPago: 120,
+      capitalPago: 80,
+      ordensEmitidas: 1,
+      ultimaDataOrdemPagamento: "2026-09-14",
+      ultimaDataPagamento: null,
+    });
+  });
 });

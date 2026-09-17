@@ -102,4 +102,32 @@ describe("RecursosPDDEPanel", () => {
     expect(screen.queryByText(/BASE importada/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Total Parcelas/i)).not.toBeInTheDocument();
   });
+
+  it("mostra ordem emitida como estado próprio quando ainda não há data de pagamento", () => {
+    const comOrdem: ProgramaFinanceiro[] = programas.map((programa) => ({
+      ...programa,
+      contas: programa.contas.map((conta) => ({ ...conta })),
+      acoes: programa.acoes.map((acao) => ({
+        ...acao,
+        parcelas: acao.parcelas.map((parcela) =>
+          parcela.id === "r2"
+            ? {
+                ...parcela,
+                valorPago: 4185,
+                dataPagamento: null,
+                dataOrdemPagamento: "2026-09-14",
+                custeioPago: 837,
+                capitalPago: 3348,
+              }
+            : { ...parcela },
+        ),
+      })),
+    }));
+
+    render(<RecursosPDDEPanel programas={comOrdem} />);
+
+    expect(screen.getByText("Ordem de pagamento emitida")).toBeVisible();
+    expect(screen.getByText("Ordem emitida")).toBeVisible();
+    expect(screen.getByText("14/09/2026")).toBeVisible();
+  });
 });
