@@ -5,7 +5,8 @@ test("renderiza a tela pública de acesso institucional", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "Bem-vindo" })).toBeVisible();
-  await expect(page.getByText("Acesse sua conta para continuar no PDDE Online.")).toBeVisible();
+  await expect(page.getByText("Acesse sua conta para continuar na Inteligência Financeira PDDE.")).toBeVisible();
+  await expect(page.getByText(/Inteligência Financeira/).first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible();
   await expect(page.getByLabel("Usuário").first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Esqueci minha senha" })).toBeVisible();
@@ -76,7 +77,6 @@ test("recuperação de senha direciona para a tela de redefinição", async ({ p
   const redirectTo = new URL(recoverRequest.url()).searchParams.get("redirect_to");
   expect(redirectTo).toBe("http://127.0.0.1:4173/redefinir-senha");
 });
-
 
 test("tela de redefinição rejeita acesso sem sessão de recuperação", async ({ page }) => {
   await page.goto("/redefinir-senha");
