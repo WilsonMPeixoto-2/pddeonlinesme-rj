@@ -134,11 +134,60 @@ describe("buildDashboardFinanceiroOverview", () => {
       ultimaDataPagamento: "2026-05-22",
     });
 
+    expect(overview.segundaParcela).toEqual({
+      totalPagamentoInformado: null,
+      escolas: 0,
+      custeioPago: null,
+      capitalPago: null,
+      ordensIdentificadas: 0,
+      ultimaDataOrdem: null,
+      ultimaDataPagamento: null,
+    });
+
     expect(overview.porPrograma).toEqual([
       expect.objectContaining({ programa: "PDDE BÁSICO", totalProgramado: 300, totalPago: 300, contas: 2 }),
       expect.objectContaining({ programa: "PDDE QUALIDADE", totalProgramado: 350, totalPago: 50, contas: 2 }),
       expect.objectContaining({ programa: "PDDE EQUIDADE", totalProgramado: null, totalPago: null, contas: 1 }),
     ]);
+  });
+
+  it("resume o segundo ciclo sem confundir ordem de pagamento com data de crédito", () => {
+    const p2: RepasseFinanceiro = {
+      id: "p2",
+      unidade_id: "u2",
+      designacao: "04.10.802 — EDI A",
+      nome: "EDI A",
+      inep: "33160902",
+      exercicio: 2026,
+      programa: "PDDE BÁSICO",
+      acao: "PDDE Básico — Primeira Infância",
+      parcela: "P2",
+      ordem_exibicao: 2,
+      valor_programado: 2785,
+      valor_pago: 2785,
+      data_pagamento: null,
+      data_ordem_pagamento: "2026-09-14",
+      conta_bancaria_id: "c2",
+      banco: "001",
+      agencia: "0001",
+      conta_corrente: "200",
+      custeio_programado: 1671,
+      capital_programado: 1114,
+      custeio_pago: 1671,
+      capital_pago: 1114,
+    };
+
+    const overview = buildDashboardFinanceiroOverview([...repasses, p2], contas, 2026);
+
+    expect(overview.segundaParcela).toEqual({
+      totalPagamentoInformado: 2785,
+      escolas: 1,
+      custeioPago: 1671,
+      capitalPago: 1114,
+      ordensIdentificadas: 1,
+      ultimaDataOrdem: "2026-09-14",
+      ultimaDataPagamento: null,
+    });
   });
 
   it("preserva ausência de detalhamento em vez de convertê-la em zero", () => {

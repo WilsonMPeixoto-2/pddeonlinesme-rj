@@ -260,7 +260,24 @@ export function RecursosPDDEPanel({
 
                       <div className="mt-4 grid gap-3 xl:grid-cols-2">
                         {acao.parcelas.map((parcela) => {
-                          const paid = parcela.valorPago !== null;
+                          const paymentReported = parcela.valorPago !== null;
+                          const paymentDated = Boolean(parcela.dataPagamento);
+                          const orderIssued = Boolean(parcela.dataOrdemPagamento);
+                          const statusLabel = paymentDated
+                            ? "Pagamento identificado"
+                            : paymentReported && orderIssued
+                              ? "Ordem de pagamento emitida"
+                              : paymentReported
+                                ? "Pagamento informado"
+                                : "Programado";
+                          const badgeLabel = paymentDated
+                            ? "Pago"
+                            : paymentReported && orderIssued
+                              ? "Ordem emitida"
+                              : paymentReported
+                                ? "Informado"
+                                : "Programado";
+
                           return (
                             <article
                               key={parcela.id}
@@ -270,11 +287,11 @@ export function RecursosPDDEPanel({
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">{installmentLabel(parcela.parcela)}</p>
                                   <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
-                                    {paid ? "Pagamento identificado" : "Programado"}
+                                    {statusLabel}
                                   </p>
                                 </div>
                                 <span className="rounded-md border border-border/60 bg-muted/30 px-2 py-1 text-[10px] font-semibold text-muted-foreground">
-                                  {paid ? "Pago" : "Programado"}
+                                  {badgeLabel}
                                 </span>
                               </div>
 
@@ -284,7 +301,9 @@ export function RecursosPDDEPanel({
                                   <p className="mt-1 text-base font-semibold tabular-nums text-foreground">{formatMoney(parcela.valorProgramado)}</p>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Valor pago</p>
+                                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                                    {paymentReported && !paymentDated ? "Pagamento informado" : "Valor pago"}
+                                  </p>
                                   <p className="mt-1 text-base font-semibold tabular-nums text-foreground">{formatMoney(parcela.valorPago)}</p>
                                 </div>
                                 <div>
@@ -302,8 +321,8 @@ export function RecursosPDDEPanel({
 
                               <div className="mt-4">
                                 <ComponentsBreakdown
-                                  custeio={paid ? parcela.custeioPago : parcela.custeioProgramado}
-                                  capital={paid ? parcela.capitalPago : parcela.capitalProgramado}
+                                  custeio={paymentReported ? parcela.custeioPago : parcela.custeioProgramado}
+                                  capital={paymentReported ? parcela.capitalPago : parcela.capitalProgramado}
                                 />
                               </div>
                             </article>

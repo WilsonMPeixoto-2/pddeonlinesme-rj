@@ -109,6 +109,15 @@ export interface DashboardFinanceiroOverview {
     detalhamentoCompleto: number;
     ultimaDataPagamento: string | null;
   };
+  segundaParcela: {
+    totalPagamentoInformado: number | null;
+    escolas: number;
+    custeioPago: number | null;
+    capitalPago: number | null;
+    ordensIdentificadas: number;
+    ultimaDataOrdem: string | null;
+    ultimaDataPagamento: string | null;
+  };
   porPrograma: ProgramaFinanceiroOverview[];
 }
 
@@ -158,6 +167,15 @@ export function isPrimeiraParcelaPublicada(repasse: RepasseFinanceiro, exercicio
   return (
     (repasse.acao === "PDDE Básico" && repasse.parcela === "1ª Parcela") ||
     (repasse.acao === "PDDE Básico — Primeira Infância" && repasse.parcela === "P1")
+  );
+}
+
+export function isSegundaParcelaBasico(repasse: RepasseFinanceiro, exercicio: number) {
+  if (repasse.exercicio !== exercicio || repasse.programa !== "PDDE BÁSICO") return false;
+
+  return (
+    (repasse.acao === "PDDE Básico" && repasse.parcela === "2ª Parcela") ||
+    (repasse.acao === "PDDE Básico — Primeira Infância" && repasse.parcela === "P2")
   );
 }
 
@@ -298,6 +316,9 @@ export function buildDashboardFinanceiroOverview(
   const primeiraParcela = repassesDoExercicio.filter((repasse) =>
     isPrimeiraParcelaPublicada(repasse, exercicio),
   );
+  const segundaParcela = repassesDoExercicio.filter(
+    (repasse) => isSegundaParcelaBasico(repasse, exercicio) && repasse.valor_pago !== null,
+  );
 
   const escolas = new Set<string>();
   repassesDoExercicio.forEach((repasse) => escolas.add(repasse.unidade_id));
@@ -362,6 +383,14 @@ export function buildDashboardFinanceiroOverview(
     .map((repasse) => repasse.data_pagamento)
     .filter((data): data is string => Boolean(data))
     .sort((a, b) => b.localeCompare(a));
+  const datasSegundaParcela = segundaParcela
+    .map((repasse) => repasse.data_pagamento)
+    .filter((data): data is string => Boolean(data))
+    .sort((a, b) => b.localeCompare(a));
+  const ordensSegundaParcela = segundaParcela
+    .map((repasse) => repasse.data_ordem_pagamento)
+    .filter((data): data is string => Boolean(data))
+    .sort((a, b) => b.localeCompare(a));
 
   return {
     exercicio,
@@ -387,6 +416,17 @@ export function buildDashboardFinanceiroOverview(
         (repasse) => repasse.custeio_pago !== null && repasse.capital_pago !== null,
       ).length,
       ultimaDataPagamento: datasPrimeiraParcela[0] ?? null,
+    },
+    segundaParcela: {
+      totalPagamentoInformado: segundaParcela.length > 0
+        ? segundaParcela.reduce((sum, repasse) => sum + (repasse.valor_pago ?? 0), 0)
+        : null,
+      escolas: new Set(segundaParcela.map((repasse) => repasse.unidade_id)).size,
+      custeioPago: somaConhecida(segundaParcela, "custeio_pago"),
+      capitalPago: somaConhecida(segundaParcela, "capital_pago"),
+      ordensIdentificadas: segundaParcela.filter((repasse) => repasse.data_ordem_pagamento !== null).length,
+      ultimaDataOrdem: ordensSegundaParcela[0] ?? null,
+      ultimaDataPagamento: datasSegundaParcela[0] ?? null,
     },
     porPrograma,
   };
