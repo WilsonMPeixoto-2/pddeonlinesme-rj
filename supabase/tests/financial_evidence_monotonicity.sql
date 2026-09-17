@@ -90,6 +90,8 @@ select is(
 
 update public.repasses_financeiros
 set valor_programado = 110,
+    custeio_programado = 60,
+    capital_programado = 50,
     valor_pago = null,
     custeio_pago = null,
     capital_pago = null,
