@@ -99,7 +99,7 @@ const Login = () => {
       <div aria-hidden className="fixed inset-0 bg-[linear-gradient(90deg,rgba(4,38,66,0.96)_0%,rgba(4,66,96,0.82)_32%,rgba(6,83,116,0.44)_57%,rgba(7,26,61,0.10)_78%,rgba(7,26,61,0.18)_100%)]" />
       <div aria-hidden className="fixed inset-0 bg-slate-950/5" />
 
-      <div className="relative z-10 mx-auto grid min-h-[100dvh] w-full max-w-[1920px] grid-cols-1 items-center gap-8 px-5 py-8 sm:px-8 lg:px-12 xl:grid-cols-[minmax(0,1.35fr)_minmax(31rem,0.8fr)] xl:gap-16 xl:px-[5.5vw] xl:py-10 2xl:gap-24 [@media(max-height:700px)]:xl:py-3">
+      <div className="relative z-10 mx-auto grid min-h-[100dvh] w-full max-w-[1920px] grid-cols-1 items-center gap-8 px-5 py-8 sm:px-8 lg:px-12 xl:grid-cols-[minmax(0,1.5fr)_minmax(29rem,0.72fr)] xl:gap-16 xl:px-[5.5vw] xl:py-10 2xl:gap-24 [@media(max-height:700px)]:xl:py-3">
         <section className="mx-auto w-full max-w-[48rem] text-white xl:mx-0" aria-label="Identidade da Inteligência Financeira PDDE">
           <div className="flex items-center gap-4">
             <BrandMark size={64} className="ring-1 ring-white/40 shadow-[0_8px_28px_rgba(0,0,0,0.18)]" />
@@ -123,7 +123,7 @@ const Login = () => {
           </div>
         </section>
 
-        <section aria-labelledby="login-title" className="mx-auto w-full max-w-[35rem] rounded-[20px] border border-white/65 bg-white/[0.965] p-6 shadow-[0_20px_60px_rgba(7,26,61,0.22)] backdrop-blur-xl sm:p-8 xl:mx-0 xl:justify-self-end xl:p-10 [@media(max-height:760px)]:xl:p-7 [@media(max-height:700px)]:xl:p-5">
+        <section aria-labelledby="login-title" className="mx-auto w-full max-w-[30rem] rounded-[20px] border border-white/65 bg-white/[0.965] p-6 shadow-[0_20px_60px_rgba(7,26,61,0.22)] backdrop-blur-xl sm:p-8 xl:mx-0 xl:justify-self-end xl:p-8 [@media(max-height:760px)]:xl:p-7 [@media(max-height:700px)]:xl:p-5">
           <header className="mb-7 [@media(max-height:760px)]:xl:mb-5 [@media(max-height:700px)]:xl:mb-3">
             <h2 id="login-title" className="text-[2rem] font-bold tracking-[-0.04em] text-[#0A2A43] sm:text-[2.35rem] [@media(max-height:700px)]:xl:text-[2rem]">Bem-vindo</h2>
             <p className="mt-2 max-w-[24rem] text-[0.95rem] leading-6 text-[#5E7186] [@media(max-height:700px)]:xl:mt-1 [@media(max-height:700px)]:xl:text-[0.88rem] [@media(max-height:700px)]:xl:leading-5">Acesse sua conta para continuar na Inteligência Financeira PDDE.</p>
