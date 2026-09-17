@@ -9,6 +9,25 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
 
+    <style>
+      @media (max-width: 1024px) {
+        body:has(#login-title) main > img[aria-hidden="true"] {
+          display: none;
+        }
+
+        body:has(#login-title) main::before {
+          content: "";
+          position: fixed;
+          inset: 0;
+          background-image: url("/src/assets/login-pdde-rio-4k.avif");
+          background-position: 48% center;
+          background-repeat: no-repeat;
+          background-size: cover;
+          pointer-events: none;
+        }
+      }
+    </style>
+
     <!-- Anti-flash: aplica tema (dark por default) antes do paint -->
     <script>
       (function () {
