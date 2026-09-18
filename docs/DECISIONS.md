@@ -154,15 +154,17 @@ Uma escola pode possuir múltiplas contas dentro do mesmo programa.
 
 ---
 
-## 2026-09-11 — Automação financeira somente com gate e secrets de backend
+## 2026-09-18 — Automação financeira ativa por padrão com kill-switch explícito
 
-**Contexto:** existe workflow agendado de sincronização, mas o environment do GitHub ainda não possui as credenciais de publicação configuradas.
+**Contexto:** a PR #174 alterou o workflow de sincronização para que `repository_dispatch` e o fallback diário sejam elegíveis por padrão. A variável `PDDE_FINANCIAL_SYNC_ENABLED=false` passou a ser o kill-switch explícito.
 
-**Decisão:** o agendamento só pode publicar quando `PDDE_FINANCIAL_SYNC_ENABLED=true` e os secrets `PDDE_SUPABASE_URL` e `PDDE_SUPABASE_SERVICE_ROLE_KEY` estiverem configurados corretamente no environment `production`.
+**Decisão:** o job automático usa a condição `vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false'`. A publicação real continua condicionada aos secrets `PDDE_SUPABASE_URL` e `PDDE_SUPABASE_SERVICE_ROLE_KEY`, à validação do destino, da proveniência, da maturidade e das demais invariáveis financeiras.
 
-**Consequência:** a existência do `schedule` no YAML não autoriza afirmar que a sincronização automática está ativa.
+**Consequência:** ausência da variável não desativa mais a automação. Uma execução só pode ser descrita como publicada/sincronizada depois de evidência real do workflow e do Supabase; configuração ativa não equivale a publicação comprovada.
 
-**Restrição:** nunca substituir credencial de backend por chave `anon` nem ampliar permissões para contornar secret ausente.
+**Restrição:** nunca substituir credencial de backend por chave `anon`, ignorar os gates ou afirmar publicação pós-ativação sem verificar `integracoes_financeiras_runs` e os dados promovidos.
+
+**Referência:** PR #174 e `docs/technical/financial-publication-contract-v1.md`.
 
 ---
 
