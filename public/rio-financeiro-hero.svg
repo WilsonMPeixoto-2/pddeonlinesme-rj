@@ -1,0 +1,58 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F8FBFF"/>
+      <stop offset="0.52" stop-color="#DCEBFA"/>
+      <stop offset="1" stop-color="#BFD7EE"/>
+    </linearGradient>
+    <linearGradient id="mountain1" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#C7DBEE" stop-opacity="0.52"/>
+      <stop offset="1" stop-color="#7FA6CA" stop-opacity="0.70"/>
+    </linearGradient>
+    <linearGradient id="mountain2" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#A9C5DF" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#5F86AA" stop-opacity="0.82"/>
+    </linearGradient>
+    <linearGradient id="city" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#6E95B9" stop-opacity="0.64"/>
+      <stop offset="1" stop-color="#3D6589" stop-opacity="0.76"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="420" fill="url(#sky)"/>
+  <circle cx="950" cy="78" r="92" fill="#FFFFFF" fill-opacity="0.24" filter="url(#soft)"/>
+  <path d="M0 300C108 261 174 231 261 243C349 255 400 191 483 179C555 169 590 212 664 199C741 185 782 127 851 121C944 112 1000 174 1200 141V420H0V300Z" fill="url(#mountain1)"/>
+  <path d="M405 341C503 299 573 253 646 265C725 278 753 214 824 197C889 181 928 224 987 214C1054 204 1106 154 1200 151V420H405V341Z" fill="url(#mountain2)"/>
+  <path d="M0 352C151 337 240 357 357 347C464 337 537 311 620 317C719 324 784 350 883 342C1008 331 1087 303 1200 311V420H0V352Z" fill="#D7E6F3" fill-opacity="0.72"/>
+  <g opacity="0.58" fill="url(#city)">
+    <rect x="430" y="306" width="14" height="45" rx="1"/>
+    <rect x="448" y="298" width="18" height="53" rx="1"/>
+    <rect x="472" y="313" width="13" height="38" rx="1"/>
+    <rect x="489" y="289" width="22" height="62" rx="1"/>
+    <rect x="516" y="304" width="17" height="47" rx="1"/>
+    <rect x="538" y="294" width="12" height="57" rx="1"/>
+    <rect x="556" y="310" width="19" height="41" rx="1"/>
+    <rect x="580" y="299" width="15" height="52" rx="1"/>
+    <rect x="600" y="316" width="13" height="35" rx="1"/>
+    <rect x="619" y="301" width="17" height="50" rx="1"/>
+    <rect x="642" y="309" width="11" height="42" rx="1"/>
+  </g>
+  <g transform="translate(914 104)" fill="#315D84" opacity="0.88">
+    <path d="M47 0H55V39H47V0Z"/>
+    <path d="M35 17C40 14 45 12 51 12C57 12 62 14 67 17L64 22C60 20 56 19 51 19C46 19 42 20 38 22L35 17Z"/>
+    <path d="M17 27L48 21L50 28L18 34L17 27Z"/>
+    <path d="M52 21L85 27L84 34L51 28L52 21Z"/>
+    <path d="M39 39H63L67 86H35L39 39Z"/>
+    <path d="M31 86H72L76 96H27L31 86Z"/>
+  </g>
+  <path d="M0 0H680V420H0V0Z" fill="url(#fade)"/>
+  <defs>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.62" stop-color="#FFFFFF" stop-opacity="0.88"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>

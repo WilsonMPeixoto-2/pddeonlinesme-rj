@@ -15,6 +15,7 @@ import { ExercicioProvider } from "./hooks/useExercicio.tsx";
 import "nprogress/nprogress.css";
 
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
+const DashboardPreview = lazy(() => import("./pages/DashboardPreview.tsx"));
 const Repasses = lazy(() => import("./pages/Repasses.tsx"));
 const Escolas = lazy(() => import("./pages/Escolas.tsx"));
 const EscolaEditarComRecursos = lazy(() => import("./pages/EscolaEditarComRecursos.tsx"));
@@ -68,6 +69,7 @@ const router = createBrowserRouter([
     children: [
       { path: "", element: <Index /> },
       { path: "dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
+      { path: "painel-preview", element: <ProtectedRoute><DashboardPreview /></ProtectedRoute> },
       { path: "painel", element: <Navigate to="/dashboard" replace /> },
       { path: "painel/historico", element: <ProtectedRoute><HistoricoGeracoes /></ProtectedRoute> },
       { path: "repasses", element: <ProtectedRoute><Repasses /></ProtectedRoute> },
@@ -98,8 +100,8 @@ const router = createBrowserRouter([
 const App = () => (
   <ThemeProvider
     attribute="class"
-    defaultTheme="dark"
-    enableSystem
+    defaultTheme="light"
+    enableSystem={false}
     disableTransitionOnChange
   >
     <ExercicioProvider>
