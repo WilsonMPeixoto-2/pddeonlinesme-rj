@@ -7,6 +7,7 @@ on:
       - financial-snapshot-published-v1
   schedule:
     # Fallback diário. GitHub cron usa UTC: 13:30 UTC = 10:30 America/Sao_Paulo.
+    # Ativo por padrão; PDDE_FINANCIAL_SYNC_ENABLED=false funciona como kill-switch.
     - cron: "30 13 * * *"
 
 concurrency:
@@ -22,7 +23,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       ((github.event_name == 'repository_dispatch' || github.event_name == 'schedule') &&
-      vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true')
+      vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production
