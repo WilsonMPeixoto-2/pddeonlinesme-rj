@@ -31,6 +31,7 @@ import {
 import { saveAs } from "file-saver";
 
 import AppLayout from "@/components/AppLayout";
+import { SegundaParcelaRepassesView } from "@/components/SegundaParcelaRepassesView";
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -171,7 +172,7 @@ function SortHeader({
   );
 }
 
-export default function Repasses() {
+function PrimeiraParcelaRepasses() {
   const { exercicio } = useExercicio();
   const exercicioNumero = Number(exercicio);
   const repassesQuery = useQuery(repassesFinanceirosOptions(exercicioNumero));
@@ -377,6 +378,15 @@ export default function Repasses() {
             Exportar {hasFilters ? "resultado" : "lista"}
           </Button>
         </header>
+
+        <div className="inline-flex rounded-lg border border-border/60 bg-muted/15 p-1" aria-label="Selecionar ciclo de repasse">
+          <Button variant="secondary" size="sm" className="h-8" aria-current="page">
+            1ª parcela paga
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="h-8">
+            <Link to="/repasses?ciclo=2">2º ciclo · ordens</Link>
+          </Button>
+        </div>
 
         {repassesQuery.isLoading ? (
           <div className="space-y-5">
@@ -625,4 +635,12 @@ export default function Repasses() {
       </div>
     </AppLayout>
   );
+}
+
+
+export default function Repasses() {
+  const [searchParams] = useSearchParams();
+  return searchParams.get("ciclo") === "2"
+    ? <SegundaParcelaRepassesView />
+    : <PrimeiraParcelaRepasses />;
 }

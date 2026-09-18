@@ -19,6 +19,7 @@ import AppLayout from "@/components/AppLayout";
 import { CentralDocumental } from "@/components/CentralDocumental";
 import { HistoricoGeracoesCard } from "@/components/HistoricoGeracoesCard";
 import { NumberTicker } from "@/components/NumberTicker";
+import { SegundaParcelaResumo } from "@/components/SegundaParcelaResumo";
 import { TiltCard } from "@/components/TiltCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
 import { useExercicio } from "@/hooks/useExercicio";
 import {
   buildDashboardFinanceiroOverview,
+  buildSegundaParcelaOverview,
   type ProgramaFinanceiroOverview,
 } from "@/lib/financeiroPDDE";
 import {
@@ -162,6 +164,11 @@ export default function Dashboard() {
     [contasQuery.data, exercicioNumero, repassesQuery.data],
   );
 
+  const segundoCiclo = useMemo(
+    () => buildSegundaParcelaOverview(repassesQuery.data ?? [], exercicioNumero),
+    [exercicioNumero, repassesQuery.data],
+  );
+
   const loading = repassesQuery.isLoading || contasQuery.isLoading || loadingResumo;
   const queryError = repassesQuery.error ?? contasQuery.error ?? errorResumo;
   const recentes = resumoUnidades?.recentes ?? [];
@@ -236,7 +243,7 @@ export default function Dashboard() {
         : "Nenhum pagamento informado no 2º ciclo",
       tone: "muted",
       format: fmtBRL,
-      destination: "/repasses",
+      destination: "/repasses?ciclo=2",
     },
   ];
 
@@ -465,6 +472,8 @@ export default function Dashboard() {
             );
           })}
         </motion.div>
+
+        {!loading ? <SegundaParcelaResumo overview={segundoCiclo} /> : null}
 
         <section className="space-y-4" aria-labelledby="programas-pdde-title">
           <div className="flex flex-wrap items-end justify-between gap-3">

@@ -188,6 +188,14 @@ describe("buildDashboardFinanceiroOverview", () => {
       ultimaDataOrdem: "2026-09-14",
       ultimaDataPagamento: null,
     });
+
+    expect(overview.totalPagoIdentificado).toBe(350);
+    expect(overview.pagamentosIdentificados).toBe(3);
+    expect(overview.porPrograma).toEqual([
+      expect.objectContaining({ programa: "PDDE BÁSICO", totalPago: 300 }),
+      expect.objectContaining({ programa: "PDDE QUALIDADE", totalPago: 50 }),
+      expect.objectContaining({ programa: "PDDE EQUIDADE", totalPago: null }),
+    ]);
   });
 
   it("preserva ausência de detalhamento em vez de convertê-la em zero", () => {
