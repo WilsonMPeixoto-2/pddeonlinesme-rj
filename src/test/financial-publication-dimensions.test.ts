@@ -12,6 +12,7 @@ type Repasse = {
   paidCusteio: number | null;
   paidCapital: number | null;
   paymentDate: string | null;
+  paymentOrderDate: string | null;
 };
 
 type Account = {
@@ -44,7 +45,8 @@ function buildPayload(count = 163) {
       paid: 5000,
       paidCusteio: 1000,
       paidCapital: 4000,
-      paymentDate: "2026-08-05",
+      paymentDate: null,
+      paymentOrderDate: "2026-08-05",
     },
     {
       inep: school.inep,
@@ -56,6 +58,7 @@ function buildPayload(count = 163) {
       paidCusteio: null,
       paidCapital: null,
       paymentDate: null,
+      paymentOrderDate: null,
     },
   ]);
 

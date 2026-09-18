@@ -92,7 +92,16 @@ function installmentOrder(value, index) {
 }
 
 function informedPayment(installment) {
-  return installment?.paymentInformedDate ? centsToReais(installment.paymentInformedCents) : null;
+  if (
+    typeof installment?.paymentInformedCents !== "number"
+    || !Number.isFinite(installment.paymentInformedCents)
+  ) return null;
+  if (
+    installment.paymentInformedCents === 0
+    && !installment.paymentInformedDate
+    && !installment.paymentOrderDate
+  ) return null;
+  return centsToReais(installment.paymentInformedCents);
 }
 
 function normalizeAccount(account, inep, exercise) {
@@ -132,6 +141,7 @@ function markOnePrincipal(accounts) {
 function normalizeRepasse(installment, programName, school, exercise, index) {
   const { program, action } = classifyProgram(programName);
   const paymentDate = installment?.paymentInformedDate ?? null;
+  const paid = informedPayment(installment);
   const breakdown = installment?.breakdown ?? null;
   const account = installment?.account
     ? {
@@ -149,11 +159,11 @@ function normalizeRepasse(installment, programName, school, exercise, index) {
     installment: canonicalInstallment(installment?.installment),
     displayOrder: installmentOrder(installment?.installment, index),
     programmed: centsToReais(installment?.programmedCents),
-    paid: informedPayment(installment),
+    paid,
     programmedCusteio: centsToReais(breakdown?.programmedCusteioCents),
     programmedCapital: centsToReais(breakdown?.programmedCapitalCents),
-    paidCusteio: paymentDate ? centsToReais(breakdown?.paidCusteioCents) : null,
-    paidCapital: paymentDate ? centsToReais(breakdown?.paidCapitalCents) : null,
+    paidCusteio: paid === null ? null : centsToReais(breakdown?.paidCusteioCents),
+    paidCapital: paid === null ? null : centsToReais(breakdown?.paidCapitalCents),
     paymentDate,
     paymentOrderDate: installment?.paymentOrderDate ?? null,
     account,
@@ -196,7 +206,7 @@ function uniqueCoverage(rows, predicate = () => true) {
 }
 
 function dateBounds(rows) {
-  const dates = rows.map((row) => row.paymentDate).filter(Boolean).sort();
+  const dates = rows.map((row) => row.paymentOrderDate).filter(Boolean).sort();
   return { referenceDateMin: dates[0] ?? null, referenceDateMax: dates.at(-1) ?? null };
 }
 
@@ -241,8 +251,8 @@ export function evaluatePublicationDimensions(payload) {
     typeof row.paid === "number" &&
     Number.isFinite(row.paid) &&
     row.paid >= 0 &&
-    typeof row.paymentDate === "string" &&
-    row.paymentDate.length > 0,
+    typeof row.paymentOrderDate === "string" &&
+    row.paymentOrderDate.length > 0,
   );
   const firstCoverage = uniqueCoverage(validFirstRows);
 
