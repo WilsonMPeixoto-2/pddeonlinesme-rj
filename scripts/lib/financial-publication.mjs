@@ -92,7 +92,10 @@ function installmentOrder(value, index) {
 }
 
 function informedPayment(installment) {
-  return installment?.paymentInformedDate ? centsToReais(installment.paymentInformedCents) : null;
+  return typeof installment?.paymentInformedCents === "number"
+    && Number.isFinite(installment.paymentInformedCents)
+    ? centsToReais(installment.paymentInformedCents)
+    : null;
 }
 
 function normalizeAccount(account, inep, exercise) {
@@ -152,8 +155,8 @@ function normalizeRepasse(installment, programName, school, exercise, index) {
     paid: informedPayment(installment),
     programmedCusteio: centsToReais(breakdown?.programmedCusteioCents),
     programmedCapital: centsToReais(breakdown?.programmedCapitalCents),
-    paidCusteio: paymentDate ? centsToReais(breakdown?.paidCusteioCents) : null,
-    paidCapital: paymentDate ? centsToReais(breakdown?.paidCapitalCents) : null,
+    paidCusteio: centsToReais(breakdown?.paidCusteioCents),
+    paidCapital: centsToReais(breakdown?.paidCapitalCents),
     paymentDate,
     paymentOrderDate: installment?.paymentOrderDate ?? null,
     account,
@@ -196,7 +199,7 @@ function uniqueCoverage(rows, predicate = () => true) {
 }
 
 function dateBounds(rows) {
-  const dates = rows.map((row) => row.paymentDate).filter(Boolean).sort();
+  const dates = rows.map((row) => row.paymentOrderDate).filter(Boolean).sort();
   return { referenceDateMin: dates[0] ?? null, referenceDateMax: dates.at(-1) ?? null };
 }
 
@@ -241,8 +244,8 @@ export function evaluatePublicationDimensions(payload) {
     typeof row.paid === "number" &&
     Number.isFinite(row.paid) &&
     row.paid >= 0 &&
-    typeof row.paymentDate === "string" &&
-    row.paymentDate.length > 0,
+    typeof row.paymentOrderDate === "string" &&
+    row.paymentOrderDate.length > 0,
   );
   const firstCoverage = uniqueCoverage(validFirstRows);
 
