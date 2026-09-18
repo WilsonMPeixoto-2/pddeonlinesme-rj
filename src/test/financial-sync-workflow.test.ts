@@ -28,7 +28,7 @@ describe("workflow de sincronização financeira", () => {
     expect(workflow).toContain("github.event_name == 'workflow_dispatch'");
     expect(workflow).toContain("github.event_name == 'repository_dispatch'");
     expect(workflow).toContain("github.event_name == 'schedule'");
-    expect(workflow).toContain("vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'");
+    expect(workflow).toContain("vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false'");
   });
 
   it("transporta a proveniência do repository_dispatch para validação do manifesto", async () => {

@@ -217,7 +217,7 @@ export async function publishFinancialPayload(payload, env = process.env) {
   }
   if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada.");
 
-  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/publish_financial_snapshot_v1`, {
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/publish_financial_snapshot_with_order_evidence_v1`, {
     method: "POST",
     headers: {
       apikey: serviceRoleKey,
@@ -231,7 +231,7 @@ export async function publishFinancialPayload(payload, env = process.env) {
   });
   const responseText = await response.text();
   if (!response.ok) {
-    throw new Error(`Supabase recusou a publicação financeira: HTTP ${response.status} ${responseText.slice(0, 500)}`);
+    throw new Error(`Supabase recusou a publicação financeira com evidências de ordem: HTTP ${response.status} ${responseText.slice(0, 500)}`);
   }
   return responseText ? JSON.parse(responseText) : null;
 }

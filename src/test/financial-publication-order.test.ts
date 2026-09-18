@@ -50,6 +50,63 @@ function school(inep: string, sme: string, account: string) {
   };
 }
 
+describe("evidência automática de ordem no payload financeiro", () => {
+  it("preserva ordem P2 e composição sem transformar ordem em pagamento", () => {
+    const snapshot = {
+      publishedAt: manifest.publishedAt,
+      source: manifest.source,
+      portfolio: { fiscalYear: 2026 },
+      schools: {
+        "33136947": {
+          school: { inep: "33136947", sme: "0410601", name: "EM Exemplo" },
+          accounts: [
+            { program: "PDDE", bank: "001", agency: "0249", account: "0000000001" },
+          ],
+          programs: [
+            {
+              name: "PDDE / PDDE Básico - Primeira Infância",
+              installments: [
+                {
+                  installment: "P2",
+                  programmedCents: 277500,
+                  paymentInformedCents: 0,
+                  paymentInformedDate: null,
+                  paymentOrderDate: "2026-09-14",
+                  breakdown: {
+                    programmedCusteioCents: 111000,
+                    programmedCapitalCents: 166500,
+                    paidCusteioCents: null,
+                    paidCapitalCents: null,
+                  },
+                  account: null,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
+
+    const payload = buildNormalizedPublicationPayload(snapshot, manifest);
+    expect(payload.repasses).toEqual([
+      expect.objectContaining({
+        inep: "33136947",
+        program: "PDDE BÁSICO",
+        action: "PDDE Básico — Primeira Infância",
+        installment: "P2",
+        programmed: 2775,
+        paid: null,
+        programmedCusteio: 1110,
+        programmedCapital: 1665,
+        paidCusteio: null,
+        paidCapital: null,
+        paymentDate: null,
+        paymentOrderDate: "2026-09-14",
+      }),
+    ]);
+  });
+});
+
 describe("ordenação canônica da publicação financeira", () => {
   it("produz o mesmo conteúdo de negócio quando a fonte chega em ordem diferente", () => {
     const first = {
