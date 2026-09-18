@@ -1,6 +1,6 @@
 # Handoff Operacional — PDDE Online 2026
 
-**Atualizado em:** 11/09/2026 (America/Sao_Paulo)  
+**Atualizado em:** 18/09/2026 (America/Sao_Paulo)  
 **Repositório:** `WilsonMPeixoto-2/pddeonlinesme-rj`  
 **Entrada obrigatória da documentação:** `docs/README.md`
 
@@ -8,19 +8,21 @@
 
 ## 1. Estado verificado no fechamento do ciclo funcional
 
-Baseline funcional anterior à PR documental #133:
+Baseline funcional verificado em 18/09/2026:
 
-- `main`: `b60fb04b360eefb7dc0d92cc39064ee8a019724b`;
-- Production Vercel: `dpl_FdQY3St4xHQpSgept47jobMcvE4Y`;
+- `main`: `b2451447766a3366242d9595bb560ae112404c5e`;
+- Production Vercel: `dpl_9UNePVuaekvYQhSg8rjxkUJU9ArD`;
 - estado do deployment: `READY`;
 - domínio público: `https://pddeonlinesme-rj.vercel.app`;
-- smoke público: HTTP 200;
-- erros de runtime observados após o deploy: nenhum no intervalo verificado;
-- Supabase oficial: `raluxyojqosfzrfozmpz`.
+- CI da PR #173: verde;
+- CI da PR #174: verde;
+- Supabase oficial: `raluxyojqosfzrfozmpz`;
+- RPC `publish_financial_snapshot_with_order_evidence_v1(jsonb)`: instalada;
+- nova verificação HTTP externa do domínio: não registrada nesta reconciliação.
 
-A PR #133 altera apenas documentação/continuidade; o SHA de `main` após seu merge pode diferir do baseline funcional acima sem mudança no código da aplicação.
+PR documental posterior pode alterar o SHA de `main` sem alterar o baseline funcional acima.
 
-## 2. Ciclo #129 → #132 concluído em Production
+## 2. Ciclos funcionais consolidados até a PR #174
 
 ### PR #129 — pipeline de publicação financeira por dimensão
 
@@ -63,7 +65,41 @@ Entregue:
 - preservação do recorte da carteira ao voltar;
 - histórico do navegador sem entradas redundantes por digitação/retorno.
 
-No início da reconciliação documental havia **0 PRs de produto abertos**.
+### PR #166 — evidência externa da P2
+
+Entregue:
+
+- camada complementar `repasse_evidencias_financeiras`;
+- 52 escolas de `PDDE Básico — Primeira Infância — P2`;
+- total informado de **R$ 132.630,00**;
+- custeio de **R$ 81.034,00**;
+- capital de **R$ 51.596,00**;
+- ordem de pagamento em **14/09/2026**;
+- nenhuma data distinta de crédito bancário confirmada.
+
+### PR #173 — drill-down operacional do 2º ciclo
+
+Entregue:
+
+- resumo do 2º ciclo no Dashboard;
+- `/repasses?ciclo=2` com relação nominal, INEP, situação, ordem, custeio, capital e total;
+- busca, filtro, ordenação e exportação;
+- drill-down para Recursos PDDE e retorno ao mesmo recorte;
+- Portal do Diretor com ordem visível sem alterar `recebido`, saldo ou execução;
+- agregados de `Pagamento identificado` exigindo `data_pagamento`.
+
+### PR #174 — persistência automática de ordens do FNDE
+
+Entregue:
+
+- RPC transacional `publish_financial_snapshot_with_order_evidence_v1(jsonb)`;
+- sincronização de ordens validadas pelo motor em `repasse_evidencias_financeiras`;
+- idempotência e bloqueio de divergências;
+- preservação de `data_pagamento = NULL` quando existe apenas ordem;
+- `repository_dispatch` e fallback diário elegíveis por padrão;
+- `PDDE_FINANCIAL_SYNC_ENABLED=false` como kill-switch explícito.
+
+A PR #174 depende de fonte válida e credenciais de backend para publicar. Na verificação de 18/09, ainda não havia nova linha em `integracoes_financeiras_runs` após a ativação; a primeira publicação automática pós-PR #174 ainda precisava ser comprovada.
 
 ## 3. Governança documental instituída na PR #133
 
@@ -92,7 +128,14 @@ Validado no Supabase oficial:
 - 335 contas bancárias;
 - 537 registros de repasse/parcela;
 - 5 dimensões V1 `MATURE/PUBLISHED`;
-- cobertura das dimensões: 163/163.
+- cobertura das dimensões: 163/163;
+- 52 evidências financeiras complementares;
+- P2 Primeira Infância: **R$ 132.630,00**;
+- composição P2: **R$ 81.034,00 custeio + R$ 51.596,00 capital**;
+- 52 ordens em **14/09/2026**;
+- créditos bancários confirmados nesse recorte: **0**;
+- `integracoes_financeiras_runs`: 2;
+- última publicação financeira observada: **09/09/2026**.
 
 Decisões obrigatórias:
 
@@ -106,15 +149,21 @@ Decisões obrigatórias:
 
 Workflow: `.github/workflows/sync-financial-snapshot.yml`.
 
-O YAML contém `workflow_dispatch` e `schedule`, mas a publicação agendada **não está habilitada operacionalmente**.
+Desde a PR #174, `repository_dispatch` e o fallback diário estão habilitados por padrão no código:
 
-Para o job agendado publicar, é obrigatório:
+```text
+vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false'
+```
 
-- `vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'`;
-- `PDDE_SUPABASE_URL` configurado no environment `production`;
-- `PDDE_SUPABASE_SERVICE_ROLE_KEY` configurado no environment `production`.
+`PDDE_FINANCIAL_SYNC_ENABLED=false` é o kill-switch explícito. A publicação real continua exigindo:
 
-Execução manual também valida o destino e exige os secrets. Não contornar ausência de credencial com chave pública/anon.
+- `PDDE_SUPABASE_URL` no environment `production`;
+- `PDDE_SUPABASE_SERVICE_ROLE_KEY`;
+- destino correto;
+- snapshot/proveniência válidos;
+- gates de maturidade, cobertura e regressão aprovados.
+
+Configuração ativa não equivale a publicação comprovada. Na reconciliação de 18/09/2026, o Supabase ainda mostrava como última publicação financeira **09/09/2026**, portanto a primeira execução automática pós-PR #174 permanecia pendente de comprovação.
 
 ## 6. CI atual
 
@@ -155,23 +204,30 @@ Resumo do ciclo atual:
 - preservar múltiplas contas;
 - manter proveniência técnica fora da superfície operacional comum;
 - agregados relevantes devem levar a detalhe/filtro/ação;
+- ordem de pagamento e crédito bancário são estados distintos;
+- `Pagamento identificado` exige `data_pagamento`;
+- automação financeira é elegível por padrão; `false` é o kill-switch;
+- configuração de automação não substitui prova de publicação;
 - busca global só anuncia funcionalidades reais;
 - contexto da carteira deve sobreviver ao drill-down;
 - design deve ser institucional, claro e original, sem excesso decorativo.
 
 ## 8. Pendências operacionais reais
 
-### 8.1. Ativação da sincronização financeira
+### 8.1. Confirmar a primeira publicação automática pós-PR #174
 
-Não é bloqueio do funcionamento atual. É uma decisão operacional futura.
+A automação já está habilitada no código. A pendência agora é **provar a execução real ponta a ponta**.
 
-Antes de ativar:
+Na primeira execução válida após a PR #174, confirmar:
 
-1. configurar os dois secrets no environment `production`;
-2. manter `PDDE_FINANCIAL_SYNC_ENABLED=false`/ausente;
-3. executar manualmente o workflow;
-4. validar dry-run, publicação, idempotência e estado do banco;
-5. somente depois habilitar a variável de agendamento.
+1. workflow concluído com sucesso;
+2. `workflow_run_id` e `artifact_id` esperados;
+3. nova linha ou retorno idempotente em `integracoes_financeiras_runs`;
+4. 163 escolas e dimensões maduras preservadas;
+5. evidências de ordem sincronizadas sem inventar `data_pagamento`;
+6. ausência de regressão nos 52 fatos P2 já preservados.
+
+Se houver incidente, `PDDE_FINANCIAL_SYNC_ENABLED=false` deve ser usado como kill-switch.
 
 ### 8.2. Smoke autenticado periódico
 
@@ -195,7 +251,7 @@ Não tratar como “próxima frente” itens já concluídos:
 - Painel Executivo-Operacional básico;
 - geração em lote dos 163 Demonstrativos;
 - integração financeira V1;
-- página operacional de Repasses V1;
+- página operacional de Repasses com 1ª parcela paga e drill-down do 2º ciclo;
 - busca global operacional;
 - preservação de contexto da carteira;
 - stack React/Vite/Vitest atualizada;
@@ -220,7 +276,8 @@ Novas evoluções podem ampliar essas áreas, mas devem partir do estado atual, 
 
 1. manter o roteiro obrigatório de leitura e evitar novas fontes concorrentes de estado/decisões;
 2. manter smoke autenticado proporcional ao risco das próximas mudanças;
-3. decidir quando vale ativar a sincronização financeira automática e, nesse momento, configurar secrets + gate com validação manual prévia;
-4. continuar hardening de Auth/RLS/auditoria antes de ampliar o Portal do Diretor;
-5. publicar novas dimensões financeiras apenas quando tiverem contrato próprio e cobertura madura;
-6. tratar novos documentos oficiais, importador e frente fiscal em PRs isolados, com fonte estruturada e revisão humana.
+3. confirmar e auditar a primeira publicação automática pós-PR #174;
+4. atualizar a P2 somente quando surgir evidência de crédito bancário confirmado;
+5. continuar hardening de Auth/RLS/auditoria antes de ampliar fluxos de escrita do Portal do Diretor;
+6. publicar novas dimensões financeiras apenas quando tiverem contrato próprio e cobertura madura;
+7. tratar novos documentos oficiais, importador e frente fiscal em PRs isolados, com fonte estruturada e revisão humana.
