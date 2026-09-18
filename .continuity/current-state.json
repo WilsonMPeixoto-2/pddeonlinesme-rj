@@ -60,14 +60,14 @@
     "source_project": "WilsonMPeixoto-2/pdde-repasse-conciliador",
     "workflow": ".github/workflows/sync-financial-snapshot.yml",
     "schedule_defined": true,
-    "scheduled_publication_enabled": false,
-    "enable_condition": "vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'",
+    "scheduled_publication_enabled": true,
+    "enable_condition": "vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false'",
     "required_secrets": [
       "PDDE_SUPABASE_URL",
       "PDDE_SUPABASE_SERVICE_ROLE_KEY"
     ],
-    "manual_execution": "Permitida pelo workflow_dispatch, mas falha antes de publicar se os secrets esperados nao estiverem configurados.",
-    "rule": "Nao descrever a sincronizacao automatica como ativa enquanto gate e credenciais nao estiverem configurados."
+    "manual_execution": "Permitida pelo workflow_dispatch e submetida aos mesmos gates de destino, maturidade e proveniencia.",
+    "rule": "Automacao ativa por padrao; PDDE_FINANCIAL_SYNC_ENABLED=false e o kill-switch. Credenciais de backend continuam obrigatorias para publicar."
   },
   "business_invariants": [
     "Dados -> analise -> escola -> acao -> evidencia.",
