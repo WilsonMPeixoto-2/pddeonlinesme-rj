@@ -352,7 +352,7 @@ BEGIN
      AND ((r.action = 'PDDE Básico' AND r.installment = '1ª Parcela')
        OR (r.action = 'PDDE Básico — Primeira Infância' AND r.installment = 'P1'))
      AND r.paid IS NOT NULL
-     AND r."paymentDate" IS NOT NULL
+     AND r."paymentOrderDate" IS NOT NULL
      AND r."paidCusteio" IS NOT NULL
      AND r."paidCapital" IS NOT NULL;
 
