@@ -130,7 +130,7 @@ O workflow `.github/workflows/ci.yml` é o gate permanente de PR e inclui:
 - auditoria de vulnerabilidades;
 - replay completo do Supabase local e testes de contrato do banco.
 
-O workflow `.github/workflows/sync-financial-snapshot.yml` existe, mas a presença do `schedule` **não significa automação ativa**. Execução agendada só publica quando `PDDE_FINANCIAL_SYNC_ENABLED=true` e os secrets de backend esperados estão configurados no environment `production`.
+O workflow `.github/workflows/sync-financial-snapshot.yml` executa automaticamente por `repository_dispatch` e pelo fallback diário quando as credenciais de backend do environment `production` estão disponíveis. `PDDE_FINANCIAL_SYNC_ENABLED=false` funciona como kill-switch explícito; ausência da variável não desativa mais a automação.
 
 Nunca declarar Production sincronizada sem conferir SHA/deployment e smoke do domínio público.
 
