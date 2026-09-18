@@ -90,18 +90,17 @@ Preservado por rastreabilidade, **não determina o estado atual**:
 | Dependências | `package.json`, lockfile, CI e histórico de incompatibilidades relevante |
 | Deploy/Production | SHA de `main`, status Vercel, domínio público e estado Supabase, nunca apenas handoff |
 
-## 5. Estado consolidado em 11/09/2026
+## 5. Estado consolidado em 18/09/2026
 
-A fotografia detalhada está em `current-state.json` e `HANDOFF.md`. O ciclo imediatamente anterior a esta reconciliação documental consolidou em Production:
+A fotografia detalhada está em `current-state.json` e `HANDOFF.md`. Além do ciclo #129–#132, o estado corrente inclui:
 
-- **#129** pipeline de publicação financeira por dimensão;
-- **#130** recorte financeiro principal do Painel baseado na 1ª parcela paga do PDDE Básico;
-- **#131** busca global transformada em localizador operacional real;
-- **#132** preservação do contexto da carteira ao abrir/retornar da ficha escolar.
+- **#166** preservação complementar de evidência P2;
+- **#173** drill-down operacional do 2º ciclo;
+- **#174** persistência automática de ordens de pagamento e sync financeiro elegível por padrão.
 
-O estado financeiro validado permanece em **163 escolas, 335 contas, 537 repasses e cinco dimensões V1 `MATURE/PUBLISHED` com cobertura 163/163**.
+O estado financeiro verificado permanece em **163 escolas, 335 contas, 537 repasses e cinco dimensões V1 `MATURE/PUBLISHED` com cobertura 163/163**. Há **52 evidências P2**, totalizando **R$ 132.630,00**, com ordem em **14/09/2026** e **sem data de crédito bancário confirmada**.
 
-A sincronização financeira automática **não deve ser considerada ativa** apenas porque existe um `schedule` no workflow. A execução agendada só publica quando o gate `PDDE_FINANCIAL_SYNC_ENABLED` estiver explicitamente habilitado e as credenciais de backend necessárias estiverem configuradas.
+Desde a PR #174, `repository_dispatch` e o fallback diário usam `PDDE_FINANCIAL_SYNC_ENABLED != 'false'`; portanto, `false` é o kill-switch explícito. Ainda assim, configuração ativa não é prova de publicação: em 18/09/2026, a última linha observada em `integracoes_financeiras_runs` continuava sendo de **09/09/2026**, de modo que a primeira publicação automática pós-PR #174 permanecia pendente de comprovação.
 
 ## 6. Como manter a documentação saudável
 

@@ -106,6 +106,17 @@ A publicação controlada recebe um payload normalizado do snapshot do motor e e
 
 Como a chamada é uma função PostgreSQL única, qualquer exceção desfaz a operação inteira.
 
+### Evidência automática de ordem de pagamento
+
+A PR #174 adicionou a RPC `publish_financial_snapshot_with_order_evidence_v1(jsonb)`, que executa na mesma transação:
+
+1. a publicação do snapshot financeiro V1;
+2. a materialização de ordens de pagamento validadas pelo motor em `repasse_evidencias_financeiras`.
+
+São candidatas somente linhas com `paymentOrderDate` conhecida e `paymentDate` ausente. A evidência preserva valor, custeio, capital e data da ordem, mas mantém `data_pagamento = NULL` e não transforma `valor_pago` canônico em pagamento observado.
+
+A sincronização é idempotente; divergência contra evidência já preservada bloqueia a transação em vez de sobrescrever o fato silenciosamente.
+
 ## Idempotência e regressão
 
 - mesma combinação `workflow_run_id + artifact_id` retorna a execução já conhecida e não duplica dados;
@@ -146,30 +157,32 @@ O evento não substitui a validação do manifesto. Payload de dispatch divergen
 
 ### Kill-switch operacional
 
-O job automático exige:
+Desde a PR #174, execuções automáticas são elegíveis por padrão:
 
 ```text
-vars.PDDE_FINANCIAL_SYNC_ENABLED == 'true'
+vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false'
 ```
 
-A regra aplica-se tanto a `repository_dispatch` quanto a `schedule`. `workflow_dispatch` permanece disponível para homologação com o kill-switch desligado.
+A regra aplica-se a `repository_dispatch` e `schedule`. Definir explicitamente `PDDE_FINANCIAL_SYNC_ENABLED=false` interrompe esses disparos; ausência da variável não os desativa. `workflow_dispatch` permanece disponível para execução humana controlada.
 
-O environment `production` precisa fornecer:
+O environment `production` continua precisando fornecer:
 
 - `PDDE_SUPABASE_URL`;
 - `PDDE_SUPABASE_SERVICE_ROLE_KEY`.
 
 Ausência ou destino incorreto bloqueia a execução antes da publicação. Não existe fallback para chave `anon` nem autorização para ampliar permissões a fim de contornar secret ausente.
 
-### Procedimento de ativação
+### Verificação operacional
 
-1. configurar os dois secrets no environment `production`;
-2. manter `PDDE_FINANCIAL_SYNC_ENABLED` desabilitado/ausente;
-3. executar `workflow_dispatch` controlado;
-4. validar dry-run, primeira publicação e repetição idempotente;
-5. validar invariantes do banco;
-6. somente depois definir `PDDE_FINANCIAL_SYNC_ENABLED=true`;
-7. habilitar no motor o emissor de `repository_dispatch` com token dedicado de menor privilégio.
+A configuração do workflow não é prova de publicação. Para declarar uma sincronização automática concluída, verificar conjuntamente:
+
+1. workflow disparado e concluído sem falha;
+2. proveniência `workflow_run_id + artifact_id`;
+3. nova linha/idempotência em `integracoes_financeiras_runs`;
+4. contagens e dimensões promovidas;
+5. evidências de ordem materializadas sem inventar crédito bancário.
+
+Na reconciliação de 18/09/2026, o código de automação já estava ativo por padrão, porém o último `publicado_em` observado no Supabase ainda era de 09/09/2026. Portanto, a primeira publicação pós-PR #174 permanecia pendente de comprovação.
 
 ## Estado validado da V1
 

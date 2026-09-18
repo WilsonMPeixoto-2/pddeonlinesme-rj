@@ -1,6 +1,6 @@
 # Roadmap Adaptativo — PDDE Online 2026
 
-**Atualizado em:** 11/09/2026  
+**Atualizado em:** 18/09/2026  
 **Papel:** fila curta e prioridades após o estado atual.  
 **Não substitui:** `docs/DECISIONS.md`, `docs/README.md` ou verificação direta de `main`/Production.
 
@@ -32,7 +32,10 @@ Este roadmap registra apenas a fila operacional adaptativa a partir do estado re
 - pipeline de publicação financeira por dimensão com maturidade, idempotência e proteção contra regressão;
 - recorte financeiro principal do Painel alinhado ao universo maduro da 1ª parcela;
 - busca global como localizador operacional real;
-- preservação de filtros/contexto entre carteira de escolas e ficha individual.
+- preservação de filtros/contexto entre carteira de escolas e ficha individual;
+- evidência P2 de 52 escolas com ordem de pagamento em 14/09/2026;
+- drill-down operacional do 2º ciclo;
+- sincronização automática de ordens do FNDE integrada ao pipeline financeiro.
 
 ### Estado financeiro V1
 
@@ -59,20 +62,21 @@ As prioridades abaixo são recomendações adaptativas, não autorização autom
    - registrar novas decisões somente em `docs/DECISIONS.md`;
    - evitar criar novos snapshots concorrentes.
 
-### P1 — ativação controlada da sincronização financeira automática
+### P1 — comprovar a primeira publicação automática pós-PR #174
 
-Status atual: **workflow existe; agendamento não publica enquanto o gate estiver desabilitado/ausente**.
+Status atual: **o workflow está elegível por padrão** para `repository_dispatch` e fallback diário. `PDDE_FINANCIAL_SYNC_ENABLED=false` é o kill-switch.
 
-Pré-condições:
+Pendência operacional:
 
-1. configurar `PDDE_SUPABASE_URL` no environment `production`;
-2. configurar `PDDE_SUPABASE_SERVICE_ROLE_KEY`;
-3. manter `PDDE_FINANCIAL_SYNC_ENABLED` desabilitado;
-4. executar workflow manualmente;
-5. validar dry-run, publicação, idempotência, contagens e regressão;
-6. só então habilitar o gate agendado.
+1. observar a primeira execução pós-PR #174;
+2. confirmar sucesso do workflow;
+3. conferir `workflow_run_id + artifact_id`;
+4. confirmar nova linha/idempotência em `integracoes_financeiras_runs`;
+5. preservar 163/163 e as cinco dimensões maduras;
+6. confirmar que ordens entram como evidência sem preencher `data_pagamento`;
+7. usar o kill-switch imediatamente se houver regressão.
 
-Não é bloqueio para o funcionamento atual do produto.
+Na verificação de 18/09/2026, a última publicação observada no Supabase ainda era de 09/09/2026.
 
 ### P1 — Auth/RLS/auditoria antes de expansão de perfis
 
