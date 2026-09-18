@@ -1,6 +1,6 @@
 begin;
 
-select plan(10);
+select plan(11);
 
 select ok(
   to_regprocedure('public.sync_financial_order_evidence_v1(jsonb)') is not null,
