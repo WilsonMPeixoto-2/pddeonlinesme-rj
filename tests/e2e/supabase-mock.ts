@@ -274,11 +274,13 @@ export async function installSupabaseMock(page: Page) {
     }
 
     if (url.pathname.includes("/rest/v1/vw_unidade_detalhe")) {
+      const unidadeId = eqValue(url, "unidade_id");
+      const selectedUnidade = unidadeId === unidade2.id ? unidade2 : unidade;
       const wantsSingle =
         request.headers()["accept"]?.includes("application/vnd.pgrst.object+json") ||
-        url.searchParams.has("unidade_id");
+        Boolean(unidadeId);
 
-      return json(route, wantsSingle ? unidade : [unidade, unidade2]);
+      return json(route, wantsSingle ? selectedUnidade : [unidade, unidade2]);
     }
 
     if (url.pathname.includes("/rest/v1/document_generation_runs")) {
