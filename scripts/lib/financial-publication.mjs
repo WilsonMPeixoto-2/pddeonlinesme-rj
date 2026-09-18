@@ -92,10 +92,16 @@ function installmentOrder(value, index) {
 }
 
 function informedPayment(installment) {
-  return typeof installment?.paymentInformedCents === "number"
-    && Number.isFinite(installment.paymentInformedCents)
-    ? centsToReais(installment.paymentInformedCents)
-    : null;
+  if (
+    typeof installment?.paymentInformedCents !== "number"
+    || !Number.isFinite(installment.paymentInformedCents)
+  ) return null;
+  if (
+    installment.paymentInformedCents === 0
+    && !installment.paymentInformedDate
+    && !installment.paymentOrderDate
+  ) return null;
+  return centsToReais(installment.paymentInformedCents);
 }
 
 function normalizeAccount(account, inep, exercise) {
@@ -135,6 +141,7 @@ function markOnePrincipal(accounts) {
 function normalizeRepasse(installment, programName, school, exercise, index) {
   const { program, action } = classifyProgram(programName);
   const paymentDate = installment?.paymentInformedDate ?? null;
+  const paid = informedPayment(installment);
   const breakdown = installment?.breakdown ?? null;
   const account = installment?.account
     ? {
@@ -152,11 +159,11 @@ function normalizeRepasse(installment, programName, school, exercise, index) {
     installment: canonicalInstallment(installment?.installment),
     displayOrder: installmentOrder(installment?.installment, index),
     programmed: centsToReais(installment?.programmedCents),
-    paid: informedPayment(installment),
+    paid,
     programmedCusteio: centsToReais(breakdown?.programmedCusteioCents),
     programmedCapital: centsToReais(breakdown?.programmedCapitalCents),
-    paidCusteio: centsToReais(breakdown?.paidCusteioCents),
-    paidCapital: centsToReais(breakdown?.paidCapitalCents),
+    paidCusteio: paid === null ? null : centsToReais(breakdown?.paidCusteioCents),
+    paidCapital: paid === null ? null : centsToReais(breakdown?.paidCapitalCents),
     paymentDate,
     paymentOrderDate: installment?.paymentOrderDate ?? null,
     account,
