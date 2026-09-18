@@ -68,3 +68,28 @@ test("edição cadastral percorre RPC e reconciliação sem tocar produção", a
 
   await expect(page.getByText("Dados cadastrais salvos.")).toBeVisible();
 });
+
+
+test("segundo ciclo faz drill-down da escola e preserva o retorno", async ({ page }) => {
+  await installSupabaseMock(page);
+  await signInAsTestAdmin(page);
+
+  await page.getByRole("button", { name: /2º ciclo · PDDE Básico/i }).click();
+  await expect(page).toHaveURL(/\/repasses\?ciclo=2/);
+  await expect(page.getByRole("heading", { name: "2º ciclo · PDDE Básico" })).toBeVisible();
+  await expect(page.getByText("04.10.002", { exact: true })).toBeVisible();
+  await expect(page.getByText(/2\.785,00/).first()).toBeVisible();
+  await expect(page.getByText(/1\.671,00/).first()).toBeVisible();
+  await expect(page.getByText(/1\.114,00/).first()).toBeVisible();
+  await expect(page.getByText("Ordem emitida", { exact: true })).toBeVisible();
+
+  await page.getByRole("link", { name: "04.10.002" }).click();
+  await expect(page).toHaveURL(/\/escolas\/00000000-0000-4000-8000-000000000102\/recursos/);
+  await expect(page.getByRole("heading", { name: "EM Beta" })).toBeVisible();
+  await expect(page.getByText("Ordem de pagamento emitida", { exact: true })).toBeVisible();
+  await expect(page.getByText("14/09/2026", { exact: true })).toBeVisible();
+
+  await page.getByRole("link", { name: "Voltar aos repasses" }).click();
+  await expect(page).toHaveURL(/\/repasses\?ciclo=2/);
+  await expect(page.getByText("04.10.002", { exact: true })).toBeVisible();
+});
