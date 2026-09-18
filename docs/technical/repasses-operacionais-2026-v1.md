@@ -6,25 +6,38 @@ Transformar os dados financeiros já confiáveis do PDDE 2026 em uma interface o
 
 A V1 foi deliberadamente limitada a informações completas ou objetivamente disponíveis no banco. A interface não apresenta saldo atual, localização de crédito posterior ao limite conhecido da fonte ou qualquer valor inferido.
 
-## Recorte institucional inicial
+## Recortes operacionais publicados
 
-A página `/repasses` apresenta o recorte completo da **1ª parcela do PDDE Básico em 2026**, consolidando:
+A página `/repasses` mantém dois recortes explicitamente separados.
+
+### 1ª parcela paga
+
+O recorte principal consolida:
 
 - `PDDE Básico` → `1ª Parcela`;
 - `PDDE Básico — Primeira Infância` → `P1`.
 
 No snapshot publicado utilizado pela integração, esse recorte cobre as **163 unidades escolares** e totaliza **R$ 765.215,00 pagos**.
 
-A tela calcula, a partir dos registros carregados:
+A tela calcula total pago, quantidade de unidades, média, mediana, distribuição por ação, distribuição por faixa de valor e evolução acumulada pelas datas de pagamento informadas. Os gráficos também funcionam como filtros da relação de escolas.
 
-- total pago;
-- quantidade de unidades;
-- média e mediana;
-- distribuição por ação;
-- distribuição por faixa de valor;
-- evolução acumulada pelas datas de pagamento informadas.
+### 2º ciclo / ordens
 
-Os gráficos funcionam também como filtros da relação de escolas. A lista filtrada pode ser exportada em CSV e cada unidade conduz à sua visão detalhada de recursos.
+O recorte `/repasses?ciclo=2` publica somente unidades para as quais existe valor informado no 2º ciclo do PDDE Básico. A visão apresenta:
+
+- unidade escolar e INEP;
+- ação;
+- situação semântica;
+- data da ordem de pagamento;
+- data de pagamento, quando existir;
+- custeio;
+- capital;
+- total informado;
+- busca, filtro, ordenação e exportação CSV.
+
+A presença de `valor_pago` como fallback de evidência externa não autoriza o rótulo **Pagamento identificado**. Esse estado exige `data_pagamento`. Na ausência dessa data, a interface usa **Ordem emitida** quando existe `data_ordem_pagamento`, ou **Pagamento informado** quando há valor sem data de ordem.
+
+Cada unidade conduz à visão detalhada de recursos e o retorno preserva o recorte do segundo ciclo.
 
 ## Hierarquia operacional
 
@@ -67,15 +80,15 @@ Essa regra é essencial para impedir que lacunas de fonte sejam convertidas em i
 
 ### `src/pages/Repasses.tsx`
 
-Visão transversal dos pagamentos da primeira parcela:
+Entrada única para os recortes de repasses. Preserva a visão madura da 1ª parcela e seleciona o drill-down do segundo ciclo por parâmetro de URL.
 
-- KPIs;
-- filtros por ação, faixa e data;
-- busca por unidade/INEP;
-- tabela operacional com TanStack Table;
-- barras proporcionais de valor;
-- exportação CSV;
-- navegação para o detalhe da unidade.
+### `src/components/SegundaParcelaRepassesView.tsx`
+
+Drill-down operacional do segundo ciclo com KPIs, composição custeio/capital, busca, filtros de situação, ordenação, exportação e tabela nominal das unidades.
+
+### `src/components/SegundaParcelaResumo.tsx`
+
+Resumo do segundo ciclo no Painel, com total, composição, data da ordem e prévia nominal que conduz ao conjunto completo.
 
 ### `src/components/RecursosPDDEPanel.tsx`
 
