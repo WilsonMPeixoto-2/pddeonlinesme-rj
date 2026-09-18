@@ -45,6 +45,32 @@ export interface EscolaPrimeiraParcela {
   participacao: number;
 }
 
+export interface EscolaSegundaParcela {
+  unidadeId: string;
+  designacao: string;
+  nome: string;
+  inep: string | null;
+  acao: string;
+  valorInformado: number;
+  custeio: number | null;
+  capital: number | null;
+  dataOrdem: string | null;
+  dataPagamento: string | null;
+  status: "pagamento-identificado" | "ordem-emitida" | "pagamento-informado";
+}
+
+export interface SegundaParcelaOverview {
+  exercicio: number;
+  totalInformado: number;
+  custeioTotal: number | null;
+  capitalTotal: number | null;
+  escolas: EscolaSegundaParcela[];
+  ordensIdentificadas: number;
+  pagamentosIdentificados: number;
+  ultimaDataOrdem: string | null;
+  ultimaDataPagamento: string | null;
+}
+
 export interface ActionOverview {
   acao: string;
   total: number;
@@ -305,6 +331,90 @@ export function buildPrimeiraParcelaOverview(
   };
 }
 
+export function buildSegundaParcelaOverview(
+  repasses: RepasseFinanceiro[],
+  exercicio: number,
+): SegundaParcelaOverview {
+  const publicados = repasses.filter(
+    (repasse) =>
+      isSegundaParcelaBasico(repasse, exercicio) &&
+      repasse.valor_pago !== null,
+  );
+
+  const bySchool = new Map<string, EscolaSegundaParcela>();
+  for (const repasse of publicados) {
+    const current = bySchool.get(repasse.unidade_id);
+    const status: EscolaSegundaParcela["status"] = repasse.data_pagamento
+      ? "pagamento-identificado"
+      : repasse.data_ordem_pagamento
+        ? "ordem-emitida"
+        : "pagamento-informado";
+
+    if (current) {
+      current.valorInformado += repasse.valor_pago ?? 0;
+      current.custeio =
+        current.custeio === null || repasse.custeio_pago === null
+          ? null
+          : current.custeio + repasse.custeio_pago;
+      current.capital =
+        current.capital === null || repasse.capital_pago === null
+          ? null
+          : current.capital + repasse.capital_pago;
+      if (!current.dataPagamento && repasse.data_pagamento) current.dataPagamento = repasse.data_pagamento;
+      if (!current.dataOrdem && repasse.data_ordem_pagamento) current.dataOrdem = repasse.data_ordem_pagamento;
+      if (status === "pagamento-identificado") current.status = status;
+      else if (status === "ordem-emitida" && current.status === "pagamento-informado") current.status = status;
+      if (current.acao !== actionLabel(repasse.acao)) current.acao = "Múltiplas ações";
+      continue;
+    }
+
+    bySchool.set(repasse.unidade_id, {
+      unidadeId: repasse.unidade_id,
+      designacao: repasse.designacao ?? repasse.nome ?? "Unidade escolar",
+      nome: repasse.nome ?? repasse.designacao ?? "Unidade escolar",
+      inep: repasse.inep,
+      acao: actionLabel(repasse.acao),
+      valorInformado: repasse.valor_pago ?? 0,
+      custeio: repasse.custeio_pago,
+      capital: repasse.capital_pago,
+      dataOrdem: repasse.data_ordem_pagamento,
+      dataPagamento: repasse.data_pagamento,
+      status,
+    });
+  }
+
+  const escolas = [...bySchool.values()].sort(
+    (a, b) => b.valorInformado - a.valorInformado || a.designacao.localeCompare(b.designacao, "pt-BR"),
+  );
+  const totalInformado = escolas.reduce((sum, row) => sum + row.valorInformado, 0);
+  const custeioTotal = escolas.length > 0 && escolas.every((row) => row.custeio !== null)
+    ? escolas.reduce((sum, row) => sum + (row.custeio ?? 0), 0)
+    : null;
+  const capitalTotal = escolas.length > 0 && escolas.every((row) => row.capital !== null)
+    ? escolas.reduce((sum, row) => sum + (row.capital ?? 0), 0)
+    : null;
+  const datasOrdem = escolas
+    .map((row) => row.dataOrdem)
+    .filter((data): data is string => Boolean(data))
+    .sort((a, b) => b.localeCompare(a));
+  const datasPagamento = escolas
+    .map((row) => row.dataPagamento)
+    .filter((data): data is string => Boolean(data))
+    .sort((a, b) => b.localeCompare(a));
+
+  return {
+    exercicio,
+    totalInformado,
+    custeioTotal,
+    capitalTotal,
+    escolas,
+    ordensIdentificadas: escolas.filter((row) => row.dataOrdem !== null).length,
+    pagamentosIdentificados: escolas.filter((row) => row.dataPagamento !== null).length,
+    ultimaDataOrdem: datasOrdem[0] ?? null,
+    ultimaDataPagamento: datasPagamento[0] ?? null,
+  };
+}
+
 export function buildDashboardFinanceiroOverview(
   repasses: RepasseFinanceiro[],
   contas: ContaFinanceira[],
@@ -312,7 +422,9 @@ export function buildDashboardFinanceiroOverview(
 ): DashboardFinanceiroOverview {
   const repassesDoExercicio = repasses.filter((repasse) => repasse.exercicio === exercicio);
   const contasDoExercicio = contas.filter((conta) => conta.exercicio === exercicio);
-  const pagos = repassesDoExercicio.filter((repasse) => repasse.valor_pago !== null);
+  const pagosConfirmados = repassesDoExercicio.filter(
+    (repasse) => repasse.valor_pago !== null && repasse.data_pagamento !== null,
+  );
   const primeiraParcela = repassesDoExercicio.filter((repasse) =>
     isPrimeiraParcelaPublicada(repasse, exercicio),
   );
@@ -351,7 +463,9 @@ export function buildDashboardFinanceiroOverview(
     .map((programa): ProgramaFinanceiroOverview => {
       const repassesPrograma = repassesDoExercicio.filter((repasse) => repasse.programa === programa);
       const contasPrograma = contasDoExercicio.filter((conta) => conta.programa === programa);
-      const pagosPrograma = repassesPrograma.filter((repasse) => repasse.valor_pago !== null);
+      const pagosPrograma = repassesPrograma.filter(
+        (repasse) => repasse.valor_pago !== null && repasse.data_pagamento !== null,
+      );
       const escolasPrograma = new Set<string>();
       repassesPrograma.forEach((repasse) => escolasPrograma.add(repasse.unidade_id));
       contasPrograma.forEach((conta) => escolasPrograma.add(conta.unidade_id));
@@ -375,7 +489,7 @@ export function buildDashboardFinanceiroOverview(
         a.programa.localeCompare(b.programa, "pt-BR"),
     );
 
-  const datasPagamento = pagos
+  const datasPagamento = pagosConfirmados
     .map((repasse) => repasse.data_pagamento)
     .filter((data): data is string => Boolean(data))
     .sort((a, b) => b.localeCompare(a));
@@ -397,10 +511,10 @@ export function buildDashboardFinanceiroOverview(
     totalProgramado: repassesDoExercicio.length > 0
       ? repassesDoExercicio.reduce((sum, repasse) => sum + repasse.valor_programado, 0)
       : null,
-    totalPagoIdentificado: pagos.length > 0
-      ? pagos.reduce((sum, repasse) => sum + (repasse.valor_pago ?? 0), 0)
+    totalPagoIdentificado: pagosConfirmados.length > 0
+      ? pagosConfirmados.reduce((sum, repasse) => sum + (repasse.valor_pago ?? 0), 0)
       : null,
-    pagamentosIdentificados: pagos.length,
+    pagamentosIdentificados: pagosConfirmados.length,
     totalRepasses: repassesDoExercicio.length,
     totalContas: contasDoExercicio.length,
     totalEscolas: escolas.size,
