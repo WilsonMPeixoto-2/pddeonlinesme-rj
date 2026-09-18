@@ -117,7 +117,7 @@ select is(
 );
 
 select is(
-  (select data_ordem_pagamento
+  (select e.data_ordem_pagamento
      from public.repasse_evidencias_financeiras e
      join public.repasses_financeiros r on r.id = e.repasse_financeiro_id
     where r.unidade_id = (select id from _order_school)
@@ -127,7 +127,7 @@ select is(
 );
 
 select is(
-  (select data_pagamento
+  (select e.data_pagamento
      from public.repasse_evidencias_financeiras e
      join public.repasses_financeiros r on r.id = e.repasse_financeiro_id
     where r.unidade_id = (select id from _order_school)
