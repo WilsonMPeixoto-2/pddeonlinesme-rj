@@ -8,6 +8,20 @@ Decisões históricas que não precisam orientar novas tarefas podem permanecer 
 
 ---
 
+## 2026-09-18 — Ordem de pagamento não equivale a crédito bancário
+
+**Contexto:** foi recebida evidência externa de 52 unidades do PDDE Básico — Primeira Infância — P2 com valor informado e ordem de pagamento em 14/09/2026, sem data distinta de crédito bancário.
+
+**Decisão:** a interface pode publicar e detalhar essa evidência como **ordem de pagamento emitida** ou **pagamento informado**, com identificação da unidade, valor total, custeio, capital e data da ordem. O rótulo **Pagamento identificado** exige `data_pagamento` conhecida.
+
+**Consequência:** KPIs e cartões gerais de pagamento confirmado não somam evidências que tenham valor informado, mas não tenham data de crédito. O 2º ciclo possui drill-down próprio e pode aparecer no Painel como informação secundária, preservando a 1ª parcela paga como recorte financeiro principal.
+
+**Restrição:** ordem emitida não altera automaticamente `recebido`, saldo disponível, execução financeira, Demonstrativo Básico ou qualquer cálculo que pressuponha dinheiro creditado em conta.
+
+**Referência:** PR #173 e evidência externa versionada de 14/09/2026.
+
+---
+
 ## 2026-09-11 — Governança documental e precedência obrigatória
 
 **Contexto:** documentação de maio/junho e handoffs anteriores continuavam se apresentando como estado atual depois dos PRs #129–#132.
