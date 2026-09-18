@@ -66,8 +66,8 @@ repasses as (
         'programmedCapital', 60,
         'paidCusteio', 40,
         'paidCapital', 60,
-        'paymentDate', '2026-08-05',
-        'paymentOrderDate', null,
+        'paymentDate', null,
+        'paymentOrderDate', '2026-08-05',
         'account', null
       ) as item
     from schools
