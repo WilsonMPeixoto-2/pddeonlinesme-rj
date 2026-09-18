@@ -1,7 +1,7 @@
 {
   "project": "PDDE Online 2026",
   "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
-  "updated_at": "2026-09-11T13:30:00-03:00",
+  "updated_at": "2026-09-18T11:58:00-03:00",
   "source_of_truth": {
     "rule": "Codigo, schema/migrations, banco verificado, CI e deployment real prevalecem sobre documentacao.",
     "documentation_entrypoint": "docs/README.md",
@@ -10,13 +10,13 @@
     "note": "Este arquivo e snapshot operacional estruturado; confirmar estado dinamico antes de agir."
   },
   "application_baseline": {
-    "main_commit_before_documentation_reconciliation": "b60fb04b360eefb7dc0d92cc39064ee8a019724b",
-    "production_commit_verified": "b60fb04b360eefb7dc0d92cc39064ee8a019724b",
-    "production_deployment": "dpl_FdQY3St4xHQpSgept47jobMcvE4Y",
+    "latest_functional_main_commit": "f486f9a53f0a1dd5dad2e9a9059784d93061c6c6",
+    "production_commit_verified": "f486f9a53f0a1dd5dad2e9a9059784d93061c6c6",
+    "production_deployment": "dpl_5kdW7ijpMUMws2VzUZu4dNCZTLMp",
     "production_status": "READY",
     "public_url": "https://pddeonlinesme-rj.vercel.app",
-    "public_smoke": "HTTP 200 verificado apos o deploy do ciclo #132",
-    "runtime_errors_observed": 0,
+    "public_smoke": "Deployment Vercel READY e alias principal associado. O verificador HTTP externo desta sessao nao conseguiu acessar o dominio, portanto nao ha nova afirmacao de HTTP 200 nesta reconciliacao.",
+    "runtime_errors_observed": null,
     "note": "PR documental posterior pode alterar o SHA de main sem alterar o baseline funcional da aplicacao."
   },
   "supabase": {
@@ -27,6 +27,18 @@
     "financial_dimensions_v1": {
       "mature_published": 5,
       "coverage": "163/163"
+    },
+    "second_cycle_external_evidence": {
+      "source": "cre04.pdf.xlsx",
+      "action": "PDDE Básico — Primeira Infância",
+      "installment": "P2",
+      "schools": 52,
+      "total": 132630,
+      "custeio": 81034,
+      "capital": 51596,
+      "payment_order_date": "2026-09-14",
+      "confirmed_bank_credit_dates": 0,
+      "operational_rule": "Ordem de pagamento emitida nao equivale a credito bancario confirmado."
     }
   },
   "recent_product_cycle": [
@@ -53,6 +65,18 @@
       "status": "merged_and_production",
       "title": "contexto da carteira de escolas",
       "note": "Preserva q/status ao abrir e retornar da ficha; return interno validado."
+    },
+    {
+      "pull_request": 166,
+      "status": "merged_and_production",
+      "title": "evidencia externa da 2a parcela / P2",
+      "note": "52 escolas com ordem de pagamento de 14/09/2026 preservadas em camada de evidencia separada do snapshot canonico."
+    },
+    {
+      "pull_request": 173,
+      "status": "merged_and_production",
+      "title": "drill-down operacional do 2o ciclo",
+      "note": "Dashboard, /repasses?ciclo=2, fichas e Portal do Diretor expõem unidades, valores, custeio/capital e ordem sem converter ordem em credito bancario."
     }
   ],
   "open_product_pull_requests_at_reconciliation_start": 0,
@@ -79,7 +103,9 @@
     "Proveniencia tecnica permanece fora da superficie operacional comum.",
     "Indicadores relevantes devem conduzir a detalhe, filtro ou acao.",
     "Busca global so anuncia areas e entidades reais.",
-    "Filtros/contexto operacional devem sobreviver ao drill-down quando reduzem retrabalho."
+    "Filtros/contexto operacional devem sobreviver ao drill-down quando reduzem retrabalho.",
+    "Pagamento identificado exige data_pagamento; ordem emitida sem data de credito permanece estado distinto.",
+    "Ordem de pagamento nao altera automaticamente recebido, saldo disponivel, execucao financeira ou Demonstrativo Basico."
   ],
   "documentation_governance": {
     "reconciliation_pull_request": 133,
@@ -92,8 +118,9 @@
   "current_priorities": [
     "Manter o roteiro obrigatorio de leitura e evitar novas fontes concorrentes de estado/decisoes.",
     "Executar smoke autenticado periodico dos fluxos criticos em Production.",
+    "Atualizar o estado da P2 quando houver evidencia de credito bancario confirmado, preservando a distincao entre ordem e pagamento.",
     "Configurar secrets do workflow financeiro e realizar ativacao controlada somente quando houver decisao operacional para automatizar.",
-    "Continuar hardening de Auth/RLS/auditoria antes de ampliar o Portal do Diretor.",
+    "Continuar hardening de Auth/RLS/auditoria antes de ampliar fluxos de escrita do Portal do Diretor.",
     "Tratar novas dimensoes financeiras, documentos e frente fiscal apenas quando houver contrato e cobertura adequados."
   ],
   "protected_scope": [
