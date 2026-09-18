@@ -1,8 +1,9 @@
 import { gzipSync } from "node:zlib";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   assertExpectedManifestProvenance,
+  fetchFinancialDimensionContracts,
   hydratePublishedSnapshot,
   validatePublishedManifest,
 } from "../../scripts/sync-financial-snapshot.mjs";
@@ -12,6 +13,24 @@ const source = {
   artifactId: 10107480089,
   artifactName: "sigef-full-163-2026",
 };
+
+const coreContracts = [
+  ["bank_accounts", "bank_accounts_v1"],
+  ["scheduled_repasses", "scheduled_repasses_v1"],
+  ["pdde_basic_first_installment", "pdde_basic_first_installment_v1"],
+  ["pdde_basic_first_installment_breakdown", "pdde_basic_first_installment_breakdown_v1"],
+  ["pdde_basic_second_installment_programmed", "pdde_basic_second_installment_programmed_v1"],
+].map(([dimensionKey, validatorKey]) => ({
+  dimensionKey,
+  exercise: 2026,
+  contractVersion: 2,
+  coverageExpected: 163,
+  coverageRequiredRatio: 1,
+  requirements: {},
+  enabled: true,
+  requiredForCorePublication: true,
+  validatorKey,
+}));
 
 function fixture() {
   const snapshot = {
@@ -33,6 +52,10 @@ function fixture() {
   const values = new Map(manifest.parts.map((path, index) => [path, parts[index]]));
   return { snapshot, raw, manifest, values };
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("snapshot financeiro publicado", () => {
   it("valida proveniência e restringe partes ao diretório público esperado", () => {
@@ -111,5 +134,37 @@ describe("snapshot financeiro publicado", () => {
         { maxRawBytes: 16 },
       ),
     ).rejects.toThrow(/limite/i);
+  });
+
+  it("busca contratos financeiros somente no Supabase oficial com service_role", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify(coreContracts),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      fetchFinancialDimensionContracts({
+        SUPABASE_URL: "https://raluxyojqosfzrfozmpz.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+      }),
+    ).resolves.toEqual(coreContracts);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://raluxyojqosfzrfozmpz.supabase.co/rest/v1/rpc/get_financial_dimension_contracts_v1",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ p_exercise: 2026 }),
+      }),
+    );
+  });
+
+  it("falha fechado para destino Supabase não autorizado", async () => {
+    await expect(
+      fetchFinancialDimensionContracts({
+        SUPABASE_URL: "https://outro-projeto.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
+      }),
+    ).rejects.toThrow(/projeto PDDE Online autorizado/i);
   });
 });
