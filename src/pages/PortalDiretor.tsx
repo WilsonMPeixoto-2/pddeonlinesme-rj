@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import BrandMark from "@/components/BrandMark";
+import { SegundaParcelaUnidadeResumo } from "@/components/SegundaParcelaUnidadeResumo";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { useUnidadesLocalizador } from "@/hooks/useUnidadesLocalizador";
@@ -21,6 +22,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
 import { getCamposCadastraisPendentes } from "@/lib/demonstrativo/mapUnidadeToMemoria";
 import { getErrorMessage } from "@/lib/errors";
+import { buildSegundaParcelaOverview } from "@/lib/financeiroPDDE";
+import { financeiroUnidadeOptions } from "@/lib/queryKeys";
 import { saveAs } from "file-saver";
 
 /* ─── Nomes amigáveis para campos cadastrais ─── */
@@ -142,6 +145,10 @@ export default function PortalDiretor() {
     exercicio: "2026",
     programa: "PDDE",
   });
+
+  const financeiroUnidade = useQuery(financeiroUnidadeOptions(activeUnidadeId || undefined, 2026));
+  const segundoCiclo = buildSegundaParcelaOverview(financeiroUnidade.data?.repasses ?? [], 2026);
+  const segundaParcelaEscola = segundoCiclo.escolas[0];
 
   // 7. Buscar todas as despesas fiscais homologadas da escola ativa no ano vigente
   const { data: despesasFiscais, isLoading: loadingDespesas } = useQuery({
@@ -537,6 +544,12 @@ export default function PortalDiretor() {
                           ))}
                         </div>
                       )}
+
+                      {!financeiroUnidade.isLoading ? (
+                        <div className="mt-4">
+                          <SegundaParcelaUnidadeResumo escola={segundaParcelaEscola} compact />
+                        </div>
+                      ) : null}
                       
                       {/* Detalhamento dos limites de Custeio e Capital */}
                       <div className="mt-4 pt-4 border-t border-border/50">
