@@ -26,10 +26,15 @@ Antes de implementar, revisar ou documentar uma mudança relevante, leia nesta o
 4. [`HANDOFF.md`](./HANDOFF.md) — contexto operacional humano e pendências reais;
 5. [`DECISIONS.md`](./DECISIONS.md) — decisões de negócio, dados, UX, segurança e governança vigentes;
 6. [`RADAR_INTELIGENCIA_INSTITUCIONAL.md`](./RADAR_INTELIGENCIA_INSTITUCIONAL.md) — critérios transversais de valor institucional, fluxo real, modernidade e acessibilidade;
-7. documentação técnica específica da tarefa;
-8. `main`, PRs recentes/abertos, CI, Supabase e Production conforme o escopo.
+7. **enquanto estiver `Status: ATIVO`: [`technical/DATA_GOVERNANCE_HARDENING_2026.md`](./technical/DATA_GOVERNANCE_HARDENING_2026.md)** — registro vivo da campanha de correções de dados/Supabase;
+8. documentação técnica específica da tarefa;
+9. `main`, PRs recentes/abertos, CI, Supabase e Production conforme o escopo.
 
 Planos e specs históricos só devem ser lidos quando necessários para compreender a origem ou os trade-offs de uma decisão.
+
+### Regra especial da campanha de hardening
+
+O registro ativo não deve ser tratado como verdade autônoma. Depois de lê-lo, o agente deve comparar o tópico em que vai atuar com o código/schema/banco atuais e **continuar do último ponto verificado**, sem repetir toda a investigação por padrão. Ao fechar uma etapa, atualiza o registro, a continuidade operacional pertinente e o próximo ponto de retomada.
 
 ## 3. Classes documentais
 
@@ -53,16 +58,18 @@ Fotografia atualizável do projeto. Deve mudar quando uma frente relevante alter
 | [`.continuity/current-state.json`](../.continuity/current-state.json) | Estado estruturado para agentes/ferramentas |
 | [`HANDOFF.md`](./HANDOFF.md) | Estado humano, riscos, bloqueios e próximos movimentos |
 | [`ROADMAP_ADAPTIVE.md`](./ROADMAP_ADAPTIVE.md) | Fila curta e prioridades após o estado atual |
+| [`technical/DATA_GOVERNANCE_HARDENING_2026.md`](./technical/DATA_GOVERNANCE_HARDENING_2026.md) | **Exceção temporária:** registro operacional detalhado da campanha ativa de correções; obrigatório enquanto `Status: ATIVO` |
 
 ### TÉCNICO POR DOMÍNIO
 
-Leia somente os documentos ligados à tarefa em execução.
+Leia somente os documentos ligados à tarefa em execução, além da campanha ativa quando aplicável.
 
 | Domínio | Leitura mínima |
 |---|---|
 | Financeiro / repasses | [`technical/integracao-financeira-pdde-2026-v1.md`](./technical/integracao-financeira-pdde-2026-v1.md), [`technical/financial-publication-contract-v1.md`](./technical/financial-publication-contract-v1.md), [`technical/repasses-operacionais-2026-v1.md`](./technical/repasses-operacionais-2026-v1.md) |
 | Cadastro / edição de unidade | [`technical/fase-2b-edicao-cadastral-contrato.md`](./technical/fase-2b-edicao-cadastral-contrato.md) |
 | Fiscal / extração | [`technical/fiscal-extraction-architecture.md`](./technical/fiscal-extraction-architecture.md), [`technical/fiscal-extraction-field-dictionary.md`](./technical/fiscal-extraction-field-dictionary.md), [`technical/fiscal-extraction-validation-protocol.md`](./technical/fiscal-extraction-validation-protocol.md), [`technical/fiscal-sample-corpus-protocol.md`](./technical/fiscal-sample-corpus-protocol.md) |
+| Dados/Supabase durante hardening | [`technical/DATA_GOVERNANCE_HARDENING_2026.md`](./technical/DATA_GOVERNANCE_HARDENING_2026.md) + código/schema/banco reais do tópico |
 | Deploy / incidente específico | arquivos datados em `technical/`; confirmar sempre o deployment atual antes de agir |
 
 ### HISTÓRICO
@@ -85,21 +92,18 @@ Preservado por rastreabilidade, **não determina o estado atual**:
 | Edição cadastral | contrato Fase 2B + migrations/RPC reais |
 | Auth/RLS/roles | migrations, policies e código atual; documentos antigos são apenas contexto |
 | Gerador documental | contrato/implementação atual do Demonstrativo + template oficial + testes de auditoria |
-| Fiscal | arquitetura, dicionário e protocolo fiscal |
+| Fiscal | arquitetura, dicionário, protocolo fiscal + item fiscal do registro de hardening |
 | UI/navegação | rotas/componentes atuais + Radar institucional + testes E2E/acessibilidade |
 | Dependências | `package.json`, lockfile, CI e histórico de incompatibilidades relevante |
 | Deploy/Production | SHA de `main`, status Vercel, domínio público e estado Supabase, nunca apenas handoff |
 
-## 5. Estado consolidado em 11/09/2026
+## 5. Estado consolidado em 13/09/2026
 
-A fotografia detalhada está em `current-state.json` e `HANDOFF.md`. O ciclo imediatamente anterior a esta reconciliação documental consolidou em Production:
+A fotografia detalhada está em `current-state.json` e `HANDOFF.md`.
 
-- **#129** pipeline de publicação financeira por dimensão;
-- **#130** recorte financeiro principal do Painel baseado na 1ª parcela paga do PDDE Básico;
-- **#131** busca global transformada em localizador operacional real;
-- **#132** preservação do contexto da carteira ao abrir/retornar da ficha escolar.
+Após os PRs #129–#132, o PR **#136** endureceu a publicação financeira para reconciliação incremental/delta, idempotência semântica, proteção contra concorrência e redução de carga do Dashboard.
 
-O estado financeiro validado permanece em **163 escolas, 335 contas, 537 repasses e cinco dimensões V1 `MATURE/PUBLISHED` com cobertura 163/163**.
+O estado financeiro verificado permanece em **163 escolas, 335 contas e 537 repasses**. A auditoria pós-incidente identificou uma campanha adicional de hardening de gestão de dados/Supabase, registrada em [`technical/DATA_GOVERNANCE_HARDENING_2026.md`](./technical/DATA_GOVERNANCE_HARDENING_2026.md).
 
 A sincronização financeira automática **não deve ser considerada ativa** apenas porque existe um `schedule` no workflow. A execução agendada só publica quando o gate `PDDE_FINANCIAL_SYNC_ENABLED` estiver explicitamente habilitado e as credenciais de backend necessárias estiverem configuradas.
 
@@ -115,6 +119,8 @@ Atualize documentação quando uma mudança alterar pelo menos um destes element
 - fluxo de usuário relevante para operação;
 - fonte de verdade ou roteiro de leitura.
 
+Enquanto a campanha de hardening estiver ativa, cada tópico concluído deve atualizar seu status/evidência no registro técnico e, quando houver mudança operacional, também a continuidade oficial.
+
 Evite registrar como texto canônico informações que envelhecem sozinhas, como contagem exata de testes, SHA de ferramenta sem valor operacional ou versões duplicadas que já estão em `package.json`.
 
 ## 7. Regra para novas decisões
@@ -128,4 +134,4 @@ Toda decisão nova que possa mudar comportamento, escopo, semântica de dados ou
 - restrição/limite quando aplicável;
 - referência ao PR/contrato que a implementou.
 
-Não criar um novo arquivo de “decisões atuais”. O objetivo desta governança é justamente evitar múltiplas verdades concorrentes.
+Não criar outro arquivo de “decisões atuais”. O registro de hardening é uma exceção temporária de execução, não uma nova fonte canônica de decisões.

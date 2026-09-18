@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "projectRef": "raluxyojqosfzrfozmpz",
+  "operationalState": "blocked",
+  "decision": "A Frente Fiscal permanece bloqueada em ambiente operacional enquanto as migrations fiscais nao forem deliberadamente revisadas, aprovadas e aplicadas ao Supabase oficial.",
+  "requiredRepositoryMigrations": [
+    "20260527000200",
+    "20260527000300"
+  ],
+  "criticalObjects": {
+    "tablePaths": [
+      "/despesas_fiscais"
+    ],
+    "rpcPaths": [
+      "/rpc/homologar_despesa_fiscal",
+      "/rpc/estornar_despesa_fiscal"
+    ]
+  },
+  "productionExpectation": {
+    "migrationState": "intentionally_unapplied",
+    "objectState": "absent",
+    "verifiedAt": "2026-09-13",
+    "verificationMode": "read_only"
+  }
+}

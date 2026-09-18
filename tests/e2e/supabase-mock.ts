@@ -40,6 +40,10 @@ const unidade = {
   total_reprogramado: 75000,
   total_parcelas: 30000,
   total_disponivel_inicial: 105000,
+  saldo_anterior: 75000,
+  recebido: 30000,
+  gasto: 0,
+  alunos: 420,
   updated_at: "2026-08-30T12:00:00.000Z",
 };
 
@@ -57,6 +61,9 @@ const unidade2 = {
   total_reprogramado: 0,
   total_parcelas: 0,
   total_disponivel_inicial: 0,
+  saldo_anterior: 0,
+  recebido: 0,
+  gasto: 0,
 };
 
 const contasFinanceiras = [
@@ -265,7 +272,7 @@ export async function installSupabaseMock(page: Page) {
       if (method === "PATCH") {
         return json(route, []);
       }
-      return json(route, { email: "alpha@sme.rio" });
+      return json(route, { ...unidade, email: "alpha@sme.rio" });
     }
 
     if (url.pathname.includes("/rest/v1/despesas_fiscais")) {
@@ -277,7 +284,17 @@ export async function installSupabaseMock(page: Page) {
     }
 
     if (url.pathname.includes("/rest/v1/rpc/")) {
-      return json(route, null);
+      const rpcName = url.pathname.split("/").filter(Boolean).at(-1) ?? "unknown_rpc";
+      return route.fulfill({
+        status: 404,
+        contentType: "application/json",
+        body: JSON.stringify({
+          code: "PGRST202",
+          details: null,
+          hint: null,
+          message: `Could not find the function public.${rpcName} in the schema cache`,
+        }),
+      });
     }
 
     if (method === "HEAD") {

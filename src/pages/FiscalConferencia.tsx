@@ -26,6 +26,20 @@ import { useUnidadesLocalizador } from "@/hooks/useUnidadesLocalizador";
 import { useExercicio } from "@/hooks/useExercicio";
 import { getErrorMessage } from "@/lib/errors";
 
+const FISCAL_PERSISTENCE_UNAVAILABLE_MESSAGE =
+  "A homologação fiscal está indisponível porque o contrato de persistência não está ativo. Nenhum dado foi gravado.";
+
+function isMissingFiscalPersistenceContract(error: { code?: string; message?: string }): boolean {
+  if (error.code === "PGRST202" || error.code === "42883" || error.code === "42P01") return true;
+
+  const message = error.message?.toLowerCase() ?? "";
+  return (
+    message.includes("homologar_despesa_fiscal") ||
+    message.includes("despesas_fiscais") ||
+    (message.includes("function") && message.includes("does not exist"))
+  );
+}
+
 /* ─── HELPERS DE FORMATAÇÃO E MÁSCARAS ─── */
 function formatCNPJ(value: string): string {
   const digits = value.replace(/\D/g, "");
@@ -284,7 +298,6 @@ export default function FiscalConferencia() {
     }
 
     try {
-      // Tenta efetuar a mutação transacional robusta via RPC remota do Supabase
       const { data: despesaId, error } = await supabase.rpc("homologar_despesa_fiscal", {
         p_unidade_id: selectedUnidadeId,
         p_exercicio: Number.parseInt(exercicio, 10),
@@ -299,22 +312,19 @@ export default function FiscalConferencia() {
       });
 
       if (error) {
-        // Se a tabela ou RPC não estiver em produção remota, ativamos o fallback local de alta fidelidade
-        if (error.message.includes("does not exist") || error.message.includes("function")) {
-          console.warn("RPC ou tabela inexistente no Supabase remoto. Ativando Sandbox local resiliente.", error);
-          await handleHomologacaoLocalFallback(valorFloat);
-          toast.success("Despesa homologada localmente! (Modo Sandbox)", { id: toastId });
-        } else {
-          throw error;
+        if (isMissingFiscalPersistenceContract(error)) {
+          throw new Error(FISCAL_PERSISTENCE_UNAVAILABLE_MESSAGE);
         }
-      } else {
-        toast.success(`Despesa fiscal homologada com sucesso! Registro ID: ${despesaId}`, { id: toastId });
+        throw error;
       }
 
-      // Atualiza caches e recarrega dados na interface
-      queryClient.invalidateQueries({ queryKey: ["unidade-fiscal-balanco", selectedUnidadeId] });
-      queryClient.invalidateQueries({ queryKey: ["unidades-localizador"] });
-      refetchEscola();
+      toast.success(`Despesa fiscal homologada com sucesso! Registro ID: ${despesaId}`, { id: toastId });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["unidade-fiscal-balanco", selectedUnidadeId] }),
+        queryClient.invalidateQueries({ queryKey: ["unidades-localizador"] }),
+        refetchEscola(),
+      ]);
       resetForm();
     } catch (err: unknown) {
       console.error(err);
@@ -322,38 +332,6 @@ export default function FiscalConferencia() {
     } finally {
       setIsHomologando(false);
     }
-  };
-
-  // Fallback Local de Alta Fidelidade
-  const handleHomologacaoLocalFallback = async (valor: number) => {
-    // 1. Simula a atualização do saldo na tabela local do React Query
-    const currentUnidade = escolaAtiva;
-    if (currentUnidade) {
-      const updatedGasto = (currentUnidade.gasto ?? 0) + valor;
-      queryClient.setQueryData(["unidade-fiscal-balanco", selectedUnidadeId], {
-        ...currentUnidade,
-        gasto: updatedGasto
-      });
-    }
-
-    // 2. Persiste em um log de despesas simuladas no localStorage do operador
-    const despesasLocais = JSON.parse(localStorage.getItem("sandbox_despesas_fiscais") || "[]");
-    const novaDespesa = {
-      id: Math.random().toString(36).substring(2, 9),
-      unidade_id: selectedUnidadeId,
-      exercicio: Number.parseInt(exercicio, 10),
-      fornecedor_cnpj: fornecedorCNPJ,
-      fornecedor_nome: fornecedorNome,
-      numero_nota: numeroNota,
-      chave_acesso: chaveAcesso,
-      data_emissao: dataEmissao,
-      valor,
-      tipo_gasto: tipoGasto,
-      programa,
-      created_at: new Date().toISOString(),
-      status: "sandbox_homologado"
-    };
-    localStorage.setItem("sandbox_despesas_fiscais", JSON.stringify([...despesasLocais, novaDespesa]));
   };
 
   // Derivados financeiros reativos do card superior
@@ -607,7 +585,7 @@ export default function FiscalConferencia() {
                           <Input
                             id="access-key-input"
                             type="text"
-                            maxLength={54} // suporta espaços na máscara manual do usuário
+                            maxLength={54}
                             placeholder="0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000"
                             value={chaveAcesso}
                             onChange={(e) => handleKeyChange(e.target.value)}
@@ -619,7 +597,6 @@ export default function FiscalConferencia() {
                         </div>
                       </div>
 
-                      {/* FEEDBACK REATIVO DO CHECKSUM */}
                       <AnimatePresence>
                         {keyValidationInfo.show && (
                           <motion.div
@@ -669,7 +646,6 @@ export default function FiscalConferencia() {
                       onDrop={handleOcrFileDrop}
                       className="border-dashed border-2 border-border/80 hover:border-primary/50 rounded-xl p-6 bg-muted/10 transition-colors flex flex-col items-center justify-center relative overflow-hidden min-h-[140px]"
                     >
-                      {/* EFEITO VISUAL DO SCANNER LASER CSS */}
                       {isScanning && (
                         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_12px_hsl(var(--primary))] animate-[scan_2s_infinite_ease-in-out]" />
                       )}
@@ -711,7 +687,6 @@ export default function FiscalConferencia() {
                       )}
                     </div>
 
-                    {/* LINKS E APOIO INSTITUCIONAL RIO */}
                     <div className="rounded-lg border border-border/80 bg-muted/20 p-3 space-y-2">
                       <p className="text-[10px] font-bold text-foreground/90 flex items-center gap-1">
                         <BookOpen className="h-3.5 w-3.5 text-primary" /> Recursos Fiscais Auxiliares
@@ -860,7 +835,6 @@ export default function FiscalConferencia() {
                 </div>
 
                 <div className="grid gap-3 grid-cols-2">
-                  {/* CLASSIFICAÇÃO DE GASTO: CUSTEIO VS CAPITAL TOGGLE */}
                   <div className="space-y-1.5 col-span-1">
                     <Label className="text-[11px] font-semibold text-muted-foreground">
                       Classificação do Recurso *
@@ -908,7 +882,6 @@ export default function FiscalConferencia() {
                   </div>
                 </div>
 
-                {/* BOTÃO PRINCIPAL DE LANÇAMENTO */}
                 <div className="pt-2">
                   <Button
                     onClick={handleHomologar}
