@@ -81,7 +81,7 @@ test("segundo ciclo faz drill-down da escola e preserva o retorno", async ({ pag
   await expect(page.getByText(/2\.785,00/).first()).toBeVisible();
   await expect(page.getByText(/1\.671,00/).first()).toBeVisible();
   await expect(page.getByText(/1\.114,00/).first()).toBeVisible();
-  await expect(page.getByText("Ordem emitida", { exact: true })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Ordem emitida" })).toBeVisible();
 
   await page.getByRole("link", { name: "04.10.002" }).click();
   await expect(page).toHaveURL(/\/escolas\/00000000-0000-4000-8000-000000000102\/recursos/);
