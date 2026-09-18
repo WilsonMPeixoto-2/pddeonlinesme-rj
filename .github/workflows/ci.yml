@@ -42,6 +42,16 @@ jobs:
             exit 1
           fi
 
+      - name: Login institutional image contract
+        run: |
+          test -f src/assets/login-pdde-rio.webp
+          expected="edafb0757e3d689545c4a67dc1385dd59319f070ef69848fde4d13deee009038"
+          actual=$(sha256sum src/assets/login-pdde-rio.webp | cut -d' ' -f1)
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::A composição institucional aprovada do login foi alterada ($actual)"
+            exit 1
+          fi
+
       - name: Typecheck
         run: npm run typecheck
 
