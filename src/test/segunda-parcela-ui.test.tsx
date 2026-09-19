@@ -13,6 +13,7 @@ const overview: SegundaParcelaOverview = {
   capitalTotal: 51596,
   ordensIdentificadas: 52,
   pagamentosIdentificados: 0,
+  ordensSemCredito: 52,
   ultimaDataOrdem: "2026-09-14",
   ultimaDataPagamento: null,
   escolas: [
@@ -44,7 +45,8 @@ describe("superfície do segundo ciclo", () => {
     expect(screen.getByText(/81\.034,00/)).toBeVisible();
     expect(screen.getByText(/51\.596,00/)).toBeVisible();
     expect(screen.getByText("04.10.601 — CM MANGUINHOS")).toBeVisible();
-    expect(screen.getByText(/Crédito bancário ainda não confirmado/i)).toBeVisible();
+    expect(screen.getByText(/ordens aguardam confirmação de crédito bancário/i)).toBeVisible();
+    expect(screen.getAllByText(/Crédito confirmado/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /Ver todas as 1/i })).toHaveAttribute("href", "/repasses?ciclo=2");
   });
 
