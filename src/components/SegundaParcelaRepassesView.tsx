@@ -5,6 +5,8 @@ import {
   ArrowDownWideNarrow,
   Building2,
   CalendarDays,
+  CheckCircle2,
+  Clock3,
   Download,
   Search,
   WalletCards,
@@ -47,7 +49,7 @@ function escapeCsv(value: string | number | null) {
 }
 
 function statusLabel(status: "pagamento-identificado" | "ordem-emitida" | "pagamento-informado") {
-  if (status === "pagamento-identificado") return "Pagamento identificado";
+  if (status === "pagamento-identificado") return "Crédito confirmado";
   if (status === "ordem-emitida") return "Ordem emitida";
   return "Pagamento informado";
 }
@@ -174,7 +176,7 @@ export function SegundaParcelaRepassesView() {
               2º ciclo · PDDE Básico
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              Unidades com pagamento informado ou ordem de pagamento identificada. Ordem emitida não é tratada como crédito bancário confirmado.
+              Valor informado, ordem emitida e crédito bancário confirmado são exibidos como estágios distintos do mesmo ciclo.
             </p>
           </div>
           <Button
@@ -218,31 +220,32 @@ export function SegundaParcelaRepassesView() {
           />
         ) : (
           <>
-            <Card className="shadow-sm">
-              <CardContent className="grid gap-5 p-5 sm:grid-cols-2 xl:grid-cols-4">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Total informado</p>
+            <Card className="overflow-hidden shadow-sm">
+              <CardContent className="grid p-0 md:grid-cols-3">
+                <div className="p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Valor informado</p>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{formatMoney(overview.totalInformado)}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{overview.escolas.length} unidades no recorte</p>
                 </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Custeio</p>
-                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{formatMoney(overview.custeioTotal)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{composicaoCompleta ? `${custeioPct.toFixed(1)}% do total` : "Composição parcial"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Capital</p>
-                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{formatMoney(overview.capitalTotal)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{composicaoCompleta ? `${capitalPct.toFixed(1)}% do total` : "Composição parcial"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Situação</p>
-                  <p className="mt-1 text-lg font-semibold text-foreground">
-                    {overview.ordensIdentificadas} ordens
-                  </p>
+                <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
+                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                    <Clock3 className="h-4 w-4" aria-hidden="true" />
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Ordens emitidas</p>
+                  </div>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.ordensIdentificadas}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataOrdem ? `Última em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data de ordem"}
-                    {overview.pagamentosIdentificados === 0 ? " · sem crédito confirmado" : ` · ${overview.pagamentosIdentificados} pagamentos confirmados`}
+                    {overview.ultimaDataOrdem ? `Mais recente em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data de ordem"}
+                    {overview.ordensSemCredito > 0 ? ` · ${overview.ordensSemCredito} aguardando crédito` : ""}
+                  </p>
+                </div>
+                <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
+                  <div className={overview.pagamentosIdentificados > 0 ? "flex items-center gap-2 text-success" : "flex items-center gap-2 text-muted-foreground"}>
+                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Créditos confirmados</p>
+                  </div>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.pagamentosIdentificados}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {overview.ultimaDataPagamento ? `Mais recente em ${formatDate(overview.ultimaDataPagamento)}` : "Nenhum crédito bancário confirmado"}
                   </p>
                 </div>
               </CardContent>
@@ -311,7 +314,7 @@ export function SegundaParcelaRepassesView() {
                         variant={status === "pago" ? "secondary" : "outline"}
                         onClick={() => setStatus((current) => current === "pago" ? "todos" : "pago")}
                       >
-                        Pagamento confirmado
+                        Crédito confirmado
                       </Button>
                     ) : null}
                     <Button
@@ -341,7 +344,7 @@ export function SegundaParcelaRepassesView() {
                         <th className="px-4 py-3">Ordem</th>
                         <th className="px-4 py-3 text-right">Custeio</th>
                         <th className="px-4 py-3 text-right">Capital</th>
-                        <th className="px-4 py-3 text-right">Total</th>
+                        <th className="px-4 py-3 text-right">Valor informado</th>
                       </tr>
                     </thead>
                     <tbody>

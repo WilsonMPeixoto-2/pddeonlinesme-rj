@@ -61,12 +61,13 @@ function formatMoneyOrDash(value: number | null) {
   return value === null ? "—" : fmtBRL(value);
 }
 
-type Tone = "primary" | "violet" | "teal" | "muted";
+type Tone = "primary" | "violet" | "teal" | "amber" | "muted";
 
 const toneRing: Record<Tone, string> = {
   primary: "bg-primary/10 text-primary ring-1 ring-primary/20",
   violet: "bg-violet-500/10 text-violet-700 ring-1 ring-violet-500/20 dark:text-violet-300",
   teal: "bg-teal-500/10 text-teal-700 ring-1 ring-teal-500/20 dark:text-teal-300",
+  amber: "bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/20 dark:text-amber-300",
   muted: "bg-muted text-muted-foreground ring-1 ring-border/50",
 };
 
@@ -235,13 +236,13 @@ export default function Dashboard() {
       destination: "/repasses",
     },
     {
-      label: "2º ciclo · PDDE Básico",
-      value: overview.segundaParcela.totalPagamentoInformado,
+      label: "2º ciclo · ordens",
+      value: segundoCiclo.escolas.length > 0 ? segundoCiclo.totalInformado : null,
       icon: Receipt,
-      hint: overview.segundaParcela.totalPagamentoInformado !== null
-        ? `${overview.segundaParcela.escolas} escolas · ${overview.segundaParcela.ordensIdentificadas} ordens${overview.segundaParcela.ultimaDataOrdem ? ` · última em ${formatDate(overview.segundaParcela.ultimaDataOrdem)}` : ""}${overview.segundaParcela.ultimaDataPagamento ? ` · pagamento em ${formatDate(overview.segundaParcela.ultimaDataPagamento)}` : " · sem data distinta de pagamento"}`
-        : "Nenhum pagamento informado no 2º ciclo",
-      tone: "muted",
+      hint: segundoCiclo.escolas.length > 0
+        ? `${segundoCiclo.ordensIdentificadas} ordens · ${segundoCiclo.pagamentosIdentificados} créditos confirmados${segundoCiclo.ultimaDataOrdem ? ` · ordem mais recente ${formatDate(segundoCiclo.ultimaDataOrdem)}` : ""}`
+        : "Nenhuma evidência financeira do 2º ciclo",
+      tone: "amber",
       format: fmtBRL,
       destination: "/repasses?ciclo=2",
     },

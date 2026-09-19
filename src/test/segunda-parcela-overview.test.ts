@@ -44,6 +44,7 @@ describe("buildSegundaParcelaOverview", () => {
     expect(overview.escolas).toHaveLength(2);
     expect(overview.ordensIdentificadas).toBe(2);
     expect(overview.pagamentosIdentificados).toBe(0);
+    expect(overview.ordensSemCredito).toBe(2);
     expect(overview.ultimaDataOrdem).toBe("2026-09-14");
     expect(overview.ultimaDataPagamento).toBeNull();
     expect(overview.escolas[0]).toEqual(expect.objectContaining({
@@ -65,6 +66,7 @@ describe("buildSegundaParcelaOverview", () => {
     ], 2026);
 
     expect(overview.pagamentosIdentificados).toBe(1);
+    expect(overview.ordensSemCredito).toBe(1);
     expect(overview.ultimaDataPagamento).toBe("2026-09-18");
     expect(overview.escolas.find((row) => row.unidadeId === "u1")?.status).toBe("ordem-emitida");
     expect(overview.escolas.find((row) => row.unidadeId === "u2")?.status).toBe("pagamento-identificado");

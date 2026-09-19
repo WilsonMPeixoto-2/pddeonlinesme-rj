@@ -67,6 +67,7 @@ export interface SegundaParcelaOverview {
   escolas: EscolaSegundaParcela[];
   ordensIdentificadas: number;
   pagamentosIdentificados: number;
+  ordensSemCredito: number;
   ultimaDataOrdem: string | null;
   ultimaDataPagamento: string | null;
 }
@@ -410,6 +411,7 @@ export function buildSegundaParcelaOverview(
     escolas,
     ordensIdentificadas: escolas.filter((row) => row.dataOrdem !== null).length,
     pagamentosIdentificados: escolas.filter((row) => row.dataPagamento !== null).length,
+    ordensSemCredito: escolas.filter((row) => row.dataOrdem !== null && row.dataPagamento === null).length,
     ultimaDataOrdem: datasOrdem[0] ?? null,
     ultimaDataPagamento: datasPagamento[0] ?? null,
   };

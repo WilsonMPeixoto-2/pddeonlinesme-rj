@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CalendarDays, ReceiptText } from "lucide-react";
+import { ArrowRight, CalendarDays, CheckCircle2, Clock3, ReceiptText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,22 +66,44 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                 </p>
               </div>
 
-              <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
-                <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>
-                  Ordem mais recente: <strong className="font-semibold text-foreground">{formatDate(overview.ultimaDataOrdem)}</strong>
-                </span>
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.055] p-3">
+                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                    <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Ordem emitida</p>
+                  </div>
+                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.ordensIdentificadas}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    {overview.ultimaDataOrdem ? `Mais recente em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data de ordem"}
+                  </p>
+                </div>
+
+                <div className={overview.pagamentosIdentificados > 0
+                  ? "rounded-xl border border-success/25 bg-success/[0.055] p-3"
+                  : "rounded-xl border border-border/60 bg-muted/20 p-3"}
+                >
+                  <div className={overview.pagamentosIdentificados > 0
+                    ? "flex items-center gap-2 text-success"
+                    : "flex items-center gap-2 text-muted-foreground"}
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito confirmado</p>
+                  </div>
+                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.pagamentosIdentificados}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    {overview.ultimaDataPagamento ? `Mais recente em ${formatDate(overview.ultimaDataPagamento)}` : "Nenhum até o momento"}
+                  </p>
+                </div>
               </div>
 
-              {overview.ultimaDataPagamento ? (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Pagamento confirmado até {formatDate(overview.ultimaDataPagamento)}.
-                </p>
-              ) : (
-                <p className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300">
-                  Crédito bancário ainda não confirmado neste recorte.
-                </p>
-              )}
+              {overview.ordensSemCredito > 0 ? (
+                <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/[0.035] px-3 py-2.5 text-xs text-amber-800 dark:text-amber-200">
+                  <CalendarDays className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    <strong className="font-semibold">{overview.ordensSemCredito}</strong> ordens aguardam confirmação de crédito bancário.
+                  </span>
+                </div>
+              ) : null}
 
               {composicaoCompleta && composicaoTotal !== null ? (
                 <div className="mt-6 space-y-3">
@@ -126,10 +148,11 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
               </div>
 
               <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[560px] border-collapse text-left">
+                <table className="w-full min-w-[680px] border-collapse text-left">
                   <thead>
                     <tr className="border-b border-border/60 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
                       <th className="pb-2 pr-3">Unidade</th>
+                      <th className="px-3 pb-2">Situação</th>
                       <th className="px-3 pb-2 text-right">Custeio</th>
                       <th className="px-3 pb-2 text-right">Capital</th>
                       <th className="pl-3 pb-2 text-right">Total</th>
@@ -148,6 +171,14 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                           <p className="mt-0.5 text-[10px] text-muted-foreground">
                             {school.inep ? `INEP ${school.inep}` : "INEP —"}
                           </p>
+                        </td>
+                        <td className="px-3 py-3">
+                          <span className={school.dataPagamento
+                            ? "inline-flex rounded-md border border-success/25 bg-success/[0.06] px-2 py-1 text-[10px] font-semibold text-success"
+                            : "inline-flex rounded-md border border-amber-500/25 bg-amber-500/[0.06] px-2 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300"}
+                          >
+                            {school.dataPagamento ? "Crédito confirmado" : "Ordem emitida"}
+                          </span>
                         </td>
                         <td className="px-3 py-3 text-right text-sm tabular-nums text-muted-foreground">{formatMoney(school.custeio)}</td>
                         <td className="px-3 py-3 text-right text-sm tabular-nums text-muted-foreground">{formatMoney(school.capital)}</td>
