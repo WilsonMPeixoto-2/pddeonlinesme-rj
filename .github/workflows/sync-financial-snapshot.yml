@@ -28,7 +28,7 @@ jobs:
     timeout-minutes: 15
     environment: production
     env:
-      SUPABASE_URL: ${{ secrets.PDDE_SUPABASE_URL }}
+      SUPABASE_URL: https://raluxyojqosfzrfozmpz.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PDDE_SUPABASE_SERVICE_ROLE_KEY }}
       EXPECTED_SOURCE_REPOSITORY: ${{ github.event.client_payload.sourceRepository || '' }}
       EXPECTED_WORKFLOW_RUN_ID: ${{ github.event.client_payload.workflowRunId || '' }}
@@ -54,7 +54,10 @@ jobs:
         run: |
           set -euo pipefail
           test "$SUPABASE_URL" = "https://raluxyojqosfzrfozmpz.supabase.co"
-          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::PDDE_SUPABASE_SERVICE_ROLE_KEY não configurado no environment production."
+            exit 2
+          fi
 
       - name: Validate snapshot without publishing
         run: npm run sync:financial:snapshot -- --dry-run
