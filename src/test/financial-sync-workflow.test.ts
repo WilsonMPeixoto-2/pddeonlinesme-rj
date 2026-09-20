@@ -13,8 +13,10 @@ describe("workflow de sincronização financeira", () => {
     expect(workflow).toContain("financial-snapshot-published-v1");
     expect(workflow).toContain("schedule:");
     expect(workflow).toContain("sync-financial-snapshot-production");
-    expect(workflow).toContain("PDDE_SUPABASE_URL");
+    expect(workflow).toContain("SUPABASE_URL: https://raluxyojqosfzrfozmpz.supabase.co");
+    expect(workflow).not.toContain("secrets.PDDE_SUPABASE_URL");
     expect(workflow).toContain("PDDE_SUPABASE_SERVICE_ROLE_KEY");
+    expect(workflow).toContain("PDDE_SUPABASE_SERVICE_ROLE_KEY não configurado");
     expect(workflow).toContain("npm run sync:financial:snapshot");
     expect(workflow).not.toContain("scnryinorqeucbfkioxo");
     expect(workflow).not.toContain("SUPABASE_ANON_KEY");
