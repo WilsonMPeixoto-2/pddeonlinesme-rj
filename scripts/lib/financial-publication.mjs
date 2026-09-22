@@ -140,12 +140,9 @@ function markOnePrincipal(accounts) {
 
 function normalizeRepasse(installment, programName, school, exercise, index) {
   const { program, action } = classifyProgram(programName);
+  const paymentDate = installment?.paymentInformedDate ?? null;
   const paid = informedPayment(installment);
-  const paymentOrderDate = installment?.paymentOrderDate ?? installment?.paymentInformedDate ?? null;
-  const creditStatus = normalizedText(installment?.creditEvidence?.status);
-  const paymentDate = creditStatus === "CREDITO LOCALIZADO"
-    ? installment?.creditEvidence?.date ?? null
-    : null;
+  const paymentOrderDate = installment?.paymentOrderDate ?? null;
   const breakdown = installment?.breakdown ?? null;
   const account = installment?.account
     ? {
