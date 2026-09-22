@@ -278,6 +278,9 @@ function repasseSemanticKey(row) {
 }
 
 function numericEqual(left, right) {
+  if (left === null || left === undefined || right === null || right === undefined) {
+    return left === right;
+  }
   return Math.abs(Number(left) - Number(right)) < 0.005;
 }
 
