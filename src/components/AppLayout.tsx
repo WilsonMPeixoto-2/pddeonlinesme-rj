@@ -25,6 +25,7 @@ import { useExercicio } from "@/hooks/useExercicio";
 import BrandMark from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CommandPalette } from "@/components/CommandPalette";
+import { FinancialFreshnessBanner } from "@/components/FinancialFreshnessBanner";
 
 const tabs = [
   { to: "/dashboard", label: "Painel" },
@@ -163,6 +164,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
+
+      <FinancialFreshnessBanner />
 
       <main className="mx-auto w-full max-w-7xl flex-1 p-4">
         <AnimatePresence mode="wait">
