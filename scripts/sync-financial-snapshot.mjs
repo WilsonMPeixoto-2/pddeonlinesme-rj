@@ -335,7 +335,7 @@ export async function verifyPublishedFinancialState(payload, env = process.env) 
   const divergences = expectedSecond.filter((expected) => {
     const observed = observedByKey.get(repasseSemanticKey(expected));
     if (!observed || !numericEqual(observed.valor_pago, expected.paid)) return true;
-    const expectedOrderDate = expected.paymentOrderDate ?? expected.paymentDate ?? null;
+    const expectedOrderDate = expected.paymentOrderDate ?? null;
     if ((observed.data_ordem_pagamento ?? null) !== expectedOrderDate) return true;
     return (observed.data_pagamento ?? null) !== (expected.paymentDate ?? null);
   });
