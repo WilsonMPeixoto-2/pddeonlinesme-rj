@@ -43,7 +43,8 @@ describe("buildSegundaParcelaOverview", () => {
     expect(overview.capitalTotal).toBe(100);
     expect(overview.escolas).toHaveLength(2);
     expect(overview.ordensIdentificadas).toBe(2);
-    expect(overview.pagamentosIdentificados).toBe(0);
+    expect(overview.pagamentosIdentificados).toBe(2);
+    expect(overview.creditosBancariosConfirmados).toBe(0);
     expect(overview.ordensSemCredito).toBe(2);
     expect(overview.ultimaDataOrdem).toBe("2026-09-14");
     expect(overview.ultimaDataPagamento).toBeNull();
@@ -54,7 +55,7 @@ describe("buildSegundaParcelaOverview", () => {
     }));
   });
 
-  it("promove somente a unidade com data de crédito para pagamento identificado", () => {
+  it("mantém pagamento informado separado da confirmação bancária independente", () => {
     const overview = buildSegundaParcelaOverview([
       base({ id: "a", unidade_id: "u1" }),
       base({
@@ -62,14 +63,18 @@ describe("buildSegundaParcelaOverview", () => {
         unidade_id: "u2",
         designacao: "04.10.002 — Escola B",
         data_pagamento: "2026-09-18",
+        credito_bancario_confirmado: true,
+        data_credito_bancario: "2026-09-18",
       }),
     ], 2026);
 
-    expect(overview.pagamentosIdentificados).toBe(1);
+    expect(overview.pagamentosIdentificados).toBe(2);
+    expect(overview.creditosBancariosConfirmados).toBe(1);
     expect(overview.ordensSemCredito).toBe(1);
     expect(overview.ultimaDataPagamento).toBe("2026-09-18");
+    expect(overview.ultimaDataCreditoBancario).toBe("2026-09-18");
     expect(overview.escolas.find((row) => row.unidadeId === "u1")?.status).toBe("ordem-emitida");
-    expect(overview.escolas.find((row) => row.unidadeId === "u2")?.status).toBe("pagamento-identificado");
+    expect(overview.escolas.find((row) => row.unidadeId === "u2")?.status).toBe("credito-confirmado");
   });
 
   it("preserva composição ausente como ausência", () => {
