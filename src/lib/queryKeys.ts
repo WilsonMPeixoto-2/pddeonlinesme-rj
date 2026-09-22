@@ -185,6 +185,7 @@ const FINANCIAL_LIVE_QUERY_POLICY = {
   staleTime: 60 * 1000,
   refetchInterval: 5 * 60 * 1000,
   refetchOnWindowFocus: true,
+  refetchOnReconnect: true,
 } as const;
 
 export const repassesFinanceirosOptions = (exercicio: number) => queryOptions<RepasseFinanceiro[], Error>({
