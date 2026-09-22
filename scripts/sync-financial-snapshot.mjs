@@ -226,7 +226,7 @@ export async function publishFinancialPayload(payload, env = process.env) {
   }
   if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada.");
 
-  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/publish_financial_snapshot_with_order_evidence_v1`, {
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/publish_financial_snapshot_with_order_evidence_v2`, {
     method: "POST",
     headers: {
       apikey: serviceRoleKey,
