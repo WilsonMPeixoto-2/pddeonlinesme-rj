@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url";
 #!/usr/bin/env node
 import {
   fetchLatestPublishedSnapshot,
@@ -175,7 +176,8 @@ export async function verifyFinancialReadAfterWrite(env = process.env) {
   return summary;
 }
 
-if (import.meta.url === new URL(`file://${process.argv[1]}`).href) {
+const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : null;
+if (invokedPath === import.meta.url) {
   verifyFinancialReadAfterWrite().catch((error) => {
     console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 1;
