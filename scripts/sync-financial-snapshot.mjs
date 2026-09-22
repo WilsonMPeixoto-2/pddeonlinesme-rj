@@ -291,7 +291,7 @@ export async function verifyPublishedFinancialState(payload, env = process.env) 
 
   const [viewRows, integrationRows] = await Promise.all([
     fetchSupabaseRows(
-      `${supabaseUrl}/rest/v1/vw_repasses_financeiros_unidade?select=inep,programa,acao,parcela,valor_pago,data_pagamento,data_ordem_pagamento&exercicio=eq.${payload.exercise}`,
+      `${supabaseUrl}/rest/v1/vw_repasses_financeiros_unidade?select=inep,programa,acao,parcela,valor_programado,valor_pago,custeio_programado,capital_programado,custeio_pago,capital_pago,data_pagamento,data_ordem_pagamento&exercicio=eq.${payload.exercise}`,
       serviceRoleKey,
     ),
     fetchSupabaseRows(
@@ -355,12 +355,63 @@ export async function verifyPublishedFinancialState(payload, env = process.env) 
     );
   }
 
+  const allObservedByKey = new Map(
+    viewRows.map((row) => [[row.inep, row.acao, row.parcela].join("|"), row]),
+  );
+  const semanticMismatches = [];
+
+  for (const expected of payload.repasses) {
+    const observed = allObservedByKey.get(repasseSemanticKey(expected));
+    if (!observed) {
+      semanticMismatches.push({ key: repasseSemanticKey(expected), field: "row", expected: "present", observed: "missing" });
+      continue;
+    }
+
+    const comparisons = [
+      ["programa", expected.program, observed.programa, "text"],
+      ["valor_programado", expected.programmed, observed.valor_programado, "number"],
+      ["valor_pago", expected.paid, observed.valor_pago, "number"],
+      ["custeio_programado", expected.programmedCusteio, observed.custeio_programado, "number"],
+      ["capital_programado", expected.programmedCapital, observed.capital_programado, "number"],
+      ["custeio_pago", expected.paidCusteio, observed.custeio_pago, "number"],
+      ["capital_pago", expected.paidCapital, observed.capital_pago, "number"],
+      ["data_pagamento", expected.paymentDate, observed.data_pagamento, "text"],
+      ["data_ordem_pagamento", expected.paymentOrderDate, observed.data_ordem_pagamento, "text"],
+    ];
+
+    for (const [field, expectedValue, observedValue, kind] of comparisons) {
+      if (expectedValue === null || expectedValue === undefined) continue;
+      const equal = kind === "number"
+        ? numericEqual(expectedValue, observedValue)
+        : String(expectedValue) === String(observedValue ?? "");
+      if (!equal) {
+        semanticMismatches.push({
+          key: repasseSemanticKey(expected),
+          field,
+          expected: expectedValue,
+          observed: observedValue ?? null,
+        });
+      }
+    }
+  }
+
+  if (semanticMismatches.length > 0) {
+    console.error(JSON.stringify({
+      status: "OPERATIONAL_VIEW_DIVERGENCE",
+      mismatchCount: semanticMismatches.length,
+      examples: semanticMismatches.slice(0, 25),
+    }));
+    throw new Error(
+      `Read-after-write: a view operacional diverge do snapshot em ${semanticMismatches.length} fato(s) financeiro(s).`,
+    );
+  }
+
   return {
     workflowRunId: payload.source.workflowRunId,
     artifactId: payload.source.artifactId,
     secondInstallmentSchools: observedSchools.size,
     secondInstallmentTotal: observedTotal,
-    semanticRowsVerified: expectedSecond.length,
+    semanticRowsVerified: payload.repasses.length,
   };
 }
 
