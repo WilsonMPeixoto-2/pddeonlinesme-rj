@@ -28,6 +28,7 @@ import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
 import { useExercicio } from "@/hooks/useExercicio";
 import {
   buildDashboardFinanceiroOverview,
+  buildRecentFinancialEvents,
   buildSegundaParcelaOverview,
   type ProgramaFinanceiroOverview,
 } from "@/lib/financeiroPDDE";
@@ -170,6 +171,11 @@ export default function Dashboard() {
     [exercicioNumero, repassesQuery.data],
   );
 
+  const recentFinancialEvents = useMemo(
+    () => buildRecentFinancialEvents(repassesQuery.data ?? [], exercicioNumero).slice(0, 5),
+    [exercicioNumero, repassesQuery.data],
+  );
+
   const loading = repassesQuery.isLoading || contasQuery.isLoading || loadingResumo;
   const queryError = repassesQuery.error ?? contasQuery.error ?? errorResumo;
   const recentes = resumoUnidades?.recentes ?? [];
@@ -272,7 +278,7 @@ export default function Dashboard() {
             </div>
             <h2 className="text-lg font-semibold">Erro ao carregar o Painel</h2>
             <p className="max-w-md text-sm text-muted-foreground">
-              Não foi possível consultar os dados financeiros e cadastrais no Supabase.
+              Não foi possível consultar as fontes financeiras e cadastrais correntes.
             </p>
             <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
           </CardContent>
@@ -475,6 +481,75 @@ export default function Dashboard() {
         </motion.div>
 
         {!loading ? <SegundaParcelaResumo overview={segundoCiclo} /> : null}
+
+        <section className="space-y-4" aria-labelledby="novidades-financeiras-title">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="ds-eyebrow">Monitoramento contínuo</p>
+              <h2 id="novidades-financeiras-title" className="mt-1 text-xl font-semibold tracking-tight text-foreground">
+                Últimas atualizações financeiras
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Eventos mais recentes encontrados nas fontes correntes, sem depender da persistência histórica para aparecer no Painel.
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/atualizacoes", { viewTransition: true })}>
+              Ver todas as atualizações
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
+            </Button>
+          </div>
+
+          <Card className="ds-card">
+            <CardContent className="p-0">
+              {loading ? (
+                <div className="space-y-2 p-5">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <Skeleton key={index} className="h-14 w-full rounded-lg" />
+                  ))}
+                </div>
+              ) : recentFinancialEvents.length === 0 ? (
+                <div className="p-6 text-sm text-muted-foreground">
+                  Nenhum evento financeiro datado está disponível no recorte atual.
+                </div>
+              ) : (
+                <div className="divide-y divide-border/60">
+                  {recentFinancialEvents.map((event) => (
+                    <button
+                      key={event.id}
+                      type="button"
+                      onClick={() => navigate(`/escolas/${event.unidadeId}/recursos`, { viewTransition: true })}
+                      className="flex w-full items-center justify-between gap-4 px-5 py-3 text-left transition-colors hover:bg-muted/25"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-medium">{event.designacao} · {event.nome}</p>
+                          <span className="text-[10px] tabular-nums text-muted-foreground">
+                            {formatDate(event.dataEvento)}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {event.programa} · {event.acao} · {event.parcela} · {
+                            event.stage === "credito-confirmado"
+                              ? "crédito bancário confirmado"
+                              : event.stage === "pagamento-informado"
+                                ? "pagamento informado"
+                                : "ordem emitida"
+                          }
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-3">
+                        <span className="text-sm font-semibold tabular-nums">
+                          {event.valor === null ? "—" : fmtBRLDecimal(event.valor)}
+                        </span>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
 
         <section className="space-y-4" aria-labelledby="programas-pdde-title">
           <div className="flex flex-wrap items-end justify-between gap-3">
