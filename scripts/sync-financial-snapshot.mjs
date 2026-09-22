@@ -196,7 +196,16 @@ export async function fetchLatestPublishedSnapshot() {
 export function prepareFinancialPublicationPayload(snapshot, manifest, snapshotDigest) {
   const payload = buildNormalizedPublicationPayload(snapshot, manifest);
   const dimensions = evaluatePublicationDimensions(payload);
-  const blocked = dimensions.filter((dimension) => dimension.qualityStatus !== "MATURE");
+  const progressiveDimensions = new Set([
+    "pdde_basic_second_installment_payment_informed",
+  ]);
+  const blocked = dimensions.filter((dimension) => (
+    dimension.qualityStatus === "REJECTED"
+    || (
+      !progressiveDimensions.has(dimension.dimensionKey)
+      && dimension.qualityStatus !== "MATURE"
+    )
+  ));
   if (blocked.length > 0) {
     throw new Error(
       `Snapshot não publicável: ${blocked.map((dimension) => `${dimension.dimensionKey}=${dimension.coverageObserved}/${dimension.coverageExpected}:${dimension.qualityStatus}`).join(", ")}`,
