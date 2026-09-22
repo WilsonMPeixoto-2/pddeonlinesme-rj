@@ -90,17 +90,19 @@ Preservado por rastreabilidade, **não determina o estado atual**:
 | Dependências | `package.json`, lockfile, CI e histórico de incompatibilidades relevante |
 | Deploy/Production | SHA de `main`, status Vercel, domínio público e estado Supabase, nunca apenas handoff |
 
-## 5. Estado consolidado em 18/09/2026
+## 5. Estado consolidado em 21/09/2026
 
-A fotografia detalhada está em `current-state.json` e `HANDOFF.md`. Além do ciclo #129–#132, o estado corrente inclui:
+A fotografia detalhada continua em `current-state.json` e `HANDOFF.md`, mas o incidente financeiro de 21/09 acrescenta uma regra de precedência importante: quando a persistência estiver defasada, o **snapshot validado mais recente do motor** é a referência corrente dos fatos financeiros de 2026.
 
-- **#166** preservação complementar de evidência P2;
-- **#173** drill-down operacional do 2º ciclo;
-- **#174** persistência automática de ordens de pagamento e sync financeiro elegível por padrão.
+Estado comprovado no artefato integral da coleta de 21/09/2026:
 
-O estado financeiro verificado permanece em **163 escolas, 335 contas, 537 repasses e cinco dimensões V1 `MATURE/PUBLISHED` com cobertura 163/163**. Há **52 evidências P2**, totalizando **R$ 132.630,00**, com ordem em **14/09/2026** e **sem data de crédito bancário confirmada**.
+- **163/163 unidades** com pagamento informado no 2º ciclo;
+- **111** unidades em `PDDE Básico · 2ª Parcela`, totalizando **R$ 632.585,00**;
+- **52** unidades em `Primeira Infância · P2`, totalizando **R$ 132.630,00**;
+- total do 2º ciclo informado: **R$ 765.215,00**;
+- pagamento informado, ordem e crédito bancário independente permanecem evidências distintas.
 
-Desde a PR #174, `repository_dispatch` e o fallback diário usam `PDDE_FINANCIAL_SYNC_ENABLED != 'false'`; portanto, `false` é o kill-switch explícito. Ainda assim, configuração ativa não é prova de publicação: em 18/09/2026, a última linha observada em `integracoes_financeiras_runs` continuava sendo de **09/09/2026**, de modo que a primeira publicação automática pós-PR #174 permanecia pendente de comprovação.
+A arquitetura corrente passa a exigir coleta diária, snapshot validado como referência de monitoramento, reconciliação automática da interface, dimensão própria de pagamento informado do 2º ciclo, read-after-write da view operacional e alerta visível de frescor. Persistência atrasada não pode produzir `0` nem esconder um fato já validado.
 
 ## 6. Como manter a documentação saudável
 
