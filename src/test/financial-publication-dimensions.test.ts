@@ -54,11 +54,11 @@ function buildPayload(count = 163) {
       action: "PDDE Básico",
       installment: "2ª Parcela",
       programmed: 5000,
-      paid: null,
-      paidCusteio: null,
-      paidCapital: null,
+      paid: 5000,
+      paidCusteio: 1000,
+      paidCapital: 4000,
       paymentDate: null,
-      paymentOrderDate: null,
+      paymentOrderDate: "2026-09-17",
     },
   ]);
 
@@ -81,7 +81,7 @@ function byKey(statuses: Array<{ dimensionKey: string }>, key: string) {
 }
 
 describe("evaluatePublicationDimensions", () => {
-  it("marca como MATURE as cinco dimensões V1 quando a cobertura é 163/163", () => {
+  it("marca como MATURE as seis dimensões quando a cobertura é 163/163", () => {
     const statuses = evaluatePublicationDimensions(buildPayload());
 
     expect(statuses.map((item: { dimensionKey: string }) => item.dimensionKey)).toEqual([
@@ -90,6 +90,7 @@ describe("evaluatePublicationDimensions", () => {
       "pdde_basic_first_installment",
       "pdde_basic_first_installment_breakdown",
       "pdde_basic_second_installment_programmed",
+      "pdde_basic_second_installment_payment_informed",
     ]);
 
     for (const status of statuses) {
@@ -102,6 +103,28 @@ describe("evaluatePublicationDimensions", () => {
 
     expect(byKey(statuses, "pdde_basic_first_installment").referenceDateMin).toBe("2026-08-05");
     expect(byKey(statuses, "pdde_basic_first_installment").referenceDateMax).toBe("2026-08-05");
+    expect(byKey(statuses, "pdde_basic_second_installment_payment_informed").referenceDateMin).toBe("2026-09-17");
+    expect(byKey(statuses, "pdde_basic_second_installment_payment_informed").referenceDateMax).toBe("2026-09-17");
+  });
+
+  it("não promove pagamento informado do 2º ciclo quando falta uma unidade", () => {
+    const payload = buildPayload();
+    const second = payload.repasses.find(
+      (row) => row.inep === payload.schools[162].inep && row.installment === "2ª Parcela",
+    );
+    if (!second) throw new Error("fixture inválida");
+    second.paid = null;
+    second.paidCusteio = null;
+    second.paidCapital = null;
+    second.paymentOrderDate = null;
+
+    const status = byKey(
+      evaluatePublicationDimensions(payload),
+      "pdde_basic_second_installment_payment_informed",
+    );
+
+    expect(status.coverageObserved).toBe(162);
+    expect(status.qualityStatus).toBe("VALIDATED");
   });
 
   it("mantém primeira parcela VALIDATED quando há apenas 162/163 escolas, sem promover silenciosamente", () => {
