@@ -240,7 +240,7 @@ export default function Dashboard() {
       value: segundoCiclo.escolas.length > 0 ? segundoCiclo.totalInformado : null,
       icon: Receipt,
       hint: segundoCiclo.escolas.length > 0
-        ? `${segundoCiclo.ordensIdentificadas} ordens · ${segundoCiclo.pagamentosIdentificados} créditos confirmados${segundoCiclo.ultimaDataOrdem ? ` · ordem mais recente ${formatDate(segundoCiclo.ultimaDataOrdem)}` : ""}`
+        ? `${segundoCiclo.pagamentosIdentificados} pagamentos informados · ${segundoCiclo.ordensIdentificadas} ordens · ${segundoCiclo.creditosBancariosConfirmados} créditos bancários confirmados`
         : "Nenhuma evidência financeira do 2º ciclo",
       tone: "amber",
       format: fmtBRL,
