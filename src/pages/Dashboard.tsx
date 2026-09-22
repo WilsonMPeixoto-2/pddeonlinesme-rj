@@ -236,7 +236,7 @@ export default function Dashboard() {
       destination: "/repasses",
     },
     {
-      label: "2º ciclo · ordens",
+      label: "2º ciclo · pagamentos",
       value: segundoCiclo.escolas.length > 0 ? segundoCiclo.totalInformado : null,
       icon: Receipt,
       hint: segundoCiclo.escolas.length > 0
