@@ -384,7 +384,7 @@ function PrimeiraParcelaRepasses() {
             1ª parcela paga
           </Button>
           <Button asChild variant="ghost" size="sm" className="h-8">
-            <Link to="/repasses?ciclo=2">2º ciclo · ordens</Link>
+            <Link to="/repasses?ciclo=2">2º ciclo · pagamentos</Link>
           </Button>
         </div>
 
