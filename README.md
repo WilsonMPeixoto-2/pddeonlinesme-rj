@@ -45,7 +45,8 @@ O contrato financeiro operacional validado em setembro/2026 trabalha com:
 - 163 escolas;
 - 335 contas bancárias;
 - 537 registros de repasse/parcela;
-- cinco dimensões V1 `MATURE/PUBLISHED` com cobertura 163/163.
+- seis dimensões financeiras contratadas, incluindo pagamento informado do 2º ciclo;
+- snapshot corrente de 2026 com **163/163 unidades no 2º ciclo** e **R$ 765.215,00** informados pelo FNDE.
 
 Princípios obrigatórios:
 
@@ -53,7 +54,10 @@ Princípios obrigatórios:
 - uma escola pode possuir múltiplas contas no mesmo programa;
 - a hierarquia financeira é `programa → ação → parcela → conta`;
 - dados parciais não são promovidos como universo completo;
-- metadados de coleta/proveniência ficam na camada de auditoria, não na superfície operacional comum.
+- o snapshot validado do motor é a referência corrente de monitoramento; Supabase permanece como persistência relacional, histórica e auditável;
+- falha ou atraso de persistência nunca é convertido em zero: a interface exibe o snapshot corrente e sinaliza a defasagem;
+- consultas financeiras revalidam periodicamente para que fatos novos não permaneçam ocultos em cache ou apenas no banco;
+- metadados técnicos detalhados permanecem na auditoria; a interface expõe apenas o frescor necessário à confiança operacional.
 
 Documentação técnica:
 
@@ -65,13 +69,11 @@ Documentação técnica:
 
 Existe o workflow `.github/workflows/sync-financial-snapshot.yml` para validar e publicar snapshots maduros do `pdde-repasse-conciliador`.
 
-A presença do agendamento no YAML **não significa que a publicação automática esteja ativa**. Execuções agendadas só chegam ao job de publicação quando:
+O motor executa a coleta integral diariamente às **07:05 (America/Sao_Paulo)**. O PDDE Online recebe o evento de publicação e mantém fallback diário às **10:30**.
 
-- `PDDE_FINANCIAL_SYNC_ENABLED=true`;
-- `PDDE_SUPABASE_URL` está configurado corretamente;
-- `PDDE_SUPABASE_SERVICE_ROLE_KEY` está configurado no environment `production`.
+A sincronização automática é elegível por padrão, salvo kill-switch explícito `PDDE_FINANCIAL_SYNC_ENABLED=false`, e continua exigindo `PDDE_SUPABASE_SERVICE_ROLE_KEY` no environment `production`.
 
-A ausência das credenciais bloqueia a publicação antes da chamada ao banco.
+A publicação só é considerada concluída quando o workflow executa **read-after-write** e comprova que a proveniência, a cobertura, os valores e as datas da mesma view consumida pelo frontend coincidem com o snapshot validado. Atraso de persistência superior a **15 minutos** é tratado como incidente visível de frescor, não como ausência de dados.
 
 ## Stack atual
 
