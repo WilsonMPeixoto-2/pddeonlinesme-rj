@@ -16,6 +16,7 @@ import "nprogress/nprogress.css";
 
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
 const Repasses = lazy(() => import("./pages/Repasses.tsx"));
+const AtualizacoesFinanceiras = lazy(() => import("./pages/AtualizacoesFinanceiras.tsx"));
 const Escolas = lazy(() => import("./pages/Escolas.tsx"));
 const EscolaEditarComRecursos = lazy(() => import("./pages/EscolaEditarComRecursos.tsx"));
 const EscolaRecursos = lazy(() => import("./pages/EscolaRecursos.tsx"));
@@ -71,6 +72,7 @@ const router = createBrowserRouter([
       { path: "painel", element: <Navigate to="/dashboard" replace /> },
       { path: "painel/historico", element: <ProtectedRoute><HistoricoGeracoes /></ProtectedRoute> },
       { path: "repasses", element: <ProtectedRoute><Repasses /></ProtectedRoute> },
+      { path: "atualizacoes", element: <ProtectedRoute><AtualizacoesFinanceiras /></ProtectedRoute> },
       { path: "escolas", element: <ProtectedRoute><Escolas /></ProtectedRoute> },
       { path: "escolas/:id", element: <ProtectedRoute><EscolaEditarComRecursos /></ProtectedRoute> },
       { path: "escolas/:id/recursos", element: <ProtectedRoute><EscolaRecursos /></ProtectedRoute> },
