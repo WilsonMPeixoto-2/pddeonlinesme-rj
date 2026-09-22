@@ -11,11 +11,13 @@ const overview: SegundaParcelaOverview = {
   totalInformado: 132630,
   custeioTotal: 81034,
   capitalTotal: 51596,
-  ordensIdentificadas: 52,
-  pagamentosIdentificados: 0,
-  ordensSemCredito: 52,
-  ultimaDataOrdem: "2026-09-14",
-  ultimaDataPagamento: null,
+  ordensIdentificadas: 0,
+  pagamentosIdentificados: 163,
+  creditosBancariosConfirmados: 0,
+  ordensSemCredito: 0,
+  ultimaDataOrdem: null,
+  ultimaDataPagamento: "2026-09-17",
+  ultimaDataCreditoBancario: null,
   escolas: [
     {
       unidadeId: "u1",
@@ -26,15 +28,16 @@ const overview: SegundaParcelaOverview = {
       valorInformado: 2775,
       custeio: 1110,
       capital: 1665,
-      dataOrdem: "2026-09-14",
-      dataPagamento: null,
-      status: "ordem-emitida",
+      dataOrdem: null,
+      dataPagamento: "2026-09-17",
+      dataCreditoBancario: null,
+      status: "pagamento-informado",
     },
   ],
 };
 
 describe("superfície do segundo ciclo", () => {
-  it("expõe no Painel total, composição, unidade e ausência de crédito confirmado", () => {
+  it("expõe pagamento informado sem promovê-lo a crédito bancário confirmado", () => {
     render(
       <MemoryRouter>
         <SegundaParcelaResumo overview={overview} />
@@ -45,19 +48,19 @@ describe("superfície do segundo ciclo", () => {
     expect(screen.getByText(/81\.034,00/)).toBeVisible();
     expect(screen.getByText(/51\.596,00/)).toBeVisible();
     expect(screen.getByText("04.10.601 — CM MANGUINHOS")).toBeVisible();
-    expect(screen.getByText(/ordens aguardam confirmação de crédito bancário/i)).toBeVisible();
-    expect(screen.getAllByText(/Crédito confirmado/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Pagamento informado/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Ainda sem confirmação independente/i)).toBeVisible();
     expect(screen.getByRole("link", { name: /Ver todas as 1/i })).toHaveAttribute("href", "/repasses?ciclo=2");
   });
 
-  it("expõe a ordem na unidade sem convertê-la em recebimento", () => {
+  it("expõe o pagamento informado na unidade sem inventar crédito bancário", () => {
     render(<SegundaParcelaUnidadeResumo escola={overview.escolas[0]} />);
 
     expect(screen.getByText(/2\.775,00/)).toBeVisible();
     expect(screen.getByText(/1\.110,00/)).toBeVisible();
     expect(screen.getByText(/1\.665,00/)).toBeVisible();
-    expect(screen.getByText(/14\/09\/2026/)).toBeVisible();
-    expect(screen.getByText(/Crédito bancário ainda não confirmado/i)).toBeVisible();
+    expect(screen.getByText(/17\/09\/2026/)).toBeVisible();
+    expect(screen.getByText(/Crédito bancário independente ainda não confirmado/i)).toBeVisible();
     expect(screen.queryByText(/Recebido/i)).not.toBeInTheDocument();
   });
 });
