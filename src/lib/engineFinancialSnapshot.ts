@@ -90,7 +90,7 @@ function normalizedText(value: unknown): string {
 function stripExercise(value: string): string {
   return value
     .replace(/\b20\d{2}\b/g, "")
-    .replace(/^[\/\-\s]+|[\/\-\s]+$/g, "")
+    .replace(/^[/\s-]+|[/\s-]+$/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
