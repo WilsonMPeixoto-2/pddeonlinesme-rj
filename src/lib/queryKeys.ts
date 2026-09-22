@@ -8,6 +8,12 @@ import {
   type ProgramaFinanceiro,
   type RepasseFinanceiro,
 } from "@/lib/financeiroPDDE";
+import {
+  fetchEngineFinancialManifest,
+  fetchLatestEngineFinancialSnapshot,
+  mergeEngineSnapshotRepasses,
+  type UnidadeFinanceiraIdentity,
+} from "@/lib/engineFinancialSnapshot";
 import { DASHBOARD_QUERY_POLICY } from "@/lib/queryPolicy";
 
 export type DashboardBasico = Tables<"vw_dashboard_basico">;
@@ -22,6 +28,18 @@ export interface DashboardUnidadesResumo {
   recentes: DashboardUnidadeResumo[];
   cadastroCompletoCount: number;
   cadastroIncompletoCount: number;
+}
+
+export interface FinancialFreshnessState {
+  status: "CURRENT" | "STORAGE_LAG" | "SOURCE_STALE" | "SOURCE_UNAVAILABLE";
+  enginePublishedAt: string | null;
+  engineWorkflowRunId: number | null;
+  engineArtifactId: number | null;
+  storageWorkflowRunId: number | null;
+  storageArtifactId: number | null;
+  storageRecordedAt: string | null;
+  storagePublicationResult: string | null;
+  lagMinutes: number | null;
 }
 
 export type AppRole = Database["public"]["Enums"]["app_role"];
@@ -50,6 +68,7 @@ export const queryKeys = {
   repassesFinanceiros: (exercicio: number) => ["repasses-financeiros", exercicio] as const,
   contasFinanceiras: (exercicio: number) => ["contas-financeiras", exercicio] as const,
   financeiroUnidade: (unidadeId: string | undefined, exercicio: number) => ["financeiro-unidade", unidadeId, exercicio] as const,
+  financialFreshness: (exercicio: number) => ["financial-freshness", exercicio] as const,
   documentGenerationRuns: {
     all: () => ["document-generation-runs"] as const,
     list: (limit: number, page: number, status: string | undefined, exercicio: string | number | undefined) => ["document-generation-runs", limit, page, status, exercicio] as const,
@@ -162,15 +181,113 @@ export const unidadesLocalizadorOptions = () => queryOptions<UnidadeLocalizador[
   },
 });
 
+const FINANCIAL_LIVE_QUERY_POLICY = {
+  staleTime: 60 * 1000,
+  refetchInterval: 5 * 60 * 1000,
+  refetchOnWindowFocus: true,
+} as const;
+
 export const repassesFinanceirosOptions = (exercicio: number) => queryOptions<RepasseFinanceiro[], Error>({
   queryKey: queryKeys.repassesFinanceiros(exercicio),
   enabled: Number.isFinite(exercicio),
   queryFn: async () => {
-    const { data, error } = await supabase.from("vw_repasses_financeiros_unidade").select(REPASSE_COLUMNS).eq("exercicio", exercicio).order("designacao", { ascending: true }).order("ordem_exibicao", { ascending: true });
-    if (error) throw new Error(error.message);
-    return ((data ?? []) as Tables<"vw_repasses_financeiros_unidade">[]).map(toRepasseFinanceiro).filter((row): row is RepasseFinanceiro => row !== null);
+    const [repassesResult, unitsResult, engineResult] = await Promise.all([
+      supabase
+        .from("vw_repasses_financeiros_unidade")
+        .select(REPASSE_COLUMNS)
+        .eq("exercicio", exercicio)
+        .order("designacao", { ascending: true })
+        .order("ordem_exibicao", { ascending: true }),
+      supabase
+        .from("vw_unidades_localizador")
+        .select("id, designacao, nome, inep"),
+      exercicio === 2026
+        ? fetchLatestEngineFinancialSnapshot().catch(() => null)
+        : Promise.resolve(null),
+    ]);
+
+    if (repassesResult.error) throw new Error(repassesResult.error.message);
+    const databaseRows = ((repassesResult.data ?? []) as Tables<"vw_repasses_financeiros_unidade">[])
+      .map(toRepasseFinanceiro)
+      .filter((row): row is RepasseFinanceiro => row !== null);
+
+    if (!engineResult || unitsResult.error) return databaseRows;
+
+    const units = (unitsResult.data ?? [])
+      .filter((unit): unit is UnidadeFinanceiraIdentity => (
+        unit.id !== null
+        && unit.designacao !== null
+        && unit.inep !== null
+      ))
+      .map((unit) => ({
+        id: unit.id,
+        designacao: unit.designacao,
+        nome: unit.nome,
+        inep: unit.inep,
+      }));
+
+    return mergeEngineSnapshotRepasses({
+      databaseRows,
+      units,
+      snapshot: engineResult.snapshot,
+    });
   },
-  staleTime: 5 * 60 * 1000,
+  ...FINANCIAL_LIVE_QUERY_POLICY,
+});
+
+export const financialFreshnessOptions = (exercicio: number) => queryOptions<FinancialFreshnessState, Error>({
+  queryKey: queryKeys.financialFreshness(exercicio),
+  enabled: exercicio === 2026,
+  queryFn: async () => {
+    let manifest;
+    try {
+      manifest = await fetchEngineFinancialManifest();
+    } catch {
+      return {
+        status: "SOURCE_UNAVAILABLE",
+        enginePublishedAt: null,
+        engineWorkflowRunId: null,
+        engineArtifactId: null,
+        storageWorkflowRunId: null,
+        storageArtifactId: null,
+        storageRecordedAt: null,
+        storagePublicationResult: null,
+        lagMinutes: null,
+      };
+    }
+
+    const { data, error } = await supabase.rpc("get_financial_freshness_v1", {
+      p_exercise: exercicio,
+    });
+    if (error) throw new Error(error.message);
+    const storage = data?.[0] ?? null;
+    const enginePublishedAt = manifest.publishedAt;
+    const ageMinutes = Math.max(0, (Date.now() - Date.parse(enginePublishedAt)) / 60_000);
+    const storageCurrent = Boolean(
+      storage
+      && storage.workflow_run_id === manifest.source.workflowRunId
+      && storage.artifact_id === manifest.source.artifactId,
+    );
+
+    return {
+      status: ageMinutes > 36 * 60
+        ? "SOURCE_STALE"
+        : storageCurrent
+          ? "CURRENT"
+          : "STORAGE_LAG",
+      enginePublishedAt,
+      engineWorkflowRunId: manifest.source.workflowRunId,
+      engineArtifactId: manifest.source.artifactId,
+      storageWorkflowRunId: storage?.workflow_run_id ?? null,
+      storageArtifactId: storage?.artifact_id ?? null,
+      storageRecordedAt: storage?.storage_recorded_at ?? null,
+      storagePublicationResult: storage?.publication_result ?? null,
+      lagMinutes: storageCurrent ? 0 : ageMinutes,
+    };
+  },
+  staleTime: 60 * 1000,
+  refetchInterval: 5 * 60 * 1000,
+  refetchOnWindowFocus: true,
 });
 
 export const contasFinanceirasOptions = (exercicio: number) => queryOptions<ContaFinanceira[], Error>({
@@ -186,24 +303,45 @@ export const contasFinanceirasOptions = (exercicio: number) => queryOptions<Cont
     if (error) throw new Error(error.message);
     return (data ?? []) as ContaFinanceira[];
   },
-  staleTime: 5 * 60 * 1000,
+  ...FINANCIAL_LIVE_QUERY_POLICY,
 });
 
 export const financeiroUnidadeOptions = (unidadeId: string | undefined, exercicio: number) => queryOptions<FinanceiroUnidadeData, Error>({
   queryKey: queryKeys.financeiroUnidade(unidadeId, exercicio),
   enabled: Boolean(unidadeId && Number.isFinite(exercicio)),
   queryFn: async () => {
-    const [contasResult, repassesResult] = await Promise.all([
+    const [contasResult, repassesResult, unitResult, engineResult] = await Promise.all([
       supabase.from("contas_bancarias").select("id, unidade_id, programa, exercicio, banco, agencia, conta_corrente, principal").eq("unidade_id", unidadeId!).eq("exercicio", exercicio).order("programa").order("principal", { ascending: false }),
       supabase.from("vw_repasses_financeiros_unidade").select(REPASSE_COLUMNS).eq("unidade_id", unidadeId!).eq("exercicio", exercicio).order("ordem_exibicao", { ascending: true }),
+      supabase.from("vw_unidades_localizador").select("id, designacao, nome, inep").eq("id", unidadeId!).maybeSingle(),
+      exercicio === 2026
+        ? fetchLatestEngineFinancialSnapshot().catch(() => null)
+        : Promise.resolve(null),
     ]);
     if (contasResult.error) throw new Error(contasResult.error.message);
     if (repassesResult.error) throw new Error(repassesResult.error.message);
     const contas = (contasResult.data ?? []) as ContaFinanceira[];
-    const repasses = ((repassesResult.data ?? []) as Tables<"vw_repasses_financeiros_unidade">[]).map(toRepasseFinanceiro).filter((row): row is RepasseFinanceiro => row !== null);
+    const databaseRepasses = ((repassesResult.data ?? []) as Tables<"vw_repasses_financeiros_unidade">[])
+      .map(toRepasseFinanceiro)
+      .filter((row): row is RepasseFinanceiro => row !== null);
+
+    const unit = unitResult.data;
+    const repasses = engineResult && !unitResult.error && unit?.id && unit.designacao && unit.inep
+      ? mergeEngineSnapshotRepasses({
+          databaseRows: databaseRepasses,
+          units: [{
+            id: unit.id,
+            designacao: unit.designacao,
+            nome: unit.nome,
+            inep: unit.inep,
+          }],
+          snapshot: engineResult.snapshot,
+        }).filter((row) => row.unidade_id === unidadeId)
+      : databaseRepasses;
+
     return { contas, repasses, programas: groupFinanceiroByProgram(contas, repasses, exercicio) };
   },
-  staleTime: 5 * 60 * 1000,
+  ...FINANCIAL_LIVE_QUERY_POLICY,
 });
 
 interface DocumentGenerationRunsParams { limit?: number; page?: number; status?: string; exercicio?: string | number }

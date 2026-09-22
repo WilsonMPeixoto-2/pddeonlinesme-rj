@@ -130,13 +130,16 @@ Esses elementos permanecem disponíveis exclusivamente na camada de auditoria.
 
 A carga inicial deixou de ser o único mecanismo de proteção da integração. O PDDE Online passou a possuir contrato versionado de publicação por dimensão.
 
-As cinco dimensões V1 estão atualmente `MATURE/PUBLISHED`, com cobertura 163/163:
+O contrato corrente possui seis dimensões financeiras:
 
 1. `bank_accounts`;
 2. `scheduled_repasses`;
 3. `pdde_basic_first_installment`;
 4. `pdde_basic_first_installment_breakdown`;
-5. `pdde_basic_second_installment_programmed`.
+5. `pdde_basic_second_installment_programmed`;
+6. `pdde_basic_second_installment_payment_informed`.
+
+Na coleta validada de 21/09/2026, o 2º ciclo alcançou **163/163 unidades**, totalizando **R$ 765.215,00** informados pelo FNDE. Esse fato não equivale, por si só, à confirmação independente do crédito bancário no SIGEF.
 
 A promoção de um snapshot ocorre por RPC transacional, que valida o universo das escolas, contas, repasses, vínculos e maturidade antes de substituir a projeção operacional.
 
@@ -170,27 +173,23 @@ Não existe fallback genérico para rótulo desconhecido.
 
 ## Relação com o Painel e Repasses
 
-A interface não usa o total global de pagamentos como KPI principal quando esse total mistura universos com maturidade diferente.
+O 2º ciclo passou a possuir dimensão própria de pagamento informado. A interface deve apresentar separadamente:
 
-O recorte institucional principal vigente é a **1ª parcela paga do PDDE Básico**, no mesmo universo de:
+- valor/pagamento informado pelo FNDE;
+- ordem de pagamento, quando houver data específica de ordem;
+- crédito bancário independentemente confirmado, quando o motor localizar evidência compatível.
 
-- valor;
-- cobertura;
-- data de pagamento;
-- composição custeio/capital quando disponível.
+Nenhuma dessas categorias pode ser inferida a partir da ausência da outra. Em especial, falha de atualização ou persistência atrasada nunca é representada como zero.
 
-A página `/repasses` e o Painel devem respeitar essa fronteira até que novas dimensões tenham contrato próprio de maturidade.
+## Sincronização e tempestividade
 
-## Sincronização futura
+O motor executa coleta integral diária às **07:05 (America/Sao_Paulo)**. A publicação do snapshot dispara o PDDE Online por evento; existe fallback diário às **10:30**.
 
-Existe `.github/workflows/sync-financial-snapshot.yml` para validar e publicar snapshots maduros.
+O frontend revalida as consultas financeiras a cada **5 minutos** e quando a janela recupera foco. Para 2026, o snapshot validado do motor funciona como referência corrente de leitura e prevalece temporariamente sobre uma persistência Supabase defasada.
 
-O agendamento só publica quando:
+A persistência continua exigindo `PDDE_SUPABASE_SERVICE_ROLE_KEY`. Depois da gravação, o workflow executa read-after-write da mesma view usada pelo frontend. Divergência de proveniência, cobertura, valor ou datas encerra a sincronização em falha.
 
-- `PDDE_FINANCIAL_SYNC_ENABLED=true`;
-- `PDDE_SUPABASE_URL` e `PDDE_SUPABASE_SERVICE_ROLE_KEY` estão configurados no environment `production`.
-
-Enquanto isso não ocorrer, a existência de `schedule` no workflow não significa sincronização automática ativa.
+Meta operacional: persistência reconciliada em até **15 minutos** após a publicação do snapshot. Atrasos além desse limite são incidentes visíveis de frescor.
 
 ## Fora do escopo desta V1
 

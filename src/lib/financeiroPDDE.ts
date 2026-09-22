@@ -21,6 +21,8 @@ export interface RepasseFinanceiro {
   capital_programado: number | null;
   custeio_pago: number | null;
   capital_pago: number | null;
+  credito_bancario_confirmado?: boolean;
+  data_credito_bancario?: string | null;
 }
 
 export interface ContaFinanceira {
@@ -56,7 +58,8 @@ export interface EscolaSegundaParcela {
   capital: number | null;
   dataOrdem: string | null;
   dataPagamento: string | null;
-  status: "pagamento-identificado" | "ordem-emitida" | "pagamento-informado";
+  dataCreditoBancario: string | null;
+  status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado";
 }
 
 export interface SegundaParcelaOverview {
@@ -67,9 +70,11 @@ export interface SegundaParcelaOverview {
   escolas: EscolaSegundaParcela[];
   ordensIdentificadas: number;
   pagamentosIdentificados: number;
+  creditosBancariosConfirmados: number;
   ordensSemCredito: number;
   ultimaDataOrdem: string | null;
   ultimaDataPagamento: string | null;
+  ultimaDataCreditoBancario: string | null;
 }
 
 export interface ActionOverview {
@@ -345,11 +350,13 @@ export function buildSegundaParcelaOverview(
   const bySchool = new Map<string, EscolaSegundaParcela>();
   for (const repasse of publicados) {
     const current = bySchool.get(repasse.unidade_id);
-    const status: EscolaSegundaParcela["status"] = repasse.data_pagamento
-      ? "pagamento-identificado"
-      : repasse.data_ordem_pagamento
-        ? "ordem-emitida"
-        : "pagamento-informado";
+    const status: EscolaSegundaParcela["status"] = repasse.credito_bancario_confirmado === true
+      ? "credito-confirmado"
+      : repasse.data_pagamento
+        ? "pagamento-informado"
+        : repasse.data_ordem_pagamento
+          ? "ordem-emitida"
+          : "pagamento-informado";
 
     if (current) {
       current.valorInformado += repasse.valor_pago ?? 0;
@@ -362,9 +369,10 @@ export function buildSegundaParcelaOverview(
           ? null
           : current.capital + repasse.capital_pago;
       if (!current.dataPagamento && repasse.data_pagamento) current.dataPagamento = repasse.data_pagamento;
+      if (!current.dataCreditoBancario && repasse.data_credito_bancario) current.dataCreditoBancario = repasse.data_credito_bancario;
       if (!current.dataOrdem && repasse.data_ordem_pagamento) current.dataOrdem = repasse.data_ordem_pagamento;
-      if (status === "pagamento-identificado") current.status = status;
-      else if (status === "ordem-emitida" && current.status === "pagamento-informado") current.status = status;
+      if (status === "credito-confirmado") current.status = status;
+      else if (status === "pagamento-informado" && current.status === "ordem-emitida") current.status = status;
       if (current.acao !== actionLabel(repasse.acao)) current.acao = "Múltiplas ações";
       continue;
     }
@@ -380,6 +388,7 @@ export function buildSegundaParcelaOverview(
       capital: repasse.capital_pago,
       dataOrdem: repasse.data_ordem_pagamento,
       dataPagamento: repasse.data_pagamento,
+      dataCreditoBancario: repasse.data_credito_bancario ?? null,
       status,
     });
   }
@@ -402,6 +411,10 @@ export function buildSegundaParcelaOverview(
     .map((row) => row.dataPagamento)
     .filter((data): data is string => Boolean(data))
     .sort((a, b) => b.localeCompare(a));
+  const datasCreditoBancario = escolas
+    .map((row) => row.dataCreditoBancario)
+    .filter((data): data is string => Boolean(data))
+    .sort((a, b) => b.localeCompare(a));
 
   return {
     exercicio,
@@ -410,10 +423,12 @@ export function buildSegundaParcelaOverview(
     capitalTotal,
     escolas,
     ordensIdentificadas: escolas.filter((row) => row.dataOrdem !== null).length,
-    pagamentosIdentificados: escolas.filter((row) => row.dataPagamento !== null).length,
-    ordensSemCredito: escolas.filter((row) => row.dataOrdem !== null && row.dataPagamento === null).length,
+    pagamentosIdentificados: escolas.filter((row) => row.valorInformado > 0 || row.dataPagamento !== null || row.dataOrdem !== null).length,
+    creditosBancariosConfirmados: escolas.filter((row) => row.dataCreditoBancario !== null || row.status === "credito-confirmado").length,
+    ordensSemCredito: escolas.filter((row) => row.dataOrdem !== null && row.dataCreditoBancario === null).length,
     ultimaDataOrdem: datasOrdem[0] ?? null,
     ultimaDataPagamento: datasPagamento[0] ?? null,
+    ultimaDataCreditoBancario: datasCreditoBancario[0] ?? null,
   };
 }
 

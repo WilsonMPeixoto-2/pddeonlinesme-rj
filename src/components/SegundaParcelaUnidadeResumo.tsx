@@ -28,7 +28,7 @@ export function SegundaParcelaUnidadeResumo({
 }) {
   if (!escola) return null;
 
-  const creditoConfirmado = escola.dataPagamento !== null;
+  const creditoConfirmado = escola.status === "credito-confirmado";
 
   return (
     <Card className="border-amber-500/25 bg-amber-500/[0.025]">
@@ -62,17 +62,24 @@ export function SegundaParcelaUnidadeResumo({
         </div>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/50 pt-3 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-            Ordem: <strong className="font-semibold text-foreground">{formatDate(escola.dataOrdem)}</strong>
-          </span>
+          {escola.dataPagamento ? (
+            <span className="inline-flex items-center gap-1.5">
+              <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+              Pagamento informado: <strong className="font-semibold text-foreground">{formatDate(escola.dataPagamento)}</strong>
+            </span>
+          ) : null}
+          {escola.dataOrdem ? (
+            <span>
+              Ordem: <strong className="font-semibold text-foreground">{formatDate(escola.dataOrdem)}</strong>
+            </span>
+          ) : null}
           {creditoConfirmado ? (
             <span>
-              Crédito confirmado em <strong className="font-semibold text-success">{formatDate(escola.dataPagamento)}</strong>
+              Crédito bancário confirmado em <strong className="font-semibold text-success">{formatDate(escola.dataCreditoBancario)}</strong>
             </span>
           ) : (
             <span className="font-medium text-amber-700 dark:text-amber-300">
-              Crédito bancário ainda não confirmado.
+              Crédito bancário independente ainda não confirmado.
             </span>
           )}
         </div>

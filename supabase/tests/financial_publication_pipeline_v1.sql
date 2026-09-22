@@ -24,8 +24,8 @@ select ok(
 
 select is(
   (select count(*)::integer from public.financial_dimension_contracts where exercise = 2026 and enabled),
-  5,
-  'cinco dimensoes V1 estao habilitadas para 2026'
+  6,
+  'seis dimensoes financeiras estao habilitadas para 2026'
 );
 
 select is(

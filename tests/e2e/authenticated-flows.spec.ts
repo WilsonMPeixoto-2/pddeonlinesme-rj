@@ -74,7 +74,7 @@ test("segundo ciclo faz drill-down da escola e preserva o retorno", async ({ pag
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
 
-  await page.getByRole("button", { name: /2º ciclo · ordens/i }).click();
+  await page.getByRole("button", { name: /2º ciclo · pagamentos/i }).click();
   await expect(page).toHaveURL(/\/repasses\?ciclo=2/);
   await expect(page.getByRole("heading", { name: "2º ciclo · PDDE Básico" })).toBeVisible();
   await expect(page.getByText("04.10.002", { exact: true })).toBeVisible();

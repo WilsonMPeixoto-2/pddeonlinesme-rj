@@ -196,7 +196,16 @@ export async function fetchLatestPublishedSnapshot() {
 export function prepareFinancialPublicationPayload(snapshot, manifest, snapshotDigest) {
   const payload = buildNormalizedPublicationPayload(snapshot, manifest);
   const dimensions = evaluatePublicationDimensions(payload);
-  const blocked = dimensions.filter((dimension) => dimension.qualityStatus !== "MATURE");
+  const progressiveDimensions = new Set([
+    "pdde_basic_second_installment_payment_informed",
+  ]);
+  const blocked = dimensions.filter((dimension) => (
+    dimension.qualityStatus === "REJECTED"
+    || (
+      !progressiveDimensions.has(dimension.dimensionKey)
+      && dimension.qualityStatus !== "MATURE"
+    )
+  ));
   if (blocked.length > 0) {
     throw new Error(
       `Snapshot não publicável: ${blocked.map((dimension) => `${dimension.dimensionKey}=${dimension.coverageObserved}/${dimension.coverageExpected}:${dimension.qualityStatus}`).join(", ")}`,
@@ -236,6 +245,179 @@ export async function publishFinancialPayload(payload, env = process.env) {
   return responseText ? JSON.parse(responseText) : null;
 }
 
+function financialHeaders(serviceRoleKey) {
+  return {
+    apikey: serviceRoleKey,
+    Authorization: `Bearer ${serviceRoleKey}`,
+    Accept: "application/json",
+  };
+}
+
+async function fetchSupabaseRows(url, serviceRoleKey) {
+  const response = await fetch(url, {
+    headers: financialHeaders(serviceRoleKey),
+    redirect: "error",
+    signal: AbortSignal.timeout(30_000),
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error(`Read-after-write financeiro falhou: HTTP ${response.status} ${text.slice(0, 500)}`);
+  }
+  return text ? JSON.parse(text) : [];
+}
+
+function isBasicSecondInstallmentPayload(row) {
+  return row.program === "PDDE BÁSICO" && (
+    (row.action === "PDDE Básico" && row.installment === "2ª Parcela")
+    || (row.action === "PDDE Básico — Primeira Infância" && row.installment === "P2")
+  );
+}
+
+function repasseSemanticKey(row) {
+  return [row.inep, row.action, row.installment].join("|");
+}
+
+function numericEqual(left, right) {
+  if (left === null || left === undefined || right === null || right === undefined) {
+    return left === right;
+  }
+  return Math.abs(Number(left) - Number(right)) < 0.005;
+}
+
+export async function verifyPublishedFinancialState(payload, env = process.env) {
+  const supabaseUrl = String(env.SUPABASE_URL ?? "").replace(/\/$/, "");
+  const serviceRoleKey = String(env.SUPABASE_SERVICE_ROLE_KEY ?? "");
+  if (supabaseUrl !== EXPECTED_SUPABASE_URL) {
+    throw new Error("SUPABASE_URL não corresponde ao projeto PDDE Online autorizado.");
+  }
+  if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada.");
+
+  const [viewRows, integrationRows] = await Promise.all([
+    fetchSupabaseRows(
+      `${supabaseUrl}/rest/v1/vw_repasses_financeiros_unidade?select=inep,programa,acao,parcela,valor_programado,valor_pago,custeio_programado,capital_programado,custeio_pago,capital_pago,data_pagamento,data_ordem_pagamento&exercicio=eq.${payload.exercise}`,
+      serviceRoleKey,
+    ),
+    fetchSupabaseRows(
+      `${supabaseUrl}/rest/v1/integracoes_financeiras_runs?select=workflow_run_id,artifact_id,publication_result,criado_em&exercicio=eq.${payload.exercise}&origem=eq.pdde-repasse-conciliador&order=workflow_run_id.desc,criado_em.desc&limit=1`,
+      serviceRoleKey,
+    ),
+  ]);
+
+  const latestIntegration = integrationRows[0] ?? null;
+  if (
+    !latestIntegration
+    || Number(latestIntegration.workflow_run_id) !== Number(payload.source.workflowRunId)
+    || Number(latestIntegration.artifact_id) !== Number(payload.source.artifactId)
+  ) {
+    throw new Error(
+      `Read-after-write: proveniência persistida diverge do snapshot `
+      + `(esperado run=${payload.source.workflowRunId}/artifact=${payload.source.artifactId}; `
+      + `observado run=${latestIntegration?.workflow_run_id ?? "ausente"}/artifact=${latestIntegration?.artifact_id ?? "ausente"}).`,
+    );
+  }
+
+  const expectedSecond = payload.repasses.filter(
+    (row) => isBasicSecondInstallmentPayload(row) && row.paid !== null,
+  );
+  const observedSecond = viewRows.filter((row) => (
+    row.programa === "PDDE BÁSICO"
+    && (
+      (row.acao === "PDDE Básico" && row.parcela === "2ª Parcela")
+      || (row.acao === "PDDE Básico — Primeira Infância" && row.parcela === "P2")
+    )
+    && row.valor_pago !== null
+  ));
+
+  const expectedSchools = new Set(expectedSecond.map((row) => row.inep));
+  const observedSchools = new Set(observedSecond.map((row) => row.inep));
+  const expectedTotal = expectedSecond.reduce((sum, row) => sum + Number(row.paid ?? 0), 0);
+  const observedTotal = observedSecond.reduce((sum, row) => sum + Number(row.valor_pago ?? 0), 0);
+
+  if (expectedSchools.size !== observedSchools.size || !numericEqual(expectedTotal, observedTotal)) {
+    throw new Error(
+      `Read-after-write: 2º ciclo diverge entre snapshot e view operacional `
+      + `(escolas ${observedSchools.size}/${expectedSchools.size}; `
+      + `valor ${observedTotal.toFixed(2)}/${expectedTotal.toFixed(2)}).`,
+    );
+  }
+
+  const observedByKey = new Map(
+    observedSecond.map((row) => [[row.inep, row.acao, row.parcela].join("|"), row]),
+  );
+  const divergences = expectedSecond.filter((expected) => {
+    const observed = observedByKey.get(repasseSemanticKey(expected));
+    if (!observed || !numericEqual(observed.valor_pago, expected.paid)) return true;
+    const expectedOrderDate = expected.paymentOrderDate ?? null;
+    if ((observed.data_ordem_pagamento ?? null) !== expectedOrderDate) return true;
+    return (observed.data_pagamento ?? null) !== (expected.paymentDate ?? null);
+  });
+
+  if (divergences.length > 0) {
+    throw new Error(
+      `Read-after-write: ${divergences.length} repasses do 2º ciclo divergem semanticamente da view operacional.`,
+    );
+  }
+
+  const allObservedByKey = new Map(
+    viewRows.map((row) => [[row.inep, row.acao, row.parcela].join("|"), row]),
+  );
+  const semanticMismatches = [];
+
+  for (const expected of payload.repasses) {
+    const observed = allObservedByKey.get(repasseSemanticKey(expected));
+    if (!observed) {
+      semanticMismatches.push({ key: repasseSemanticKey(expected), field: "row", expected: "present", observed: "missing" });
+      continue;
+    }
+
+    const comparisons = [
+      ["programa", expected.program, observed.programa, "text"],
+      ["valor_programado", expected.programmed, observed.valor_programado, "number"],
+      ["valor_pago", expected.paid, observed.valor_pago, "number"],
+      ["custeio_programado", expected.programmedCusteio, observed.custeio_programado, "number"],
+      ["capital_programado", expected.programmedCapital, observed.capital_programado, "number"],
+      ["custeio_pago", expected.paidCusteio, observed.custeio_pago, "number"],
+      ["capital_pago", expected.paidCapital, observed.capital_pago, "number"],
+      ["data_pagamento", expected.paymentDate, observed.data_pagamento, "text"],
+      ["data_ordem_pagamento", expected.paymentOrderDate, observed.data_ordem_pagamento, "text"],
+    ];
+
+    for (const [field, expectedValue, observedValue, kind] of comparisons) {
+      if (expectedValue === null || expectedValue === undefined) continue;
+      const equal = kind === "number"
+        ? numericEqual(expectedValue, observedValue)
+        : String(expectedValue) === String(observedValue ?? "");
+      if (!equal) {
+        semanticMismatches.push({
+          key: repasseSemanticKey(expected),
+          field,
+          expected: expectedValue,
+          observed: observedValue ?? null,
+        });
+      }
+    }
+  }
+
+  if (semanticMismatches.length > 0) {
+    console.error(JSON.stringify({
+      status: "OPERATIONAL_VIEW_DIVERGENCE",
+      mismatchCount: semanticMismatches.length,
+      examples: semanticMismatches.slice(0, 25),
+    }));
+    throw new Error(
+      `Read-after-write: a view operacional diverge do snapshot em ${semanticMismatches.length} fato(s) financeiro(s).`,
+    );
+  }
+
+  return {
+    workflowRunId: payload.source.workflowRunId,
+    artifactId: payload.source.artifactId,
+    secondInstallmentSchools: observedSchools.size,
+    secondInstallmentTotal: observedTotal,
+    semanticRowsVerified: payload.repasses.length,
+  };
+}
+
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
   const { manifest, snapshot, snapshotDigest, rawBytes } = await fetchLatestPublishedSnapshot();
@@ -270,7 +452,8 @@ async function main() {
   }
 
   const result = await publishFinancialPayload(payload);
-  console.log(JSON.stringify({ ...summary, result }));
+  const readAfterWrite = await verifyPublishedFinancialState(payload);
+  console.log(JSON.stringify({ ...summary, result, readAfterWrite }));
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : null;

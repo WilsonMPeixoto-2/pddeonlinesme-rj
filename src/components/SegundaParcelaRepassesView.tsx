@@ -48,14 +48,14 @@ function escapeCsv(value: string | number | null) {
   return `"${text}"`;
 }
 
-function statusLabel(status: "pagamento-identificado" | "ordem-emitida" | "pagamento-informado") {
-  if (status === "pagamento-identificado") return "Crédito confirmado";
+function statusLabel(status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado") {
+  if (status === "credito-confirmado") return "Crédito bancário confirmado";
   if (status === "ordem-emitida") return "Ordem emitida";
   return "Pagamento informado";
 }
 
-function statusClasses(status: "pagamento-identificado" | "ordem-emitida" | "pagamento-informado") {
-  if (status === "pagamento-identificado") {
+function statusClasses(status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado") {
+  if (status === "credito-confirmado") {
     return "border-success/30 bg-success/8 text-success";
   }
   if (status === "ordem-emitida") {
@@ -97,7 +97,7 @@ export function SegundaParcelaRepassesView() {
     const term = search.trim().toLocaleLowerCase("pt-BR");
     const rows = overview.escolas.filter((school) => {
       if (status === "ordem" && school.status !== "ordem-emitida") return false;
-      if (status === "pago" && school.status !== "pagamento-identificado") return false;
+      if (status === "pago" && school.status !== "credito-confirmado") return false;
       if (!term) return true;
       return [school.designacao, school.nome, school.inep ?? "", school.acao]
         .join(" ")
@@ -130,7 +130,8 @@ export function SegundaParcelaRepassesView() {
       "Ação",
       "Situação",
       "Ordem de pagamento",
-      "Data do pagamento",
+      "Data informada pelo FNDE",
+      "Crédito bancário confirmado",
       "Custeio",
       "Capital",
       "Total informado",
@@ -143,6 +144,7 @@ export function SegundaParcelaRepassesView() {
         statusLabel(school.status),
         school.dataOrdem,
         school.dataPagamento,
+        school.dataCreditoBancario,
         school.custeio === null ? null : school.custeio.toFixed(2).replace(".", ","),
         school.capital === null ? null : school.capital.toFixed(2).replace(".", ","),
         school.valorInformado.toFixed(2).replace(".", ","),
@@ -195,7 +197,7 @@ export function SegundaParcelaRepassesView() {
             <Link to="/repasses">1ª parcela paga</Link>
           </Button>
           <Button variant="secondary" size="sm" className="h-8" aria-current="page">
-            2º ciclo · ordens
+            2º ciclo · pagamentos
           </Button>
         </div>
 
@@ -221,11 +223,21 @@ export function SegundaParcelaRepassesView() {
         ) : (
           <>
             <Card className="overflow-hidden shadow-sm">
-              <CardContent className="grid p-0 md:grid-cols-3">
+              <CardContent className="grid p-0 md:grid-cols-4">
                 <div className="p-5">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Valor informado</p>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{formatMoney(overview.totalInformado)}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{overview.escolas.length} unidades no recorte</p>
+                </div>
+                <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
+                  <div className="flex items-center gap-2 text-primary">
+                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Pagamento informado</p>
+                  </div>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.pagamentosIdentificados}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {overview.ultimaDataPagamento ? `Data mais recente ${formatDate(overview.ultimaDataPagamento)}` : "Valor informado sem data específica"}
+                  </p>
                 </div>
                 <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
                   <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
@@ -234,18 +246,17 @@ export function SegundaParcelaRepassesView() {
                   </div>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.ordensIdentificadas}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataOrdem ? `Mais recente em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data de ordem"}
-                    {overview.ordensSemCredito > 0 ? ` · ${overview.ordensSemCredito} aguardando crédito` : ""}
+                    {overview.ultimaDataOrdem ? `Mais recente em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data de ordem separada"}
                   </p>
                 </div>
                 <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
-                  <div className={overview.pagamentosIdentificados > 0 ? "flex items-center gap-2 text-success" : "flex items-center gap-2 text-muted-foreground"}>
+                  <div className={overview.creditosBancariosConfirmados > 0 ? "flex items-center gap-2 text-success" : "flex items-center gap-2 text-muted-foreground"}>
                     <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Créditos confirmados</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito bancário confirmado</p>
                   </div>
-                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.pagamentosIdentificados}</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.creditosBancariosConfirmados}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataPagamento ? `Mais recente em ${formatDate(overview.ultimaDataPagamento)}` : "Nenhum crédito bancário confirmado"}
+                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Evidência bancária independente ainda não localizada"}
                   </p>
                 </div>
               </CardContent>
@@ -308,13 +319,13 @@ export function SegundaParcelaRepassesView() {
                     >
                       Ordem emitida
                     </Button>
-                    {overview.pagamentosIdentificados > 0 ? (
+                    {overview.creditosBancariosConfirmados > 0 ? (
                       <Button
                         size="sm"
                         variant={status === "pago" ? "secondary" : "outline"}
                         onClick={() => setStatus((current) => current === "pago" ? "todos" : "pago")}
                       >
-                        Crédito confirmado
+                        Crédito bancário confirmado
                       </Button>
                     ) : null}
                     <Button
@@ -341,7 +352,7 @@ export function SegundaParcelaRepassesView() {
                         <th className="px-4 py-3">Unidade escolar</th>
                         <th className="px-4 py-3">Ação</th>
                         <th className="px-4 py-3">Situação</th>
-                        <th className="px-4 py-3">Ordem</th>
+                        <th className="px-4 py-3">Datas / evidências</th>
                         <th className="px-4 py-3 text-right">Custeio</th>
                         <th className="px-4 py-3 text-right">Capital</th>
                         <th className="px-4 py-3 text-right">Valor informado</th>
@@ -373,13 +384,20 @@ export function SegundaParcelaRepassesView() {
                               </span>
                             </td>
                             <td className="px-4 py-3">
-                              <div className="flex items-center gap-1.5 whitespace-nowrap text-sm tabular-nums text-muted-foreground">
-                                <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-                                {formatDate(school.dataOrdem)}
-                              </div>
                               {school.dataPagamento ? (
+                                <div className="flex items-center gap-1.5 whitespace-nowrap text-sm tabular-nums text-muted-foreground">
+                                  <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+                                  Pagamento informado: {formatDate(school.dataPagamento)}
+                                </div>
+                              ) : null}
+                              {school.dataOrdem ? (
                                 <p className="mt-1 text-[10px] text-muted-foreground">
-                                  Crédito: {formatDate(school.dataPagamento)}
+                                  Ordem: {formatDate(school.dataOrdem)}
+                                </p>
+                              ) : null}
+                              {school.dataCreditoBancario ? (
+                                <p className="mt-1 text-[10px] font-medium text-success">
+                                  Crédito bancário: {formatDate(school.dataCreditoBancario)}
                                 </p>
                               ) : null}
                             </td>

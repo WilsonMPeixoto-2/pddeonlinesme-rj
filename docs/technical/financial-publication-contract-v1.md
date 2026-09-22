@@ -17,11 +17,12 @@ A interface operacional consome apenas dados promovidos. Evidências, hashes, wo
 - coleta nova não substitui retrato válido se houver regressão de cobertura;
 - publicação é transacional e idempotente;
 - uma falha em qualquer invariável bloqueia toda a promoção;
-- dimensões novas podem ser coletadas e armazenadas no motor sem aparecer no PDDE Online;
+- dimensões novas só entram na superfície operacional depois de contrato explícito de maturidade;
 - qualidade e publicação são estados diferentes;
 - o contrato de maturidade é versionado e auditável;
-- o frontend não chama o motor de coleta em tempo real;
-- o Supabase permanece a fronteira operacional do PDDE Online;
+- o frontend não dispara a coleta do motor, mas pode ler o **snapshot validado e publicado** como referência corrente;
+- o Supabase permanece a camada relacional, histórica e auditável, sem funcionar como gargalo capaz de congelar silenciosamente a informação corrente;
+- atraso de persistência não vira zero e deve ser sinalizado na interface;
 - o `service_role` do PDDE Online não cruza para o motor externo.
 
 ## Estados
@@ -52,8 +53,9 @@ O ciclo inicial formaliza somente fatos que o PDDE Online já utiliza em produç
 | `pdde_basic_first_installment` | 163 escolas | pagamento da 1ª parcela/P1 identificado, com data |
 | `pdde_basic_first_installment_breakdown` | 163 escolas | 1ª parcela/P1 com custeio e capital conhecidos e soma consistente |
 | `pdde_basic_second_installment_programmed` | 163 escolas | 2ª parcela/P2 programada no universo PDDE Básico/Primeira Infância |
+| `pdde_basic_second_installment_payment_informed` | 163 escolas | valor de pagamento informado no 2º ciclo para as 163 unidades, preservando ordem e crédito bancário como evidências distintas |
 
-Novas dimensões como saldo, movimentos bancários, crédito localizado e conciliação documento × débito não entram neste contrato até terem regra de maturidade própria.
+Crédito bancário independentemente localizado, saldo, movimentos e conciliação documento × débito permanecem dimensões distintas e só podem ser promovidos quando tiverem regra própria de maturidade.
 
 ## Persistência
 
@@ -97,12 +99,13 @@ A publicação controlada recebe um payload normalizado do snapshot do motor e e
 2. valida 163 INEPs e correspondência com `unidades_escolares`;
 3. valida duplicidades, valores e identidade bancária;
 4. valida vínculos de conta;
-5. calcula a maturidade das cinco dimensões V1;
+5. calcula a maturidade das dimensões financeiras, inclusive o pagamento informado do 2º ciclo;
 6. bloqueia regressão em dimensão atualmente `PUBLISHED`;
 7. registra `integracoes_financeiras_runs`;
 8. substitui a projeção operacional de contas/repasses;
 9. grava `financial_dimension_status`;
-10. publica somente após todas as invariáveis passarem.
+10. executa **read-after-write** na mesma view consumida pelo frontend;
+11. considera a sincronização concluída somente se proveniência, escolas, valores e datas coincidirem semanticamente com o snapshot.
 
 Como a chamada é uma função PostgreSQL única, qualquer exceção desfaz a operação inteira.
 
@@ -145,7 +148,9 @@ O PDDE Online possui `.github/workflows/sync-financial-snapshot.yml`, que pode:
 6. avaliar localmente as dimensões para diagnóstico antecipado;
 7. validar que o destino é `https://raluxyojqosfzrfozmpz.supabase.co`;
 8. chamar a RPC transacional com credencial de backend;
-9. encerrar de forma idempotente quando workflow/artifact já foi publicado.
+9. reler `vw_repasses_financeiros_unidade` e a última execução persistida;
+10. falhar explicitamente se o estado operacional não reproduzir o snapshot;
+11. encerrar de forma idempotente quando workflow/artifact já foi publicado e comprovado.
 
 ### Gatilhos V1
 
@@ -180,7 +185,11 @@ A configuração do workflow não é prova de publicação. Para declarar uma si
 2. proveniência `workflow_run_id + artifact_id`;
 3. nova linha/idempotência em `integracoes_financeiras_runs`;
 4. contagens e dimensões promovidas;
-5. evidências de ordem materializadas sem inventar crédito bancário.
+5. evidências de ordem materializadas sem inventar crédito bancário;
+6. **read-after-write** da `vw_repasses_financeiros_unidade` coincidente com o snapshot;
+7. disponibilidade dos mesmos fatos na interface, que revalida as consultas financeiras a cada 5 minutos e ao recuperar foco.
+
+A meta operacional é de **até 15 minutos** entre a publicação do snapshot validado e a persistência reconciliada. Enquanto a persistência estiver atrasada, o snapshot validado continua sendo usado para os fatos correntes de 2026 e o layout exibe o incidente de frescor.
 
 Na reconciliação de 18/09/2026, o código de automação já estava ativo por padrão, porém o último `publicado_em` observado no Supabase ainda era de 09/09/2026. Portanto, a primeira publicação pós-PR #174 permanecia pendente de comprovação.
 
@@ -191,7 +200,8 @@ No fechamento do ciclo #129:
 - 163 escolas;
 - 335 contas;
 - 537 repasses;
-- cinco dimensões `MATURE/PUBLISHED` com cobertura 163/163;
+- seis dimensões financeiras contratadas, incluindo `pdde_basic_second_installment_payment_informed`;
+- estado corrente do 2º ciclo: **163/163 unidades** e **R$ 765.215,00** com pagamento informado pelo FNDE; crédito bancário independente permanece evidência separada;
 - RPC provada com primeira execução `published` e segunda `idempotent` em transação de teste com `ROLLBACK`;
 - execução da função restrita ao `service_role`;
 - replay completo das migrations e testes de contrato incorporados ao CI.
@@ -208,7 +218,7 @@ Validação de proveniência do evento/manifesto, transformação para o contrat
 
 ### Frontend PDDE Online
 
-Consumo do contrato já promovido. Não decide maturidade e não exibe metadados técnicos na interface comum.
+Consome a projeção persistida e reconcilia os fatos correntes de 2026 com o snapshot validado publicado pelo motor. Não decide maturidade, não possui credenciais administrativas e não dispara coleta. Quando Supabase e motor divergem, a informação validada do motor prevalece temporariamente para monitoramento e a diferença de frescor fica visível até a persistência convergir.
 
 ## Documentos relacionados
 

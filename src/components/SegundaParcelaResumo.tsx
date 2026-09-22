@@ -46,10 +46,10 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                 <div>
                   <p className="ds-eyebrow">2º ciclo · PDDE Básico</p>
                   <h2 id="segundo-ciclo-title" className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-                    Ordens de pagamento identificadas
+                    Pagamentos informados no 2º ciclo
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Evidência de ordem de pagamento disponível sem presumir crédito bancário quando a data de pagamento não foi confirmada.
+                    Pagamento informado pelo FNDE, ordem emitida e crédito bancário independentemente confirmado são tratados como evidências distintas.
                   </p>
                 </div>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
@@ -62,11 +62,22 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                   {formatMoney(overview.totalInformado)}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {overview.escolas.length} unidades · {overview.ordensIdentificadas} ordens identificadas
+                  {overview.escolas.length} unidades · {overview.pagamentosIdentificados} pagamentos informados
                 </p>
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-2">
+              <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div className="rounded-xl border border-primary/25 bg-primary/[0.045] p-3">
+                  <div className="flex items-center gap-2 text-primary">
+                    <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Pagamento informado</p>
+                  </div>
+                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.pagamentosIdentificados}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    {overview.ultimaDataPagamento ? `Mais recente em ${formatDate(overview.ultimaDataPagamento)}` : "Sem data específica"}
+                  </p>
+                </div>
+
                 <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.055] p-3">
                   <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
                     <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -74,24 +85,24 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                   </div>
                   <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.ordensIdentificadas}</p>
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {overview.ultimaDataOrdem ? `Mais recente em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data de ordem"}
+                    {overview.ultimaDataOrdem ? `Mais recente em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data separada de ordem"}
                   </p>
                 </div>
 
-                <div className={overview.pagamentosIdentificados > 0
+                <div className={overview.creditosBancariosConfirmados > 0
                   ? "rounded-xl border border-success/25 bg-success/[0.055] p-3"
                   : "rounded-xl border border-border/60 bg-muted/20 p-3"}
                 >
-                  <div className={overview.pagamentosIdentificados > 0
+                  <div className={overview.creditosBancariosConfirmados > 0
                     ? "flex items-center gap-2 text-success"
                     : "flex items-center gap-2 text-muted-foreground"}
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito confirmado</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito bancário</p>
                   </div>
-                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.pagamentosIdentificados}</p>
+                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.creditosBancariosConfirmados}</p>
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {overview.ultimaDataPagamento ? `Mais recente em ${formatDate(overview.ultimaDataPagamento)}` : "Nenhum até o momento"}
+                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Ainda sem confirmação independente"}
                   </p>
                 </div>
               </div>
@@ -173,11 +184,17 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                           </p>
                         </td>
                         <td className="px-3 py-3">
-                          <span className={school.dataPagamento
+                          <span className={school.status === "credito-confirmado"
                             ? "inline-flex rounded-md border border-success/25 bg-success/[0.06] px-2 py-1 text-[10px] font-semibold text-success"
-                            : "inline-flex rounded-md border border-amber-500/25 bg-amber-500/[0.06] px-2 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300"}
+                            : school.status === "ordem-emitida"
+                              ? "inline-flex rounded-md border border-amber-500/25 bg-amber-500/[0.06] px-2 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300"
+                              : "inline-flex rounded-md border border-primary/25 bg-primary/[0.06] px-2 py-1 text-[10px] font-semibold text-primary"}
                           >
-                            {school.dataPagamento ? "Crédito confirmado" : "Ordem emitida"}
+                            {school.status === "credito-confirmado"
+                              ? "Crédito bancário confirmado"
+                              : school.status === "ordem-emitida"
+                                ? "Ordem emitida"
+                                : "Pagamento informado"}
                           </span>
                         </td>
                         <td className="px-3 py-3 text-right text-sm tabular-nums text-muted-foreground">{formatMoney(school.custeio)}</td>

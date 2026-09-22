@@ -830,6 +830,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      get_financial_freshness_v1: {
+        Args: {
+          p_exercise: number
+        }
+        Returns: {
+          artifact_id: number
+          exercise: number
+          publication_result: string | null
+          source_published_at: string | null
+          storage_recorded_at: string
+          workflow_run_id: number
+        }[]
+      }
       list_admin_users: {
         Args: never
         Returns: {
