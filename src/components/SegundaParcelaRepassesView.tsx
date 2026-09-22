@@ -197,7 +197,7 @@ export function SegundaParcelaRepassesView() {
             <Link to="/repasses">1ª parcela paga</Link>
           </Button>
           <Button variant="secondary" size="sm" className="h-8" aria-current="page">
-            2º ciclo · ordens
+            2º ciclo · pagamentos
           </Button>
         </div>
 
