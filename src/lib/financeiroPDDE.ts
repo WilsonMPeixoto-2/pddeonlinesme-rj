@@ -630,3 +630,88 @@ export function isSchoolInBand(value: number, band: ValueBandOverview) {
   const belowMax = band.maxInclusive === null || value <= band.maxInclusive;
   return aboveMin && belowMax;
 }
+
+
+export type FinancialEventStage =
+  | "credito-confirmado"
+  | "pagamento-informado"
+  | "ordem-emitida";
+
+export interface FinancialRecentEvent {
+  id: string;
+  unidadeId: string;
+  designacao: string;
+  nome: string;
+  inep: string | null;
+  programa: string;
+  acao: string;
+  parcela: string;
+  valor: number | null;
+  dataEvento: string;
+  stage: FinancialEventStage;
+}
+
+export function buildRecentFinancialEvents(
+  repasses: RepasseFinanceiro[],
+  exercicio: number,
+): FinancialRecentEvent[] {
+  return repasses
+    .filter((repasse) => repasse.exercicio === exercicio)
+    .map((repasse): FinancialRecentEvent | null => {
+      if (repasse.credito_bancario_confirmado && repasse.data_credito_bancario) {
+        return {
+          id: `${repasse.id}:credito`,
+          unidadeId: repasse.unidade_id,
+          designacao: repasse.designacao ?? repasse.nome ?? "Unidade escolar",
+          nome: repasse.nome ?? repasse.designacao ?? "Unidade escolar",
+          inep: repasse.inep,
+          programa: repasse.programa,
+          acao: repasse.acao,
+          parcela: repasse.parcela,
+          valor: repasse.valor_pago,
+          dataEvento: repasse.data_credito_bancario,
+          stage: "credito-confirmado",
+        };
+      }
+
+      if (repasse.valor_pago !== null && repasse.data_pagamento) {
+        return {
+          id: `${repasse.id}:pagamento`,
+          unidadeId: repasse.unidade_id,
+          designacao: repasse.designacao ?? repasse.nome ?? "Unidade escolar",
+          nome: repasse.nome ?? repasse.designacao ?? "Unidade escolar",
+          inep: repasse.inep,
+          programa: repasse.programa,
+          acao: repasse.acao,
+          parcela: repasse.parcela,
+          valor: repasse.valor_pago,
+          dataEvento: repasse.data_pagamento,
+          stage: "pagamento-informado",
+        };
+      }
+
+      if (repasse.valor_pago !== null && repasse.data_ordem_pagamento) {
+        return {
+          id: `${repasse.id}:ordem`,
+          unidadeId: repasse.unidade_id,
+          designacao: repasse.designacao ?? repasse.nome ?? "Unidade escolar",
+          nome: repasse.nome ?? repasse.designacao ?? "Unidade escolar",
+          inep: repasse.inep,
+          programa: repasse.programa,
+          acao: repasse.acao,
+          parcela: repasse.parcela,
+          valor: repasse.valor_pago,
+          dataEvento: repasse.data_ordem_pagamento,
+          stage: "ordem-emitida",
+        };
+      }
+
+      return null;
+    })
+    .filter((event): event is FinancialRecentEvent => event !== null)
+    .sort((left, right) => (
+      right.dataEvento.localeCompare(left.dataEvento)
+      || left.designacao.localeCompare(right.designacao, "pt-BR")
+      || left.acao.localeCompare(right.acao, "pt-BR")
+    ));
+}
