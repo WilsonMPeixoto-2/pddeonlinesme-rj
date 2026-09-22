@@ -11,6 +11,11 @@ const overview: SegundaParcelaOverview = {
   totalInformado: 132630,
   custeioTotal: 81034,
   capitalTotal: 51596,
+  escolasEsperadas: 163,
+  coberturaPagamento: 1,
+  coberturaPagamentoCompleta: true,
+  escolasRegularesPagas: 111,
+  escolasPrimeiraInfanciaPagas: 52,
   ordensIdentificadas: 0,
   pagamentosIdentificados: 163,
   creditosBancariosConfirmados: 0,
@@ -25,6 +30,7 @@ const overview: SegundaParcelaOverview = {
       nome: "CM MANGUINHOS",
       inep: "33136947",
       acao: "Primeira Infância",
+      trilho: "primeira-infancia",
       valorInformado: 2775,
       custeio: 1110,
       capital: 1665,
@@ -49,7 +55,7 @@ describe("superfície do segundo ciclo", () => {
     expect(screen.getByText(/51\.596,00/)).toBeVisible();
     expect(screen.getByText("04.10.601 — CM MANGUINHOS")).toBeVisible();
     expect(screen.getAllByText(/Pagamento informado/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Ainda sem confirmação independente/i)).toBeVisible();
+    expect(screen.getByText(/Fonte bancária pública ainda sem cobertura suficiente/i)).toBeVisible();
     expect(screen.getByRole("link", { name: /Ver todas as 1/i })).toHaveAttribute("href", "/repasses?ciclo=2");
   });
 
