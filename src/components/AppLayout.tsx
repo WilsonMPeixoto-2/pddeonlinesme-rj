@@ -29,6 +29,7 @@ import { FinancialFreshnessBanner } from "@/components/FinancialFreshnessBanner"
 
 const tabs = [
   { to: "/dashboard", label: "Painel" },
+  { to: "/atualizacoes", label: "Atualizações" },
   { to: "/repasses", label: "Repasses" },
   { to: "/escolas", label: "Unidades Escolares" },
   { to: "/fiscal", label: "Frente Fiscal" },
