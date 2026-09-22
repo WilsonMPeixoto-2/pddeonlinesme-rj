@@ -310,14 +310,35 @@ export const financeiroUnidadeOptions = (unidadeId: string | undefined, exercici
   queryKey: queryKeys.financeiroUnidade(unidadeId, exercicio),
   enabled: Boolean(unidadeId && Number.isFinite(exercicio)),
   queryFn: async () => {
-    const [contasResult, repassesResult] = await Promise.all([
+    const [contasResult, repassesResult, unitResult, engineResult] = await Promise.all([
       supabase.from("contas_bancarias").select("id, unidade_id, programa, exercicio, banco, agencia, conta_corrente, principal").eq("unidade_id", unidadeId!).eq("exercicio", exercicio).order("programa").order("principal", { ascending: false }),
       supabase.from("vw_repasses_financeiros_unidade").select(REPASSE_COLUMNS).eq("unidade_id", unidadeId!).eq("exercicio", exercicio).order("ordem_exibicao", { ascending: true }),
+      supabase.from("vw_unidades_localizador").select("id, designacao, nome, inep").eq("id", unidadeId!).maybeSingle(),
+      exercicio === 2026
+        ? fetchLatestEngineFinancialSnapshot().catch(() => null)
+        : Promise.resolve(null),
     ]);
     if (contasResult.error) throw new Error(contasResult.error.message);
     if (repassesResult.error) throw new Error(repassesResult.error.message);
     const contas = (contasResult.data ?? []) as ContaFinanceira[];
-    const repasses = ((repassesResult.data ?? []) as Tables<"vw_repasses_financeiros_unidade">[]).map(toRepasseFinanceiro).filter((row): row is RepasseFinanceiro => row !== null);
+    const databaseRepasses = ((repassesResult.data ?? []) as Tables<"vw_repasses_financeiros_unidade">[])
+      .map(toRepasseFinanceiro)
+      .filter((row): row is RepasseFinanceiro => row !== null);
+
+    const unit = unitResult.data;
+    const repasses = engineResult && !unitResult.error && unit?.id && unit.designacao && unit.inep
+      ? mergeEngineSnapshotRepasses({
+          databaseRows: databaseRepasses,
+          units: [{
+            id: unit.id,
+            designacao: unit.designacao,
+            nome: unit.nome,
+            inep: unit.inep,
+          }],
+          snapshot: engineResult.snapshot,
+        }).filter((row) => row.unidade_id === unidadeId)
+      : databaseRepasses;
+
     return { contas, repasses, programas: groupFinanceiroByProgram(contas, repasses, exercicio) };
   },
   ...FINANCIAL_LIVE_QUERY_POLICY,
