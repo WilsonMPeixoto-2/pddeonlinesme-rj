@@ -74,6 +74,7 @@ export interface SegundaParcelaOverview {
   ordensSemCredito: number;
   ultimaDataOrdem: string | null;
   ultimaDataPagamento: string | null;
+  ultimaDataCreditoBancario: string | null;
 }
 
 export interface ActionOverview {
@@ -410,6 +411,10 @@ export function buildSegundaParcelaOverview(
     .map((row) => row.dataPagamento)
     .filter((data): data is string => Boolean(data))
     .sort((a, b) => b.localeCompare(a));
+  const datasCreditoBancario = escolas
+    .map((row) => row.dataCreditoBancario)
+    .filter((data): data is string => Boolean(data))
+    .sort((a, b) => b.localeCompare(a));
 
   return {
     exercicio,
@@ -423,6 +428,7 @@ export function buildSegundaParcelaOverview(
     ordensSemCredito: escolas.filter((row) => row.dataOrdem !== null && row.dataCreditoBancario === null).length,
     ultimaDataOrdem: datasOrdem[0] ?? null,
     ultimaDataPagamento: datasPagamento[0] ?? null,
+    ultimaDataCreditoBancario: datasCreditoBancario[0] ?? null,
   };
 }
 
