@@ -166,6 +166,38 @@ describe("buildNormalizedPublicationPayload", () => {
     ]));
   });
 
+  it("classifica conta de ação isolada no mesmo programa do repasse", () => {
+    const realShape = JSON.parse(JSON.stringify(snapshot));
+    const installment = realShape.schools["33069093"].programs[1].installments[0];
+    installment.account = { bank: "001", agency: "0249", number: "0000546032" };
+    realShape.schools["33069093"].programs = [
+      { name: "Escola das Adolescências", installments: [installment] },
+    ];
+    realShape.schools["33069093"].accounts = [
+      {
+        program: "Escola das Adolescências",
+        bank: "001",
+        agency: "0249",
+        account: "0000546032",
+        positions: [],
+        latestPosition: null,
+        movements: [],
+        note: null,
+      },
+    ];
+
+    const payload = buildNormalizedPublicationPayload(realShape, manifest) as NormalizedPayload;
+    expect(payload.accounts).toHaveLength(1);
+    expect(payload.accounts[0]).toMatchObject({
+      program: "PDDE QUALIDADE",
+      account: "0000546032",
+    });
+    expect(payload.repasses[0]).toMatchObject({
+      program: "PDDE QUALIDADE",
+      action: "Escola das Adolescências",
+    });
+  });
+
   it("converte centavos para reais e mantém pagamento não informado como null", () => {
     const payload = buildNormalizedPublicationPayload(snapshot, manifest) as NormalizedPayload;
     const first = payload.repasses[0];

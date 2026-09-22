@@ -16,9 +16,11 @@ function centsToReais(value) {
 }
 
 function canonicalAccountProgram(program) {
-  const text = normalizedText(program);
-  if (text.includes("EQUIDADE")) return "PDDE EQUIDADE";
-  if (text.includes("QUALIDADE")) return "PDDE QUALIDADE";
+  const raw = String(program ?? "").trim();
+  const text = normalizedText(raw);
+  const standaloneAction = normalizedText(stripExercise(raw));
+  if (text.includes("EQUIDADE") || standaloneAction === "PDDE SRM") return "PDDE EQUIDADE";
+  if (text.includes("QUALIDADE") || STANDALONE_QUALITY_ACTIONS.has(standaloneAction)) return "PDDE QUALIDADE";
   return "PDDE BÁSICO";
 }
 
