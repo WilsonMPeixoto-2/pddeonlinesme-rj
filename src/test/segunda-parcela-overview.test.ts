@@ -43,7 +43,11 @@ describe("buildSegundaParcelaOverview", () => {
     expect(overview.capitalTotal).toBe(100);
     expect(overview.escolas).toHaveLength(2);
     expect(overview.ordensIdentificadas).toBe(2);
-    expect(overview.pagamentosIdentificados).toBe(2);
+    expect(overview.pagamentosIdentificados).toBe(0);
+    expect(overview.escolasEsperadas).toBe(163);
+    expect(overview.coberturaPagamento).toBe(0);
+    expect(overview.coberturaPagamentoCompleta).toBe(false);
+    expect(overview.escolasPrimeiraInfanciaPagas).toBe(0);
     expect(overview.creditosBancariosConfirmados).toBe(0);
     expect(overview.ordensSemCredito).toBe(2);
     expect(overview.ultimaDataOrdem).toBe("2026-09-14");
@@ -68,13 +72,46 @@ describe("buildSegundaParcelaOverview", () => {
       }),
     ], 2026);
 
-    expect(overview.pagamentosIdentificados).toBe(2);
+    expect(overview.pagamentosIdentificados).toBe(1);
     expect(overview.creditosBancariosConfirmados).toBe(1);
+    expect(overview.escolasPrimeiraInfanciaPagas).toBe(1);
     expect(overview.ordensSemCredito).toBe(1);
     expect(overview.ultimaDataPagamento).toBe("2026-09-18");
     expect(overview.ultimaDataCreditoBancario).toBe("2026-09-18");
     expect(overview.escolas.find((row) => row.unidadeId === "u1")?.status).toBe("ordem-emitida");
     expect(overview.escolas.find((row) => row.unidadeId === "u2")?.status).toBe("credito-confirmado");
+  });
+
+  it("mede cobertura oficial por trilho sem confundir ordem com pagamento", () => {
+    const regular = base({
+      id: "regular",
+      unidade_id: "u1",
+      acao: "PDDE Básico",
+      parcela: "2ª Parcela",
+      data_pagamento: "2026-09-17",
+      data_ordem_pagamento: "2026-09-16",
+    });
+    const infancy = base({
+      id: "infancy",
+      unidade_id: "u2",
+      data_pagamento: "2026-09-15",
+      data_ordem_pagamento: "2026-09-14",
+    });
+    const orderOnly = base({
+      id: "order",
+      unidade_id: "u3",
+      data_pagamento: null,
+      data_ordem_pagamento: "2026-09-16",
+    });
+
+    const overview = buildSegundaParcelaOverview([regular, infancy, orderOnly], 2026);
+
+    expect(overview.pagamentosIdentificados).toBe(2);
+    expect(overview.escolasRegularesPagas).toBe(1);
+    expect(overview.escolasPrimeiraInfanciaPagas).toBe(1);
+    expect(overview.coberturaPagamento).toBeCloseTo(2 / 163);
+    expect(overview.coberturaPagamentoCompleta).toBe(false);
+    expect(overview.escolas.find((row) => row.unidadeId === "u3")?.status).toBe("ordem-emitida");
   });
 
   it("preserva composição ausente como ausência", () => {
