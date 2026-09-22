@@ -32,6 +32,7 @@ import {
   type ImportResult,
 } from "@/lib/baseImporter";
 import { BulkUpdatePanel } from "@/components/BulkUpdatePanel";
+import { FinancialExternalEvidenceComparator } from "@/components/FinancialExternalEvidenceComparator";
 
 /* ─── Tipos ─── */
 
@@ -238,6 +239,8 @@ export default function Base() {
         ) : (
           <ImportResultsPanel state="idle" />
         )}
+
+        <FinancialExternalEvidenceComparator />
 
         {/* Marco 10B v2 — Atualização Parcial Assistida da BASE */}
         <BulkUpdatePanel />
