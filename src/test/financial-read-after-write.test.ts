@@ -20,8 +20,8 @@ function payload() {
       action: "PDDE Básico",
       installment: "2ª Parcela",
       paid: 100,
-      paymentDate: null,
-      paymentOrderDate: "2026-09-17",
+      paymentDate: "2026-09-17",
+      paymentOrderDate: null,
     })),
   };
 }
@@ -33,8 +33,8 @@ function viewRows(count = 163) {
     acao: "PDDE Básico",
     parcela: "2ª Parcela",
     valor_pago: 100,
-    data_pagamento: null,
-    data_ordem_pagamento: "2026-09-17",
+    data_pagamento: "2026-09-17",
+    data_ordem_pagamento: null,
   }));
 }
 
