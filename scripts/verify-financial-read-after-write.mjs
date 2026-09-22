@@ -1,5 +1,5 @@
-import { pathToFileURL } from "node:url";
 #!/usr/bin/env node
+import { pathToFileURL } from "node:url";
 import {
   fetchLatestPublishedSnapshot,
   prepareFinancialPublicationPayload,
