@@ -42,6 +42,21 @@ A interface operacional consome apenas dados promovidos. Evidências, hashes, wo
 
 Uma dimensão pode estar `MATURE` e ainda `UNPUBLISHED`.
 
+## Matriz de fontes oficiais — setembro/2026
+
+A consolidação financeira não trata uma única plataforma como fonte universal. Cada fato deve conservar a proveniência adequada:
+
+| Fato | Fonte primária | Fonte complementar | Regra |
+|---|---|---|---|
+| programação, destinação, custeio/capital e ordem de pagamento | PDDE Info — Situação de Atendimento / exportação oficial | Consulta por Escola | o arquivo estruturado oficial é preferido ao HTML |
+| identidade da escola e UEx, cadastro e situação institucional | PDDE Info | cadastro mestre SME | divergência de identidade bloqueia promoção |
+| pagamento informado pelo FNDE | PDDE Info + evidência temporal de Liberações quando disponível | SIGEF Liberações | pagamento oficial não depende de extrato bancário atualizado |
+| OB, data de liberação e conta de destino | SIGEF Liberações | PDDE Info | é evidência independente de liberação, não de crédito bancário |
+| conta, posição de saldo e situação de abertura | PDDE Info — Saldo/Abertura de Conta + SIGEF | snapshot anterior validado | ausência de posição atual não vira saldo zero |
+| crédito efetivamente localizado e movimentos | extrato/movimentação SIGEF | outras fontes bancárias oficiais permitidas | somente movimento compatível confirma crédito bancário |
+
+Desde a versão pública **PDDE Info 18.09.2026#83f77b**, o motor deve preferir a exportação oficial estruturada de Situação de Atendimento, aceitar o layout GOV.BR em cards como fallback e manter compatibilidade controlada com o HTML legado. Mudança de versão ou de contrato de fonte deve ser tratada como evento de integração e revalidada contra a carteira real de 163 unidades.
+
 ## Dimensões iniciais da V1
 
 O ciclo inicial formaliza somente fatos que o PDDE Online já utiliza em produção:
