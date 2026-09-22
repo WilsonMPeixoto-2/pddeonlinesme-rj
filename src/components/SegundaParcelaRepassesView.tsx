@@ -50,8 +50,8 @@ function escapeCsv(value: string | number | null) {
 
 function statusLabel(status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado") {
   if (status === "credito-confirmado") return "Crédito bancário confirmado";
-  if (status === "ordem-emitida") return "Ordem emitida";
-  return "Pagamento informado";
+  if (status === "ordem-emitida") return "Ordem de pagamento emitida";
+  return "Pagamento informado pelo FNDE";
 }
 
 function statusClasses(status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado") {
@@ -178,7 +178,7 @@ export function SegundaParcelaRepassesView() {
               2º ciclo · PDDE Básico
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              Valor informado, ordem emitida e crédito bancário confirmado são exibidos como estágios distintos do mesmo ciclo.
+              Pagamento informado pelo FNDE, ordem de pagamento e crédito localizado na fonte bancária são evidências distintas e permanecem separadas.
             </p>
           </div>
           <Button
@@ -225,24 +225,31 @@ export function SegundaParcelaRepassesView() {
             <Card className="overflow-hidden shadow-sm">
               <CardContent className="grid p-0 md:grid-cols-4">
                 <div className="p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Valor informado</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2º ciclo informado</p>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{formatMoney(overview.totalInformado)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{overview.escolas.length} unidades no recorte</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {overview.escolasRegularesPagas} 2ª parcela regular · {overview.escolasPrimeiraInfanciaPagas} Primeira Infância/P2
+                  </p>
                 </div>
                 <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
                   <div className="flex items-center gap-2 text-primary">
                     <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Pagamento informado</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Pagamento oficial FNDE</p>
                   </div>
-                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.pagamentosIdentificados}</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+                    {overview.pagamentosIdentificados} de {overview.escolasEsperadas}
+                  </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataPagamento ? `Data mais recente ${formatDate(overview.ultimaDataPagamento)}` : "Valor informado sem data específica"}
+                    {overview.coberturaPagamentoCompleta
+                      ? "Cobertura completa da carteira da 4ª CRE"
+                      : `${(overview.coberturaPagamento * 100).toFixed(1)}% da carteira esperada`}
+                    {overview.ultimaDataPagamento ? ` · mais recente em ${formatDate(overview.ultimaDataPagamento)}` : ""}
                   </p>
                 </div>
                 <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
                   <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
                     <Clock3 className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Ordens emitidas</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Ordens de pagamento</p>
                   </div>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.ordensIdentificadas}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -252,11 +259,11 @@ export function SegundaParcelaRepassesView() {
                 <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
                   <div className={overview.creditosBancariosConfirmados > 0 ? "flex items-center gap-2 text-success" : "flex items-center gap-2 text-muted-foreground"}>
                     <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito bancário confirmado</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito localizado no extrato</p>
                   </div>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.creditosBancariosConfirmados}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Evidência bancária independente ainda não localizada"}
+                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "A fonte bancária pública ainda não localizou o crédito"}
                   </p>
                 </div>
               </CardContent>
@@ -387,7 +394,7 @@ export function SegundaParcelaRepassesView() {
                               {school.dataPagamento ? (
                                 <div className="flex items-center gap-1.5 whitespace-nowrap text-sm tabular-nums text-muted-foreground">
                                   <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-                                  Pagamento informado: {formatDate(school.dataPagamento)}
+                                  FNDE informa pagamento: {formatDate(school.dataPagamento)}
                                 </div>
                               ) : null}
                               {school.dataOrdem ? (
