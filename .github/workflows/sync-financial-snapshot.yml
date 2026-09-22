@@ -64,3 +64,6 @@ jobs:
 
       - name: Publish mature dimensions
         run: npm run sync:financial:snapshot
+
+      - name: Verify operational view after write
+        run: node scripts/verify-financial-read-after-write.mjs
