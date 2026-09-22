@@ -96,8 +96,10 @@ describe("reconciliação do snapshot financeiro corrente", () => {
       valor_pago: 100,
       custeio_pago: 40,
       capital_pago: 60,
-      data_ordem_pagamento: "2026-09-17",
-      data_pagamento: null,
+      data_ordem_pagamento: null,
+      data_pagamento: "2026-09-17",
+      credito_bancario_confirmado: false,
+      data_credito_bancario: null,
     });
   });
 });
