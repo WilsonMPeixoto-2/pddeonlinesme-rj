@@ -154,30 +154,32 @@ export async function parseExternalFinancialEvidence(file: File): Promise<Extern
 
         if (columns.regularAmount) {
           const amount = moneyValue(row.getCell(columns.regularAmount).value);
-          if (amount !== null) {
+          const evidenceDate = columns.regularDate
+            ? isoDate(row.getCell(columns.regularDate).value)
+            : null;
+          if (amount !== null && (amount > 0 || evidenceDate !== null)) {
             evidence.push({
               rowNumber,
               inep,
               track: "REGULAR",
               amount,
-              evidenceDate: columns.regularDate
-                ? isoDate(row.getCell(columns.regularDate).value)
-                : null,
+              evidenceDate,
             });
           }
         }
 
         if (columns.infancyAmount) {
           const amount = moneyValue(row.getCell(columns.infancyAmount).value);
-          if (amount !== null) {
+          const evidenceDate = columns.infancyDate
+            ? isoDate(row.getCell(columns.infancyDate).value)
+            : null;
+          if (amount !== null && (amount > 0 || evidenceDate !== null)) {
             evidence.push({
               rowNumber,
               inep,
               track: "PRIMEIRA_INFANCIA",
               amount,
-              evidenceDate: columns.infancyDate
-                ? isoDate(row.getCell(columns.infancyDate).value)
-                : null,
+              evidenceDate,
             });
           }
         }
