@@ -82,6 +82,7 @@ DECLARE
   v_second_payment_total numeric;
   v_second_date_min date;
   v_second_date_max date;
+  v_second_quality_status text;
 BEGIN
   IF jsonb_typeof(p_payload) IS DISTINCT FROM 'object' THEN
     RAISE EXCEPTION 'payload financeiro deve ser um objeto JSON'
@@ -128,12 +129,6 @@ BEGIN
     AND r.paid IS NOT NULL
     AND r.paid >= 0;
 
-  IF v_exercise = 2026 AND v_second_payment_coverage <> 163 THEN
-    RAISE EXCEPTION 'dimensao pdde_basic_second_installment_payment_informed imatura: %/163',
-      v_second_payment_coverage
-      USING ERRCODE = '22023';
-  END IF;
-
   v_publication := public.publish_financial_snapshot_v1(p_payload);
   v_run_id := NULLIF(v_publication->>'integrationRunId', '')::uuid;
 
@@ -143,6 +138,10 @@ BEGIN
   END IF;
 
   v_order_evidence := public.sync_financial_order_evidence_v1(p_payload);
+  v_second_quality_status := CASE
+    WHEN v_second_payment_coverage >= 163 THEN 'MATURE'
+    ELSE 'VALIDATED'
+  END;
 
   UPDATE public.financial_dimension_status
      SET publication_status = 'WITHDRAWN',
@@ -177,7 +176,7 @@ BEGIN
     least(v_second_payment_coverage::numeric / 163::numeric, 1),
     v_second_date_min,
     v_second_date_max,
-    'MATURE',
+    v_second_quality_status,
     'PUBLISHED',
     v_digest,
     now(),
@@ -204,6 +203,7 @@ BEGIN
       'coverageObserved', v_second_payment_coverage,
       'coverageExpected', 163,
       'totalInformed', v_second_payment_total,
+      'qualityStatus', v_second_quality_status,
       'referenceDateMin', v_second_date_min,
       'referenceDateMax', v_second_date_max
     )
