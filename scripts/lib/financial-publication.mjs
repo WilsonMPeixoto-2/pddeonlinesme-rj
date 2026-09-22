@@ -140,8 +140,12 @@ function markOnePrincipal(accounts) {
 
 function normalizeRepasse(installment, programName, school, exercise, index) {
   const { program, action } = classifyProgram(programName);
-  const paymentDate = installment?.paymentInformedDate ?? null;
   const paid = informedPayment(installment);
+  const paymentOrderDate = installment?.paymentOrderDate ?? installment?.paymentInformedDate ?? null;
+  const creditStatus = normalizedText(installment?.creditEvidence?.status);
+  const paymentDate = creditStatus === "CREDITO LOCALIZADO"
+    ? installment?.creditEvidence?.date ?? null
+    : null;
   const breakdown = installment?.breakdown ?? null;
   const account = installment?.account
     ? {
@@ -165,7 +169,7 @@ function normalizeRepasse(installment, programName, school, exercise, index) {
     paidCusteio: paid === null ? null : centsToReais(breakdown?.paidCusteioCents),
     paidCapital: paid === null ? null : centsToReais(breakdown?.paidCapitalCents),
     paymentDate,
-    paymentOrderDate: installment?.paymentOrderDate ?? null,
+    paymentOrderDate,
     account,
   };
 }
@@ -206,7 +210,10 @@ function uniqueCoverage(rows, predicate = () => true) {
 }
 
 function dateBounds(rows) {
-  const dates = rows.map((row) => row.paymentOrderDate).filter(Boolean).sort();
+  const dates = rows
+    .map((row) => row.paymentOrderDate ?? row.paymentDate)
+    .filter(Boolean)
+    .sort();
   return { referenceDateMin: dates[0] ?? null, referenceDateMax: dates.at(-1) ?? null };
 }
 
@@ -251,8 +258,7 @@ export function evaluatePublicationDimensions(payload) {
     typeof row.paid === "number" &&
     Number.isFinite(row.paid) &&
     row.paid >= 0 &&
-    typeof row.paymentOrderDate === "string" &&
-    row.paymentOrderDate.length > 0,
+    Boolean(row.paymentOrderDate || row.paymentDate),
   );
   const firstCoverage = uniqueCoverage(validFirstRows);
 
@@ -282,6 +288,12 @@ export function evaluatePublicationDimensions(payload) {
   const secondCoverage = uniqueCoverage(secondRows, (row) =>
     typeof row.programmed === "number" && Number.isFinite(row.programmed) && row.programmed >= 0,
   );
+  const validSecondPaymentRows = secondRows.filter((row) =>
+    typeof row.paid === "number"
+    && Number.isFinite(row.paid)
+    && row.paid >= 0,
+  );
+  const secondPaymentCoverage = uniqueCoverage(validSecondPaymentRows);
 
   const invalidMoney = repasses.some((row) =>
     (row.programmed !== null && row.programmed !== undefined && (!Number.isFinite(row.programmed) || row.programmed < 0)) ||
@@ -302,6 +314,10 @@ export function evaluatePublicationDimensions(payload) {
     }),
     dimensionStatus("pdde_basic_second_installment_programmed", secondCoverage, {
       rejected: globalRejected || invalidFinancialRows,
+    }),
+    dimensionStatus("pdde_basic_second_installment_payment_informed", secondPaymentCoverage, {
+      rejected: globalRejected || invalidFinancialRows,
+      dates: validSecondPaymentRows,
     }),
   ];
 }
