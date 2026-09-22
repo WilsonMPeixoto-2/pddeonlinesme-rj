@@ -301,3 +301,28 @@ A busca por escola pode usar designação, nome, diretor, INEP e CNPJ, sem carre
 **Decisão:** Codex, Claude Code, Copilot, Cursor, Antigravity ou outras ferramentas podem liderar conforme capacidade e escopo.
 
 **Restrição:** revisão humana permanece obrigatória em segurança, Auth/RLS, secrets, regras financeiras, templates oficiais e decisões arquiteturais.
+
+
+---
+
+## 2026-09-21 — Snapshot validado é a referência corrente e persistência não pode ocultar fato financeiro novo
+
+**Contexto:** a coleta integral validada do motor passou a informar o 2º ciclo para as 163 unidades da 4ª CRE, totalizando R$ 765.215,00, enquanto a superfície operacional podia continuar exibindo retrato anterior por atraso ou falha na persistência do Supabase. A divergência demonstrou que “coletar”, “persistir” e “mostrar” são etapas diferentes e que sucesso técnico intermediário não equivale a informação tempestiva para o fiscal.
+
+**Decisão:** para o exercício de 2026, o último snapshot validado e publicado pelo `pdde-repasse-conciliador` é a referência corrente de monitoramento. O Supabase permanece a camada relacional, histórica e auditável, mas atraso de persistência não pode impedir a visualização de um fato financeiro já validado.
+
+A cadeia operacional obrigatória passa a ser:
+
+`coleta → validação → snapshot → persistência → view operacional → interface`.
+
+A publicação só é considerada concluída quando há **read-after-write** da mesma view usada pelo frontend e a proveniência, a cobertura, os valores e as datas coincidem semanticamente com o snapshot.
+
+**Tempestividade:** o motor mantém coleta integral diária; o frontend revalida os dados financeiros periodicamente e ao recuperar foco. A meta para convergência da persistência é de até **15 minutos** depois da publicação do snapshot. Atraso acima desse limite é incidente de frescor visível.
+
+**Semântica obrigatória:** `pagamento informado`, `ordem de pagamento` e `crédito bancário confirmado` são evidências distintas. Uma não pode ser promovida artificialmente à outra. Falha de atualização, fonte indisponível ou persistência atrasada nunca podem ser exibidas como zero.
+
+**Maturidade:** fica criada a dimensão `pdde_basic_second_installment_payment_informed`, separada da dimensão de 2ª parcela programada e de futura maturidade para confirmação bancária independente.
+
+**Consequência:** novos fatos financeiros validados devem aparecer no layout mesmo durante atraso de persistência; quando motor e Supabase divergirem, a interface sinaliza o estado de frescor em vez de ocultar o delta.
+
+**Referência:** incidente do 2º ciclo de 21/09/2026 e contrato de publicação financeira por dimensão.
