@@ -84,10 +84,6 @@ function isoDate(value: unknown): string | null {
   return null;
 }
 
-function isHeader(value: string, expected: string[]): boolean {
-  return expected.includes(normalized(value));
-}
-
 const HEADERS = {
   inep: ["CODIGO INEP", "INEP"],
   regularAmount: ["RECEBIDO 2 PARCELA", "RECEBIDO SEGUNDA PARCELA"],
