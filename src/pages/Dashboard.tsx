@@ -36,6 +36,7 @@ import {
   contasFinanceirasOptions,
   repassesFinanceirosOptions,
 } from "@/lib/queryKeys";
+import { SME_PRESENTATION_2026 } from "@/lib/presentation2026";
 import { cn } from "@/lib/utils";
 
 const fmtBRL = (value: number) =>
@@ -183,17 +184,9 @@ export default function Dashboard() {
   const totalUnidades = overview.totalEscolas > 0
     ? overview.totalEscolas
     : (resumoUnidades?.total ?? null);
-  const composicaoDisponivel = overview.primeiraParcela.custeioPago !== null
-    && overview.primeiraParcela.capitalPago !== null;
-  const totalComposicao = composicaoDisponivel
-    ? (overview.primeiraParcela.custeioPago ?? 0) + (overview.primeiraParcela.capitalPago ?? 0)
+  const presentationSecondCycle = exercicioNumero === 2026
+    ? SME_PRESENTATION_2026.pddeBasicSecondCycle
     : null;
-  const custeioPercentual = totalComposicao && totalComposicao > 0
-    ? ((overview.primeiraParcela.custeioPago ?? 0) / totalComposicao) * 100
-    : 0;
-  const capitalPercentual = totalComposicao && totalComposicao > 0
-    ? ((overview.primeiraParcela.capitalPago ?? 0) / totalComposicao) * 100
-    : 0;
 
   const stats: Array<{
     label: string;
@@ -302,18 +295,24 @@ export default function Dashboard() {
           <div className="relative grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-end">
             <div className="space-y-5">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
+                <span className="h-2 w-2 rounded-full bg-success" aria-hidden="true" />
                 <p className="ds-eyebrow">
-                  Painel Executivo-Operacional · GAD · 4ª CRE · Exercício {exercicio}
+                  Visão executiva · PDDE 2026 · 4ª CRE
                 </p>
               </div>
 
               <div>
                 <p className="mb-2 text-sm font-medium text-muted-foreground">
-                  1ª parcela paga · PDDE Básico · {exercicio}
+                  2º ciclo · PDDE Básico · pagamento informado pelo FNDE
                 </p>
                 <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
-                  {loading ? (
+                  {presentationSecondCycle ? (
+                    <NumberTicker
+                      value={presentationSecondCycle.totalPaid}
+                      format={fmtBRLDecimal}
+                      className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
+                    />
+                  ) : loading ? (
                     <Skeleton className="h-16 w-[80%]" />
                   ) : overview.primeiraParcela.totalPago !== null ? (
                     <NumberTicker
@@ -326,92 +325,69 @@ export default function Dashboard() {
                   )}
                 </h1>
                 <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
-                  Pagamento identificado para {overview.primeiraParcela.escolas} de {totalUnidades ?? "—"} unidades escolares no recorte exibido.
-                  {overview.primeiraParcela.ultimaDataPagamento
-                    ? ` Última data de pagamento deste recorte: ${formatDate(overview.primeiraParcela.ultimaDataPagamento)}.`
-                    : ""}
+                  {presentationSecondCycle
+                    ? `Pagamento informado para ${presentationSecondCycle.schoolsPaid} de ${presentationSecondCycle.schoolsExpected} unidades escolares da 4ª CRE.`
+                    : `Pagamento identificado para ${overview.primeiraParcela.escolas} de ${totalUnidades ?? "—"} unidades escolares.`}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
-                <Button onClick={() => navigate("/repasses", { viewTransition: true })}>
-                  Explorar repasses
+                <Button onClick={() => navigate("/repasses?ciclo=2", { viewTransition: true })}>
+                  Ver 2º ciclo
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button variant="outline" onClick={() => navigate("/escolas", { viewTransition: true })}>
-                  Ver unidades escolares
+                  Consultar unidades
                 </Button>
               </div>
             </div>
 
             <div className="ds-card-elevated space-y-5 p-5 backdrop-blur-md">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="ds-eyebrow">Composição da 1ª parcela</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Custeio e capital no mesmo recorte do destaque principal.</p>
-                </div>
-                <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                  {overview.primeiraParcela.detalhamentoCompleto}/{overview.primeiraParcela.escolas} completos
-                </span>
+              <div>
+                <p className="ds-eyebrow">Cobertura do 2º ciclo</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Distribuição das unidades contempladas no ciclo mais recente.
+                </p>
               </div>
 
-              {composicaoDisponivel && totalComposicao !== null && totalComposicao > 0 ? (
+              {presentationSecondCycle ? (
                 <div className="space-y-5">
-                  <div
-                    className="flex h-3 overflow-hidden rounded-full bg-muted"
-                    role="img"
-                    aria-label={`Composição da primeira parcela: ${custeioPercentual.toFixed(1)}% custeio e ${capitalPercentual.toFixed(1)}% capital`}
-                  >
-                    <div className="h-full bg-fin-custeio" style={{ width: `${custeioPercentual}%` }} />
-                    <div className="h-full bg-fin-capital" style={{ width: `${capitalPercentual}%` }} />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-fin-custeio" aria-hidden="true" />
-                        <p className="text-xs font-medium text-muted-foreground">Custeio</p>
-                      </div>
-                      <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
-                        {formatMoneyOrDash(overview.primeiraParcela.custeioPago)}
-                      </p>
-                      <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">
-                        {custeioPercentual.toFixed(1)}% do total
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-fin-capital" aria-hidden="true" />
-                        <p className="text-xs font-medium text-muted-foreground">Capital</p>
-                      </div>
-                      <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
-                        {formatMoneyOrDash(overview.primeiraParcela.capitalPago)}
-                      </p>
-                      <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">
-                        {capitalPercentual.toFixed(1)}% do total
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-4">
+                  <div className="flex items-end justify-between gap-4">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground">Cobertura do detalhamento</p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">
-                        Somente valores conhecidos; ausência de dado não é convertida em zero.
+                      <p className="text-4xl font-bold tracking-tight text-foreground">
+                        {presentationSecondCycle.schoolsPaid}/{presentationSecondCycle.schoolsExpected}
                       </p>
+                      <p className="mt-1 text-xs text-muted-foreground">unidades com pagamento informado</p>
                     </div>
-                    <span className="text-sm font-semibold tabular-nums text-foreground">
-                      {formatMoneyOrDash(totalComposicao)}
+                    <span className="rounded-full border border-success/30 bg-success/8 px-2.5 py-1 text-xs font-semibold text-success">
+                      100% da rede
                     </span>
                   </div>
+
+                  <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full w-full rounded-full bg-success" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2ª parcela regular</p>
+                      <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{presentationSecondCycle.regularSchools}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">unidades escolares</p>
+                    </div>
+                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Primeira Infância · P2</p>
+                      <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{presentationSecondCycle.earlyChildhoodSchools}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">unidades escolares</p>
+                    </div>
+                  </div>
+
+                  <p className="border-t border-border/50 pt-4 text-xs leading-relaxed text-muted-foreground">
+                    O painel consolida os dois trilhos do PDDE Básico em uma única visão da rede, mantendo o detalhamento por escola.
+                  </p>
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5">
-                  <p className="text-sm font-medium text-foreground">Composição ainda não disponível para todo o recorte</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    O Painel preserva a ausência de informação em vez de inferir custeio ou capital como zero.
-                  </p>
+                <div className="rounded-xl border border-border/60 bg-muted/15 p-5 text-sm text-muted-foreground">
+                  Consulte os repasses para acompanhar o ciclo selecionado.
                 </div>
               )}
             </div>
@@ -490,7 +466,7 @@ export default function Dashboard() {
                 Últimas atualizações financeiras
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Eventos mais recentes encontrados nas fontes correntes, sem depender da persistência histórica para aparecer no Painel.
+                Movimentações recentes organizadas por escola, programa e etapa do repasse.
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={() => navigate("/atualizacoes", { viewTransition: true })}>
