@@ -20,12 +20,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
-  MoreVertical, FileText, Eye, Trash2, ArrowUpRight, AlertCircle,
+  MoreVertical, FileText, Eye, ArrowUpRight, AlertCircle,
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -95,11 +94,9 @@ const statusConfig = {
 function SecondaryActions({
   onEdit,
   onView,
-  onDelete,
 }: {
   onEdit: () => void;
   onView: () => void;
-  onDelete: () => void;
 }) {
   return (
     <DropdownMenu>
@@ -115,23 +112,15 @@ function SecondaryActions({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-[200px] bg-popover/95 backdrop-blur-md border-border/60"
+        className="w-[190px] bg-popover/95 backdrop-blur-md border-border/60"
       >
-        <DropdownMenuItem onClick={onEdit} className="gap-2.5 cursor-pointer">
-          <Pencil className="h-3.5 w-3.5 text-primary" />
-          <span className="text-sm">Editar cadastro</span>
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={onView} className="gap-2.5 cursor-pointer">
           <Eye className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-sm">Ver detalhes</span>
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-border/50" />
-        <DropdownMenuItem
-          onClick={onDelete}
-          className="gap-2.5 cursor-pointer text-destructive focus:text-destructive"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          <span className="text-sm">Remover</span>
+        <DropdownMenuItem onClick={onEdit} className="gap-2.5 cursor-pointer">
+          <Pencil className="h-3.5 w-3.5 text-primary" />
+          <span className="text-sm">Editar cadastro</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -554,7 +543,7 @@ export default function Escolas() {
                         variant="inline"
                         icon={AlertCircle}
                         title="Erro ao carregar unidades escolares"
-                        description="Não foi possível consultar os dados do Supabase. Verifique sua sessão, conexão ou permissões."
+                        description="Não foi possível carregar as unidades escolares neste momento."
                         action={
                           <Button
                             variant="outline"
@@ -582,7 +571,7 @@ export default function Escolas() {
                         description={
                           isSearching
                             ? "Verifique o termo digitado ou altere os filtros."
-                            : "Importe a BASE ou cadastre uma unidade para começar."
+                            : "Nenhuma unidade está disponível para o exercício selecionado."
                         }
                         action={
                           isSearching ? (
@@ -666,9 +655,6 @@ export default function Escolas() {
                             <SecondaryActions
                               onEdit={() => navigate(schoolDetailPath(e.id), { viewTransition: true })}
                               onView={() => navigate(schoolDetailPath(e.id), { viewTransition: true })}
-                              onDelete={() => {
-                                toast.info(`Em breve: remover ${e.designacao}`);
-                              }}
                             />
                           </TableCell>
                         </TableRow>
@@ -682,15 +668,11 @@ export default function Escolas() {
         </Card>
 
         {/* Footer */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center text-xs text-muted-foreground">
           <span>
             Exibindo <span className="font-medium text-foreground tabular-nums">{lista.length}</span>{" "}
-            de <span className="font-medium text-foreground tabular-nums">{unidades.length}</span>
+            de <span className="font-medium text-foreground tabular-nums">{unidades.length}</span> unidades
           </span>
-          <Badge variant="outline" className="border-success/40 bg-success/5 text-success">
-            <span className="pulse-dot-success mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-success" />
-            Conectado · Supabase
-          </Badge>
         </div>
       </div>
 
