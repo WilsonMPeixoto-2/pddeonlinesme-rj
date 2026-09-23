@@ -45,8 +45,8 @@ function buildPayload(count = 163) {
       paid: 5000,
       paidCusteio: 1000,
       paidCapital: 4000,
-      paymentDate: null,
-      paymentOrderDate: "2026-08-05",
+      paymentDate: "2026-08-05",
+      paymentOrderDate: "2026-08-04",
     },
     {
       inep: school.inep,
@@ -57,8 +57,8 @@ function buildPayload(count = 163) {
       paid: 5000,
       paidCusteio: 1000,
       paidCapital: 4000,
-      paymentDate: null,
-      paymentOrderDate: "2026-09-17",
+      paymentDate: "2026-09-17",
+      paymentOrderDate: "2026-09-16",
     },
   ]);
 
@@ -105,6 +105,24 @@ describe("evaluatePublicationDimensions", () => {
     expect(byKey(statuses, "pdde_basic_first_installment").referenceDateMax).toBe("2026-08-05");
     expect(byKey(statuses, "pdde_basic_second_installment_payment_informed").referenceDateMin).toBe("2026-09-17");
     expect(byKey(statuses, "pdde_basic_second_installment_payment_informed").referenceDateMax).toBe("2026-09-17");
+  });
+
+  it("não promove ordem de pagamento como pagamento informado", () => {
+    const payload = buildPayload();
+    const second = payload.repasses.find(
+      (row) => row.inep === payload.schools[162].inep && row.installment === "2ª Parcela",
+    );
+    if (!second) throw new Error("fixture inválida");
+    second.paymentDate = null;
+    second.paymentOrderDate = "2026-09-17";
+
+    const status = byKey(
+      evaluatePublicationDimensions(payload),
+      "pdde_basic_second_installment_payment_informed",
+    );
+
+    expect(status.coverageObserved).toBe(162);
+    expect(status.qualityStatus).toBe("VALIDATED");
   });
 
   it("não promove pagamento informado do 2º ciclo quando falta uma unidade", () => {
