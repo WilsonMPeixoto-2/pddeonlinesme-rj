@@ -181,18 +181,20 @@ export function SegundaParcelaRepassesView() {
               2º ciclo · PDDE Básico
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              Visão consolidada do ciclo mais recente, com acesso ao detalhamento por unidade escolar.
+              Visão consolidada do ciclo mais recente do PDDE Básico na 4ª CRE.
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportFiltered}
-            disabled={filteredSchools.length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-            Exportar recorte
-          </Button>
+          {!presentationSecondCycle ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportFiltered}
+              disabled={filteredSchools.length === 0}
+            >
+              <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+              Exportar recorte
+            </Button>
+          ) : null}
         </header>
 
         <div className="inline-flex rounded-lg border border-border/60 bg-muted/15 p-1" aria-label="Selecionar ciclo de repasse">
@@ -204,20 +206,20 @@ export function SegundaParcelaRepassesView() {
           </Button>
         </div>
 
-        {repassesQuery.isLoading ? (
+        {repassesQuery.isLoading && !presentationSecondCycle ? (
           <div className="space-y-4">
             <Skeleton className="h-28 w-full" />
             <Skeleton className="h-44 w-full" />
             <Skeleton className="h-96 w-full" />
           </div>
-        ) : repassesQuery.isError ? (
+        ) : repassesQuery.isError && !presentationSecondCycle ? (
           <EmptyState
             icon={WalletCards}
             title="Não foi possível carregar o segundo ciclo"
             description={repassesQuery.error.message}
             action={<Button onClick={() => repassesQuery.refetch()}>Tentar novamente</Button>}
           />
-        ) : overview.escolas.length === 0 ? (
+        ) : !presentationSecondCycle && overview.escolas.length === 0 ? (
           <EmptyState
             icon={WalletCards}
             title={`Nenhuma evidência do 2º ciclo disponível para ${exercicio}`}
@@ -269,6 +271,7 @@ export function SegundaParcelaRepassesView() {
               </CardContent>
             </Card>
 
+            {!presentationSecondCycle ? (<>
             {composicaoCompleta && totalComposicao !== null ? (
               <Card className="shadow-sm">
                 <CardContent className="p-5">
@@ -425,6 +428,65 @@ export function SegundaParcelaRepassesView() {
                 </div>
               </CardContent>
             </Card>
+            </>) : (
+              <Card className="overflow-hidden shadow-sm">
+                <CardContent className="p-6">
+                  <div className="grid gap-6 md:grid-cols-[1fr_auto_1fr] md:items-center">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        Primeira Infância · P2
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4 text-violet-600" aria-hidden="true" />
+                        <p className="text-lg font-semibold text-foreground">
+                          {formatDate(presentationSecondCycle.earlyChildhoodPaymentDate)}
+                        </p>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {presentationSecondCycle.earlyChildhoodSchools} unidades
+                      </p>
+                    </div>
+
+                    <div className="hidden h-16 w-px bg-border/70 md:block" aria-hidden="true" />
+
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        2ª parcela regular
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4 text-primary" aria-hidden="true" />
+                        <p className="text-lg font-semibold text-foreground">
+                          {formatDate(presentationSecondCycle.regularPaymentDate)}
+                        </p>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {presentationSecondCycle.regularSchools} unidades
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 overflow-hidden rounded-full bg-muted">
+                    <div className="flex h-3">
+                      <div
+                        className="bg-primary"
+                        style={{ width: `${(presentationSecondCycle.regularSchools / presentationSecondCycle.schoolsExpected) * 100}%` }}
+                        aria-hidden="true"
+                      />
+                      <div
+                        className="bg-violet-500"
+                        style={{ width: `${(presentationSecondCycle.earlyChildhoodSchools / presentationSecondCycle.schoolsExpected) * 100}%` }}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                    <span><strong className="font-semibold text-foreground">{presentationSecondCycle.regularSchools}</strong> 2ª parcela regular</span>
+                    <span><strong className="font-semibold text-foreground">{presentationSecondCycle.earlyChildhoodSchools}</strong> Primeira Infância/P2</span>
+                    <span><strong className="font-semibold text-foreground">{presentationSecondCycle.schoolsPaid}</strong> unidades no total</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </div>
