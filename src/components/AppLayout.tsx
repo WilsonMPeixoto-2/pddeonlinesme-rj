@@ -25,7 +25,6 @@ import { CommandPalette } from "@/components/CommandPalette";
 
 const tabs = [
   { to: "/dashboard", label: "Painel" },
-  { to: "/atualizacoes", label: "Atualizações" },
   { to: "/repasses", label: "Repasses" },
   { to: "/escolas", label: "Unidades Escolares" },
 ];
