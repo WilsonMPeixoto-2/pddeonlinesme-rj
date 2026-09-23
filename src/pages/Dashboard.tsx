@@ -19,7 +19,6 @@ import AppLayout from "@/components/AppLayout";
 import { CentralDocumental } from "@/components/CentralDocumental";
 import { HistoricoGeracoesCard } from "@/components/HistoricoGeracoesCard";
 import { NumberTicker } from "@/components/NumberTicker";
-import { SegundaParcelaResumo } from "@/components/SegundaParcelaResumo";
 import { TiltCard } from "@/components/TiltCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -235,12 +234,14 @@ export default function Dashboard() {
       destination: "/repasses",
     },
     {
-      label: "2º ciclo · pagamentos",
-      value: segundoCiclo.escolas.length > 0 ? segundoCiclo.totalInformado : null,
+      label: "2º ciclo · PDDE Básico",
+      value: presentationSecondCycle?.totalPaid ?? (segundoCiclo.escolas.length > 0 ? segundoCiclo.totalInformado : null),
       icon: Receipt,
-      hint: segundoCiclo.escolas.length > 0
-        ? `${segundoCiclo.pagamentosIdentificados} pagamentos informados · ${segundoCiclo.ordensIdentificadas} ordens · ${segundoCiclo.creditosBancariosConfirmados} créditos bancários confirmados`
-        : "Nenhuma evidência financeira do 2º ciclo",
+      hint: presentationSecondCycle
+        ? `${presentationSecondCycle.schoolsPaid}/${presentationSecondCycle.schoolsExpected} unidades com pagamento informado pelo FNDE`
+        : (segundoCiclo.escolas.length > 0
+          ? `${segundoCiclo.pagamentosIdentificados} pagamentos informados`
+          : "Dados do 2º ciclo em consolidação"),
       tone: "amber",
       format: fmtBRL,
       destination: "/repasses?ciclo=2",
@@ -455,8 +456,6 @@ export default function Dashboard() {
             );
           })}
         </motion.div>
-
-        {!loading ? <SegundaParcelaResumo overview={segundoCiclo} /> : null}
 
         <section className="space-y-4" aria-labelledby="novidades-financeiras-title">
           <div className="flex flex-wrap items-end justify-between gap-3">
