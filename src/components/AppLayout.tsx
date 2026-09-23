@@ -4,8 +4,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -15,8 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { LogOut, User, UserCircle, CalendarDays } from "lucide-react";
+import { LogOut, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,17 +22,12 @@ import { useExercicio } from "@/hooks/useExercicio";
 import BrandMark from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CommandPalette } from "@/components/CommandPalette";
-import { FinancialFreshnessBanner } from "@/components/FinancialFreshnessBanner";
 
 const tabs = [
   { to: "/dashboard", label: "Painel" },
   { to: "/atualizacoes", label: "Atualizações" },
   { to: "/repasses", label: "Repasses" },
   { to: "/escolas", label: "Unidades Escolares" },
-  { to: "/fiscal", label: "Frente Fiscal" },
-  { to: "/base", label: "Importar/Exportar" },
-  { to: "/configuracoes", label: "Configurações" },
-  { to: "/manual", label: "Manual" },
 ];
 
 function getInitials(email?: string | null): string {
@@ -113,29 +105,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-[220px] bg-popover/95 backdrop-blur-md border-border/60 shadow-xl"
+                  className="w-[160px] bg-popover/95 backdrop-blur-md border-border/60 shadow-xl"
                 >
-                  <DropdownMenuLabel className="font-normal">
-                    <p className="text-sm font-medium truncate">{user?.email ?? "Usuário"}</p>
-                    <div className="mt-1">
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] px-1.5 py-0 h-4 border-primary/30 bg-primary/8 text-primary"
-                      >
-                        Administrador
-                      </Badge>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-border/50" />
-                  <DropdownMenuItem onClick={() => navigate("/configuracoes", { viewTransition: true })} className="gap-2 cursor-pointer">
-                    <User className="h-3.5 w-3.5" />
-                    <span className="text-sm">Configurações</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/diretor", { viewTransition: true })} className="gap-2 cursor-pointer">
-                    <UserCircle className="h-3.5 w-3.5" />
-                    <span className="text-sm">Portal do Diretor</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-border/50" />
                   <DropdownMenuItem onClick={handleLogout} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="h-3.5 w-3.5" />
                     <span className="text-sm">Sair</span>
@@ -166,8 +137,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <FinancialFreshnessBanner />
-
       <main className="mx-auto w-full max-w-7xl flex-1 p-4">
         <AnimatePresence mode="wait">
           <motion.div
@@ -185,7 +154,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <footer className="border-t border-border/60 bg-card/30">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
           <p className="text-[11px] font-light tracking-wide text-muted-foreground/70">
-            Sistema interno · 4ª Coordenadoria Regional de Educação · SME-RJ
+            PDDE Online · Gestão e acompanhamento de recursos · 4ª CRE · SME-RJ
           </p>
           <BrandMark size={20} className="opacity-40" />
         </div>
