@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useExercicio } from "@/hooks/useExercicio";
 import { buildSegundaParcelaOverview } from "@/lib/financeiroPDDE";
 import { repassesFinanceirosOptions } from "@/lib/queryKeys";
+import { SME_PRESENTATION_2026 } from "@/lib/presentation2026";
 import { cn } from "@/lib/utils";
 
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -49,9 +50,9 @@ function escapeCsv(value: string | number | null) {
 }
 
 function statusLabel(status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado") {
-  if (status === "credito-confirmado") return "Crédito bancário confirmado";
-  if (status === "ordem-emitida") return "Ordem emitida";
-  return "Pagamento informado";
+  if (status === "credito-confirmado") return "Crédito localizado";
+  if (status === "ordem-emitida") return "Ordem de pagamento emitida";
+  return "Pagamento informado pelo FNDE";
 }
 
 function statusClasses(status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado") {
@@ -82,6 +83,9 @@ export function SegundaParcelaRepassesView() {
     () => buildSegundaParcelaOverview(repassesQuery.data ?? [], exercicioNumero),
     [repassesQuery.data, exercicioNumero],
   );
+  const presentationSecondCycle = exercicioNumero === 2026
+    ? SME_PRESENTATION_2026.pddeBasicSecondCycle
+    : null;
 
   useEffect(() => {
     const next = new URLSearchParams();
@@ -178,7 +182,7 @@ export function SegundaParcelaRepassesView() {
               2º ciclo · PDDE Básico
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              Valor informado, ordem emitida e crédito bancário confirmado são exibidos como estágios distintos do mesmo ciclo.
+              Visão consolidada do ciclo mais recente, com acesso ao detalhamento por unidade escolar.
             </p>
           </div>
           <Button
@@ -188,7 +192,7 @@ export function SegundaParcelaRepassesView() {
             disabled={filteredSchools.length === 0}
           >
             <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-            Exportar {filteredSchools.length} unidades
+            Exportar recorte
           </Button>
         </header>
 
@@ -225,39 +229,43 @@ export function SegundaParcelaRepassesView() {
             <Card className="overflow-hidden shadow-sm">
               <CardContent className="grid p-0 md:grid-cols-4">
                 <div className="p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Valor informado</p>
-                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{formatMoney(overview.totalInformado)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{overview.escolas.length} unidades no recorte</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Valor do 2º ciclo</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+                    {formatMoney(presentationSecondCycle?.totalPaid ?? overview.totalInformado)}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">PDDE Básico · exercício {exercicio}</p>
+                </div>
+                <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
+                  <div className="flex items-center gap-2 text-success">
+                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Cobertura da rede</p>
+                  </div>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+                    {presentationSecondCycle ? `${presentationSecondCycle.schoolsPaid}/${presentationSecondCycle.schoolsExpected}` : overview.pagamentosIdentificados}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {presentationSecondCycle ? "100% das unidades da 4ª CRE" : "unidades com pagamento informado"}
+                  </p>
                 </div>
                 <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
                   <div className="flex items-center gap-2 text-primary">
-                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Pagamento informado</p>
+                    <WalletCards className="h-4 w-4" aria-hidden="true" />
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">2ª parcela regular</p>
                   </div>
-                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.pagamentosIdentificados}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataPagamento ? `Data mais recente ${formatDate(overview.ultimaDataPagamento)}` : "Valor informado sem data específica"}
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+                    {presentationSecondCycle?.regularSchools ?? "—"}
                   </p>
+                  <p className="mt-1 text-xs text-muted-foreground">unidades escolares</p>
                 </div>
                 <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
-                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
-                    <Clock3 className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Ordens emitidas</p>
+                  <div className="flex items-center gap-2 text-violet-700 dark:text-violet-300">
+                    <Building2 className="h-4 w-4" aria-hidden="true" />
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Primeira Infância · P2</p>
                   </div>
-                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.ordensIdentificadas}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataOrdem ? `Mais recente em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data de ordem separada"}
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+                    {presentationSecondCycle?.earlyChildhoodSchools ?? "—"}
                   </p>
-                </div>
-                <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
-                  <div className={overview.creditosBancariosConfirmados > 0 ? "flex items-center gap-2 text-success" : "flex items-center gap-2 text-muted-foreground"}>
-                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito bancário confirmado</p>
-                  </div>
-                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.creditosBancariosConfirmados}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Evidência bancária independente ainda não localizada"}
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">unidades escolares</p>
                 </div>
               </CardContent>
             </Card>
@@ -297,7 +305,7 @@ export function SegundaParcelaRepassesView() {
                       <h2 className="text-sm font-semibold text-foreground">Unidades contempladas</h2>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {filteredSchools.length} de {overview.escolas.length} unidades no recorte
+                      Consulte valores, ação e situação por unidade escolar
                     </p>
                   </div>
 
@@ -317,7 +325,7 @@ export function SegundaParcelaRepassesView() {
                       variant={status === "ordem" ? "secondary" : "outline"}
                       onClick={() => setStatus((current) => current === "ordem" ? "todos" : "ordem")}
                     >
-                      Ordem emitida
+                      Ordem de pagamento
                     </Button>
                     {overview.creditosBancariosConfirmados > 0 ? (
                       <Button
@@ -325,7 +333,7 @@ export function SegundaParcelaRepassesView() {
                         variant={status === "pago" ? "secondary" : "outline"}
                         onClick={() => setStatus((current) => current === "pago" ? "todos" : "pago")}
                       >
-                        Crédito bancário confirmado
+                        Crédito localizado
                       </Button>
                     ) : null}
                     <Button
@@ -387,7 +395,7 @@ export function SegundaParcelaRepassesView() {
                               {school.dataPagamento ? (
                                 <div className="flex items-center gap-1.5 whitespace-nowrap text-sm tabular-nums text-muted-foreground">
                                   <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-                                  Pagamento informado: {formatDate(school.dataPagamento)}
+                                  FNDE informa pagamento: {formatDate(school.dataPagamento)}
                                 </div>
                               ) : null}
                               {school.dataOrdem ? (
@@ -397,7 +405,7 @@ export function SegundaParcelaRepassesView() {
                               ) : null}
                               {school.dataCreditoBancario ? (
                                 <p className="mt-1 text-[10px] font-medium text-success">
-                                  Crédito bancário: {formatDate(school.dataCreditoBancario)}
+                                  Crédito localizado: {formatDate(school.dataCreditoBancario)}
                                 </p>
                               ) : null}
                             </td>
