@@ -1,5 +1,5 @@
 export interface GlobalNavigationItem {
-  id: "dashboard" | "atualizacoes" | "repasses" | "escolas";
+  id: "dashboard" | "repasses" | "escolas";
   label: string;
   path: string;
   keywords: string[];
@@ -20,12 +20,6 @@ export const GLOBAL_NAVIGATION: GlobalNavigationItem[] = [
     label: "Painel",
     path: "/dashboard",
     keywords: ["dashboard", "painel", "inicio", "visao geral"],
-  },
-  {
-    id: "atualizacoes",
-    label: "Atualizações financeiras",
-    path: "/atualizacoes",
-    keywords: ["novidades", "atualizacoes", "pagamentos", "ordens", "creditos"],
   },
   {
     id: "repasses",
