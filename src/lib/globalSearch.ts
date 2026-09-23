@@ -1,5 +1,5 @@
 export interface GlobalNavigationItem {
-  id: "dashboard" | "repasses" | "escolas";
+  id: "dashboard" | "atualizacoes" | "repasses" | "escolas" | "fiscal" | "base" | "configuracoes" | "manual" | "diretor";
   label: string;
   path: string;
   keywords: string[];
@@ -22,6 +22,12 @@ export const GLOBAL_NAVIGATION: GlobalNavigationItem[] = [
     keywords: ["dashboard", "painel", "inicio", "visao geral"],
   },
   {
+    id: "atualizacoes",
+    label: "Atualizações financeiras",
+    path: "/atualizacoes",
+    keywords: ["novidades", "atualizacoes", "eventos", "pagamentos", "ordens", "creditos", "frescor"],
+  },
+  {
     id: "repasses",
     label: "Repasses",
     path: "/repasses",
@@ -32,6 +38,36 @@ export const GLOBAL_NAVIGATION: GlobalNavigationItem[] = [
     label: "Unidades Escolares",
     path: "/escolas",
     keywords: ["escolas", "unidades", "ue", "cadastro"],
+  },
+  {
+    id: "fiscal",
+    label: "Frente Fiscal",
+    path: "/fiscal",
+    keywords: ["fiscal", "nota fiscal", "despesas", "homologacao"],
+  },
+  {
+    id: "base",
+    label: "Importar / Exportar BASE",
+    path: "/base",
+    keywords: ["base", "importar", "exportar", "dados"],
+  },
+  {
+    id: "configuracoes",
+    label: "Configurações",
+    path: "/configuracoes",
+    keywords: ["configuracoes", "preferencias", "administracao"],
+  },
+  {
+    id: "manual",
+    label: "Manual",
+    path: "/manual",
+    keywords: ["manual", "ajuda", "orientacoes"],
+  },
+  {
+    id: "diretor",
+    label: "Portal do Diretor",
+    path: "/diretor",
+    keywords: ["diretor", "portal", "escola"],
   },
 ];
 

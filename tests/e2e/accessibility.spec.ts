@@ -22,7 +22,7 @@ test("tela pública não possui violações críticas de acessibilidade", async 
 test("dashboard autenticado não possui violações críticas de acessibilidade", async ({ page }) => {
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
-  await expect(page.getByText("Visão executiva", { exact: false })).toBeVisible();
+  await expect(page.getByText("Painel Executivo-Operacional", { exact: false })).toBeVisible();
 
   await expectNoCriticalViolations(page);
 });

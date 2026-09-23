@@ -49,7 +49,7 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                     Pagamentos informados no 2º ciclo
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Pagamento informado pelo FNDE, ordem emitida e crédito bancário independentemente confirmado são tratados como evidências distintas.
+                    Pagamento informado pelo FNDE, ordem de pagamento e crédito localizado no extrato são evidências distintas. A ausência de extrato atualizado não apaga o pagamento oficial.
                   </p>
                 </div>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
@@ -62,7 +62,7 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                   {formatMoney(overview.totalInformado)}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {overview.escolas.length} unidades · {overview.pagamentosIdentificados} pagamentos informados
+                  {overview.pagamentosIdentificados} de {overview.escolasEsperadas} unidades com pagamento oficial · {overview.escolasRegularesPagas} regular + {overview.escolasPrimeiraInfanciaPagas} Primeira Infância/P2
                 </p>
               </div>
 
@@ -70,18 +70,23 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                 <div className="rounded-xl border border-primary/25 bg-primary/[0.045] p-3">
                   <div className="flex items-center gap-2 text-primary">
                     <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Pagamento informado</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Pagamento oficial FNDE</p>
                   </div>
-                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.pagamentosIdentificados}</p>
+                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">
+                    {overview.pagamentosIdentificados}/{overview.escolasEsperadas}
+                  </p>
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {overview.ultimaDataPagamento ? `Mais recente em ${formatDate(overview.ultimaDataPagamento)}` : "Sem data específica"}
+                    {overview.coberturaPagamentoCompleta
+                      ? "Cobertura completa da carteira"
+                      : `${(overview.coberturaPagamento * 100).toFixed(1)}% da carteira esperada`}
+                    {overview.ultimaDataPagamento ? ` · ${formatDate(overview.ultimaDataPagamento)}` : ""}
                   </p>
                 </div>
 
                 <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.055] p-3">
                   <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
                     <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Ordem emitida</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Ordem de pagamento</p>
                   </div>
                   <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.ordensIdentificadas}</p>
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
@@ -98,11 +103,11 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                     : "flex items-center gap-2 text-muted-foreground"}
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito bancário</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito no extrato</p>
                   </div>
                   <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.creditosBancariosConfirmados}</p>
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Ainda sem confirmação independente"}
+                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Fonte bancária pública ainda sem cobertura suficiente"}
                   </p>
                 </div>
               </div>
@@ -111,7 +116,7 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                 <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/[0.035] px-3 py-2.5 text-xs text-amber-800 dark:text-amber-200">
                   <CalendarDays className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                   <span>
-                    <strong className="font-semibold">{overview.ordensSemCredito}</strong> ordens aguardam confirmação de crédito bancário.
+                    <strong className="font-semibold">{overview.ordensSemCredito}</strong> ordens ainda não têm crédito correspondente localizado no extrato público. O pagamento oficial permanece registrado separadamente.
                   </span>
                 </div>
               ) : null}
@@ -194,7 +199,7 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                               ? "Crédito bancário confirmado"
                               : school.status === "ordem-emitida"
                                 ? "Ordem emitida"
-                                : "Pagamento informado"}
+                                : "Pagamento informado pelo FNDE"}
                           </span>
                         </td>
                         <td className="px-3 py-3 text-right text-sm tabular-nums text-muted-foreground">{formatMoney(school.custeio)}</td>

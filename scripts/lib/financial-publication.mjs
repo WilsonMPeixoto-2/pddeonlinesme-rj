@@ -210,7 +210,7 @@ function uniqueCoverage(rows, predicate = () => true) {
 
 function dateBounds(rows) {
   const dates = rows
-    .map((row) => row.paymentOrderDate ?? row.paymentDate)
+    .map((row) => row.paymentDate ?? row.paymentOrderDate)
     .filter(Boolean)
     .sort();
   return { referenceDateMin: dates[0] ?? null, referenceDateMax: dates.at(-1) ?? null };
@@ -290,7 +290,8 @@ export function evaluatePublicationDimensions(payload) {
   const validSecondPaymentRows = secondRows.filter((row) =>
     typeof row.paid === "number"
     && Number.isFinite(row.paid)
-    && row.paid >= 0,
+    && row.paid >= 0
+    && Boolean(row.paymentDate),
   );
   const secondPaymentCoverage = uniqueCoverage(validSecondPaymentRows);
 

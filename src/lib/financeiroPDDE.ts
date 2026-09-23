@@ -47,12 +47,15 @@ export interface EscolaPrimeiraParcela {
   participacao: number;
 }
 
+export const PDDE_BASIC_4CRE_EXPECTED_SCHOOLS_2026 = 163;
+
 export interface EscolaSegundaParcela {
   unidadeId: string;
   designacao: string;
   nome: string;
   inep: string | null;
   acao: string;
+  trilho: "regular" | "primeira-infancia" | "misto";
   valorInformado: number;
   custeio: number | null;
   capital: number | null;
@@ -68,6 +71,11 @@ export interface SegundaParcelaOverview {
   custeioTotal: number | null;
   capitalTotal: number | null;
   escolas: EscolaSegundaParcela[];
+  escolasEsperadas: number;
+  coberturaPagamento: number;
+  coberturaPagamentoCompleta: boolean;
+  escolasRegularesPagas: number;
+  escolasPrimeiraInfanciaPagas: number;
   ordensIdentificadas: number;
   pagamentosIdentificados: number;
   creditosBancariosConfirmados: number;
@@ -350,6 +358,9 @@ export function buildSegundaParcelaOverview(
   const bySchool = new Map<string, EscolaSegundaParcela>();
   for (const repasse of publicados) {
     const current = bySchool.get(repasse.unidade_id);
+    const trilho: EscolaSegundaParcela["trilho"] = repasse.acao === "PDDE Básico — Primeira Infância"
+      ? "primeira-infancia"
+      : "regular";
     const status: EscolaSegundaParcela["status"] = repasse.credito_bancario_confirmado === true
       ? "credito-confirmado"
       : repasse.data_pagamento
@@ -373,6 +384,7 @@ export function buildSegundaParcelaOverview(
       if (!current.dataOrdem && repasse.data_ordem_pagamento) current.dataOrdem = repasse.data_ordem_pagamento;
       if (status === "credito-confirmado") current.status = status;
       else if (status === "pagamento-informado" && current.status === "ordem-emitida") current.status = status;
+      if (current.trilho !== trilho) current.trilho = "misto";
       if (current.acao !== actionLabel(repasse.acao)) current.acao = "Múltiplas ações";
       continue;
     }
@@ -383,6 +395,7 @@ export function buildSegundaParcelaOverview(
       nome: repasse.nome ?? repasse.designacao ?? "Unidade escolar",
       inep: repasse.inep,
       acao: actionLabel(repasse.acao),
+      trilho,
       valorInformado: repasse.valor_pago ?? 0,
       custeio: repasse.custeio_pago,
       capital: repasse.capital_pago,
@@ -415,6 +428,11 @@ export function buildSegundaParcelaOverview(
     .map((row) => row.dataCreditoBancario)
     .filter((data): data is string => Boolean(data))
     .sort((a, b) => b.localeCompare(a));
+  const pagamentosIdentificados = escolas.filter((row) => (
+    row.dataPagamento !== null || row.status === "credito-confirmado"
+  )).length;
+  const escolasEsperadas = exercicio === 2026 ? PDDE_BASIC_4CRE_EXPECTED_SCHOOLS_2026 : escolas.length;
+  const coberturaPagamento = escolasEsperadas > 0 ? pagamentosIdentificados / escolasEsperadas : 0;
 
   return {
     exercicio,
@@ -422,8 +440,13 @@ export function buildSegundaParcelaOverview(
     custeioTotal,
     capitalTotal,
     escolas,
+    escolasEsperadas,
+    coberturaPagamento,
+    coberturaPagamentoCompleta: escolasEsperadas > 0 && pagamentosIdentificados === escolasEsperadas,
+    escolasRegularesPagas: escolas.filter((row) => row.trilho === "regular" && (row.dataPagamento !== null || row.status === "credito-confirmado")).length,
+    escolasPrimeiraInfanciaPagas: escolas.filter((row) => row.trilho === "primeira-infancia" && (row.dataPagamento !== null || row.status === "credito-confirmado")).length,
     ordensIdentificadas: escolas.filter((row) => row.dataOrdem !== null).length,
-    pagamentosIdentificados: escolas.filter((row) => row.valorInformado > 0 || row.dataPagamento !== null || row.dataOrdem !== null).length,
+    pagamentosIdentificados,
     creditosBancariosConfirmados: escolas.filter((row) => row.dataCreditoBancario !== null || row.status === "credito-confirmado").length,
     ordensSemCredito: escolas.filter((row) => row.dataOrdem !== null && row.dataCreditoBancario === null).length,
     ultimaDataOrdem: datasOrdem[0] ?? null,
