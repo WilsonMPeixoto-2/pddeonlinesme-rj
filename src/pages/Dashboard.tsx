@@ -4,10 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   AlertCircle,
-  AlertTriangle,
   ArrowRight,
   ArrowUpRight,
-  CheckCircle2,
   Coins,
   Inbox,
   Landmark,
@@ -16,8 +14,6 @@ import {
 } from "lucide-react";
 
 import AppLayout from "@/components/AppLayout";
-import { CentralDocumental } from "@/components/CentralDocumental";
-import { HistoricoGeracoesCard } from "@/components/HistoricoGeracoesCard";
 import { NumberTicker } from "@/components/NumberTicker";
 import { TiltCard } from "@/components/TiltCard";
 import { Button } from "@/components/ui/button";
@@ -179,7 +175,6 @@ export default function Dashboard() {
   const loading = repassesQuery.isLoading || contasQuery.isLoading || loadingResumo;
   const queryError = repassesQuery.error ?? contasQuery.error ?? errorResumo;
   const recentes = resumoUnidades?.recentes ?? [];
-  const cadastroIncompletoCount = resumoUnidades?.cadastroIncompletoCount ?? 0;
   const totalUnidades = overview.totalEscolas > 0
     ? overview.totalEscolas
     : (resumoUnidades?.total ?? null);
@@ -395,8 +390,6 @@ export default function Dashboard() {
           </div>
         </motion.section>
 
-        <CentralDocumental />
-
         <motion.div
           variants={container}
           initial="hidden"
@@ -550,99 +543,66 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Card className="ds-card lg:col-span-2">
-            <CardContent className="p-5">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <h2 className="ds-h3">Atualizadas recentemente</h2>
-                  <p className="text-xs text-muted-foreground">Últimas modificações no cadastro das unidades.</p>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/escolas", { viewTransition: true })} className="text-xs">
-                  Ver todas
-                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                </Button>
+        <Card className="ds-card">
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <h2 className="ds-h3">Unidades atualizadas recentemente</h2>
+                <p className="text-xs text-muted-foreground">Acesso rápido às informações cadastrais das escolas.</p>
               </div>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/escolas", { viewTransition: true })} className="text-xs">
+                Ver todas
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
+            </div>
 
-              {loading ? (
-                <ul className="divide-y divide-border/60">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <li key={index} className="flex items-center justify-between py-3">
-                      <Skeleton className="h-4 w-1/2" />
-                      <Skeleton className="h-7 w-16" />
-                    </li>
-                  ))}
-                </ul>
-              ) : recentes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                    <Inbox className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <p className="text-sm font-medium">Nenhuma unidade cadastrada ainda</p>
-                  <p className="text-xs text-muted-foreground">Cadastre uma unidade para iniciar o acompanhamento.</p>
+            {loading ? (
+              <ul className="divide-y divide-border/60">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <li key={index} className="flex items-center justify-between py-3">
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-7 w-16" />
+                  </li>
+                ))}
+              </ul>
+            ) : recentes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                  <Inbox className="h-5 w-5 text-muted-foreground" />
                 </div>
-              ) : (
-                <motion.ul variants={container} initial="hidden" animate="show" className="divide-y divide-border/60">
-                  {recentes.map((row) => (
-                    <motion.li key={row.id} variants={item} className="group flex items-center justify-between gap-4 py-3 first:pt-1 last:pb-1">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 transition-all group-hover:bg-primary" />
-                        <span className="truncate text-sm font-medium">{row.designacao}</span>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {row.updated_at ? (
-                          <span className="hidden text-[11px] tabular-nums text-muted-foreground/70 xl:inline">
-                            {new Date(row.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                          </span>
-                        ) : null}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-                          onClick={() => navigate(`/escolas/${row.id}`, { viewTransition: true })}
-                        >
-                          Abrir
-                          <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </motion.li>
-                  ))}
-                </motion.ul>
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="space-y-4">
-            <HistoricoGeracoesCard />
-            <Card className="ds-card">
-              <CardContent className="space-y-4 p-5">
-                <div>
-                  <h2 className="ds-h3">Atenção operacional</h2>
-                  <p className="text-xs text-muted-foreground">Dados cadastrais que exigem revisão.</p>
-                </div>
-                {cadastroIncompletoCount > 0 ? (
-                  <div className="flex items-start gap-3 rounded-lg border border-warning/20 bg-warning/5 p-3">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-                    <div className="space-y-0.5">
-                      <p className="text-sm font-medium">
-                        {cadastroIncompletoCount} cadastro{cadastroIncompletoCount === 1 ? "" : "s"} incompleto{cadastroIncompletoCount === 1 ? "" : "s"}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">Unidades sem CNPJ, INEP ou diretor(a).</p>
+                <p className="text-sm font-medium">Nenhuma atualização recente</p>
+                <p className="text-xs text-muted-foreground">As unidades aparecerão aqui conforme o cadastro for atualizado.</p>
+              </div>
+            ) : (
+              <motion.ul variants={container} initial="hidden" animate="show" className="divide-y divide-border/60">
+                {recentes.map((row) => (
+                  <motion.li key={row.id} variants={item} className="group flex items-center justify-between gap-4 py-3 first:pt-1 last:pb-1">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 transition-all group-hover:bg-primary" />
+                      <span className="truncate text-sm font-medium">{row.designacao}</span>
                     </div>
-                  </div>
-                ) : !loading ? (
-                  <div className="flex items-start gap-3 rounded-lg border border-success/20 bg-success/5 p-3">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                    <div className="space-y-0.5">
-                      <p className="text-sm font-medium">Cadastros essenciais completos</p>
-                      <p className="text-[11px] text-muted-foreground">Todas as unidades têm CNPJ, INEP e diretor(a) preenchidos.</p>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {row.updated_at ? (
+                        <span className="hidden text-[11px] tabular-nums text-muted-foreground/70 xl:inline">
+                          {new Date(row.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                        </span>
+                      ) : null}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => navigate(`/escolas/${row.id}`, { viewTransition: true })}
+                      >
+                        Abrir
+                        <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                      </Button>
                     </div>
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                  </motion.li>
+                ))}
+              </motion.ul>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );
