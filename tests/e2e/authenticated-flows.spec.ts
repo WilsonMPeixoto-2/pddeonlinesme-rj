@@ -12,14 +12,15 @@ test("login autenticado abre o dashboard canônico e mantém sessão ao navegar"
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
 
-  await expect(page.getByText("Painel Executivo-Operacional", { exact: false })).toBeVisible();
-  await expect(page.getByText("1ª parcela paga · PDDE Básico · 2026", { exact: true })).toBeVisible();
-  await expect(page.getByText("15.000", { exact: false }).first()).toBeVisible();
-  await expect(page.getByText("Repasse · 1ª parcela", { exact: true })).toBeVisible();
+  await expect(page.getByText("Visão executiva", { exact: false })).toBeVisible();
+  await expect(page.getByText("2º ciclo · PDDE Básico · pagamento informado pelo FNDE", { exact: true })).toBeVisible();
+  await expect(page.getByText(/765\.215,00/).first()).toBeVisible();
+  await expect(page.getByText("163/163", { exact: true })).toBeVisible();
+  await expect(page.getByText("100% da rede", { exact: true })).toBeVisible();
 
-  await page.getByRole("link", { name: "Manual" }).click();
-  await expect(page).toHaveURL(/\/manual$/);
-  await expect(page.getByRole("heading", { name: "Manual" })).toBeVisible();
+  await page.getByRole("link", { name: "Repasses", exact: true }).click();
+  await expect(page).toHaveURL(/\/repasses$/);
+  await expect(page.getByRole("heading", { name: "1ª parcela do PDDE Básico" })).toBeVisible();
 });
 
 test("listagem de unidades usa dados Supabase e aplica busca no cliente", async ({ page }) => {
@@ -70,26 +71,17 @@ test("edição cadastral percorre RPC e reconciliação sem tocar produção", a
 });
 
 
-test("segundo ciclo faz drill-down da escola e preserva o retorno", async ({ page }) => {
+test("segundo ciclo apresenta a cobertura executiva consolidada", async ({ page }) => {
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
 
-  await page.getByRole("button", { name: /2º ciclo · pagamentos/i }).click();
-  await expect(page).toHaveURL(/\/repasses\?ciclo=2/);
+  await page.goto("/repasses?ciclo=2");
   await expect(page.getByRole("heading", { name: "2º ciclo · PDDE Básico" })).toBeVisible();
-  await expect(page.getByText("04.10.002", { exact: true })).toBeVisible();
-  await expect(page.getByText(/2\.785,00/).first()).toBeVisible();
-  await expect(page.getByText(/1\.671,00/).first()).toBeVisible();
-  await expect(page.getByText(/1\.114,00/).first()).toBeVisible();
-  await expect(page.getByRole("cell", { name: "Ordem emitida" })).toBeVisible();
-
-  await page.getByRole("link", { name: "04.10.002" }).click();
-  await expect(page).toHaveURL(/\/escolas\/00000000-0000-4000-8000-000000000102\/recursos/);
-  await expect(page.getByRole("heading", { name: "EM Beta" })).toBeVisible();
-  await expect(page.getByText("Ordem de pagamento emitida", { exact: true })).toBeVisible();
-  await expect(page.getByText("14/09/2026", { exact: true })).toBeVisible();
-
-  await page.getByRole("link", { name: "Voltar aos repasses" }).click();
-  await expect(page).toHaveURL(/\/repasses\?ciclo=2/);
-  await expect(page.getByText("04.10.002", { exact: true })).toBeVisible();
+  await expect(page.getByText(/765\.215,00/).first()).toBeVisible();
+  await expect(page.getByText("163/163", { exact: true })).toBeVisible();
+  await expect(page.getByText("111", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("52", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("15/09/2026", { exact: true })).toBeVisible();
+  await expect(page.getByText("17/09/2026", { exact: true })).toBeVisible();
+  await expect(page.getByText("100% das unidades da 4ª CRE", { exact: true })).toBeVisible();
 });

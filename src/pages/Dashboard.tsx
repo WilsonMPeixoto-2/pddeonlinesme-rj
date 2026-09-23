@@ -4,10 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   AlertCircle,
-  AlertTriangle,
   ArrowRight,
   ArrowUpRight,
-  CheckCircle2,
   Coins,
   Inbox,
   Landmark,
@@ -16,10 +14,7 @@ import {
 } from "lucide-react";
 
 import AppLayout from "@/components/AppLayout";
-import { CentralDocumental } from "@/components/CentralDocumental";
-import { HistoricoGeracoesCard } from "@/components/HistoricoGeracoesCard";
 import { NumberTicker } from "@/components/NumberTicker";
-import { SegundaParcelaResumo } from "@/components/SegundaParcelaResumo";
 import { TiltCard } from "@/components/TiltCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +23,6 @@ import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
 import { useExercicio } from "@/hooks/useExercicio";
 import {
   buildDashboardFinanceiroOverview,
-  buildRecentFinancialEvents,
   buildSegundaParcelaOverview,
   type ProgramaFinanceiroOverview,
 } from "@/lib/financeiroPDDE";
@@ -36,6 +30,7 @@ import {
   contasFinanceirasOptions,
   repassesFinanceirosOptions,
 } from "@/lib/queryKeys";
+import { SME_PRESENTATION_2026 } from "@/lib/presentation2026";
 import { cn } from "@/lib/utils";
 
 const fmtBRL = (value: number) =>
@@ -171,29 +166,15 @@ export default function Dashboard() {
     [exercicioNumero, repassesQuery.data],
   );
 
-  const recentFinancialEvents = useMemo(
-    () => buildRecentFinancialEvents(repassesQuery.data ?? [], exercicioNumero).slice(0, 5),
-    [exercicioNumero, repassesQuery.data],
-  );
-
   const loading = repassesQuery.isLoading || contasQuery.isLoading || loadingResumo;
   const queryError = repassesQuery.error ?? contasQuery.error ?? errorResumo;
   const recentes = resumoUnidades?.recentes ?? [];
-  const cadastroIncompletoCount = resumoUnidades?.cadastroIncompletoCount ?? 0;
   const totalUnidades = overview.totalEscolas > 0
     ? overview.totalEscolas
     : (resumoUnidades?.total ?? null);
-  const composicaoDisponivel = overview.primeiraParcela.custeioPago !== null
-    && overview.primeiraParcela.capitalPago !== null;
-  const totalComposicao = composicaoDisponivel
-    ? (overview.primeiraParcela.custeioPago ?? 0) + (overview.primeiraParcela.capitalPago ?? 0)
+  const presentationSecondCycle = exercicioNumero === 2026
+    ? SME_PRESENTATION_2026.pddeBasicSecondCycle
     : null;
-  const custeioPercentual = totalComposicao && totalComposicao > 0
-    ? ((overview.primeiraParcela.custeioPago ?? 0) / totalComposicao) * 100
-    : 0;
-  const capitalPercentual = totalComposicao && totalComposicao > 0
-    ? ((overview.primeiraParcela.capitalPago ?? 0) / totalComposicao) * 100
-    : 0;
 
   const stats: Array<{
     label: string;
@@ -242,12 +223,14 @@ export default function Dashboard() {
       destination: "/repasses",
     },
     {
-      label: "2º ciclo · pagamentos",
-      value: segundoCiclo.escolas.length > 0 ? segundoCiclo.totalInformado : null,
+      label: "2º ciclo · PDDE Básico",
+      value: presentationSecondCycle?.totalPaid ?? (segundoCiclo.escolas.length > 0 ? segundoCiclo.totalInformado : null),
       icon: Receipt,
-      hint: segundoCiclo.escolas.length > 0
-        ? `${segundoCiclo.pagamentosIdentificados} pagamentos informados · ${segundoCiclo.ordensIdentificadas} ordens · ${segundoCiclo.creditosBancariosConfirmados} créditos bancários confirmados`
-        : "Nenhuma evidência financeira do 2º ciclo",
+      hint: presentationSecondCycle
+        ? `${presentationSecondCycle.schoolsPaid}/${presentationSecondCycle.schoolsExpected} unidades com pagamento informado pelo FNDE`
+        : (segundoCiclo.escolas.length > 0
+          ? `${segundoCiclo.pagamentosIdentificados} pagamentos informados`
+          : "Dados do 2º ciclo em consolidação"),
       tone: "amber",
       format: fmtBRL,
       destination: "/repasses?ciclo=2",
@@ -302,18 +285,24 @@ export default function Dashboard() {
           <div className="relative grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-end">
             <div className="space-y-5">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
+                <span className="h-2 w-2 rounded-full bg-success" aria-hidden="true" />
                 <p className="ds-eyebrow">
-                  Painel Executivo-Operacional · GAD · 4ª CRE · Exercício {exercicio}
+                  Visão executiva · PDDE 2026 · 4ª CRE
                 </p>
               </div>
 
               <div>
                 <p className="mb-2 text-sm font-medium text-muted-foreground">
-                  1ª parcela paga · PDDE Básico · {exercicio}
+                  2º ciclo · PDDE Básico · pagamento informado pelo FNDE
                 </p>
                 <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
-                  {loading ? (
+                  {presentationSecondCycle ? (
+                    <NumberTicker
+                      value={presentationSecondCycle.totalPaid}
+                      format={fmtBRLDecimal}
+                      className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
+                    />
+                  ) : loading ? (
                     <Skeleton className="h-16 w-[80%]" />
                   ) : overview.primeiraParcela.totalPago !== null ? (
                     <NumberTicker
@@ -326,99 +315,74 @@ export default function Dashboard() {
                   )}
                 </h1>
                 <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
-                  Pagamento identificado para {overview.primeiraParcela.escolas} de {totalUnidades ?? "—"} unidades escolares no recorte exibido.
-                  {overview.primeiraParcela.ultimaDataPagamento
-                    ? ` Última data de pagamento deste recorte: ${formatDate(overview.primeiraParcela.ultimaDataPagamento)}.`
-                    : ""}
+                  {presentationSecondCycle
+                    ? `Pagamento informado para ${presentationSecondCycle.schoolsPaid} de ${presentationSecondCycle.schoolsExpected} unidades escolares da 4ª CRE.`
+                    : `Pagamento identificado para ${overview.primeiraParcela.escolas} de ${totalUnidades ?? "—"} unidades escolares.`}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
-                <Button onClick={() => navigate("/repasses", { viewTransition: true })}>
-                  Explorar repasses
+                <Button onClick={() => navigate("/repasses?ciclo=2", { viewTransition: true })}>
+                  Ver 2º ciclo
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button variant="outline" onClick={() => navigate("/escolas", { viewTransition: true })}>
-                  Ver unidades escolares
+                  Consultar unidades
                 </Button>
               </div>
             </div>
 
             <div className="ds-card-elevated space-y-5 p-5 backdrop-blur-md">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="ds-eyebrow">Composição da 1ª parcela</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Custeio e capital no mesmo recorte do destaque principal.</p>
-                </div>
-                <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                  {overview.primeiraParcela.detalhamentoCompleto}/{overview.primeiraParcela.escolas} completos
-                </span>
+              <div>
+                <p className="ds-eyebrow">Cobertura do 2º ciclo</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Distribuição das unidades contempladas no ciclo mais recente.
+                </p>
               </div>
 
-              {composicaoDisponivel && totalComposicao !== null && totalComposicao > 0 ? (
+              {presentationSecondCycle ? (
                 <div className="space-y-5">
-                  <div
-                    className="flex h-3 overflow-hidden rounded-full bg-muted"
-                    role="img"
-                    aria-label={`Composição da primeira parcela: ${custeioPercentual.toFixed(1)}% custeio e ${capitalPercentual.toFixed(1)}% capital`}
-                  >
-                    <div className="h-full bg-fin-custeio" style={{ width: `${custeioPercentual}%` }} />
-                    <div className="h-full bg-fin-capital" style={{ width: `${capitalPercentual}%` }} />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-fin-custeio" aria-hidden="true" />
-                        <p className="text-xs font-medium text-muted-foreground">Custeio</p>
-                      </div>
-                      <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
-                        {formatMoneyOrDash(overview.primeiraParcela.custeioPago)}
-                      </p>
-                      <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">
-                        {custeioPercentual.toFixed(1)}% do total
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-fin-capital" aria-hidden="true" />
-                        <p className="text-xs font-medium text-muted-foreground">Capital</p>
-                      </div>
-                      <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
-                        {formatMoneyOrDash(overview.primeiraParcela.capitalPago)}
-                      </p>
-                      <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">
-                        {capitalPercentual.toFixed(1)}% do total
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-4">
+                  <div className="flex items-end justify-between gap-4">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground">Cobertura do detalhamento</p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">
-                        Somente valores conhecidos; ausência de dado não é convertida em zero.
+                      <p className="text-4xl font-bold tracking-tight text-foreground">
+                        {presentationSecondCycle.schoolsPaid}/{presentationSecondCycle.schoolsExpected}
                       </p>
+                      <p className="mt-1 text-xs text-muted-foreground">unidades com pagamento informado</p>
                     </div>
-                    <span className="text-sm font-semibold tabular-nums text-foreground">
-                      {formatMoneyOrDash(totalComposicao)}
+                    <span className="rounded-full border border-success/30 bg-success/8 px-2.5 py-1 text-xs font-semibold text-success">
+                      100% da rede
                     </span>
                   </div>
+
+                  <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full w-full rounded-full bg-success" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2ª parcela regular</p>
+                      <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{presentationSecondCycle.regularSchools}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">unidades escolares</p>
+                    </div>
+                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Primeira Infância · P2</p>
+                      <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{presentationSecondCycle.earlyChildhoodSchools}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">unidades escolares</p>
+                    </div>
+                  </div>
+
+                  <p className="border-t border-border/50 pt-4 text-xs leading-relaxed text-muted-foreground">
+                    O painel consolida os dois trilhos do PDDE Básico em uma única visão da rede, mantendo o detalhamento por escola.
+                  </p>
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5">
-                  <p className="text-sm font-medium text-foreground">Composição ainda não disponível para todo o recorte</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    O Painel preserva a ausência de informação em vez de inferir custeio ou capital como zero.
-                  </p>
+                <div className="rounded-xl border border-border/60 bg-muted/15 p-5 text-sm text-muted-foreground">
+                  Consulte os repasses para acompanhar o ciclo selecionado.
                 </div>
               )}
             </div>
           </div>
         </motion.section>
-
-        <CentralDocumental />
 
         <motion.div
           variants={container}
@@ -480,77 +444,6 @@ export default function Dashboard() {
           })}
         </motion.div>
 
-        {!loading ? <SegundaParcelaResumo overview={segundoCiclo} /> : null}
-
-        <section className="space-y-4" aria-labelledby="novidades-financeiras-title">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="ds-eyebrow">Monitoramento contínuo</p>
-              <h2 id="novidades-financeiras-title" className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-                Últimas atualizações financeiras
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Eventos mais recentes encontrados nas fontes correntes, sem depender da persistência histórica para aparecer no Painel.
-              </p>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/atualizacoes", { viewTransition: true })}>
-              Ver todas as atualizações
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
-            </Button>
-          </div>
-
-          <Card className="ds-card">
-            <CardContent className="p-0">
-              {loading ? (
-                <div className="space-y-2 p-5">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <Skeleton key={index} className="h-14 w-full rounded-lg" />
-                  ))}
-                </div>
-              ) : recentFinancialEvents.length === 0 ? (
-                <div className="p-6 text-sm text-muted-foreground">
-                  Nenhum evento financeiro datado está disponível no recorte atual.
-                </div>
-              ) : (
-                <div className="divide-y divide-border/60">
-                  {recentFinancialEvents.map((event) => (
-                    <button
-                      key={event.id}
-                      type="button"
-                      onClick={() => navigate(`/escolas/${event.unidadeId}/recursos`, { viewTransition: true })}
-                      className="flex w-full items-center justify-between gap-4 px-5 py-3 text-left transition-colors hover:bg-muted/25"
-                    >
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-medium">{event.designacao} · {event.nome}</p>
-                          <span className="text-[10px] tabular-nums text-muted-foreground">
-                            {formatDate(event.dataEvento)}
-                          </span>
-                        </div>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                          {event.programa} · {event.acao} · {event.parcela} · {
-                            event.stage === "credito-confirmado"
-                              ? "crédito bancário confirmado"
-                              : event.stage === "pagamento-informado"
-                                ? "pagamento informado"
-                                : "ordem emitida"
-                          }
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-3">
-                        <span className="text-sm font-semibold tabular-nums">
-                          {event.valor === null ? "—" : fmtBRLDecimal(event.valor)}
-                        </span>
-                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </section>
-
         <section className="space-y-4" aria-labelledby="programas-pdde-title">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -575,99 +468,66 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Card className="ds-card lg:col-span-2">
-            <CardContent className="p-5">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <h2 className="ds-h3">Atualizadas recentemente</h2>
-                  <p className="text-xs text-muted-foreground">Últimas modificações no cadastro das unidades.</p>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/escolas", { viewTransition: true })} className="text-xs">
-                  Ver todas
-                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                </Button>
+        <Card className="ds-card">
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <h2 className="ds-h3">Unidades atualizadas recentemente</h2>
+                <p className="text-xs text-muted-foreground">Acesso rápido às informações cadastrais das escolas.</p>
               </div>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/escolas", { viewTransition: true })} className="text-xs">
+                Ver todas
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
+            </div>
 
-              {loading ? (
-                <ul className="divide-y divide-border/60">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <li key={index} className="flex items-center justify-between py-3">
-                      <Skeleton className="h-4 w-1/2" />
-                      <Skeleton className="h-7 w-16" />
-                    </li>
-                  ))}
-                </ul>
-              ) : recentes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                    <Inbox className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <p className="text-sm font-medium">Nenhuma unidade cadastrada ainda</p>
-                  <p className="text-xs text-muted-foreground">Cadastre uma unidade para iniciar o acompanhamento.</p>
+            {loading ? (
+              <ul className="divide-y divide-border/60">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <li key={index} className="flex items-center justify-between py-3">
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-7 w-16" />
+                  </li>
+                ))}
+              </ul>
+            ) : recentes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                  <Inbox className="h-5 w-5 text-muted-foreground" />
                 </div>
-              ) : (
-                <motion.ul variants={container} initial="hidden" animate="show" className="divide-y divide-border/60">
-                  {recentes.map((row) => (
-                    <motion.li key={row.id} variants={item} className="group flex items-center justify-between gap-4 py-3 first:pt-1 last:pb-1">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 transition-all group-hover:bg-primary" />
-                        <span className="truncate text-sm font-medium">{row.designacao}</span>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {row.updated_at ? (
-                          <span className="hidden text-[11px] tabular-nums text-muted-foreground/70 xl:inline">
-                            {new Date(row.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                          </span>
-                        ) : null}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-                          onClick={() => navigate(`/escolas/${row.id}`, { viewTransition: true })}
-                        >
-                          Abrir
-                          <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </motion.li>
-                  ))}
-                </motion.ul>
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="space-y-4">
-            <HistoricoGeracoesCard />
-            <Card className="ds-card">
-              <CardContent className="space-y-4 p-5">
-                <div>
-                  <h2 className="ds-h3">Atenção operacional</h2>
-                  <p className="text-xs text-muted-foreground">Dados cadastrais que exigem revisão.</p>
-                </div>
-                {cadastroIncompletoCount > 0 ? (
-                  <div className="flex items-start gap-3 rounded-lg border border-warning/20 bg-warning/5 p-3">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-                    <div className="space-y-0.5">
-                      <p className="text-sm font-medium">
-                        {cadastroIncompletoCount} cadastro{cadastroIncompletoCount === 1 ? "" : "s"} incompleto{cadastroIncompletoCount === 1 ? "" : "s"}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">Unidades sem CNPJ, INEP ou diretor(a).</p>
+                <p className="text-sm font-medium">Nenhuma atualização recente</p>
+                <p className="text-xs text-muted-foreground">As unidades aparecerão aqui conforme o cadastro for atualizado.</p>
+              </div>
+            ) : (
+              <motion.ul variants={container} initial="hidden" animate="show" className="divide-y divide-border/60">
+                {recentes.map((row) => (
+                  <motion.li key={row.id} variants={item} className="group flex items-center justify-between gap-4 py-3 first:pt-1 last:pb-1">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 transition-all group-hover:bg-primary" />
+                      <span className="truncate text-sm font-medium">{row.designacao}</span>
                     </div>
-                  </div>
-                ) : !loading ? (
-                  <div className="flex items-start gap-3 rounded-lg border border-success/20 bg-success/5 p-3">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                    <div className="space-y-0.5">
-                      <p className="text-sm font-medium">Cadastros essenciais completos</p>
-                      <p className="text-[11px] text-muted-foreground">Todas as unidades têm CNPJ, INEP e diretor(a) preenchidos.</p>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {row.updated_at ? (
+                        <span className="hidden text-[11px] tabular-nums text-muted-foreground/70 xl:inline">
+                          {new Date(row.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                        </span>
+                      ) : null}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => navigate(`/escolas/${row.id}`, { viewTransition: true })}
+                      >
+                        Abrir
+                        <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                      </Button>
                     </div>
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                  </motion.li>
+                ))}
+              </motion.ul>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );

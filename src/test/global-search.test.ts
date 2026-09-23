@@ -34,14 +34,21 @@ const schools: GlobalSearchSchool[] = [
 ];
 
 describe("GLOBAL_NAVIGATION", () => {
-  it("expõe áreas operacionais e não expõe páginas internas ou demo", () => {
+  it("expõe apenas as áreas preparadas para apresentação", () => {
     const labels = GLOBAL_NAVIGATION.map((item) => item.label);
     const paths = GLOBAL_NAVIGATION.map((item) => item.path);
 
-    expect(labels).toContain("Repasses");
-    expect(labels).toContain("Frente Fiscal");
-    expect(labels).not.toContain("Style Guide");
-    expect(labels).not.toContain("Acesso Negado (demo)");
+    expect(labels).toEqual([
+      "Painel",
+      "Repasses",
+      "Unidades Escolares",
+    ]);
+    expect(paths).not.toContain("/atualizacoes");
+    expect(paths).not.toContain("/fiscal");
+    expect(paths).not.toContain("/base");
+    expect(paths).not.toContain("/configuracoes");
+    expect(paths).not.toContain("/manual");
+    expect(paths).not.toContain("/diretor");
     expect(paths).not.toContain("/style-guide");
     expect(paths).not.toContain("/acesso-negado");
   });

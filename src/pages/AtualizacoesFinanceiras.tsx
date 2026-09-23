@@ -28,10 +28,7 @@ import {
   buildRecentFinancialEvents,
   type FinancialEventStage,
 } from "@/lib/financeiroPDDE";
-import {
-  financialFreshnessOptions,
-  repassesFinanceirosOptions,
-} from "@/lib/queryKeys";
+import { repassesFinanceirosOptions } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 
 const money = new Intl.NumberFormat("pt-BR", {
@@ -62,9 +59,9 @@ function formatDateTime(value: string | null) {
 }
 
 const stageLabel: Record<FinancialEventStage, string> = {
-  "credito-confirmado": "Crédito bancário confirmado",
-  "pagamento-informado": "Pagamento informado",
-  "ordem-emitida": "Ordem emitida",
+  "credito-confirmado": "Crédito localizado",
+  "pagamento-informado": "Pagamento informado pelo FNDE",
+  "ordem-emitida": "Ordem de pagamento emitida",
 };
 
 const stageTone: Record<FinancialEventStage, string> = {
@@ -88,7 +85,6 @@ export default function AtualizacoesFinanceiras() {
   const [stage, setStage] = useState<FinancialEventStage | "all">("all");
 
   const repasses = useQuery(repassesFinanceirosOptions(exercise));
-  const freshness = useQuery(financialFreshnessOptions(exercise));
 
   const events = useMemo(
     () => buildRecentFinancialEvents(repasses.data ?? [], exercise),
@@ -135,8 +131,8 @@ export default function AtualizacoesFinanceiras() {
             </div>
             <h1 className="mt-3 text-3xl font-bold tracking-tight">Atualizações financeiras</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Fatos financeiros mais recentes encontrados pelo motor e disponibilizados no layout.
-              Pagamento informado, ordem emitida e crédito bancário confirmado permanecem estados distintos.
+              Acompanhe os movimentos mais recentes do PDDE por escola, programa e etapa do repasse.
+              Pagamentos, ordens e créditos são apresentados de forma clara e separada.
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -157,7 +153,7 @@ export default function AtualizacoesFinanceiras() {
                   icon: WalletCards,
                 },
                 {
-                  label: "Créditos confirmados",
+                  label: "Créditos localizados",
                   value: isLoading ? "…" : String(bankCredits),
                   icon: Database,
                 },
@@ -174,18 +170,6 @@ export default function AtualizacoesFinanceiras() {
               ))}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
-              <span>
-                Snapshot corrente: {formatDateTime(freshness.data?.enginePublishedAt ?? null)}
-              </span>
-              <span>
-                Persistência: {freshness.data?.status === "CURRENT"
-                  ? "sincronizada"
-                  : freshness.data?.status === "STORAGE_LAG"
-                    ? "atrasada, snapshot corrente mantido no layout"
-                    : "estado não comprovado"}
-              </span>
-            </div>
           </div>
         </section>
 
@@ -216,9 +200,9 @@ export default function AtualizacoesFinanceiras() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os estágios</SelectItem>
-              <SelectItem value="pagamento-informado">Pagamento informado</SelectItem>
-              <SelectItem value="ordem-emitida">Ordem emitida</SelectItem>
-              <SelectItem value="credito-confirmado">Crédito bancário confirmado</SelectItem>
+              <SelectItem value="pagamento-informado">Pagamento informado pelo FNDE</SelectItem>
+              <SelectItem value="ordem-emitida">Ordem de pagamento emitida</SelectItem>
+              <SelectItem value="credito-confirmado">Crédito localizado</SelectItem>
             </SelectContent>
           </Select>
         </section>
@@ -232,7 +216,7 @@ export default function AtualizacoesFinanceiras() {
         ) : repasses.isError ? (
           <Card>
             <CardContent className="p-6 text-sm text-destructive">
-              Não foi possível consultar as fontes financeiras correntes.
+              Não foi possível carregar as atualizações financeiras neste momento.
             </CardContent>
           </Card>
         ) : filtered.length === 0 ? (
