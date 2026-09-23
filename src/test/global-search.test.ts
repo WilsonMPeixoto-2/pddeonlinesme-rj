@@ -40,10 +40,10 @@ describe("GLOBAL_NAVIGATION", () => {
 
     expect(labels).toEqual([
       "Painel",
-      "Atualizações financeiras",
       "Repasses",
       "Unidades Escolares",
     ]);
+    expect(paths).not.toContain("/atualizacoes");
     expect(paths).not.toContain("/fiscal");
     expect(paths).not.toContain("/base");
     expect(paths).not.toContain("/configuracoes");
