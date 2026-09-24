@@ -302,6 +302,22 @@ export async function installSupabaseMock(page: Page) {
       return json(route, "cadastro-atualizado");
     }
 
+    if (url.pathname.includes("/rest/v1/rpc/get_financial_dimension_publication_v1")) {
+      return json(route, [{
+        dimension_key: "pdde_basic_second_installment_payment_informed",
+        exercise: 2026,
+        coverage_observed: 163,
+        coverage_expected: 163,
+        coverage_ratio: 1,
+        reference_date_min: "2026-09-15",
+        reference_date_max: "2026-09-17",
+        quality_status: "MATURE",
+        publication_status: "PUBLISHED",
+        validated_at: "2026-09-24T12:00:00.000Z",
+        published_at: "2026-09-24T12:00:00.000Z",
+      }]);
+    }
+
     if (url.pathname.includes("/rest/v1/rpc/")) {
       return json(route, null);
     }
