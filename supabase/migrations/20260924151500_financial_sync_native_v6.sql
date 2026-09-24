@@ -330,7 +330,7 @@ language sql
 stable
 security definer
 set search_path = pg_catalog, vault
-as $
+as $token$
   select exists (
     select 1
     from vault.decrypted_secrets
@@ -338,7 +338,7 @@ as $
       and nullif(decrypted_secret, '') is not null
       and decrypted_secret = p_token
   );
-$;
+$token$;
 
 revoke all on function public.verify_pdde_financial_sync_token_v1(text)
   from public, anon, authenticated;
