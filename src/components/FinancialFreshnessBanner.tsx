@@ -47,24 +47,25 @@ export function FinancialFreshnessBanner() {
   }
 
   const freshness = query.data;
-  const storageLagIncident = freshness.status === "STORAGE_LAG" && (freshness.lagMinutes ?? 0) > 15;
   const tone = freshness.status === "CURRENT"
     ? "border-success/25 bg-success/6 text-success"
-    : freshness.status === "STORAGE_LAG" && !storageLagIncident
+    : freshness.status === "PROPAGATING"
       ? "border-amber-500/25 bg-amber-500/6 text-amber-800 dark:text-amber-300"
       : "border-destructive/30 bg-destructive/8 text-destructive";
 
   const icon = freshness.status === "CURRENT"
     ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-    : freshness.status === "STORAGE_LAG"
+    : freshness.status === "PROPAGATING" || freshness.status === "STORAGE_LAG"
       ? <Database className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
       : <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />;
 
   let message: string;
   if (freshness.status === "CURRENT") {
     message = `Dados financeiros correntes · snapshot validado em ${formatDate(freshness.enginePublishedAt)} · persistência sincronizada.`;
+  } else if (freshness.status === "PROPAGATING") {
+    message = `Novo snapshot validado em ${formatDate(freshness.enginePublishedAt)}. Os dados já são usados no layout e a persistência está dentro da janela de propagação de 15 minutos.`;
   } else if (freshness.status === "STORAGE_LAG") {
-    message = `Snapshot validado em ${formatDate(freshness.enginePublishedAt)} já está sendo usado no layout; a persistência histórica do Supabase está ${storageLagIncident ? "atrasada além da meta de 15 minutos" : "em sincronização"}.`;
+    message = `Dados financeiros desatualizados no Supabase: o snapshot validado em ${formatDate(freshness.enginePublishedAt)} já está sendo usado no layout, mas a persistência ultrapassou a meta de 15 minutos.`;
   } else if (freshness.status === "SOURCE_STALE") {
     message = `Coleta financeira diária atrasada. Último snapshot validado: ${formatDate(freshness.enginePublishedAt)}. O sistema não apresentará ausência de atualização como zero.`;
   } else {
