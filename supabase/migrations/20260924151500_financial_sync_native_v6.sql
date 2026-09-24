@@ -324,6 +324,27 @@ revoke all on function public.get_financial_sync_health_v1()
 grant execute on function public.get_financial_sync_health_v1()
   to authenticated, service_role;
 
+create or replace function public.verify_pdde_financial_sync_token_v1(p_token text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = pg_catalog, vault
+as $
+  select exists (
+    select 1
+    from vault.decrypted_secrets
+    where name = 'pdde_financial_sync_token'
+      and nullif(decrypted_secret, '') is not null
+      and decrypted_secret = p_token
+  );
+$;
+
+revoke all on function public.verify_pdde_financial_sync_token_v1(text)
+  from public, anon, authenticated;
+grant execute on function public.verify_pdde_financial_sync_token_v1(text)
+  to service_role;
+
 create or replace function public.configure_pdde_financial_sync_v1()
 returns bigint
 language plpgsql
@@ -333,6 +354,7 @@ as $$
 declare
   v_project_url text;
   v_anon_key text;
+  v_trigger_token text;
   v_job_id bigint;
 begin
   select decrypted_secret into v_project_url
@@ -345,7 +367,14 @@ begin
    where name = 'pdde_financial_sync_anon_key'
    limit 1;
 
-  if nullif(v_project_url, '') is null or nullif(v_anon_key, '') is null then
+  select decrypted_secret into v_trigger_token
+    from vault.decrypted_secrets
+   where name = 'pdde_financial_sync_token'
+   limit 1;
+
+  if nullif(v_project_url, '') is null
+     or nullif(v_anon_key, '') is null
+     or nullif(v_trigger_token, '') is null then
     raise exception 'secrets do sincronizador financeiro nao configurados no Vault'
       using errcode = '22023';
   end if;
@@ -360,7 +389,9 @@ begin
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' ||
-            (select decrypted_secret from vault.decrypted_secrets where name = 'pdde_financial_sync_anon_key')
+            (select decrypted_secret from vault.decrypted_secrets where name = 'pdde_financial_sync_anon_key'),
+          'X-PDDE-Financial-Sync-Token',
+            (select decrypted_secret from vault.decrypted_secrets where name = 'pdde_financial_sync_token')
         ),
         body := '{"trigger":"supabase-cron"}'::jsonb,
         timeout_milliseconds := 120000
