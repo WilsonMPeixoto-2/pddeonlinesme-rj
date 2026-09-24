@@ -34,6 +34,7 @@ import {
 } from "@/lib/financeiroPDDE";
 import {
   contasFinanceirasOptions,
+  financialDimensionsOptions,
   repassesFinanceirosOptions,
 } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
@@ -151,6 +152,7 @@ export default function Dashboard() {
 
   const repassesQuery = useQuery(repassesFinanceirosOptions(exercicioNumero));
   const contasQuery = useQuery(contasFinanceirasOptions(exercicioNumero));
+  const dimensionsQuery = useQuery(financialDimensionsOptions(exercicioNumero));
   const {
     data: resumoUnidades,
     isLoading: loadingResumo,
@@ -170,6 +172,10 @@ export default function Dashboard() {
     () => buildSegundaParcelaOverview(repassesQuery.data ?? [], exercicioNumero),
     [exercicioNumero, repassesQuery.data],
   );
+
+  const secondCyclePaymentDimension = dimensionsQuery.data?.find(
+    (dimension) => dimension.dimension_key === "pdde_basic_second_installment_payment_informed",
+  ) ?? null;
 
   const recentFinancialEvents = useMemo(
     () => buildRecentFinancialEvents(repassesQuery.data ?? [], exercicioNumero).slice(0, 5),
@@ -551,7 +557,12 @@ export default function Dashboard() {
           })}
         </motion.div>
 
-        {!loading ? <SegundaParcelaResumo overview={segundoCiclo} /> : null}
+        {!loading ? (
+          <SegundaParcelaResumo
+            overview={segundoCiclo}
+            paymentDimension={secondCyclePaymentDimension}
+          />
+        ) : null}
 
         <section className="space-y-4" aria-labelledby="novidades-financeiras-title">
           <div className="flex flex-wrap items-end justify-between gap-3">
