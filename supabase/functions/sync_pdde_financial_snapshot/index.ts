@@ -73,7 +73,7 @@ type ViewRepasse = {
   data_ordem_pagamento: string | null;
 };
 
-type PublicationResult = { status?: string };
+type PublicationResult = { status?: string; publication?: { status?: string } };
 type IntegrationRun = { workflow_run_id: number; artifact_id: number; publication_result: string | null };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -291,7 +291,12 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({ p_payload: payload }),
     });
     const checked = await verify(payload, key);
-    const status = publication?.status === "idempotent" ? "ALREADY_CURRENT" : publication?.status === "unchanged" ? "UNCHANGED" : "PUBLISHED";
+    const publicationStatus = publication.status ?? publication.publication?.status;
+    const status = publicationStatus === "idempotent"
+      ? "ALREADY_CURRENT"
+      : publicationStatus === "unchanged"
+        ? "UNCHANGED"
+        : "PUBLISHED";
 
     await finishAttempt(key, attemptId, {
       status,
