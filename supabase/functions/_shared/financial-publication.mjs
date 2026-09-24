@@ -1,0 +1,207 @@
+const CURRENT_EXERCISE = 2026;
+const EXPECTED_SCHOOLS = 163;
+
+function normalizedText(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+function centsToReais(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value / 100 : null;
+}
+
+function stripExercise(value) {
+  return value
+    .replace(/\b20\d{2}\b/g, "")
+    .replace(/^[\/\-\s]+|[\/\-\s]+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const STANDALONE_QUALITY_ACTIONS = new Map([
+  ["EDUCACAO CONECTADA", "Educação Conectada"],
+  ["ESCOLA E COMUNIDADE", "Escola e Comunidade"],
+  ["ESCOLA DAS ADOLESCENCIAS", "Escola das Adolescências"],
+  ["CANTINHO DA LEITURA", "Cantinho da Leitura"],
+]);
+
+function canonicalAccountProgram(program) {
+  const raw = String(program ?? "").trim();
+  const text = normalizedText(raw);
+  const standaloneAction = normalizedText(stripExercise(raw));
+  if (text.includes("EQUIDADE") || standaloneAction === "PDDE SRM") return "PDDE EQUIDADE";
+  if (text.includes("QUALIDADE") || STANDALONE_QUALITY_ACTIONS.has(standaloneAction)) return "PDDE QUALIDADE";
+  return "PDDE BÁSICO";
+}
+
+function classifyProgram(programName) {
+  const raw = String(programName ?? "").trim();
+  const text = normalizedText(raw);
+  const standaloneAction = normalizedText(stripExercise(raw));
+  if (text.includes("PRIMEIRA INFANCIA")) return { program: "PDDE BÁSICO", action: "PDDE Básico — Primeira Infância" };
+  const qualityAction = STANDALONE_QUALITY_ACTIONS.get(standaloneAction);
+  if (qualityAction) return { program: "PDDE QUALIDADE", action: qualityAction };
+  if (standaloneAction === "PDDE SRM") return { program: "PDDE EQUIDADE", action: "PDDE SRM" };
+  if (text.includes("QUALIDADE")) {
+    let action = raw.split("/").slice(1).join("/").trim();
+    if (!action) action = raw.replace(/PDDE\s+QUALIDADE/i, "").trim();
+    action = stripExercise(action);
+    return { program: "PDDE QUALIDADE", action: action || "PDDE Qualidade" };
+  }
+  if (text.includes("EQUIDADE")) {
+    let action = raw.split("/").slice(1).join("/").trim();
+    if (!action) action = raw.replace(/PDDE\s+EQUIDADE/i, "").trim();
+    action = stripExercise(action);
+    return { program: "PDDE EQUIDADE", action: action || "PDDE Equidade" };
+  }
+  if (text.includes("PDDE BASICO") || text === "PDDE" || text.startsWith("PDDE /")) return { program: "PDDE BÁSICO", action: "PDDE Básico" };
+  throw new Error(`Programa financeiro não reconhecido: ${raw || "(vazio)"}`);
+}
+
+function canonicalInstallment(value) {
+  const raw = String(value ?? "").trim();
+  const text = normalizedText(raw);
+  if (!raw) return "Parcela única";
+  if (text === "P1" || text.includes("1A PARCELA") || text.includes("1ª PARCELA") || text.includes("PRIMEIRA PARCELA")) return text === "P1" ? "P1" : "1ª Parcela";
+  if (text === "P2" || text.includes("2A PARCELA") || text.includes("2ª PARCELA") || text.includes("SEGUNDA PARCELA")) return text === "P2" ? "P2" : "2ª Parcela";
+  return raw;
+}
+
+function installmentOrder(value, index) {
+  const text = normalizedText(value);
+  if (text === "P1" || text.includes("1A PARCELA") || text.includes("1ª PARCELA") || text.includes("PRIMEIRA")) return 1;
+  if (text === "P2" || text.includes("2A PARCELA") || text.includes("2ª PARCELA") || text.includes("SEGUNDA")) return 2;
+  return index + 1;
+}
+
+function informedPayment(installment) {
+  if (typeof installment?.paymentInformedCents !== "number" || !Number.isFinite(installment.paymentInformedCents)) return null;
+  if (installment.paymentInformedCents === 0 && !installment.paymentInformedDate && !installment.paymentOrderDate) return null;
+  return centsToReais(installment.paymentInformedCents);
+}
+
+function normalizeAccount(account, inep, exercise) {
+  return { inep, exercise, program: canonicalAccountProgram(account?.program), bank: String(account?.bank ?? "").trim() || null, agency: String(account?.agency ?? "").trim() || null, account: String(account?.account ?? "").trim() || null, primary: false };
+}
+
+function hasCompleteAccountIdentity(account) {
+  return [account?.bank, account?.agency, account?.account].every((value) => typeof value === "string" && value.trim().length > 0);
+}
+
+function accountSortKey(account) {
+  return [account.program === "PDDE BÁSICO" ? "0" : account.program === "PDDE QUALIDADE" ? "1" : "2", account.program, account.bank ?? "", account.agency ?? "", account.account ?? ""].join("|");
+}
+
+function markOnePrincipal(accounts) {
+  const sorted = [...accounts].sort((a, b) => accountSortKey(a).localeCompare(accountSortKey(b), "pt-BR"));
+  if (sorted[0]) sorted[0].primary = true;
+  return sorted;
+}
+
+function normalizeRepasse(installment, programName, school, exercise, index) {
+  const { program, action } = classifyProgram(programName);
+  const paymentDate = installment?.paymentInformedDate ?? null;
+  const paid = informedPayment(installment);
+  const paymentOrderDate = installment?.paymentOrderDate ?? null;
+  const breakdown = installment?.breakdown ?? null;
+  const account = installment?.account ? { bank: String(installment.account.bank ?? "").trim() || null, agency: String(installment.account.agency ?? "").trim() || null, account: String(installment.account.number ?? "").trim() || null } : null;
+  return { inep: school.inep, exercise, program, action, installment: canonicalInstallment(installment?.installment), displayOrder: installmentOrder(installment?.installment, index), programmed: centsToReais(installment?.programmedCents), paid, programmedCusteio: centsToReais(breakdown?.programmedCusteioCents), programmedCapital: centsToReais(breakdown?.programmedCapitalCents), paidCusteio: paid === null ? null : centsToReais(breakdown?.paidCusteioCents), paidCapital: paid === null ? null : centsToReais(breakdown?.paidCapitalCents), paymentDate, paymentOrderDate, account };
+}
+
+function validateSource(snapshot, manifest) {
+  if (!manifest?.source?.workflowRunId || !manifest?.source?.artifactId || !manifest?.publishedAt) throw new Error("Manifesto financeiro sem proveniência mínima.");
+  if (snapshot?.publishedAt !== manifest.publishedAt) throw new Error("Snapshot e manifesto divergem em publishedAt.");
+  if (snapshot?.source?.workflowRunId !== manifest.source.workflowRunId || snapshot?.source?.artifactId !== manifest.source.artifactId) throw new Error("Snapshot e manifesto divergem na origem publicada.");
+}
+
+function isBasicFirstInstallment(repasse) {
+  if (repasse.program !== "PDDE BÁSICO") return false;
+  return (repasse.action === "PDDE Básico" && repasse.installment === "1ª Parcela") || (repasse.action === "PDDE Básico — Primeira Infância" && repasse.installment === "P1");
+}
+
+export function isBasicSecondInstallment(repasse) {
+  if (repasse.program !== "PDDE BÁSICO") return false;
+  return (repasse.action === "PDDE Básico" && repasse.installment === "2ª Parcela") || (repasse.action === "PDDE Básico — Primeira Infância" && repasse.installment === "P2");
+}
+
+function uniqueCoverage(rows, predicate = () => true) {
+  return new Set(rows.filter(predicate).map((row) => row.inep).filter(Boolean)).size;
+}
+
+function dateBounds(rows) {
+  const dates = rows.map((row) => row.paymentDate ?? row.paymentOrderDate).filter(Boolean).sort();
+  return { referenceDateMin: dates[0] ?? null, referenceDateMax: dates.at(-1) ?? null };
+}
+
+function dimensionStatus(dimensionKey, coverageObserved, { rejected = false, dates = [] } = {}) {
+  const coverageRatio = Math.min(coverageObserved / EXPECTED_SCHOOLS, 1);
+  const mature = !rejected && coverageObserved >= EXPECTED_SCHOOLS;
+  return { dimensionKey, coverageObserved, coverageExpected: EXPECTED_SCHOOLS, coverageRatio, qualityStatus: rejected ? "REJECTED" : mature ? "MATURE" : "VALIDATED", publicationStatus: "UNPUBLISHED", ...dateBounds(dates) };
+}
+
+export function evaluatePublicationDimensions(payload) {
+  if (Number(payload?.exercise) !== CURRENT_EXERCISE) throw new Error(`Exercício financeiro inesperado: ${payload?.exercise}`);
+  const schools = Array.isArray(payload?.schools) ? payload.schools : [];
+  const accounts = Array.isArray(payload?.accounts) ? payload.accounts : [];
+  const repasses = Array.isArray(payload?.repasses) ? payload.repasses : [];
+  const knownIneps = new Set(schools.map((school) => school.inep).filter(Boolean));
+  const globalRejected = knownIneps.size !== schools.length || [...accounts, ...repasses].some((row) => !knownIneps.has(row.inep)) || knownIneps.size > EXPECTED_SCHOOLS;
+  const invalidAccountRows = accounts.some((row) => !hasCompleteAccountIdentity(row));
+  const invalidExplicitAccountRows = repasses.some((row) => row.account !== null && row.account !== undefined && !hasCompleteAccountIdentity(row.account));
+  const accountCoverage = uniqueCoverage(accounts, hasCompleteAccountIdentity);
+  const scheduledCoverage = uniqueCoverage(repasses, (row) => typeof row.programmed === "number" && Number.isFinite(row.programmed) && row.programmed >= 0);
+  const firstRows = repasses.filter(isBasicFirstInstallment);
+  const validFirstRows = firstRows.filter((row) => typeof row.paid === "number" && Number.isFinite(row.paid) && row.paid >= 0 && Boolean(row.paymentOrderDate || row.paymentDate));
+  const firstCoverage = uniqueCoverage(validFirstRows);
+  let breakdownRejected = false;
+  const validBreakdownRows = validFirstRows.filter((row) => {
+    if (row.paidCusteio == null || row.paidCapital == null) return false;
+    if (typeof row.paidCusteio !== "number" || typeof row.paidCapital !== "number" || !Number.isFinite(row.paidCusteio) || !Number.isFinite(row.paidCapital) || row.paidCusteio < 0 || row.paidCapital < 0) { breakdownRejected = true; return false; }
+    if (Math.abs(row.paidCusteio + row.paidCapital - row.paid) >= 0.005) { breakdownRejected = true; return false; }
+    return true;
+  });
+  const breakdownCoverage = uniqueCoverage(validBreakdownRows);
+  const secondRows = repasses.filter(isBasicSecondInstallment);
+  const secondCoverage = uniqueCoverage(secondRows, (row) => typeof row.programmed === "number" && Number.isFinite(row.programmed) && row.programmed >= 0);
+  const validSecondPaymentRows = secondRows.filter((row) => typeof row.paid === "number" && Number.isFinite(row.paid) && row.paid >= 0 && Boolean(row.paymentDate));
+  const secondPaymentCoverage = uniqueCoverage(validSecondPaymentRows);
+  const invalidMoney = repasses.some((row) => (row.programmed != null && (!Number.isFinite(row.programmed) || row.programmed < 0)) || (row.paid != null && (!Number.isFinite(row.paid) || row.paid < 0)));
+  const invalidFinancialRows = invalidMoney || invalidExplicitAccountRows;
+  return [
+    dimensionStatus("bank_accounts", accountCoverage, { rejected: globalRejected || invalidAccountRows }),
+    dimensionStatus("scheduled_repasses", scheduledCoverage, { rejected: globalRejected || invalidFinancialRows }),
+    dimensionStatus("pdde_basic_first_installment", firstCoverage, { rejected: globalRejected || invalidFinancialRows, dates: validFirstRows }),
+    dimensionStatus("pdde_basic_first_installment_breakdown", breakdownCoverage, { rejected: globalRejected || invalidFinancialRows || breakdownRejected, dates: validBreakdownRows }),
+    dimensionStatus("pdde_basic_second_installment_programmed", secondCoverage, { rejected: globalRejected || invalidFinancialRows }),
+    dimensionStatus("pdde_basic_second_installment_payment_informed", secondPaymentCoverage, { rejected: globalRejected || invalidFinancialRows, dates: validSecondPaymentRows }),
+  ];
+}
+
+function compareSchools(a, b) { return String(a.inep).localeCompare(String(b.inep)); }
+function compareAccounts(a, b) { return compareSchools(a, b) || accountSortKey(a).localeCompare(accountSortKey(b), "pt-BR"); }
+const PROGRAM_SORT = new Map([["PDDE BÁSICO", 0], ["PDDE QUALIDADE", 1], ["PDDE EQUIDADE", 2]]);
+function compareRepasses(a, b) { return compareSchools(a, b) || (PROGRAM_SORT.get(a.program) ?? 99) - (PROGRAM_SORT.get(b.program) ?? 99) || a.program.localeCompare(b.program, "pt-BR") || a.action.localeCompare(b.action, "pt-BR") || a.displayOrder - b.displayOrder || a.installment.localeCompare(b.installment, "pt-BR"); }
+
+export function buildNormalizedPublicationPayload(snapshot, manifest) {
+  validateSource(snapshot, manifest);
+  const exercise = Number(snapshot?.portfolio?.fiscalYear ?? CURRENT_EXERCISE);
+  if (exercise !== CURRENT_EXERCISE) throw new Error(`Exercício financeiro inesperado: ${exercise}`);
+  const schoolRecords = Object.values(snapshot?.schools ?? {});
+  const accounts = [];
+  const repasses = [];
+  for (const schoolRecord of schoolRecords) {
+    const school = schoolRecord?.school;
+    if (!school?.inep) throw new Error("Prontuário financeiro sem INEP.");
+    accounts.push(...markOnePrincipal((schoolRecord.accounts ?? []).map((account) => normalizeAccount(account, school.inep, exercise))));
+    for (const programRecord of schoolRecord.programs ?? []) (programRecord.installments ?? []).forEach((installment, index) => repasses.push(normalizeRepasse(installment, programRecord.name, school, exercise, index)));
+  }
+  const schools = schoolRecords.map((record) => ({ inep: record.school.inep, sme: record.school.sme, name: record.school.name })).sort(compareSchools);
+  accounts.sort(compareAccounts);
+  repasses.sort(compareRepasses);
+  return { exercise, source: { origin: "pdde-repasse-conciliador", publishedAt: manifest.publishedAt, workflowRunId: manifest.source.workflowRunId, artifactId: manifest.source.artifactId, artifactName: manifest.source.artifactName ?? "sigef-full-163-2026" }, schools, accounts, repasses };
+}
