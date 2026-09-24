@@ -129,7 +129,7 @@ async function finishAttempt(key: string, id: string | undefined, patch: Record<
 }
 
 function semanticKey(row: any) {
-  return [row.inep, row.action ?? row.acao, row.installment ?? row.parcela].join("|");
+  return [row.inep, row.program ?? row.programa, row.action ?? row.acao, row.installment ?? row.parcela].join("|");
 }
 
 function numericEqual(a: unknown, b: unknown) {
