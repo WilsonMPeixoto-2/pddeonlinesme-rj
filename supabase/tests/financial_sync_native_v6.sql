@@ -1,6 +1,6 @@
 begin;
 
-select plan(10);
+select plan(11);
 
 select ok(
   to_regprocedure('public.evaluate_second_cycle_payment_v1(jsonb)') is not null,
@@ -131,6 +131,14 @@ select ok(
   exists(select 1 from pg_extension where extname = 'pg_cron')
   and exists(select 1 from pg_extension where extname = 'pg_net'),
   'agendamento e HTTP nativos do Supabase estao habilitados'
+);
+
+select ok(
+  to_regprocedure('public.verify_pdde_financial_sync_token_v1(text)') is not null
+  and has_function_privilege('service_role', 'public.verify_pdde_financial_sync_token_v1(text)', 'EXECUTE')
+  and not has_function_privilege('authenticated', 'public.verify_pdde_financial_sync_token_v1(text)', 'EXECUTE')
+  and not has_function_privilege('anon', 'public.verify_pdde_financial_sync_token_v1(text)', 'EXECUTE'),
+  'token interno do cron so pode ser validado pelo backend privilegiado'
 );
 
 select * from finish();
