@@ -162,10 +162,12 @@ O PDDE Online possui `.github/workflows/sync-financial-snapshot.yml`, que pode:
 5. transformar o contrato humano do motor no payload normalizado do PDDE Online;
 6. avaliar localmente as dimensões para diagnóstico antecipado;
 7. validar que o destino é `https://raluxyojqosfzrfozmpz.supabase.co`;
-8. chamar a RPC transacional com credencial de backend;
-9. reler `vw_repasses_financeiros_unidade` e a última execução persistida;
-10. falhar explicitamente se o estado operacional não reproduzir o snapshot;
-11. encerrar de forma idempotente quando workflow/artifact já foi publicado e comprovado.
+8. solicitar ao GitHub um token OIDC efêmero com audience dedicada;
+9. chamar a Edge Function `publish-financial-snapshot`, que valida os claims de confiança e usa credencial administrativa somente dentro do Supabase;
+10. chamar a RPC transacional v2;
+11. reler `vw_repasses_financeiros_unidade` e a última execução persistida dentro do backend;
+12. falhar explicitamente se o estado operacional não reproduzir o snapshot;
+13. encerrar de forma idempotente quando workflow/artifact já foi publicado e comprovado.
 
 ### Gatilhos V1
 
@@ -185,12 +187,9 @@ vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false'
 
 A regra aplica-se a `repository_dispatch` e `schedule`. Definir explicitamente `PDDE_FINANCIAL_SYNC_ENABLED=false` interrompe esses disparos; ausência da variável não os desativa. `workflow_dispatch` permanece disponível para execução humana controlada.
 
-O environment `production` continua precisando fornecer:
+O job usa `permissions: id-token: write` e solicita um JWT ao emissor OIDC do GitHub. A Edge Function aceita somente audience `pdde-online-financial-publisher` e valida explicitamente `repository`, `environment`, `ref`, `workflow_ref` e `event_name`.
 
-- `PDDE_SUPABASE_URL`;
-- `PDDE_SUPABASE_SERVICE_ROLE_KEY`.
-
-Ausência ou destino incorreto bloqueia a execução antes da publicação. Não existe fallback para chave `anon` nem autorização para ampliar permissões a fim de contornar secret ausente.
+A chave administrativa do Supabase não é distribuída ao GitHub. O runtime da Edge Function utiliza a chave secreta fornecida pelo próprio Supabase; não existe fallback para chave `anon` nem autorização para ampliar permissões. O caminho service-role do script permanece apenas como fallback administrativo/local fora do GitHub Actions.
 
 ### Verificação operacional
 
