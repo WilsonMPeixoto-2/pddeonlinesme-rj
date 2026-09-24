@@ -263,6 +263,13 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "METHOD_NOT_ALLOWED" }, 405);
 
   const key = adminKey();
+  const triggerToken = req.headers.get("X-PDDE-Financial-Sync-Token") ?? "";
+  const authorized = await sb<boolean>("/rest/v1/rpc/verify_pdde_financial_sync_token_v1", key, {
+    method: "POST",
+    body: JSON.stringify({ p_token: triggerToken }),
+  }).catch(() => false);
+  if (!authorized) return json({ error: "FORBIDDEN" }, 403);
+
   const attemptId = await createAttempt(key).catch(() => undefined);
 
   try {
