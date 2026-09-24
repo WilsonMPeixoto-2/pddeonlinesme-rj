@@ -1,9 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, CheckCircle2, Clock3, ReceiptText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { SegundaParcelaOverview } from "@/lib/financeiroPDDE";
+import { financialDimensionsOptions } from "@/lib/queryKeys";
 
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -22,6 +24,17 @@ function formatMoney(value: number | null) {
 }
 
 export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOverview }) {
+  const dimensionsQuery = useQuery(financialDimensionsOptions(overview.exercicio));
+  const paymentDimension = dimensionsQuery.data?.find(
+    (dimension) => dimension.dimension_key === "pdde_basic_second_installment_payment_informed",
+  ) ?? null;
+  const persistenceAligned = Boolean(
+    paymentDimension
+    && paymentDimension.quality_status === "MATURE"
+    && paymentDimension.coverage_observed === overview.pagamentosIdentificados
+    && paymentDimension.coverage_expected === overview.escolasEsperadas,
+  );
+
   if (overview.escolas.length === 0) return null;
 
   const composicaoCompleta = overview.custeioTotal !== null && overview.capitalTotal !== null;
@@ -58,12 +71,27 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
               </div>
 
               <div className="mt-6">
-                <p className="text-3xl font-bold tabular-nums tracking-tight text-foreground">
-                  {formatMoney(overview.totalInformado)}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {overview.pagamentosIdentificados} de {overview.escolasEsperadas} unidades com pagamento oficial · {overview.escolasRegularesPagas} regular + {overview.escolasPrimeiraInfanciaPagas} Primeira Infância/P2
-                </p>
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-3xl font-bold tabular-nums tracking-tight text-foreground">
+                      {formatMoney(overview.totalInformado)}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {overview.pagamentosIdentificados} de {overview.escolasEsperadas} unidades com pagamento oficial · {overview.escolasRegularesPagas} regular + {overview.escolasPrimeiraInfanciaPagas} Primeira Infância/P2
+                    </p>
+                  </div>
+                  {persistenceAligned ? (
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-success/25 bg-success/[0.055] px-2.5 py-1 text-[10px] font-semibold text-success">
+                      <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+                      Consolidação publicada
+                    </div>
+                  ) : overview.coberturaPagamentoCompleta ? (
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/[0.055] px-2.5 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
+                      <Clock3 className="h-3 w-3" aria-hidden="true" />
+                      Histórico em sincronização
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
               <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -79,7 +107,9 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                     {overview.coberturaPagamentoCompleta
                       ? "Cobertura completa da carteira"
                       : `${(overview.coberturaPagamento * 100).toFixed(1)}% da carteira esperada`}
-                    {overview.ultimaDataPagamento ? ` · ${formatDate(overview.ultimaDataPagamento)}` : ""}
+                    {(paymentDimension?.reference_date_max ?? overview.ultimaDataPagamento)
+                      ? ` · referência ${formatDate(paymentDimension?.reference_date_max ?? overview.ultimaDataPagamento)}`
+                      : ""}
                   </p>
                 </div>
 
