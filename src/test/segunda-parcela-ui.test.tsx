@@ -1,11 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { SegundaParcelaResumo } from "@/components/SegundaParcelaResumo";
 import { SegundaParcelaUnidadeResumo } from "@/components/SegundaParcelaUnidadeResumo";
 import type { SegundaParcelaOverview } from "@/lib/financeiroPDDE";
+
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: {
+    rpc: vi.fn(),
+  },
+}));
 
 const overview: SegundaParcelaOverview = {
   exercicio: 2026,
