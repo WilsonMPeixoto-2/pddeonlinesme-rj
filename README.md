@@ -71,7 +71,7 @@ Existe o workflow `.github/workflows/sync-financial-snapshot.yml` para validar e
 
 O motor executa a coleta integral diariamente às **07:05 (America/Sao_Paulo)**. O PDDE Online recebe o evento de publicação e mantém fallback diário às **10:30**.
 
-A sincronização automática é elegível por padrão, salvo kill-switch explícito `PDDE_FINANCIAL_SYNC_ENABLED=false`, e continua exigindo `PDDE_SUPABASE_SERVICE_ROLE_KEY` no environment `production`.
+A sincronização automática é elegível por padrão, salvo kill-switch explícito `PDDE_FINANCIAL_SYNC_ENABLED=false`. A publicação usa **GitHub OIDC** com token efêmero e audience dedicada; a chave administrativa permanece apenas no runtime do Supabase e não é armazenada no GitHub Actions.
 
 A publicação só é considerada concluída quando o workflow executa **read-after-write** e comprova que a proveniência, a cobertura, os valores e as datas da mesma view consumida pelo frontend coincidem com o snapshot validado. Atraso de persistência superior a **15 minutos** é tratado como incidente visível de frescor, não como ausência de dados.
 
