@@ -1,11 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, CheckCircle2, Clock3, ReceiptText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { SegundaParcelaOverview } from "@/lib/financeiroPDDE";
-import { financialDimensionsOptions } from "@/lib/queryKeys";
+import type { FinancialDimensionPublication } from "@/lib/queryKeys";
 
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -23,11 +22,13 @@ function formatMoney(value: number | null) {
   return value === null ? "—" : moneyFormatter.format(value);
 }
 
-export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOverview }) {
-  const dimensionsQuery = useQuery(financialDimensionsOptions(overview.exercicio));
-  const paymentDimension = dimensionsQuery.data?.find(
-    (dimension) => dimension.dimension_key === "pdde_basic_second_installment_payment_informed",
-  ) ?? null;
+export function SegundaParcelaResumo({
+  overview,
+  paymentDimension = null,
+}: {
+  overview: SegundaParcelaOverview;
+  paymentDimension?: FinancialDimensionPublication | null;
+}) {
   const persistenceAligned = Boolean(
     paymentDimension
     && paymentDimension.quality_status === "MATURE"
