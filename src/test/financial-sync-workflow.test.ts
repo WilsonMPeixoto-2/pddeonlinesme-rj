@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const workflowPath = resolve(process.cwd(), ".github/workflows/sync-financial-snapshot.yml");
 
 describe("workflow de sincronização financeira", () => {
-  it("usa somente o PDDE Online e credenciais service-role dedicadas", async () => {
+  it("usa somente o PDDE Online e autenticação OIDC efêmera", async () => {
     const workflow = await readFile(workflowPath, "utf8");
 
     expect(workflow).toContain("workflow_dispatch:");
@@ -15,8 +15,12 @@ describe("workflow de sincronização financeira", () => {
     expect(workflow).toContain("sync-financial-snapshot-production");
     expect(workflow).toContain("SUPABASE_URL: https://raluxyojqosfzrfozmpz.supabase.co");
     expect(workflow).not.toContain("secrets.PDDE_SUPABASE_URL");
-    expect(workflow).toContain("PDDE_SUPABASE_SERVICE_ROLE_KEY");
-    expect(workflow).toContain("PDDE_SUPABASE_SERVICE_ROLE_KEY não configurado");
+    expect(workflow).toContain("id-token: write");
+    expect(workflow).toContain("ACTIONS_ID_TOKEN_REQUEST_URL");
+    expect(workflow).toContain("ACTIONS_ID_TOKEN_REQUEST_TOKEN");
+    expect(workflow).toContain("pdde-online-financial-publisher");
+    expect(workflow).toContain("GITHUB_OIDC_TOKEN");
+    expect(workflow).not.toContain("PDDE_SUPABASE_SERVICE_ROLE_KEY");
     expect(workflow).toContain("npm run sync:financial:snapshot");
     expect(workflow).not.toContain("scnryinorqeucbfkioxo");
     expect(workflow).not.toContain("SUPABASE_ANON_KEY");
