@@ -43,6 +43,14 @@ alter table public.financial_sync_attempts enable row level security;
 revoke all on public.financial_sync_attempts from public, anon, authenticated;
 grant select, insert, update on public.financial_sync_attempts to service_role;
 
+update public.financial_dimension_contracts
+   set contract_version = greatest(contract_version, 2),
+       requirements = (coalesce(requirements, '{}'::jsonb) - 'requires_payment_date')
+         || '{"requires_paid_amount":true,"requires_payment_or_order_date":true,"evidence":"PDDEINFO_PAYMENT_INFORMED","bank_credit_is_separate":true}'::jsonb,
+       updated_at = now()
+ where exercise = 2026
+   and dimension_key = 'pdde_basic_second_installment_payment_informed';
+
 create or replace function public.evaluate_second_cycle_payment_v1(p_payload jsonb)
 returns jsonb
 language plpgsql
