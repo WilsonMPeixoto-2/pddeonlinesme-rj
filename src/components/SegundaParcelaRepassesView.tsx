@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useExercicio } from "@/hooks/useExercicio";
 import { buildSegundaParcelaOverview } from "@/lib/financeiroPDDE";
-import { repassesFinanceirosOptions } from "@/lib/queryKeys";
+import { financialDimensionsOptions, repassesFinanceirosOptions } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -68,6 +68,7 @@ export function SegundaParcelaRepassesView() {
   const { exercicio } = useExercicio();
   const exercicioNumero = Number(exercicio);
   const repassesQuery = useQuery(repassesFinanceirosOptions(exercicioNumero));
+  const dimensionsQuery = useQuery(financialDimensionsOptions(exercicioNumero));
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(() => searchParams.get("q") ?? "");
   const [status, setStatus] = useState<"todos" | "ordem" | "pago">(() => {
@@ -81,6 +82,16 @@ export function SegundaParcelaRepassesView() {
   const overview = useMemo(
     () => buildSegundaParcelaOverview(repassesQuery.data ?? [], exercicioNumero),
     [repassesQuery.data, exercicioNumero],
+  );
+
+  const paymentDimension = dimensionsQuery.data?.find(
+    (dimension) => dimension.dimension_key === "pdde_basic_second_installment_payment_informed",
+  ) ?? null;
+  const persistenceAligned = Boolean(
+    paymentDimension
+    && paymentDimension.quality_status === "MATURE"
+    && paymentDimension.coverage_observed === overview.pagamentosIdentificados
+    && paymentDimension.coverage_expected === overview.escolasEsperadas,
   );
 
   useEffect(() => {
@@ -243,7 +254,9 @@ export function SegundaParcelaRepassesView() {
                     {overview.coberturaPagamentoCompleta
                       ? "Cobertura completa da carteira da 4ª CRE"
                       : `${(overview.coberturaPagamento * 100).toFixed(1)}% da carteira esperada`}
-                    {overview.ultimaDataPagamento ? ` · mais recente em ${formatDate(overview.ultimaDataPagamento)}` : ""}
+                    {(paymentDimension?.reference_date_max ?? overview.ultimaDataPagamento)
+                      ? ` · referência ${formatDate(paymentDimension?.reference_date_max ?? overview.ultimaDataPagamento)}`
+                      : ""}
                   </p>
                 </div>
                 <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
@@ -268,6 +281,15 @@ export function SegundaParcelaRepassesView() {
                 </div>
               </CardContent>
             </Card>
+
+            {overview.coberturaPagamentoCompleta && !persistenceAligned && !dimensionsQuery.isLoading ? (
+              <div className="flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/[0.035] px-4 py-3 text-xs text-amber-800 dark:text-amber-200">
+                <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>
+                  A cobertura oficial corrente está completa, mas a consolidação histórica ainda aguarda uma nova publicação no banco. O detalhamento acima continua vindo da fonte financeira corrente.
+                </span>
+              </div>
+            ) : null}
 
             {composicaoCompleta && totalComposicao !== null ? (
               <Card className="shadow-sm">

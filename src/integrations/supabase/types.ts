@@ -7,11 +7,55 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
+      _financial_second_cycle_reconcile_20260921: {
+        Row: {
+          acao: string
+          capital_pago: number | null
+          capital_programado: number | null
+          custeio_pago: number | null
+          custeio_programado: number | null
+          data_ordem_pagamento: string | null
+          data_pagamento: string | null
+          inep: string
+          parcela: string
+          valor_pago: number
+          valor_programado: number
+        }
+        Insert: {
+          acao: string
+          capital_pago?: number | null
+          capital_programado?: number | null
+          custeio_pago?: number | null
+          custeio_programado?: number | null
+          data_ordem_pagamento?: string | null
+          data_pagamento?: string | null
+          inep: string
+          parcela: string
+          valor_pago: number
+          valor_programado: number
+        }
+        Update: {
+          acao?: string
+          capital_pago?: number | null
+          capital_programado?: number | null
+          custeio_pago?: number | null
+          custeio_programado?: number | null
+          data_ordem_pagamento?: string | null
+          data_pagamento?: string | null
+          inep?: string
+          parcela?: string
+          valor_pago?: number
+          valor_programado?: number
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -382,6 +426,114 @@ export type Database = {
           },
         ]
       }
+      financial_dimension_contracts: {
+        Row: {
+          contract_version: number
+          coverage_expected: number
+          coverage_required_ratio: number
+          created_at: string
+          dimension_key: string
+          enabled: boolean
+          exercise: number
+          requirements: Json
+          updated_at: string
+        }
+        Insert: {
+          contract_version?: number
+          coverage_expected: number
+          coverage_required_ratio: number
+          created_at?: string
+          dimension_key: string
+          enabled?: boolean
+          exercise: number
+          requirements?: Json
+          updated_at?: string
+        }
+        Update: {
+          contract_version?: number
+          coverage_expected?: number
+          coverage_required_ratio?: number
+          created_at?: string
+          dimension_key?: string
+          enabled?: boolean
+          exercise?: number
+          requirements?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      financial_dimension_status: {
+        Row: {
+          coverage_expected: number
+          coverage_observed: number
+          coverage_ratio: number
+          created_at: string
+          dimension_key: string
+          exercise: number
+          id: string
+          integration_run_id: string
+          publication_status: string
+          published_at: string | null
+          quality_status: string
+          reference_date_max: string | null
+          reference_date_min: string | null
+          source_snapshot_digest: string | null
+          validated_at: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          coverage_expected: number
+          coverage_observed: number
+          coverage_ratio: number
+          created_at?: string
+          dimension_key: string
+          exercise: number
+          id?: string
+          integration_run_id: string
+          publication_status: string
+          published_at?: string | null
+          quality_status: string
+          reference_date_max?: string | null
+          reference_date_min?: string | null
+          source_snapshot_digest?: string | null
+          validated_at?: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          coverage_expected?: number
+          coverage_observed?: number
+          coverage_ratio?: number
+          created_at?: string
+          dimension_key?: string
+          exercise?: number
+          id?: string
+          integration_run_id?: string
+          publication_status?: string
+          published_at?: string | null
+          quality_status?: string
+          reference_date_max?: string | null
+          reference_date_min?: string | null
+          source_snapshot_digest?: string | null
+          validated_at?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_dimension_status_contract_fkey"
+            columns: ["dimension_key", "exercise"]
+            isOneToOne: false
+            referencedRelation: "financial_dimension_contracts"
+            referencedColumns: ["dimension_key", "exercise"]
+          },
+          {
+            foreignKeyName: "financial_dimension_status_integration_run_id_fkey"
+            columns: ["integration_run_id"]
+            isOneToOne: false
+            referencedRelation: "integracoes_financeiras_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_logs: {
         Row: {
           created_at: string
@@ -433,11 +585,15 @@ export type Database = {
       integracoes_financeiras_runs: {
         Row: {
           artifact_id: number | null
+          artifact_name: string | null
+          business_digest: string | null
           criado_em: string
           exercicio: number
           id: string
           origem: string
           publicado_em: string | null
+          publication_result: string | null
+          snapshot_digest: string | null
           total_contas: number
           total_repasses: number
           total_unidades: number
@@ -445,11 +601,15 @@ export type Database = {
         }
         Insert: {
           artifact_id?: number | null
+          artifact_name?: string | null
+          business_digest?: string | null
           criado_em?: string
           exercicio: number
           id?: string
           origem: string
           publicado_em?: string | null
+          publication_result?: string | null
+          snapshot_digest?: string | null
           total_contas?: number
           total_repasses?: number
           total_unidades?: number
@@ -457,17 +617,84 @@ export type Database = {
         }
         Update: {
           artifact_id?: number | null
+          artifact_name?: string | null
+          business_digest?: string | null
           criado_em?: string
           exercicio?: number
           id?: string
           origem?: string
           publicado_em?: string | null
+          publication_result?: string | null
+          snapshot_digest?: string | null
           total_contas?: number
           total_repasses?: number
           total_unidades?: number
           workflow_run_id?: number | null
         }
         Relationships: []
+      }
+      repasse_evidencias_financeiras: {
+        Row: {
+          capital_pago_informado: number | null
+          created_at: string
+          custeio_pago_informado: number | null
+          data_ordem_pagamento: string | null
+          data_pagamento: string | null
+          fonte: string
+          id: string
+          observacao: string | null
+          referencia: string
+          repasse_financeiro_id: string
+          tipo_evidencia: string
+          updated_at: string
+          valor_pago_informado: number | null
+        }
+        Insert: {
+          capital_pago_informado?: number | null
+          created_at?: string
+          custeio_pago_informado?: number | null
+          data_ordem_pagamento?: string | null
+          data_pagamento?: string | null
+          fonte: string
+          id?: string
+          observacao?: string | null
+          referencia: string
+          repasse_financeiro_id: string
+          tipo_evidencia: string
+          updated_at?: string
+          valor_pago_informado?: number | null
+        }
+        Update: {
+          capital_pago_informado?: number | null
+          created_at?: string
+          custeio_pago_informado?: number | null
+          data_ordem_pagamento?: string | null
+          data_pagamento?: string | null
+          fonte?: string
+          id?: string
+          observacao?: string | null
+          referencia?: string
+          repasse_financeiro_id?: string
+          tipo_evidencia?: string
+          updated_at?: string
+          valor_pago_informado?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repasse_evidencias_financeiras_repasse_financeiro_id_fkey"
+            columns: ["repasse_financeiro_id"]
+            isOneToOne: false
+            referencedRelation: "repasses_financeiros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repasse_evidencias_financeiras_repasse_financeiro_id_fkey"
+            columns: ["repasse_financeiro_id"]
+            isOneToOne: false
+            referencedRelation: "vw_repasses_financeiros_unidade"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       repasses_financeiros: {
         Row: {
@@ -694,6 +921,56 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_financial_dimension_publication: {
+        Row: {
+          coverage_expected: number | null
+          coverage_observed: number | null
+          coverage_ratio: number | null
+          dimension_key: string | null
+          exercise: number | null
+          publication_status: string | null
+          published_at: string | null
+          quality_status: string | null
+          reference_date_max: string | null
+          reference_date_min: string | null
+          validated_at: string | null
+        }
+        Insert: {
+          coverage_expected?: number | null
+          coverage_observed?: number | null
+          coverage_ratio?: number | null
+          dimension_key?: string | null
+          exercise?: number | null
+          publication_status?: string | null
+          published_at?: string | null
+          quality_status?: string | null
+          reference_date_max?: string | null
+          reference_date_min?: string | null
+          validated_at?: string | null
+        }
+        Update: {
+          coverage_expected?: number | null
+          coverage_observed?: number | null
+          coverage_ratio?: number | null
+          dimension_key?: string | null
+          exercise?: number | null
+          publication_status?: string | null
+          published_at?: string | null
+          quality_status?: string | null
+          reference_date_max?: string | null
+          reference_date_min?: string | null
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_dimension_status_contract_fkey"
+            columns: ["dimension_key", "exercise"]
+            isOneToOne: false
+            referencedRelation: "financial_dimension_contracts"
+            referencedColumns: ["dimension_key", "exercise"]
+          },
+        ]
+      }
       vw_repasses_financeiros_unidade: {
         Row: {
           acao: string | null
@@ -823,25 +1100,39 @@ export type Database = {
         Args: { p_file_hash: string; p_file_name: string; p_items: Json }
         Returns: Json
       }
+      get_financial_dimension_publication_v1: {
+        Args: { p_exercise: number }
+        Returns: {
+          coverage_expected: number
+          coverage_observed: number
+          coverage_ratio: number
+          dimension_key: string
+          exercise: number
+          publication_status: string
+          published_at: string
+          quality_status: string
+          reference_date_max: string
+          reference_date_min: string
+          validated_at: string
+        }[]
+      }
+      get_financial_freshness_v1: {
+        Args: { p_exercise: number }
+        Returns: {
+          artifact_id: number
+          exercise: number
+          publication_result: string
+          source_published_at: string
+          storage_recorded_at: string
+          workflow_run_id: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
-      }
-      get_financial_freshness_v1: {
-        Args: {
-          p_exercise: number
-        }
-        Returns: {
-          artifact_id: number
-          exercise: number
-          publication_result: string | null
-          source_published_at: string | null
-          storage_recorded_at: string
-          workflow_run_id: number
-        }[]
       }
       list_admin_users: {
         Args: never
@@ -854,11 +1145,27 @@ export type Database = {
           user_id: string
         }[]
       }
+      publish_financial_snapshot_v1: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
+      publish_financial_snapshot_with_order_evidence_v1: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
+      publish_financial_snapshot_with_order_evidence_v2: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
+      sync_financial_order_evidence_v1: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
       update_unidade_cadastro_minima:
         | {
             Args: {
-              p_diretor: string | null
-              p_endereco: string | null
+              p_diretor: string
+              p_endereco: string
               p_nome: string
               p_unidade_id: string
             }
@@ -866,11 +1173,11 @@ export type Database = {
           }
         | {
             Args: {
-              p_agencia: string | null
-              p_banco: string | null
-              p_conta_corrente: string | null
-              p_diretor: string | null
-              p_endereco: string | null
+              p_agencia: string
+              p_banco: string
+              p_conta_corrente: string
+              p_diretor: string
+              p_endereco: string
               p_nome: string
               p_unidade_id: string
             }
@@ -993,7 +1300,7 @@ export type CompositeTypes<
   CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals

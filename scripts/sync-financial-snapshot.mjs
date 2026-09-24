@@ -220,11 +220,42 @@ export function prepareFinancialPublicationPayload(snapshot, manifest, snapshotD
 
 export async function publishFinancialPayload(payload, env = process.env) {
   const supabaseUrl = String(env.SUPABASE_URL ?? "").replace(/\/$/, "");
+  const oidcToken = String(env.GITHUB_OIDC_TOKEN ?? "");
   const serviceRoleKey = String(env.SUPABASE_SERVICE_ROLE_KEY ?? "");
+
   if (supabaseUrl !== EXPECTED_SUPABASE_URL) {
     throw new Error("SUPABASE_URL não corresponde ao projeto PDDE Online autorizado.");
   }
-  if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada.");
+
+  if (oidcToken) {
+    const response = await fetch(`${supabaseUrl}/functions/v1/publish-financial-snapshot`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${oidcToken}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ payload }),
+      redirect: "error",
+      signal: AbortSignal.timeout(90_000),
+    });
+    const responseText = await response.text();
+    if (!response.ok) {
+      throw new Error(
+        `Edge Function recusou a publicação financeira via OIDC: HTTP ${response.status} ${responseText.slice(0, 500)}`,
+      );
+    }
+    const edgeResult = responseText ? JSON.parse(responseText) : null;
+    return {
+      transport: "github-oidc",
+      result: edgeResult?.result ?? null,
+      readAfterWrite: edgeResult?.readAfterWrite ?? null,
+    };
+  }
+
+  if (!serviceRoleKey) {
+    throw new Error("Nenhuma credencial de publicação disponível: GITHUB_OIDC_TOKEN e SUPABASE_SERVICE_ROLE_KEY ausentes.");
+  }
 
   const response = await fetch(`${supabaseUrl}/rest/v1/rpc/publish_financial_snapshot_with_order_evidence_v2`, {
     method: "POST",
@@ -242,7 +273,11 @@ export async function publishFinancialPayload(payload, env = process.env) {
   if (!response.ok) {
     throw new Error(`Supabase recusou a publicação financeira com evidências de ordem: HTTP ${response.status} ${responseText.slice(0, 500)}`);
   }
-  return responseText ? JSON.parse(responseText) : null;
+  return {
+    transport: "service-role",
+    result: responseText ? JSON.parse(responseText) : null,
+    readAfterWrite: null,
+  };
 }
 
 function financialHeaders(serviceRoleKey) {
@@ -451,9 +486,15 @@ async function main() {
     return;
   }
 
-  const result = await publishFinancialPayload(payload);
-  const readAfterWrite = await verifyPublishedFinancialState(payload);
-  console.log(JSON.stringify({ ...summary, result, readAfterWrite }));
+  const publication = await publishFinancialPayload(payload);
+  const readAfterWrite = publication.readAfterWrite
+    ?? await verifyPublishedFinancialState(payload);
+  console.log(JSON.stringify({
+    ...summary,
+    transport: publication.transport,
+    result: publication.result,
+    readAfterWrite,
+  }));
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : null;

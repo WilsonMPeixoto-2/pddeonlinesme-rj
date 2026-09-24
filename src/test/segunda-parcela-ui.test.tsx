@@ -42,19 +42,41 @@ const overview: SegundaParcelaOverview = {
   ],
 };
 
+const paymentDimension = {
+  dimension_key: "pdde_basic_second_installment_payment_informed",
+  exercise: 2026,
+  coverage_observed: 163,
+  coverage_expected: 163,
+  coverage_ratio: 1,
+  reference_date_min: "2026-09-15",
+  reference_date_max: "2026-09-17",
+  quality_status: "MATURE",
+  publication_status: "PUBLISHED",
+  validated_at: "2026-09-24T12:00:00.000Z",
+  published_at: "2026-09-24T12:00:00.000Z",
+} as const;
+
+function renderResumo() {
+  return render(
+    <MemoryRouter>
+      <SegundaParcelaResumo
+        overview={overview}
+        paymentDimension={paymentDimension}
+      />
+    </MemoryRouter>,
+  );
+}
+
 describe("superfície do segundo ciclo", () => {
   it("expõe pagamento informado sem promovê-lo a crédito bancário confirmado", () => {
-    render(
-      <MemoryRouter>
-        <SegundaParcelaResumo overview={overview} />
-      </MemoryRouter>,
-    );
+    renderResumo();
 
     expect(screen.getByText(/132\.630,00/)).toBeVisible();
     expect(screen.getByText(/81\.034,00/)).toBeVisible();
     expect(screen.getByText(/51\.596,00/)).toBeVisible();
     expect(screen.getByText("04.10.601 — CM MANGUINHOS")).toBeVisible();
     expect(screen.getAllByText(/Pagamento informado/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Consolidação publicada")).toBeVisible();
     expect(screen.getByText(/Fonte bancária pública ainda sem cobertura suficiente/i)).toBeVisible();
     expect(screen.getByRole("link", { name: /Ver todas as 1/i })).toHaveAttribute("href", "/repasses?ciclo=2");
   });

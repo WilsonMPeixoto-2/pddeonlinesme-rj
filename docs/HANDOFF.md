@@ -155,15 +155,16 @@ Desde a PR #174, `repository_dispatch` e o fallback diário estão habilitados p
 vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false'
 ```
 
-`PDDE_FINANCIAL_SYNC_ENABLED=false` é o kill-switch explícito. A publicação real continua exigindo:
+`PDDE_FINANCIAL_SYNC_ENABLED=false` é o kill-switch explícito. A publicação automática usa **GitHub OIDC**: o job solicita um token efêmero com audience `pdde-online-financial-publisher`, e a Edge Function do Supabase valida repositório, environment `production`, branch `main`, workflow e evento antes de chamar a RPC transacional.
 
-- `PDDE_SUPABASE_URL` no environment `production`;
-- `PDDE_SUPABASE_SERVICE_ROLE_KEY`;
-- destino correto;
+A publicação real continua exigindo:
+
+- destino fixo `https://raluxyojqosfzrfozmpz.supabase.co`;
 - snapshot/proveniência válidos;
-- gates de maturidade, cobertura e regressão aprovados.
+- gates de maturidade, cobertura e regressão aprovados;
+- read-after-write da view operacional.
 
-Configuração ativa não equivale a publicação comprovada. Na reconciliação de 18/09/2026, o Supabase ainda mostrava como última publicação financeira **09/09/2026**, portanto a primeira execução automática pós-PR #174 permanecia pendente de comprovação.
+A chave administrativa não é armazenada no GitHub Actions; permanece restrita ao runtime do Supabase. Configuração ativa continua não equivalendo a publicação comprovada.
 
 ## 6. CI atual
 

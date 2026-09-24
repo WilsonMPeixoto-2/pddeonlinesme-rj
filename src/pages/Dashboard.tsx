@@ -34,6 +34,7 @@ import {
 } from "@/lib/financeiroPDDE";
 import {
   contasFinanceirasOptions,
+  financialDimensionsOptions,
   repassesFinanceirosOptions,
 } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
@@ -151,6 +152,7 @@ export default function Dashboard() {
 
   const repassesQuery = useQuery(repassesFinanceirosOptions(exercicioNumero));
   const contasQuery = useQuery(contasFinanceirasOptions(exercicioNumero));
+  const dimensionsQuery = useQuery(financialDimensionsOptions(exercicioNumero));
   const {
     data: resumoUnidades,
     isLoading: loadingResumo,
@@ -171,6 +173,10 @@ export default function Dashboard() {
     [exercicioNumero, repassesQuery.data],
   );
 
+  const secondCyclePaymentDimension = dimensionsQuery.data?.find(
+    (dimension) => dimension.dimension_key === "pdde_basic_second_installment_payment_informed",
+  ) ?? null;
+
   const recentFinancialEvents = useMemo(
     () => buildRecentFinancialEvents(repassesQuery.data ?? [], exercicioNumero).slice(0, 5),
     [exercicioNumero, repassesQuery.data],
@@ -183,6 +189,7 @@ export default function Dashboard() {
   const totalUnidades = overview.totalEscolas > 0
     ? overview.totalEscolas
     : (resumoUnidades?.total ?? null);
+  const hasSegundoCiclo = segundoCiclo.pagamentosIdentificados > 0;
   const composicaoDisponivel = overview.primeiraParcela.custeioPago !== null
     && overview.primeiraParcela.capitalPago !== null;
   const totalComposicao = composicaoDisponivel
@@ -310,11 +317,19 @@ export default function Dashboard() {
 
               <div>
                 <p className="mb-2 text-sm font-medium text-muted-foreground">
-                  1ª parcela paga · PDDE Básico · {exercicio}
+                  {hasSegundoCiclo
+                    ? `2º ciclo · PDDE Básico · pagamento informado pelo FNDE · ${exercicio}`
+                    : `1ª parcela paga · PDDE Básico · ${exercicio}`}
                 </p>
                 <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
                   {loading ? (
                     <Skeleton className="h-16 w-[80%]" />
+                  ) : hasSegundoCiclo ? (
+                    <NumberTicker
+                      value={segundoCiclo.totalInformado}
+                      format={fmtBRLDecimal}
+                      className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
+                    />
                   ) : overview.primeiraParcela.totalPago !== null ? (
                     <NumberTicker
                       value={overview.primeiraParcela.totalPago}
@@ -326,15 +341,26 @@ export default function Dashboard() {
                   )}
                 </h1>
                 <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
-                  Pagamento identificado para {overview.primeiraParcela.escolas} de {totalUnidades ?? "—"} unidades escolares no recorte exibido.
-                  {overview.primeiraParcela.ultimaDataPagamento
-                    ? ` Última data de pagamento deste recorte: ${formatDate(overview.primeiraParcela.ultimaDataPagamento)}.`
-                    : ""}
+                  {hasSegundoCiclo ? (
+                    <>
+                      Pagamento oficial identificado para {segundoCiclo.pagamentosIdentificados} de {segundoCiclo.escolasEsperadas} unidades da 4ª CRE.
+                      {segundoCiclo.ultimaDataPagamento
+                        ? ` Referência mais recente: ${formatDate(segundoCiclo.ultimaDataPagamento)}.`
+                        : ""}
+                    </>
+                  ) : (
+                    <>
+                      Pagamento identificado para {overview.primeiraParcela.escolas} de {totalUnidades ?? "—"} unidades escolares no recorte exibido.
+                      {overview.primeiraParcela.ultimaDataPagamento
+                        ? ` Última data de pagamento deste recorte: ${formatDate(overview.primeiraParcela.ultimaDataPagamento)}.`
+                        : ""}
+                    </>
+                  )}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
-                <Button onClick={() => navigate("/repasses", { viewTransition: true })}>
+                <Button onClick={() => navigate(hasSegundoCiclo ? "/repasses?ciclo=2" : "/repasses", { viewTransition: true })}>
                   Explorar repasses
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -345,74 +371,125 @@ export default function Dashboard() {
             </div>
 
             <div className="ds-card-elevated space-y-5 p-5 backdrop-blur-md">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="ds-eyebrow">Composição da 1ª parcela</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Custeio e capital no mesmo recorte do destaque principal.</p>
-                </div>
-                <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                  {overview.primeiraParcela.detalhamentoCompleto}/{overview.primeiraParcela.escolas} completos
-                </span>
-              </div>
-
-              {composicaoDisponivel && totalComposicao !== null && totalComposicao > 0 ? (
-                <div className="space-y-5">
-                  <div
-                    className="flex h-3 overflow-hidden rounded-full bg-muted"
-                    role="img"
-                    aria-label={`Composição da primeira parcela: ${custeioPercentual.toFixed(1)}% custeio e ${capitalPercentual.toFixed(1)}% capital`}
-                  >
-                    <div className="h-full bg-fin-custeio" style={{ width: `${custeioPercentual}%` }} />
-                    <div className="h-full bg-fin-capital" style={{ width: `${capitalPercentual}%` }} />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-fin-custeio" aria-hidden="true" />
-                        <p className="text-xs font-medium text-muted-foreground">Custeio</p>
-                      </div>
-                      <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
-                        {formatMoneyOrDash(overview.primeiraParcela.custeioPago)}
-                      </p>
-                      <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">
-                        {custeioPercentual.toFixed(1)}% do total
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-fin-capital" aria-hidden="true" />
-                        <p className="text-xs font-medium text-muted-foreground">Capital</p>
-                      </div>
-                      <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
-                        {formatMoneyOrDash(overview.primeiraParcela.capitalPago)}
-                      </p>
-                      <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">
-                        {capitalPercentual.toFixed(1)}% do total
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-4">
+              {hasSegundoCiclo ? (
+                <>
+                  <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground">Cobertura do detalhamento</p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">
-                        Somente valores conhecidos; ausência de dado não é convertida em zero.
-                      </p>
+                      <p className="ds-eyebrow">Cobertura do 2º ciclo</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Leitura consolidada dos pagamentos oficiais identificados.</p>
                     </div>
-                    <span className="text-sm font-semibold tabular-nums text-foreground">
-                      {formatMoneyOrDash(totalComposicao)}
+                    <span className="shrink-0 rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] font-semibold text-primary">
+                      {segundoCiclo.pagamentosIdentificados}/{segundoCiclo.escolasEsperadas}
                     </span>
                   </div>
-                </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-end justify-between gap-3">
+                        <p className="text-3xl font-semibold tabular-nums text-foreground">
+                          {(segundoCiclo.coberturaPagamento * 100).toFixed(segundoCiclo.coberturaPagamentoCompleta ? 0 : 1)}%
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {segundoCiclo.coberturaPagamentoCompleta ? "cobertura completa" : "da carteira esperada"}
+                        </p>
+                      </div>
+                      <div
+                        className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted"
+                        role="progressbar"
+                        aria-label="Cobertura do pagamento oficial do segundo ciclo"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round(segundoCiclo.coberturaPagamento * 100)}
+                      >
+                        <div
+                          className="h-full rounded-full bg-primary transition-all"
+                          style={{ width: `${Math.min(segundoCiclo.coberturaPagamento * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2ª parcela regular</p>
+                        <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{segundoCiclo.escolasRegularesPagas}</p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground">unidades escolares</p>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Primeira Infância · P2</p>
+                        <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{segundoCiclo.escolasPrimeiraInfanciaPagas}</p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground">unidades escolares</p>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-border/50 pt-4 text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">Crédito bancário:</span>{" "}
+                      {segundoCiclo.creditosBancariosConfirmados > 0
+                        ? `${segundoCiclo.creditosBancariosConfirmados} confirmações localizadas`
+                        : "a confirmação no extrato permanece uma evidência independente."}
+                    </div>
+                  </div>
+                </>
               ) : (
-                <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5">
-                  <p className="text-sm font-medium text-foreground">Composição ainda não disponível para todo o recorte</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    O Painel preserva a ausência de informação em vez de inferir custeio ou capital como zero.
-                  </p>
-                </div>
+                <>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="ds-eyebrow">Composição da 1ª parcela</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Custeio e capital no mesmo recorte do destaque principal.</p>
+                    </div>
+                    <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                      {overview.primeiraParcela.detalhamentoCompleto}/{overview.primeiraParcela.escolas} completos
+                    </span>
+                  </div>
+
+                  {composicaoDisponivel && totalComposicao !== null && totalComposicao > 0 ? (
+                    <div className="space-y-5">
+                      <div
+                        className="flex h-3 overflow-hidden rounded-full bg-muted"
+                        role="img"
+                        aria-label={`Composição da primeira parcela: ${custeioPercentual.toFixed(1)}% custeio e ${capitalPercentual.toFixed(1)}% capital`}
+                      >
+                        <div className="h-full bg-fin-custeio" style={{ width: `${custeioPercentual}%` }} />
+                        <div className="h-full bg-fin-capital" style={{ width: `${capitalPercentual}%` }} />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-fin-custeio" aria-hidden="true" />
+                            <p className="text-xs font-medium text-muted-foreground">Custeio</p>
+                          </div>
+                          <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
+                            {formatMoneyOrDash(overview.primeiraParcela.custeioPago)}
+                          </p>
+                          <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">{custeioPercentual.toFixed(1)}% do total</p>
+                        </div>
+                        <div className="rounded-xl border border-border/60 bg-card/55 p-4">
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-fin-capital" aria-hidden="true" />
+                            <p className="text-xs font-medium text-muted-foreground">Capital</p>
+                          </div>
+                          <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
+                            {formatMoneyOrDash(overview.primeiraParcela.capitalPago)}
+                          </p>
+                          <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">{capitalPercentual.toFixed(1)}% do total</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-4">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Cobertura do detalhamento</p>
+                          <p className="mt-0.5 text-[10px] text-muted-foreground">Somente valores conhecidos; ausência de dado não é convertida em zero.</p>
+                        </div>
+                        <span className="text-sm font-semibold tabular-nums text-foreground">{formatMoneyOrDash(totalComposicao)}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5">
+                      <p className="text-sm font-medium text-foreground">Composição ainda não disponível para todo o recorte</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">O Painel preserva a ausência de informação em vez de inferir custeio ou capital como zero.</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -480,7 +557,12 @@ export default function Dashboard() {
           })}
         </motion.div>
 
-        {!loading ? <SegundaParcelaResumo overview={segundoCiclo} /> : null}
+        {!loading ? (
+          <SegundaParcelaResumo
+            overview={segundoCiclo}
+            paymentDimension={secondCyclePaymentDimension}
+          />
+        ) : null}
 
         <section className="space-y-4" aria-labelledby="novidades-financeiras-title">
           <div className="flex flex-wrap items-end justify-between gap-3">

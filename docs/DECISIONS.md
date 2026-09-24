@@ -168,6 +168,18 @@ Uma escola pode possuir múltiplas contas dentro do mesmo programa.
 
 ---
 
+## 2026-09-24 — Publicação financeira usa GitHub OIDC e credencial confinada ao Supabase
+
+**Contexto:** o workflow automático permanecia falhando porque o secret `PDDE_SUPABASE_SERVICE_ROLE_KEY` não estava configurado no environment `production`. Copiar uma credencial que ignora RLS para mais um sistema ampliaria a superfície de risco.
+
+**Decisão:** o GitHub Actions passa a solicitar um token OIDC efêmero com audience `pdde-online-financial-publisher`. A Edge Function `publish-financial-snapshot` valida emissor, audience, repositório, environment, branch, workflow e evento; somente então usa a credencial administrativa disponível no runtime do próprio Supabase para chamar a RPC de publicação v2 e executar read-after-write.
+
+**Consequência:** o GitHub não armazena mais a service-role do projeto. A sincronização automática continua sujeita aos mesmos gates de proveniência, maturidade, idempotência e equivalência semântica. O fallback service-role do script existe apenas para operação administrativa fora do Actions.
+
+**Referência:** PR #188, `.github/workflows/sync-financial-snapshot.yml`, `supabase/functions/publish-financial-snapshot/index.ts`.
+
+---
+
 ## 2026-09-11 — Busca global deve representar somente o produto real
 
 **Decisão:** `Ctrl/Cmd+K` funciona como localizador operacional para áreas reais e unidades escolares.
