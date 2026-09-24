@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, Database, RefreshCw } from "lucide-react";
+import { AlertTriangle, Database } from "lucide-react";
 
 import { useExercicio } from "@/hooks/useExercicio";
 import { financialFreshnessOptions } from "@/lib/queryKeys";
@@ -24,16 +24,7 @@ export function FinancialFreshnessBanner() {
 
   if (exercise !== 2026) return null;
 
-  if (query.isLoading) {
-    return (
-      <div className="border-b border-border/50 bg-muted/15">
-        <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-1.5 text-[11px] text-muted-foreground">
-          <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
-          Verificando a atualização dos dados financeiros…
-        </div>
-      </div>
-    );
-  }
+  if (query.isLoading) return null;
 
   if (query.isError || !query.data) {
     return (
@@ -48,31 +39,25 @@ export function FinancialFreshnessBanner() {
 
   const freshness = query.data;
   const storageLagIncident = freshness.status === "STORAGE_LAG" && (freshness.lagMinutes ?? 0) > 15;
-  const tone = freshness.status === "CURRENT"
-    ? "border-success/25 bg-success/6 text-success"
-    : freshness.status === "STORAGE_LAG" && !storageLagIncident
-      ? "border-amber-500/25 bg-amber-500/6 text-amber-800 dark:text-amber-300"
-      : "border-destructive/30 bg-destructive/8 text-destructive";
+  if (freshness.status === "CURRENT") return null;
+  if (freshness.status === "STORAGE_LAG" && !storageLagIncident) return null;
 
-  const icon = freshness.status === "CURRENT"
-    ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-    : freshness.status === "STORAGE_LAG"
-      ? <Database className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-      : <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />;
+  const isStorageLag = freshness.status === "STORAGE_LAG";
+  const tone = isStorageLag
+    ? "border-amber-500/25 bg-amber-500/6 text-amber-800 dark:text-amber-300"
+    : "border-destructive/30 bg-destructive/8 text-destructive";
+  const icon = isStorageLag
+    ? <Database className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+    : <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />;
 
-  let message: string;
-  if (freshness.status === "CURRENT") {
-    message = `Dados financeiros correntes · snapshot validado em ${formatDate(freshness.enginePublishedAt)} · persistência sincronizada.`;
-  } else if (freshness.status === "STORAGE_LAG") {
-    message = `Snapshot validado em ${formatDate(freshness.enginePublishedAt)} já está sendo usado no layout; a persistência histórica do Supabase está ${storageLagIncident ? "atrasada além da meta de 15 minutos" : "em sincronização"}.`;
-  } else if (freshness.status === "SOURCE_STALE") {
-    message = `Coleta financeira diária atrasada. Último snapshot validado: ${formatDate(freshness.enginePublishedAt)}. O sistema não apresentará ausência de atualização como zero.`;
-  } else {
-    message = "Não foi possível consultar o snapshot financeiro corrente. A interface sinaliza a indisponibilidade em vez de presumir zero.";
-  }
+  const message = isStorageLag
+    ? `Os dados oficiais mais recentes já estão visíveis, mas a consolidação histórica está atrasada. Referência: ${formatDate(freshness.enginePublishedAt)}.`
+    : freshness.status === "SOURCE_STALE"
+      ? `A atualização financeira está atrasada. Última referência disponível: ${formatDate(freshness.enginePublishedAt)}.`
+      : "A fonte financeira corrente está temporariamente indisponível. Valores ausentes não são tratados como zero.";
 
   return (
-    <div className={cn("border-b", tone)} role={freshness.status === "CURRENT" ? "status" : "alert"}>
+    <div className={cn("border-b", tone)} role="alert">
       <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2 text-xs">
         {icon}
         <span>{message}</span>
