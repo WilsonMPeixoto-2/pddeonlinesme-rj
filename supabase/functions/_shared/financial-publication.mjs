@@ -168,7 +168,7 @@ export function evaluatePublicationDimensions(payload) {
   const breakdownCoverage = uniqueCoverage(validBreakdownRows);
   const secondRows = repasses.filter(isBasicSecondInstallment);
   const secondCoverage = uniqueCoverage(secondRows, (row) => typeof row.programmed === "number" && Number.isFinite(row.programmed) && row.programmed >= 0);
-  const validSecondPaymentRows = secondRows.filter((row) => typeof row.paid === "number" && Number.isFinite(row.paid) && row.paid >= 0 && Boolean(row.paymentDate));
+  const validSecondPaymentRows = secondRows.filter((row) => typeof row.paid === "number" && Number.isFinite(row.paid) && row.paid >= 0 && Boolean(row.paymentDate || row.paymentOrderDate));
   const secondPaymentCoverage = uniqueCoverage(validSecondPaymentRows);
   const invalidMoney = repasses.some((row) => (row.programmed != null && (!Number.isFinite(row.programmed) || row.programmed < 0)) || (row.paid != null && (!Number.isFinite(row.paid) || row.paid < 0)));
   const invalidFinancialRows = invalidMoney || invalidExplicitAccountRows;
