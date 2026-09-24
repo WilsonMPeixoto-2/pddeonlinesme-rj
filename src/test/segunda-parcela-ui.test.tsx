@@ -1,17 +1,10 @@
 import { render, screen } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { SegundaParcelaResumo } from "@/components/SegundaParcelaResumo";
 import { SegundaParcelaUnidadeResumo } from "@/components/SegundaParcelaUnidadeResumo";
 import type { SegundaParcelaOverview } from "@/lib/financeiroPDDE";
-
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    rpc: vi.fn(),
-  },
-}));
 
 const overview: SegundaParcelaOverview = {
   exercicio: 2026,
@@ -49,30 +42,28 @@ const overview: SegundaParcelaOverview = {
   ],
 };
 
-function renderResumo() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, staleTime: Infinity } },
-  });
-  queryClient.setQueryData(["financial-dimensions", 2026], [{
-    dimension_key: "pdde_basic_second_installment_payment_informed",
-    exercise: 2026,
-    coverage_observed: 163,
-    coverage_expected: 163,
-    coverage_ratio: 1,
-    reference_date_min: "2026-09-15",
-    reference_date_max: "2026-09-17",
-    quality_status: "MATURE",
-    publication_status: "PUBLISHED",
-    validated_at: "2026-09-24T12:00:00.000Z",
-    published_at: "2026-09-24T12:00:00.000Z",
-  }]);
+const paymentDimension = {
+  dimension_key: "pdde_basic_second_installment_payment_informed",
+  exercise: 2026,
+  coverage_observed: 163,
+  coverage_expected: 163,
+  coverage_ratio: 1,
+  reference_date_min: "2026-09-15",
+  reference_date_max: "2026-09-17",
+  quality_status: "MATURE",
+  publication_status: "PUBLISHED",
+  validated_at: "2026-09-24T12:00:00.000Z",
+  published_at: "2026-09-24T12:00:00.000Z",
+} as const;
 
+function renderResumo() {
   return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
-        <SegundaParcelaResumo overview={overview} />
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <MemoryRouter>
+      <SegundaParcelaResumo
+        overview={overview}
+        paymentDimension={paymentDimension}
+      />
+    </MemoryRouter>,
   );
 }
 
