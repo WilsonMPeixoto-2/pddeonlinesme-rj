@@ -274,7 +274,12 @@ function isBasicSecondInstallmentPayload(row) {
 }
 
 function repasseSemanticKey(row) {
-  return [row.inep, row.action, row.installment].join("|");
+  return [
+    row.inep,
+    row.program ?? row.programa,
+    row.action ?? row.acao,
+    row.installment ?? row.parcela,
+  ].join("|");
 }
 
 function numericEqual(left, right) {
@@ -342,7 +347,7 @@ export async function verifyPublishedFinancialState(payload, env = process.env) 
   }
 
   const observedByKey = new Map(
-    observedSecond.map((row) => [[row.inep, row.acao, row.parcela].join("|"), row]),
+    observedSecond.map((row) => [repasseSemanticKey(row), row]),
   );
   const divergences = expectedSecond.filter((expected) => {
     const observed = observedByKey.get(repasseSemanticKey(expected));
@@ -359,7 +364,7 @@ export async function verifyPublishedFinancialState(payload, env = process.env) 
   }
 
   const allObservedByKey = new Map(
-    viewRows.map((row) => [[row.inep, row.acao, row.parcela].join("|"), row]),
+    viewRows.map((row) => [repasseSemanticKey(row), row]),
   );
   const semanticMismatches = [];
 

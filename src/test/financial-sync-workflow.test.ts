@@ -3,34 +3,58 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const workflowPath = resolve(process.cwd(), ".github/workflows/sync-financial-snapshot.yml");
+const migrationPath = resolve(
+  process.cwd(),
+  "supabase/migrations/20260924151500_financial_sync_native_v6.sql",
+);
+const edgeFunctionPath = resolve(
+  process.cwd(),
+  "supabase/functions/sync_pdde_financial_snapshot/index.ts",
+);
+const configPath = resolve(process.cwd(), "supabase/config.toml");
 
-describe("workflow de sincronização financeira", () => {
-  it("usa somente o PDDE Online e credenciais service-role dedicadas", async () => {
+describe("arquitetura de sincronização financeira", () => {
+  it("mantém o GitHub como validador sem credencial privilegiada ou cron de produção", async () => {
     const workflow = await readFile(workflowPath, "utf8");
 
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("repository_dispatch:");
     expect(workflow).toContain("financial-snapshot-published-v1");
-    expect(workflow).toContain("schedule:");
-    expect(workflow).toContain("sync-financial-snapshot-production");
-    expect(workflow).toContain("SUPABASE_URL: https://raluxyojqosfzrfozmpz.supabase.co");
-    expect(workflow).not.toContain("secrets.PDDE_SUPABASE_URL");
-    expect(workflow).toContain("PDDE_SUPABASE_SERVICE_ROLE_KEY");
-    expect(workflow).toContain("PDDE_SUPABASE_SERVICE_ROLE_KEY não configurado");
-    expect(workflow).toContain("npm run sync:financial:snapshot");
+    expect(workflow).toContain("npm run sync:financial:snapshot -- --dry-run");
+    expect(workflow).not.toContain("schedule:");
+    expect(workflow).not.toContain("PDDE_SUPABASE_SERVICE_ROLE_KEY");
+    expect(workflow).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+    expect(workflow).not.toContain("Publish mature dimensions");
     expect(workflow).not.toContain("scnryinorqeucbfkioxo");
-    expect(workflow).not.toContain("SUPABASE_ANON_KEY");
-    expect(workflow).not.toContain("pdde-repasse-conciliador.git");
   });
 
-  it("mantém toda ingestão automática inerte até habilitação operacional explícita", async () => {
-    const workflow = await readFile(workflowPath, "utf8");
+  it("move a automação recorrente para Supabase Cron, pg_net e Vault", async () => {
+    const migration = await readFile(migrationPath, "utf8");
 
-    expect(workflow).toContain("PDDE_FINANCIAL_SYNC_ENABLED");
-    expect(workflow).toContain("github.event_name == 'workflow_dispatch'");
-    expect(workflow).toContain("github.event_name == 'repository_dispatch'");
-    expect(workflow).toContain("github.event_name == 'schedule'");
-    expect(workflow).toContain("vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false'");
+    expect(migration).toContain("create extension if not exists pg_cron");
+    expect(migration).toContain("create extension if not exists pg_net");
+    expect(migration).toContain("'pdde-financial-sync-v1'");
+    expect(migration).toContain("'*/5 * * * *'");
+    expect(migration).toContain("vault.decrypted_secrets");
+    expect(migration).toContain("pdde_financial_sync_project_url");
+    expect(migration).toContain("pdde_financial_sync_anon_key");
+    expect(migration).toContain("pdde_financial_sync_token");
+    expect(migration).toContain("/functions/v1/sync_pdde_financial_snapshot");
+  });
+
+  it("protege a Edge Function com JWT e token interno antes da escrita privilegiada", async () => {
+    const [edgeFunction, config] = await Promise.all([
+      readFile(edgeFunctionPath, "utf8"),
+      readFile(configPath, "utf8"),
+    ]);
+
+    expect(config).toContain("[functions.sync_pdde_financial_snapshot]");
+    expect(config).toContain("verify_jwt = true");
+    expect(edgeFunction).toContain('X-PDDE-Financial-Sync-Token');
+    expect(edgeFunction).toContain("verify_pdde_financial_sync_token_v1");
+    expect(edgeFunction).toContain('return json({ error: "FORBIDDEN" }, 403)');
+    expect(edgeFunction).toContain("SUPABASE_SECRET_KEYS");
+    expect(edgeFunction).toContain("SUPABASE_SERVICE_ROLE_KEY");
   });
 
   it("transporta a proveniência do repository_dispatch para validação do manifesto", async () => {
@@ -46,11 +70,5 @@ describe("workflow de sincronização financeira", () => {
     expect(workflow).toContain("github.event.client_payload.artifactId");
     expect(workflow).toContain("github.event.client_payload.artifactName");
     expect(workflow).toContain("github.event.client_payload.publishedAt");
-  });
-
-  it("mantém o cron como fallback posterior à coleta do motor", async () => {
-    const workflow = await readFile(workflowPath, "utf8");
-
-    expect(workflow).toContain('cron: "30 13 * * *"');
   });
 });

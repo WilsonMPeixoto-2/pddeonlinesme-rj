@@ -14,6 +14,7 @@ import {
   mergeEngineSnapshotRepasses,
   type UnidadeFinanceiraIdentity,
 } from "@/lib/engineFinancialSnapshot";
+import { evaluateFinancialFreshness } from "@/lib/financialFreshness";
 import { DASHBOARD_QUERY_POLICY } from "@/lib/queryPolicy";
 
 export type DashboardBasico = Tables<"vw_dashboard_basico">;
@@ -31,7 +32,7 @@ export interface DashboardUnidadesResumo {
 }
 
 export interface FinancialFreshnessState {
-  status: "CURRENT" | "STORAGE_LAG" | "SOURCE_STALE" | "SOURCE_UNAVAILABLE";
+  status: "CURRENT" | "PROPAGATING" | "STORAGE_LAG" | "SOURCE_STALE" | "SOURCE_UNAVAILABLE";
   enginePublishedAt: string | null;
   engineWorkflowRunId: number | null;
   engineArtifactId: number | null;
@@ -263,19 +264,17 @@ export const financialFreshnessOptions = (exercicio: number) => queryOptions<Fin
     if (error) throw new Error(error.message);
     const storage = data?.[0] ?? null;
     const enginePublishedAt = manifest.publishedAt;
-    const ageMinutes = Math.max(0, (Date.now() - Date.parse(enginePublishedAt)) / 60_000);
-    const storageCurrent = Boolean(
-      storage
-      && storage.workflow_run_id === manifest.source.workflowRunId
-      && storage.artifact_id === manifest.source.artifactId,
-    );
+    const evaluated = evaluateFinancialFreshness({
+      enginePublishedAt,
+      engineWorkflowRunId: manifest.source.workflowRunId,
+      engineArtifactId: manifest.source.artifactId,
+      storageWorkflowRunId: storage?.workflow_run_id ?? null,
+      storageArtifactId: storage?.artifact_id ?? null,
+      storageRecordedAt: storage?.storage_recorded_at ?? null,
+    });
 
     return {
-      status: ageMinutes > 36 * 60
-        ? "SOURCE_STALE"
-        : storageCurrent
-          ? "CURRENT"
-          : "STORAGE_LAG",
+      status: evaluated.status,
       enginePublishedAt,
       engineWorkflowRunId: manifest.source.workflowRunId,
       engineArtifactId: manifest.source.artifactId,
@@ -283,7 +282,7 @@ export const financialFreshnessOptions = (exercicio: number) => queryOptions<Fin
       storageArtifactId: storage?.artifact_id ?? null,
       storageRecordedAt: storage?.storage_recorded_at ?? null,
       storagePublicationResult: storage?.publication_result ?? null,
-      lagMinutes: storageCurrent ? 0 : ageMinutes,
+      lagMinutes: evaluated.lagMinutes,
     };
   },
   staleTime: 60 * 1000,

@@ -1,4 +1,4 @@
-name: Sync Financial Snapshot
+name: Validate Financial Snapshot Contract
 
 on:
   workflow_dispatch:
@@ -8,36 +8,27 @@ on:
     paths:
       - 'scripts/sync-financial-snapshot.mjs'
       - 'scripts/lib/financial-publication.mjs'
+      - 'supabase/functions/_shared/financial-publication.mjs'
+      - 'supabase/functions/sync_pdde_financial_snapshot/**'
       - 'supabase/migrations/**'
       - '.github/workflows/sync-financial-snapshot.yml'
   repository_dispatch:
     types:
       - financial-snapshot-published-v1
-  schedule:
-    # Fallback diário. GitHub cron usa UTC: 13:30 UTC = 10:30 America/Sao_Paulo.
-    # Ativo por padrão; PDDE_FINANCIAL_SYNC_ENABLED=false funciona como kill-switch.
-    - cron: "30 13 * * *"
 
 concurrency:
-  group: sync-financial-snapshot-production
-  cancel-in-progress: false
+  group: validate-financial-snapshot-contract
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  publish:
-    name: Validate and publish financial snapshot
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      ((github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'schedule') &&
-      vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false')
+  validate:
+    name: Validate financial snapshot contract
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: production
     env:
-      SUPABASE_URL: https://raluxyojqosfzrfozmpz.supabase.co
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PDDE_SUPABASE_SERVICE_ROLE_KEY }}
       EXPECTED_SOURCE_REPOSITORY: ${{ github.event.client_payload.sourceRepository || '' }}
       EXPECTED_WORKFLOW_RUN_ID: ${{ github.event.client_payload.workflowRunId || '' }}
       EXPECTED_ARTIFACT_ID: ${{ github.event.client_payload.artifactId || '' }}
@@ -57,18 +48,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate destination
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$SUPABASE_URL" = "https://raluxyojqosfzrfozmpz.supabase.co"
-          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo "::error::PDDE_SUPABASE_SERVICE_ROLE_KEY não configurado no environment production."
-            exit 2
-          fi
-
-      - name: Validate snapshot without publishing
+      - name: Validate current snapshot without privileged publication
         run: npm run sync:financial:snapshot -- --dry-run
-
-      - name: Publish mature dimensions
-        run: npm run sync:financial:snapshot

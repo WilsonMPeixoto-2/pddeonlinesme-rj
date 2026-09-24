@@ -1,1 +1,4 @@
 project_id = "raluxyojqosfzrfozmpz"
+
+[functions.sync_pdde_financial_snapshot]
+verify_jwt = true
