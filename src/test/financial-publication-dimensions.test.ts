@@ -107,7 +107,7 @@ describe("evaluatePublicationDimensions", () => {
     expect(byKey(statuses, "pdde_basic_second_installment_payment_informed").referenceDateMax).toBe("2026-09-17");
   });
 
-  it("não promove ordem de pagamento como pagamento informado", () => {
+  it("preserva ordem oficial como evidência válida sem exigir paymentDate artificial", () => {
     const payload = buildPayload();
     const second = payload.repasses.find(
       (row) => row.inep === payload.schools[162].inep && row.installment === "2ª Parcela",
@@ -121,8 +121,10 @@ describe("evaluatePublicationDimensions", () => {
       "pdde_basic_second_installment_payment_informed",
     );
 
-    expect(status.coverageObserved).toBe(162);
-    expect(status.qualityStatus).toBe("VALIDATED");
+    expect(status.coverageObserved).toBe(163);
+    expect(status.qualityStatus).toBe("MATURE");
+    expect(second.paymentDate).toBeNull();
+    expect(second.paymentOrderDate).toBe("2026-09-17");
   });
 
   it("não promove pagamento informado do 2º ciclo quando falta uma unidade", () => {
