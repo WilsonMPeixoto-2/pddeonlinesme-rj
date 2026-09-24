@@ -24,6 +24,7 @@ concurrency:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   publish:
@@ -37,7 +38,6 @@ jobs:
     environment: production
     env:
       SUPABASE_URL: https://raluxyojqosfzrfozmpz.supabase.co
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PDDE_SUPABASE_SERVICE_ROLE_KEY }}
       EXPECTED_SOURCE_REPOSITORY: ${{ github.event.client_payload.sourceRepository || '' }}
       EXPECTED_WORKFLOW_RUN_ID: ${{ github.event.client_payload.workflowRunId || '' }}
       EXPECTED_ARTIFACT_ID: ${{ github.event.client_payload.artifactId || '' }}
@@ -62,13 +62,28 @@ jobs:
         run: |
           set -euo pipefail
           test "$SUPABASE_URL" = "https://raluxyojqosfzrfozmpz.supabase.co"
-          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo "::error::PDDE_SUPABASE_SERVICE_ROLE_KEY não configurado no environment production."
-            exit 2
-          fi
 
       - name: Validate snapshot without publishing
         run: npm run sync:financial:snapshot -- --dry-run
+
+      - name: Request short-lived GitHub OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=pdde-online-financial-publisher")"
+          token="$(printf '%s' "$response" | node -e '
+            let input = "";
+            process.stdin.on("data", (chunk) => input += chunk);
+            process.stdin.on("end", () => {
+              const parsed = JSON.parse(input);
+              if (!parsed.value) process.exit(2);
+              process.stdout.write(parsed.value);
+            });
+          ')"
+          echo "::add-mask::$token"
+          echo "GITHUB_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
 
       - name: Publish mature dimensions
         run: npm run sync:financial:snapshot
