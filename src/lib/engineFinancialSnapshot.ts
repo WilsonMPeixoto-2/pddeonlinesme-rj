@@ -179,8 +179,8 @@ function confirmedBankCreditDate(installment: z.infer<typeof installmentSchema>)
   return installment.creditEvidence?.date ?? null;
 }
 
-function recordKey(inep: string | null, action: string, installment: string): string {
-  return [inep ?? "", normalizedText(action), normalizedText(installment)].join("|");
+function recordKey(inep: string | null, program: string, action: string, installment: string): string {
+  return [inep ?? "", normalizedText(program), normalizedText(action), normalizedText(installment)].join("|");
 }
 
 function decodeBase64(value: string): Uint8Array {
@@ -257,7 +257,7 @@ export function mergeEngineSnapshotRepasses(input: {
     input.units.map((unit) => [unit.inep, unit]),
   );
   const existingByKey = new Map(
-    input.databaseRows.map((row) => [recordKey(row.inep, row.acao, row.parcela), row]),
+    input.databaseRows.map((row) => [recordKey(row.inep, row.programa, row.acao, row.parcela), row]),
   );
   const merged = new Map(existingByKey);
 
@@ -271,7 +271,7 @@ export function mergeEngineSnapshotRepasses(input: {
 
       programRecord.installments.forEach((installment, index) => {
         const parcela = canonicalInstallment(installment.installment);
-        const key = recordKey(schoolRecord.school.inep, classified.action, parcela);
+        const key = recordKey(schoolRecord.school.inep, classified.program, classified.action, parcela);
         const existing = existingByKey.get(key);
         const paid = informedPayment(installment);
         const breakdown = installment.breakdown ?? null;
