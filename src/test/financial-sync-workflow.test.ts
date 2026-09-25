@@ -5,7 +5,11 @@ import { describe, expect, it } from "vitest";
 const workflowPath = resolve(process.cwd(), ".github/workflows/sync-financial-snapshot.yml");
 const migrationPath = resolve(
   process.cwd(),
-  "supabase/migrations/20260924151500_financial_sync_native_v6.sql",
+  "supabase/migrations/20260924153527_financial_sync_native_v6.sql",
+);
+const cronMigrationPath = resolve(
+  process.cwd(),
+  "supabase/migrations/20260925140500_financial_sync_cron_private_token_v7.sql",
 );
 const edgeFunctionPath = resolve(
   process.cwd(),
@@ -28,18 +32,21 @@ describe("arquitetura de sincronização financeira", () => {
     expect(workflow).not.toContain("scnryinorqeucbfkioxo");
   });
 
-  it("move a automação recorrente para Supabase Cron, pg_net e Vault", async () => {
-    const migration = await readFile(migrationPath, "utf8");
+  it("move a automação recorrente para Supabase Cron sem depender de segredo no GitHub ou Vault", async () => {
+    const [migration, cronMigration] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(cronMigrationPath, "utf8"),
+    ]);
 
     expect(migration).toContain("create extension if not exists pg_cron");
     expect(migration).toContain("create extension if not exists pg_net");
-    expect(migration).toContain("'pdde-financial-sync-v1'");
-    expect(migration).toContain("'*/5 * * * *'");
-    expect(migration).toContain("vault.decrypted_secrets");
-    expect(migration).toContain("pdde_financial_sync_project_url");
-    expect(migration).toContain("pdde_financial_sync_anon_key");
-    expect(migration).toContain("pdde_financial_sync_token");
-    expect(migration).toContain("/functions/v1/sync_pdde_financial_snapshot");
+    expect(cronMigration).toContain("private.financial_sync_credentials");
+    expect(cronMigration).toContain("extensions.gen_random_bytes");
+    expect(cronMigration).toContain("extensions.digest");
+    expect(cronMigration).toContain("'pdde-financial-sync-v1'");
+    expect(cronMigration).toContain("'*/5 * * * *'");
+    expect(cronMigration).toContain("/functions/v1/sync_pdde_financial_snapshot");
+    expect(cronMigration).not.toContain("vault.decrypted_secrets");
   });
 
   it("protege a Edge Function com JWT e token interno antes da escrita privilegiada", async () => {
