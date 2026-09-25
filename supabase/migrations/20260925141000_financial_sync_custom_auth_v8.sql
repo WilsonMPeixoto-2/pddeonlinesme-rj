@@ -1,3 +1,4 @@
+-- Reprocessar integração após o timestamp efetivo da migration V8.
 begin;
 
 create or replace function public.configure_pdde_financial_sync_v3()
