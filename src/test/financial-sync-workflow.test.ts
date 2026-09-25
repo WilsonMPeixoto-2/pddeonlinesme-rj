@@ -13,7 +13,7 @@ const cronMigrationPath = resolve(
 );
 const customAuthMigrationPath = resolve(
   process.cwd(),
-  "supabase/migrations/20260925141000_financial_sync_custom_auth_v8.sql",
+  "supabase/migrations/20260925141350_financial_sync_custom_auth_v8.sql",
 );
 const edgeFunctionPath = resolve(
   process.cwd(),
