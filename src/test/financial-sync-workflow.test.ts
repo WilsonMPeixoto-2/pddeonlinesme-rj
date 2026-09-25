@@ -9,7 +9,11 @@ const migrationPath = resolve(
 );
 const cronMigrationPath = resolve(
   process.cwd(),
-  "supabase/migrations/20260925140500_financial_sync_cron_private_token_v7.sql",
+  "supabase/migrations/20260925140135_financial_sync_cron_private_token_v7.sql",
+);
+const customAuthMigrationPath = resolve(
+  process.cwd(),
+  "supabase/migrations/20260925141000_financial_sync_custom_auth_v8.sql",
 );
 const edgeFunctionPath = resolve(
   process.cwd(),
@@ -49,19 +53,25 @@ describe("arquitetura de sincronização financeira", () => {
     expect(cronMigration).not.toContain("vault.decrypted_secrets");
   });
 
-  it("protege a Edge Function com JWT e token interno antes da escrita privilegiada", async () => {
+  it("protege a Edge Function com token interno antes da escrita privilegiada", async () => {
     const [edgeFunction, config] = await Promise.all([
       readFile(edgeFunctionPath, "utf8"),
       readFile(configPath, "utf8"),
     ]);
 
     expect(config).toContain("[functions.sync_pdde_financial_snapshot]");
-    expect(config).toContain("verify_jwt = true");
+    expect(config).toContain("verify_jwt = false");
     expect(edgeFunction).toContain('X-PDDE-Financial-Sync-Token');
     expect(edgeFunction).toContain("verify_pdde_financial_sync_token_v1");
     expect(edgeFunction).toContain('return json({ error: "FORBIDDEN" }, 403)');
     expect(edgeFunction).toContain("SUPABASE_SECRET_KEYS");
     expect(edgeFunction).toContain("SUPABASE_SERVICE_ROLE_KEY");
+
+    const customAuthMigration = await readFile(customAuthMigrationPath, "utf8");
+    expect(customAuthMigration).toContain("configure_pdde_financial_sync_v3");
+    expect(customAuthMigration).toContain("X-PDDE-Financial-Sync-Token");
+    expect(customAuthMigration).not.toContain("'Authorization'");
+    expect(customAuthMigration).not.toContain("vault.");
   });
 
   it("transporta a proveniência do repository_dispatch para validação do manifesto", async () => {
