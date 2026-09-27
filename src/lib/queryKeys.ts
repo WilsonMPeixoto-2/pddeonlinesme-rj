@@ -43,6 +43,12 @@ export interface FinancialFreshnessState {
   lagMinutes: number | null;
 }
 
+export type FinancialDimensionPublication =
+  Database["public"]["Functions"]["get_financial_dimension_publication_v1"]["Returns"][number];
+
+export type FinancialSyncHealth =
+  Database["public"]["Functions"]["get_financial_sync_health_v1"]["Returns"][number];
+
 export type AppRole = Database["public"]["Enums"]["app_role"];
 
 export interface AdminUserRow {
@@ -70,6 +76,8 @@ export const queryKeys = {
   contasFinanceiras: (exercicio: number) => ["contas-financeiras", exercicio] as const,
   financeiroUnidade: (unidadeId: string | undefined, exercicio: number) => ["financeiro-unidade", unidadeId, exercicio] as const,
   financialFreshness: (exercicio: number) => ["financial-freshness", exercicio] as const,
+  financialDimensions: (exercicio: number) => ["financial-dimensions", exercicio] as const,
+  financialSyncHealth: () => ["financial-sync-health"] as const,
   documentGenerationRuns: {
     all: () => ["document-generation-runs"] as const,
     list: (limit: number, page: number, status: string | undefined, exercicio: string | number | undefined) => ["document-generation-runs", limit, page, status, exercicio] as const,
@@ -288,6 +296,29 @@ export const financialFreshnessOptions = (exercicio: number) => queryOptions<Fin
   staleTime: 60 * 1000,
   refetchInterval: 5 * 60 * 1000,
   refetchOnWindowFocus: true,
+});
+
+export const financialDimensionsOptions = (exercicio: number) => queryOptions<FinancialDimensionPublication[], Error>({
+  queryKey: queryKeys.financialDimensions(exercicio),
+  enabled: Number.isFinite(exercicio),
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc("get_financial_dimension_publication_v1", {
+      p_exercise: exercicio,
+    });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
+  ...FINANCIAL_LIVE_QUERY_POLICY,
+});
+
+export const financialSyncHealthOptions = () => queryOptions<FinancialSyncHealth | null, Error>({
+  queryKey: queryKeys.financialSyncHealth(),
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc("get_financial_sync_health_v1");
+    if (error) throw new Error(error.message);
+    return data?.[0] ?? null;
+  },
+  ...FINANCIAL_LIVE_QUERY_POLICY,
 });
 
 export const contasFinanceirasOptions = (exercicio: number) => queryOptions<ContaFinanceira[], Error>({
