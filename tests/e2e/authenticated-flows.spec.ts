@@ -12,10 +12,12 @@ test("login autenticado abre o dashboard canônico e mantém sessão ao navegar"
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
 
-  await expect(page.getByText("Painel Executivo-Operacional", { exact: false })).toBeVisible();
-  await expect(page.getByText("1ª parcela paga · PDDE Básico · 2026", { exact: true })).toBeVisible();
-  await expect(page.getByText("15.000", { exact: false }).first()).toBeVisible();
-  await expect(page.getByText("Repasse · 1ª parcela", { exact: true })).toBeVisible();
+  await expect(page.getByText("Painel executivo-operacional", { exact: false })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Visão financeira · 2026" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Atualizar agora" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Analisar repasses" })).toBeVisible();
+  await expect(page.getByText("1ª parcela paga", { exact: true })).toBeVisible();
+  await expect(page.getByText("Carteira por programa", { exact: true })).toBeVisible();
 
   await page.getByRole("link", { name: "Manual" }).click();
   await expect(page).toHaveURL(/\/manual$/);
@@ -74,7 +76,7 @@ test("segundo ciclo faz drill-down da escola e preserva o retorno", async ({ pag
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
 
-  await page.getByRole("button", { name: /2º ciclo · pagamentos/i }).click();
+  await page.getByRole("button", { name: /2º ciclo informado/i }).click();
   await expect(page).toHaveURL(/\/repasses\?ciclo=2/);
   await expect(page.getByRole("heading", { name: "2º ciclo · PDDE Básico" })).toBeVisible();
   await expect(page.getByText("04.10.002", { exact: true })).toBeVisible();
