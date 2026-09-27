@@ -26,6 +26,7 @@ import BrandMark from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CommandPalette } from "@/components/CommandPalette";
 import { FinancialFreshnessBanner } from "@/components/FinancialFreshnessBanner";
+import { cn } from "@/lib/utils";
 
 const tabs = [
   { to: "/dashboard", label: "Painel" },
@@ -46,7 +47,7 @@ function getInitials(email?: string | null): string {
   return local.slice(0, 2).toUpperCase();
 }
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -64,7 +65,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col bg-background">
       <CommandPalette />
       <header className="sticky top-0 z-30 border-b border-border/40 bg-card/40 backdrop-blur-xl shadow-sm">
-        <div className="mx-auto max-w-7xl px-4">
+        <div className={cn("mx-auto px-4", wide ? "max-w-[1480px]" : "max-w-7xl")}>
           <div className="flex h-14 items-center justify-between">
             <div className="flex items-center gap-3">
               <BrandMark size={28} glow />
@@ -168,7 +169,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       <FinancialFreshnessBanner />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 p-4">
+      <main className={cn("mx-auto w-full flex-1 p-4", wide ? "max-w-[1480px]" : "max-w-7xl")}>
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -183,7 +184,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </main>
 
       <footer className="border-t border-border/60 bg-card/30">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
+        <div className={cn("mx-auto flex items-center justify-between gap-3 px-4 py-3", wide ? "max-w-[1480px]" : "max-w-7xl")}>
           <p className="text-[11px] font-light tracking-wide text-muted-foreground/70">
             Sistema interno · 4ª Coordenadoria Regional de Educação · SME-RJ
           </p>
