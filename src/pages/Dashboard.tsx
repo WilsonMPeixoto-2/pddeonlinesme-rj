@@ -200,7 +200,7 @@ export default function Dashboard() {
 
   if (queryError && !loading) {
     return (
-      <AppLayout wide>
+      <AppLayout>
         <Card className="border-destructive/20">
           <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
@@ -218,7 +218,7 @@ export default function Dashboard() {
   }
 
   return (
-    <AppLayout>
+    <AppLayout wide>
       <div className="space-y-5 pb-3">
         <motion.section
           initial={{ opacity: 0, y: 8 }}
