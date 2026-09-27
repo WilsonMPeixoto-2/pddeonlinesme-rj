@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { SegundaParcelaResumo } from "@/components/SegundaParcelaResumo";
 import { SegundaParcelaUnidadeResumo } from "@/components/SegundaParcelaUnidadeResumo";
 import type { SegundaParcelaOverview } from "@/lib/financeiroPDDE";
+import type { FinancialDimensionPublication } from "@/lib/queryKeys";
 
 const overview: SegundaParcelaOverview = {
   exercicio: 2026,
@@ -42,11 +43,25 @@ const overview: SegundaParcelaOverview = {
   ],
 };
 
+const paymentDimension: FinancialDimensionPublication = {
+  dimension_key: "pdde_basic_second_installment_payment_informed",
+  exercise: 2026,
+  coverage_observed: 163,
+  coverage_expected: 163,
+  coverage_ratio: 1,
+  reference_date_min: "2026-09-15",
+  reference_date_max: "2026-09-17",
+  quality_status: "MATURE",
+  publication_status: "PUBLISHED",
+  validated_at: "2026-09-27T22:20:01.572Z",
+  published_at: "2026-09-27T22:20:01.572Z",
+};
+
 describe("superfície do segundo ciclo", () => {
   it("expõe pagamento informado sem promovê-lo a crédito bancário confirmado", () => {
     render(
       <MemoryRouter>
-        <SegundaParcelaResumo overview={overview} />
+        <SegundaParcelaResumo overview={overview} paymentDimension={paymentDimension} />
       </MemoryRouter>,
     );
 
@@ -55,6 +70,8 @@ describe("superfície do segundo ciclo", () => {
     expect(screen.getByText(/51\.596,00/)).toBeVisible();
     expect(screen.getByText("04.10.601 — CM MANGUINHOS")).toBeVisible();
     expect(screen.getAllByText(/Pagamento informado/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Consolidação publicada")).toBeVisible();
+    expect(screen.getByText(/referência 17\/09\/2026/i)).toBeVisible();
     expect(screen.getByText(/Fonte bancária pública ainda sem cobertura suficiente/i)).toBeVisible();
     expect(screen.getByRole("link", { name: /Ver todas as 1/i })).toHaveAttribute("href", "/repasses?ciclo=2");
   });
