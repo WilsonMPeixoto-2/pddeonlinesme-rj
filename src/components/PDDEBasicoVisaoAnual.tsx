@@ -46,8 +46,16 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "UTC",
 });
 
+const fullDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "UTC",
+});
+
 function formatDate(value: string) {
   return dateFormatter.format(new Date(`${value}T00:00:00Z`)).replace(".", "");
+}
+
+function formatFullDate(value: string) {
+  return fullDateFormatter.format(new Date(`${value}T00:00:00Z`));
 }
 
 function formatMoney(value: number) {
@@ -349,6 +357,7 @@ export function PDDEBasicoVisaoAnual() {
                     <button
                       key={`${event.ciclo}-${event.data}`}
                       type="button"
+                      aria-label={`Filtrar pagamentos de ${formatFullDate(event.data)}: ${event.ciclo}º ciclo de repasses, ${event.escolas} ${event.escolas === 1 ? "unidade" : "unidades"}, ${formatMoney(event.total)}`}
                       aria-pressed={active}
                       onClick={() => {
                         const next = active ? null : event.data;
