@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CalendarDays, CheckCircle2, Clock3, ReceiptText } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, ReceiptText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -176,7 +176,7 @@ export function SegundaParcelaResumo({
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">Unidades contempladas</h3>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Prévia das unidades com valor informado no 2º ciclo.
+                    Prévia das unidades com valor informado no 2º ciclo de repasses.
                   </p>
                 </div>
                 <Button asChild variant="ghost" size="sm">
