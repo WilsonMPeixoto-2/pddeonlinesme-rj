@@ -19,8 +19,7 @@ const overview: SegundaParcelaOverview = {
   escolasPrimeiraInfanciaPagas: 52,
   ordensIdentificadas: 0,
   pagamentosIdentificados: 163,
-  creditosBancariosConfirmados: 0,
-  ordensSemCredito: 0,
+  creditosBancariosLocalizados: 0,
   ultimaDataOrdem: null,
   ultimaDataPagamento: "2026-09-17",
   ultimaDataCreditoBancario: null,
@@ -72,7 +71,7 @@ describe("superfície do segundo ciclo", () => {
     expect(screen.getAllByText(/Pagamento informado/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Consolidação publicada")).toBeVisible();
     expect(screen.getByText(/referência 17\/09\/2026/i)).toBeVisible();
-    expect(screen.getByText(/Crédito individual exibido somente quando localizado/i)).toBeVisible();
+    expect(screen.queryByText(/Crédito individual exibido/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Ver todas as 1/i })).toHaveAttribute("href", "/repasses?ciclo=2");
   });
 
