@@ -72,13 +72,26 @@ test("edição cadastral percorre RPC e reconciliação sem tocar produção", a
 });
 
 
+test("gestor consulta o total do PDDE Básico somando os dois ciclos de repasses", async ({ page }) => {
+  await installSupabaseMock(page);
+  await signInAsTestAdmin(page);
+
+  await page.getByRole("button", { name: /PDDE Básico · total/i }).click();
+  await expect(page).toHaveURL(/\/repasses\?visao=basico/);
+  await expect(page.getByRole("heading", { name: "PDDE Básico · total por unidade" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "1ª parcela" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "2º ciclo de repasses" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Total PDDE Básico" })).toBeVisible();
+  await expect(page.getByText("04.10.001", { exact: false }).first()).toBeVisible();
+});
+
 test("segundo ciclo faz drill-down da escola e preserva o retorno", async ({ page }) => {
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
 
-  await page.getByRole("button", { name: /2º ciclo informado/i }).click();
+  await page.getByRole("button", { name: /2º ciclo de repasses/i }).click();
   await expect(page).toHaveURL(/\/repasses\?ciclo=2/);
-  await expect(page.getByRole("heading", { name: "2º ciclo · PDDE Básico" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "2º ciclo de repasses · PDDE Básico" })).toBeVisible();
   await expect(page.getByText("04.10.002", { exact: true })).toBeVisible();
   await expect(page.getByText(/2\.785,00/).first()).toBeVisible();
   await expect(page.getByText(/1\.671,00/).first()).toBeVisible();
