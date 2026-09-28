@@ -117,6 +117,9 @@ export interface PDDEBasicoAnualOverview {
   escolasPrimeiroCiclo: number;
   escolasSegundoCiclo: number;
   escolasComDoisCiclos: number;
+  escolasEsperadas: number;
+  coberturaDoisCiclos: number;
+  coberturaCompleta: boolean;
   media: number;
   mediana: number;
   menorTotal: number;
@@ -592,6 +595,11 @@ export function buildPDDEBasicoAnualOverview(
   });
 
   const totals = escolas.map((row) => row.totalAnual);
+  const escolasPrimeiroCiclo = escolas.filter((row) => row.primeiroCiclo > 0).length;
+  const escolasSegundoCiclo = escolas.filter((row) => row.segundoCiclo > 0).length;
+  const escolasComDoisCiclos = escolas.filter((row) => row.primeiroCiclo > 0 && row.segundoCiclo > 0).length;
+  const escolasEsperadas = exercicio === 2026 ? PDDE_BASIC_4CRE_EXPECTED_SCHOOLS_2026 : escolas.length;
+  const coberturaDoisCiclos = escolasEsperadas > 0 ? escolasComDoisCiclos / escolasEsperadas : 0;
 
   return {
     exercicio,
@@ -599,9 +607,12 @@ export function buildPDDEBasicoAnualOverview(
     totalSegundoCiclo,
     totalAnual,
     escolas,
-    escolasPrimeiroCiclo: escolas.filter((row) => row.primeiroCiclo > 0).length,
-    escolasSegundoCiclo: escolas.filter((row) => row.segundoCiclo > 0).length,
-    escolasComDoisCiclos: escolas.filter((row) => row.primeiroCiclo > 0 && row.segundoCiclo > 0).length,
+    escolasPrimeiroCiclo,
+    escolasSegundoCiclo,
+    escolasComDoisCiclos,
+    escolasEsperadas,
+    coberturaDoisCiclos,
+    coberturaCompleta: escolasEsperadas > 0 && escolasComDoisCiclos === escolasEsperadas,
     media: escolas.length > 0 ? totalAnual / escolas.length : 0,
     mediana: median(totals),
     menorTotal: totals.length > 0 ? Math.min(...totals) : 0,
