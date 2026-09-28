@@ -64,8 +64,11 @@ export function PDDEBasicoAnualUnidadeResumo({
               <div className="h-full bg-violet-500" style={{ width: `${secondShare * 100}%` }} />
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-primary/20 bg-primary/[0.035] p-4">
+            <div className="relative mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="absolute left-[25%] right-[25%] top-3 hidden h-px bg-border sm:block" aria-hidden="true" />
+
+              <div className="relative rounded-xl border border-primary/20 bg-primary/[0.035] p-4 pt-6">
+                <span className="absolute left-4 top-2 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-background" aria-hidden="true" />
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
                   1º ciclo de repasses
                 </p>
@@ -74,11 +77,12 @@ export function PDDEBasicoAnualUnidadeResumo({
                 </p>
                 <p className="mt-1 inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <CalendarDays className="h-3 w-3" aria-hidden="true" />
-                  {formatDate(escola.primeiroCicloData)}
+                  Pagamento informado em {formatDate(escola.primeiroCicloData)}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-violet-500/20 bg-violet-500/[0.035] p-4">
+              <div className="relative rounded-xl border border-violet-500/20 bg-violet-500/[0.035] p-4 pt-6">
+                <span className="absolute left-4 top-2 h-2.5 w-2.5 rounded-full bg-violet-500 ring-4 ring-background" aria-hidden="true" />
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-700 dark:text-violet-300">
                   2º ciclo de repasses
                 </p>
@@ -87,7 +91,7 @@ export function PDDEBasicoAnualUnidadeResumo({
                 </p>
                 <p className="mt-1 inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <CalendarDays className="h-3 w-3" aria-hidden="true" />
-                  {formatDate(escola.segundoCicloData)}
+                  Pagamento informado em {formatDate(escola.segundoCicloData)}
                 </p>
               </div>
             </div>
