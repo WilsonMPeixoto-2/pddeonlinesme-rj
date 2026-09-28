@@ -73,13 +73,13 @@ describe("buildSegundaParcelaOverview", () => {
     ], 2026);
 
     expect(overview.pagamentosIdentificados).toBe(1);
-    expect(overview.creditosBancariosConfirmados).toBe(1);
+    expect(overview.creditosBancariosLocalizados).toBe(1);
     expect(overview.escolasPrimeiraInfanciaPagas).toBe(1);
     expect(overview.ordensSemCredito).toBe(1);
     expect(overview.ultimaDataPagamento).toBe("2026-09-18");
     expect(overview.ultimaDataCreditoBancario).toBe("2026-09-18");
     expect(overview.escolas.find((row) => row.unidadeId === "u1")?.status).toBe("ordem-emitida");
-    expect(overview.escolas.find((row) => row.unidadeId === "u2")?.status).toBe("credito-confirmado");
+    expect(overview.escolas.find((row) => row.unidadeId === "u2")?.status).toBe("pagamento-informado");
   });
 
   it("mede cobertura oficial por trilho sem confundir ordem com pagamento", () => {
