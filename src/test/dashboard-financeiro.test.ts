@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildDashboardFinanceiroOverview,
+  buildPddeBasicoTotalOverview,
   type ContaFinanceira,
   type RepasseFinanceiro,
 } from "@/lib/financeiroPDDE";
@@ -195,6 +196,53 @@ describe("buildDashboardFinanceiroOverview", () => {
       expect.objectContaining({ programa: "PDDE BÁSICO", totalPago: 300 }),
       expect.objectContaining({ programa: "PDDE QUALIDADE", totalPago: 50 }),
       expect.objectContaining({ programa: "PDDE EQUIDADE", totalPago: null }),
+    ]);
+  });
+
+  it("consolida o PDDE Básico por unidade somando 1ª parcela e 2º ciclo de repasses", () => {
+    const p2: RepasseFinanceiro = {
+      id: "p2-total",
+      unidade_id: "u1",
+      designacao: "04.10.001 — Escola A",
+      nome: "Escola A",
+      inep: "1",
+      exercicio: 2026,
+      programa: "PDDE BÁSICO",
+      acao: "PDDE Básico",
+      parcela: "2ª Parcela",
+      ordem_exibicao: 2,
+      valor_programado: 100,
+      valor_pago: 100,
+      data_pagamento: "2026-09-16",
+      data_ordem_pagamento: "2026-09-15",
+      conta_bancaria_id: "c1",
+      banco: "001",
+      agencia: "0001",
+      conta_corrente: "100",
+      custeio_programado: 60,
+      capital_programado: 40,
+      custeio_pago: 60,
+      capital_pago: 40,
+    };
+
+    const overview = buildPddeBasicoTotalOverview([...repasses, p2], 2026);
+
+    expect(overview.totalPrimeiraParcela).toBe(300);
+    expect(overview.totalSegundoCiclo).toBe(100);
+    expect(overview.totalInformado).toBe(400);
+    expect(overview.escolas).toEqual([
+      expect.objectContaining({
+        unidadeId: "u1",
+        primeiraParcela: 100,
+        segundoCiclo: 100,
+        totalInformado: 200,
+      }),
+      expect.objectContaining({
+        unidadeId: "u2",
+        primeiraParcela: 200,
+        segundoCiclo: null,
+        totalInformado: 200,
+      }),
     ]);
   });
 
