@@ -396,7 +396,7 @@ export function PDDEBasicoVisaoAnual() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+        <div className="grid gap-4 xl:grid-cols-[0.65fr_1.35fr]">
           <Card className="shadow-sm">
             <CardContent className="p-5">
               <div className="flex items-center gap-2">
@@ -514,13 +514,13 @@ export function PDDEBasicoVisaoAnual() {
               ) : null}
 
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[760px] border-collapse text-left">
+                <table className="w-full min-w-[680px] border-collapse text-left">
                   <thead>
                     <tr className="border-b border-border/60 bg-muted/20 text-xs font-semibold text-muted-foreground">
                       <th className="px-4 py-3">Unidade escolar</th>
                       <th className="px-4 py-3 text-right">1º ciclo de repasses</th>
                       <th className="px-4 py-3 text-right">2º ciclo de repasses</th>
-                      <th className="px-4 py-3 text-right">Total PDDE Básico</th>
+                      <th className="px-4 py-3 text-right">Total anual</th>
                     </tr>
                   </thead>
                   <tbody>
