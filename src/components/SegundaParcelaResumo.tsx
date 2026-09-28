@@ -59,9 +59,9 @@ export function SegundaParcelaResumo({
             <div className="border-b border-border/60 p-5 lg:border-b-0 lg:border-r sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="ds-eyebrow">2º ciclo · PDDE Básico</p>
+                  <p className="ds-eyebrow">2º ciclo de repasses · PDDE Básico</p>
                   <h2 id="segundo-ciclo-title" className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-                    Pagamentos informados no 2º ciclo
+                    Pagamentos informados no 2º ciclo de repasses
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     Pagamento informado pelo FNDE, ordem de pagamento e crédito localizado no extrato são evidências distintas. A ausência de extrato atualizado não apaga o pagamento oficial.
@@ -139,26 +139,18 @@ export function SegundaParcelaResumo({
                   </div>
                   <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.creditosBancariosConfirmados}</p>
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Fonte bancária pública ainda sem cobertura suficiente"}
+                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Crédito individual exibido somente quando localizado na fonte bancária disponível"}
                   </p>
                 </div>
               </div>
 
-              {overview.ordensSemCredito > 0 ? (
-                <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/[0.035] px-3 py-2.5 text-xs text-amber-800 dark:text-amber-200">
-                  <CalendarDays className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  <span>
-                    <strong className="font-semibold">{overview.ordensSemCredito}</strong> ordens ainda não têm crédito correspondente localizado no extrato público. O pagamento oficial permanece registrado separadamente.
-                  </span>
-                </div>
-              ) : null}
 
               {composicaoCompleta && composicaoTotal !== null ? (
                 <div className="mt-6 space-y-3">
                   <div
                     className="flex h-2.5 overflow-hidden rounded-full bg-muted"
                     role="img"
-                    aria-label={`Composição do segundo ciclo: ${custeioPct.toFixed(1)}% custeio e ${capitalPct.toFixed(1)}% capital`}
+                    aria-label={`Composição do 2º ciclo de repasses: ${custeioPct.toFixed(1)}% custeio e ${capitalPct.toFixed(1)}% capital`}
                   >
                     <div className="h-full bg-fin-custeio" style={{ width: `${custeioPct}%` }} />
                     <div className="h-full bg-fin-capital" style={{ width: `${capitalPct}%` }} />
