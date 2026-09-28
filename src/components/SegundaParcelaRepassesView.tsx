@@ -175,7 +175,7 @@ export function SegundaParcelaRepassesView() {
               Repasses · {exercicio}
             </div>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              2º ciclo · PDDE Básico
+              2º ciclo de repasses · PDDE Básico
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               Pagamento informado pelo FNDE, ordem de pagamento e crédito localizado na fonte bancária são evidências distintas e permanecem separadas.
@@ -192,12 +192,15 @@ export function SegundaParcelaRepassesView() {
           </Button>
         </header>
 
-        <div className="inline-flex rounded-lg border border-border/60 bg-muted/15 p-1" aria-label="Selecionar ciclo de repasse">
+        <div className="inline-flex rounded-lg border border-border/60 bg-muted/15 p-1" aria-label="Selecionar visão de repasses">
+          <Button asChild variant="ghost" size="sm" className="h-8">
+            <Link to="/repasses?visao=basico">Total PDDE Básico</Link>
+          </Button>
           <Button asChild variant="ghost" size="sm" className="h-8">
             <Link to="/repasses">1ª parcela paga</Link>
           </Button>
           <Button variant="secondary" size="sm" className="h-8" aria-current="page">
-            2º ciclo · pagamentos
+            2º ciclo de repasses
           </Button>
         </div>
 
@@ -210,14 +213,14 @@ export function SegundaParcelaRepassesView() {
         ) : repassesQuery.isError ? (
           <EmptyState
             icon={WalletCards}
-            title="Não foi possível carregar o segundo ciclo"
+            title="Não foi possível carregar o segundo ciclo de repasses"
             description={repassesQuery.error.message}
             action={<Button onClick={() => repassesQuery.refetch()}>Tentar novamente</Button>}
           />
         ) : overview.escolas.length === 0 ? (
           <EmptyState
             icon={WalletCards}
-            title={`Nenhuma evidência do 2º ciclo disponível para ${exercicio}`}
+            title={`Nenhuma evidência do 2º ciclo de repasses disponível para ${exercicio}`}
             description="A ausência de evidência não é convertida em pagamento ou zero."
           />
         ) : (
@@ -225,7 +228,7 @@ export function SegundaParcelaRepassesView() {
             <Card className="overflow-hidden shadow-sm">
               <CardContent className="grid p-0 md:grid-cols-4">
                 <div className="p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2º ciclo informado</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2º ciclo de repasses informado</p>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{formatMoney(overview.totalInformado)}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {overview.escolasRegularesPagas} 2ª parcela regular · {overview.escolasPrimeiraInfanciaPagas} Primeira Infância/P2
@@ -274,7 +277,7 @@ export function SegundaParcelaRepassesView() {
                 <CardContent className="p-5">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                      <h2 className="text-sm font-semibold text-foreground">Composição do 2º ciclo</h2>
+                      <h2 className="text-sm font-semibold text-foreground">Composição do 2º ciclo de repasses</h2>
                       <p className="mt-1 text-xs text-muted-foreground">Custeio e capital apenas nos valores efetivamente informados pela fonte.</p>
                     </div>
                     <span className="text-sm font-semibold tabular-nums text-foreground">{formatMoney(totalComposicao)}</span>
@@ -282,7 +285,7 @@ export function SegundaParcelaRepassesView() {
                   <div
                     className="mt-4 flex h-3 overflow-hidden rounded-full bg-muted"
                     role="img"
-                    aria-label={`Composição do segundo ciclo: ${custeioPct.toFixed(1)}% custeio e ${capitalPct.toFixed(1)}% capital`}
+                    aria-label={`Composição do segundo ciclo de repasses: ${custeioPct.toFixed(1)}% custeio e ${capitalPct.toFixed(1)}% capital`}
                   >
                     <div className="h-full bg-fin-custeio" style={{ width: `${custeioPct}%` }} />
                     <div className="h-full bg-fin-capital" style={{ width: `${capitalPct}%` }} />
