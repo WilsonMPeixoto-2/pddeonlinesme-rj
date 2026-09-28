@@ -132,6 +132,25 @@ export interface ProgramaFinanceiroOverview {
   escolas: number;
 }
 
+export interface EscolaPddeBasicoTotal {
+  unidadeId: string;
+  designacao: string;
+  nome: string;
+  inep: string | null;
+  primeiraParcela: number | null;
+  segundoCiclo: number | null;
+  totalInformado: number;
+  segundaSituacao: "credito-confirmado" | "pagamento-informado" | "ordem-emitida" | "sem-evidencia";
+}
+
+export interface PddeBasicoTotalOverview {
+  exercicio: number;
+  totalPrimeiraParcela: number | null;
+  totalSegundoCiclo: number | null;
+  totalInformado: number | null;
+  escolas: EscolaPddeBasicoTotal[];
+}
+
 export interface DashboardFinanceiroOverview {
   exercicio: number;
   totalProgramado: number | null;
@@ -452,6 +471,85 @@ export function buildSegundaParcelaOverview(
     ultimaDataOrdem: datasOrdem[0] ?? null,
     ultimaDataPagamento: datasPagamento[0] ?? null,
     ultimaDataCreditoBancario: datasCreditoBancario[0] ?? null,
+  };
+}
+
+export function buildPddeBasicoTotalOverview(
+  repasses: RepasseFinanceiro[],
+  exercicio: number,
+): PddeBasicoTotalOverview {
+  const primeira = repasses.filter((repasse) => isPrimeiraParcelaPublicada(repasse, exercicio));
+  const segunda = repasses.filter(
+    (repasse) => isSegundaParcelaBasico(repasse, exercicio) && repasse.valor_pago !== null,
+  );
+
+  const bySchool = new Map<string, EscolaPddeBasicoTotal>();
+
+  const ensureSchool = (repasse: RepasseFinanceiro) => {
+    const current = bySchool.get(repasse.unidade_id);
+    if (current) return current;
+    const created: EscolaPddeBasicoTotal = {
+      unidadeId: repasse.unidade_id,
+      designacao: repasse.designacao ?? repasse.nome ?? "Unidade escolar",
+      nome: repasse.nome ?? repasse.designacao ?? "Unidade escolar",
+      inep: repasse.inep,
+      primeiraParcela: null,
+      segundoCiclo: null,
+      totalInformado: 0,
+      segundaSituacao: "sem-evidencia",
+    };
+    bySchool.set(repasse.unidade_id, created);
+    return created;
+  };
+
+  for (const repasse of primeira) {
+    const school = ensureSchool(repasse);
+    school.primeiraParcela = (school.primeiraParcela ?? 0) + (repasse.valor_pago ?? 0);
+    school.totalInformado += repasse.valor_pago ?? 0;
+  }
+
+  for (const repasse of segunda) {
+    const school = ensureSchool(repasse);
+    school.segundoCiclo = (school.segundoCiclo ?? 0) + (repasse.valor_pago ?? 0);
+    school.totalInformado += repasse.valor_pago ?? 0;
+
+    const nextStatus: EscolaPddeBasicoTotal["segundaSituacao"] =
+      repasse.credito_bancario_confirmado === true
+        ? "credito-confirmado"
+        : repasse.data_pagamento
+          ? "pagamento-informado"
+          : repasse.data_ordem_pagamento
+            ? "ordem-emitida"
+            : "pagamento-informado";
+
+    if (
+      nextStatus === "credito-confirmado"
+      || (nextStatus === "pagamento-informado" && school.segundaSituacao !== "credito-confirmado")
+      || school.segundaSituacao === "sem-evidencia"
+    ) {
+      school.segundaSituacao = nextStatus;
+    }
+  }
+
+  const escolas = [...bySchool.values()].sort(
+    (a, b) => b.totalInformado - a.totalInformado || a.designacao.localeCompare(b.designacao, "pt-BR"),
+  );
+  const totalPrimeiraParcela = primeira.length > 0
+    ? primeira.reduce((sum, repasse) => sum + (repasse.valor_pago ?? 0), 0)
+    : null;
+  const totalSegundoCiclo = segunda.length > 0
+    ? segunda.reduce((sum, repasse) => sum + (repasse.valor_pago ?? 0), 0)
+    : null;
+  const totalInformado = totalPrimeiraParcela === null && totalSegundoCiclo === null
+    ? null
+    : (totalPrimeiraParcela ?? 0) + (totalSegundoCiclo ?? 0);
+
+  return {
+    exercicio,
+    totalPrimeiraParcela,
+    totalSegundoCiclo,
+    totalInformado,
+    escolas,
   };
 }
 
