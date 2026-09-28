@@ -204,9 +204,12 @@ export function SegundaParcelaRepassesView() {
           </Button>
         </header>
 
-        <div className="inline-flex rounded-lg border border-border/60 bg-muted/15 p-1" aria-label="Selecionar ciclo de repasse">
+        <div className="inline-flex flex-wrap rounded-lg border border-border/60 bg-muted/15 p-1" aria-label="Selecionar visão de repasses">
           <Button asChild variant="ghost" size="sm" className="h-8">
-            <Link to="/repasses">1ª parcela paga</Link>
+            <Link to="/repasses">Visão anual</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="h-8">
+            <Link to="/repasses?ciclo=1">1º ciclo de repasses</Link>
           </Button>
           <Button variant="secondary" size="sm" className="h-8" aria-current="page">
             2º ciclo de repasses
@@ -304,7 +307,7 @@ export function SegundaParcelaRepassesView() {
                 <CardContent className="p-5">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                      <h2 className="text-sm font-semibold text-foreground">Composição do 2º ciclo</h2>
+                      <h2 className="text-sm font-semibold text-foreground">Composição do 2º ciclo de repasses</h2>
                       <p className="mt-1 text-xs text-muted-foreground">Custeio e capital apenas nos valores efetivamente informados pela fonte.</p>
                     </div>
                     <span className="text-sm font-semibold tabular-nums text-foreground">{formatMoney(totalComposicao)}</span>
@@ -312,7 +315,7 @@ export function SegundaParcelaRepassesView() {
                   <div
                     className="mt-4 flex h-3 overflow-hidden rounded-full bg-muted"
                     role="img"
-                    aria-label={`Composição do segundo ciclo: ${custeioPct.toFixed(1)}% custeio e ${capitalPct.toFixed(1)}% capital`}
+                    aria-label={`Composição do 2º ciclo de repasses: ${custeioPct.toFixed(1)}% custeio e ${capitalPct.toFixed(1)}% capital`}
                   >
                     <div className="h-full bg-fin-custeio" style={{ width: `${custeioPct}%` }} />
                     <div className="h-full bg-fin-capital" style={{ width: `${capitalPct}%` }} />
