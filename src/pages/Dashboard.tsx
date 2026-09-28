@@ -13,6 +13,7 @@ import {
   Inbox,
   RefreshCw,
   School,
+  Sigma,
   WalletCards,
 } from "lucide-react";
 
@@ -32,6 +33,7 @@ import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
 import { useExercicio } from "@/hooks/useExercicio";
 import {
   buildDashboardFinanceiroOverview,
+  buildPddeBasicoTotalOverview,
   buildRecentFinancialEvents,
   buildSegundaParcelaOverview,
 } from "@/lib/financeiroPDDE";
@@ -148,6 +150,11 @@ export default function Dashboard() {
 
   const segundoCiclo = useMemo(
     () => buildSegundaParcelaOverview(repassesQuery.data ?? [], exercicioNumero),
+    [exercicioNumero, repassesQuery.data],
+  );
+
+  const pddeBasicoTotal = useMemo(
+    () => buildPddeBasicoTotalOverview(repassesQuery.data ?? [], exercicioNumero),
     [exercicioNumero, repassesQuery.data],
   );
 
@@ -325,7 +332,7 @@ export default function Dashboard() {
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6"
           aria-label="Indicadores financeiros principais"
         >
           <motion.div variants={item}>
@@ -337,6 +344,17 @@ export default function Dashboard() {
               tone="violet"
               loading={loading}
               onClick={() => navigate("/repasses", { viewTransition: true })}
+            />
+          </motion.div>
+          <motion.div variants={item}>
+            <ExecutiveKpi
+              label="PDDE Básico · total"
+              value={formatCompactMoney(pddeBasicoTotal.totalInformado)}
+              detail="1ª parcela + 2º ciclo de repasses"
+              icon={Sigma}
+              tone="success"
+              loading={loading}
+              onClick={() => navigate("/repasses?visao=basico", { viewTransition: true })}
             />
           </motion.div>
           <motion.div variants={item}>
@@ -353,7 +371,7 @@ export default function Dashboard() {
           </motion.div>
           <motion.div variants={item}>
             <ExecutiveKpi
-              label="2º ciclo informado"
+              label="2º ciclo de repasses"
               value={formatCompactMoney(segundoCiclo.escolas.length > 0 ? segundoCiclo.totalInformado : null)}
               detail={`${segundoCiclo.escolas.length} unidades no recorte oficial`}
               icon={Activity}
@@ -364,7 +382,7 @@ export default function Dashboard() {
           </motion.div>
           <motion.div variants={item}>
             <ExecutiveKpi
-              label="Cobertura · 2º ciclo"
+              label="Cobertura · 2º ciclo de repasses"
               value={loading ? "—" : `${segundoCiclo.escolas.length}/${segundoCiclo.escolasEsperadas}`}
               detail={segundoCiclo.coberturaPagamentoCompleta ? "Carteira integralmente identificada" : "Cobertura ainda em formação"}
               icon={School}
