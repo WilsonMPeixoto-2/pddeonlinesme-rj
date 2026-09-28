@@ -1,7 +1,7 @@
 {
   "project": "PDDE Online 2026",
   "repository": "WilsonMPeixoto-2/pddeonlinesme-rj",
-  "updated_at": "2026-09-28T02:05:00-03:00",
+  "updated_at": "2026-09-28T11:55:00-03:00",
   "source_of_truth": {
     "rule": "Codigo, schema/migrations, banco verificado, CI e deployment real prevalecem sobre documentacao.",
     "documentation_entrypoint": "docs/README.md",
@@ -29,11 +29,11 @@
     "schools": 163,
     "bank_accounts": 169,
     "financial_repasses": 459,
-    "sync_attempts": 757,
+    "sync_attempts": 877,
     "latest_sync": {
       "status": "ALREADY_CURRENT",
-      "started_at": "2026-09-28T05:00:04.965260Z",
-      "finished_at": "2026-09-28T05:00:07.090Z",
+      "started_at": "2026-09-28T15:00:01.275555Z",
+      "finished_at": "2026-09-28T15:00:14.715Z",
       "schools_observed": 163,
       "repasses_observed": 459,
       "semantic_rows_verified": 459,
@@ -43,7 +43,7 @@
     },
     "financial_dimensions_2026": {
       "mature_published": 6,
-      "last_published_at": "2026-09-28T05:00:06.717962Z"
+      "last_published_at": "2026-09-28T15:00:14.226533Z"
     },
     "pdde_basico_2026": {
       "first_cycle": {
