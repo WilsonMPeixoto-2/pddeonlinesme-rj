@@ -191,7 +191,7 @@ export default function Dashboard() {
   );
 
   const annualOverviewReady = pddeBasicoAnual.totalAnual > 0
-    && (exercicioNumero !== 2026 || secondCyclePublished);
+    && pddeBasicoAnual.coberturaCompleta;
 
   const recentFinancialEvents = useMemo(
     () => buildRecentFinancialEvents(repassesQuery.data ?? [], exercicioNumero).slice(0, 5),
@@ -244,11 +244,11 @@ export default function Dashboard() {
     },
     {
       label: "2º ciclo de repasses",
-      value: secondCyclePublished ? pddeBasicoAnual.totalSegundoCiclo : null,
+      value: pddeBasicoAnual.totalSegundoCiclo > 0 ? pddeBasicoAnual.totalSegundoCiclo : null,
       icon: Receipt,
-      hint: secondCyclePublished
-        ? `${pddeBasicoAnual.escolasSegundoCiclo} unidades · consolidação publicada`
-        : "Aguardando consolidação publicada",
+      hint: pddeBasicoAnual.totalSegundoCiclo > 0
+        ? `${pddeBasicoAnual.escolasSegundoCiclo} unidades com pagamento oficial`
+        : "Nenhum pagamento oficial identificado",
       tone: "teal",
       format: fmtBRL,
       destination: "/repasses?ciclo=2",
