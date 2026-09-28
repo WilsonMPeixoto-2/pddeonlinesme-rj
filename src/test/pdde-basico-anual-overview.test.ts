@@ -71,6 +71,9 @@ describe("buildPDDEBasicoAnualOverview", () => {
     expect(overview.totalSegundoCiclo).toBe(1300);
     expect(overview.totalAnual).toBe(2800);
     expect(overview.escolasComDoisCiclos).toBe(2);
+    expect(overview.escolasEsperadas).toBe(163);
+    expect(overview.coberturaDoisCiclos).toBeCloseTo(2 / 163);
+    expect(overview.coberturaCompleta).toBe(false);
     expect(overview.escolas).toHaveLength(2);
     expect(overview.escolas.find((row) => row.unidadeId === "u1")).toMatchObject({
       primeiroCiclo: 1000,
