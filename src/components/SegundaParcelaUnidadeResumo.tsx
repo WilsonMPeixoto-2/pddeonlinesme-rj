@@ -28,7 +28,7 @@ export function SegundaParcelaUnidadeResumo({
 }) {
   if (!escola) return null;
 
-  const creditoConfirmado = escola.status === "credito-confirmado";
+  const creditoLocalizado = Boolean(escola.dataCreditoBancario);
 
   return (
     <Card className="border-amber-500/25 bg-amber-500/[0.025]">
@@ -73,9 +73,9 @@ export function SegundaParcelaUnidadeResumo({
               Ordem: <strong className="font-semibold text-foreground">{formatDate(escola.dataOrdem)}</strong>
             </span>
           ) : null}
-          {creditoConfirmado ? (
+          {creditoLocalizado ? (
             <span>
-              Crédito bancário confirmado em <strong className="font-semibold text-success">{formatDate(escola.dataCreditoBancario)}</strong>
+              Crédito localizado na movimentação bancária em <strong className="font-semibold text-success">{formatDate(escola.dataCreditoBancario)}</strong>
             </span>
           ) : (
             <span>
