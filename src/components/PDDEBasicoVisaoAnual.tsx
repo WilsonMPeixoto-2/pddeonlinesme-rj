@@ -485,6 +485,25 @@ export function PDDEBasicoVisaoAnual() {
                 </div>
               </div>
 
+              {(selectedBand || selectedTimelineEvent) ? (
+                <div className="flex flex-wrap items-center gap-2 border-b border-border/50 bg-primary/[0.025] px-5 py-3 text-xs">
+                  <span className="font-semibold text-foreground">Análise ativa:</span>
+                  {selectedTimelineEvent ? (
+                    <span className="rounded-full border border-primary/20 bg-background px-2.5 py-1 text-muted-foreground">
+                      {formatDate(selectedTimelineEvent.data)} · {selectedTimelineEvent.escolas} {selectedTimelineEvent.escolas === 1 ? "unidade" : "unidades"}
+                    </span>
+                  ) : null}
+                  {selectedBand ? (
+                    <span className="rounded-full border border-primary/20 bg-background px-2.5 py-1 text-muted-foreground">
+                      {selectedBand.label}
+                    </span>
+                  ) : null}
+                  <span className="ml-auto tabular-nums text-muted-foreground">
+                    {filteredSchools.length} registros no recorte
+                  </span>
+                </div>
+              ) : null}
+
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[760px] border-collapse text-left">
                   <thead>
