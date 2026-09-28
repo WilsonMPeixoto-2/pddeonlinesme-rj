@@ -202,13 +202,15 @@ export function PDDEBasicoVisaoAnual() {
             <div className="grid lg:grid-cols-[1.2fr_0.8fr]">
               <div className="p-6 sm:p-7">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Total de repasses · PDDE Básico · {exercicio}
+                  {overview.coberturaCompleta ? "Total de repasses" : "Total oficial identificado"} · PDDE Básico · {exercicio}
                 </p>
                 <p className="mt-2 text-4xl font-bold tabular-nums tracking-tight text-foreground sm:text-5xl">
                   {formatMoney(overview.totalAnual)}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {overview.escolasComDoisCiclos} unidades com pagamentos oficiais nos dois ciclos de repasses.
+                  {overview.coberturaCompleta
+                    ? `${overview.escolasComDoisCiclos} de ${overview.escolasEsperadas} unidades com pagamentos oficiais nos dois ciclos de repasses.`
+                    : `${overview.escolasComDoisCiclos} de ${overview.escolasEsperadas} unidades já possuem os dois ciclos de repasses informados.`}
                 </p>
 
                 <div
@@ -273,9 +275,20 @@ export function PDDEBasicoVisaoAnual() {
                     <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">{compactMoneyFormatter.format(overview.maiorTotal)}</p>
                   </div>
                 </div>
-                <p className="mt-5 border-t border-border/50 pt-4 text-xs leading-relaxed text-muted-foreground">
-                  Estes valores representam repasses oficiais do exercício. Saldo bancário e conciliação são dimensões independentes.
-                </p>
+                <div className="mt-5 border-t border-border/50 pt-4">
+                  <div className="flex items-center justify-between gap-3 text-xs">
+                    <span className="text-muted-foreground">Cobertura dos dois ciclos</span>
+                    <span className={cn(
+                      "font-semibold tabular-nums",
+                      overview.coberturaCompleta ? "text-success" : "text-amber-700 dark:text-amber-300",
+                    )}>
+                      {overview.escolasComDoisCiclos}/{overview.escolasEsperadas}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    Estes valores representam repasses oficiais do exercício. Saldo bancário e conciliação são dimensões independentes.
+                  </p>
+                </div>
               </div>
             </div>
           </CardContent>
