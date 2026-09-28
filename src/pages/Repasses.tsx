@@ -31,6 +31,7 @@ import {
 import { saveAs } from "file-saver";
 
 import AppLayout from "@/components/AppLayout";
+import { PDDEBasicoVisaoAnual } from "@/components/PDDEBasicoVisaoAnual";
 import { SegundaParcelaRepassesView } from "@/components/SegundaParcelaRepassesView";
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -381,10 +382,10 @@ function PrimeiraParcelaRepasses() {
 
         <div className="inline-flex rounded-lg border border-border/60 bg-muted/15 p-1" aria-label="Selecionar ciclo de repasse">
           <Button variant="secondary" size="sm" className="h-8" aria-current="page">
-            1ª parcela paga
+            1º ciclo de repasses
           </Button>
           <Button asChild variant="ghost" size="sm" className="h-8">
-            <Link to="/repasses?ciclo=2">2º ciclo · pagamentos</Link>
+            <Link to="/repasses?ciclo=2">2º ciclo de repasses</Link>
           </Button>
         </div>
 
@@ -640,7 +641,7 @@ function PrimeiraParcelaRepasses() {
 
 export default function Repasses() {
   const [searchParams] = useSearchParams();
-  return searchParams.get("ciclo") === "2"
-    ? <SegundaParcelaRepassesView />
-    : <PrimeiraParcelaRepasses />;
+  if (searchParams.get("ciclo") === "1") return <PrimeiraParcelaRepasses />;
+  if (searchParams.get("ciclo") === "2") return <SegundaParcelaRepassesView />;
+  return <PDDEBasicoVisaoAnual />;
 }
