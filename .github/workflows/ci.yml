@@ -71,6 +71,15 @@ jobs:
         timeout-minutes: 20
         run: npm run test:e2e
 
+      - name: Upload visual regression evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-evidence
+          path: test-results/visual/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Production dependency hygiene (Knip)
         continue-on-error: true
         run: npm run check:deps:prod
