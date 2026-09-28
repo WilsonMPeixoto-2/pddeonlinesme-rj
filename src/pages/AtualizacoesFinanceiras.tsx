@@ -200,7 +200,6 @@ export default function AtualizacoesFinanceiras() {
               <SelectItem value="all">Todos os estágios</SelectItem>
               <SelectItem value="pagamento-informado">Pagamento informado pelo FNDE</SelectItem>
               <SelectItem value="ordem-emitida">Ordem de pagamento emitida</SelectItem>
-              <SelectItem value="credito-confirmado">Crédito localizado</SelectItem>
             </SelectContent>
           </Select>
         </section>
