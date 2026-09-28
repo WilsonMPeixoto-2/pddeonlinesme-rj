@@ -82,6 +82,31 @@ test("Repasses abre a visão anual e permite navegar pelos ciclos", async ({ pag
   await expect(page.getByRole("link", { name: "2º ciclo de repasses" }).first()).toHaveAttribute("href", "/repasses?ciclo=2");
 });
 
+test("timeline anual filtra a carteira e preserva o recorte no drill-down", async ({ page }) => {
+  await installSupabaseMock(page);
+  await signInAsTestAdmin(page);
+
+  await page.getByRole("link", { name: "Repasses" }).click();
+  await expect(page.getByRole("heading", { name: "Linha do tempo dos repasses" })).toBeVisible();
+
+  const agosto = page.getByRole("button").filter({ hasText: "05 ago" });
+  await agosto.click();
+
+  await expect(page).toHaveURL(/dataAnual=2026-08-05/);
+  await expect(page.getByText("Análise ativa:", { exact: true })).toBeVisible();
+  await expect(page.getByText("04.10.001", { exact: true })).toBeVisible();
+  await expect(page.getByText("04.10.002", { exact: true })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "04.10.001" }).click();
+  await expect(page).toHaveURL(/\/escolas\/00000000-0000-4000-8000-000000000101\/recursos/);
+  await expect(page.getByText("Total de repasses do exercício", { exact: true })).toBeVisible();
+
+  await page.getByRole("link", { name: "Voltar aos repasses" }).click();
+  await expect(page).toHaveURL(/dataAnual=2026-08-05/);
+  await expect(page.getByText("04.10.001", { exact: true })).toBeVisible();
+  await expect(page.getByText("04.10.002", { exact: true })).toHaveCount(0);
+});
+
 test("segundo ciclo faz drill-down da escola e preserva o retorno", async ({ page }) => {
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
