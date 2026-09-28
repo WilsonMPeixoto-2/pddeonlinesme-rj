@@ -75,6 +75,12 @@ describe("buildPDDEBasicoAnualOverview", () => {
     expect(overview.coberturaDoisCiclos).toBeCloseTo(2 / 163);
     expect(overview.coberturaCompleta).toBe(false);
     expect(overview.escolas).toHaveLength(2);
+    expect(overview.linhaTempo).toEqual([
+      expect.objectContaining({ ciclo: 1, data: "2026-04-30", escolas: 1, total: 500, unidadeIds: ["u2"] }),
+      expect.objectContaining({ ciclo: 1, data: "2026-08-05", escolas: 1, total: 1000, unidadeIds: ["u1"] }),
+      expect.objectContaining({ ciclo: 2, data: "2026-09-15", escolas: 1, total: 500, unidadeIds: ["u2"] }),
+      expect.objectContaining({ ciclo: 2, data: "2026-09-17", escolas: 1, total: 800, unidadeIds: ["u1"] }),
+    ]);
     expect(overview.escolas.find((row) => row.unidadeId === "u1")).toMatchObject({
       primeiroCiclo: 1000,
       segundoCiclo: 800,
