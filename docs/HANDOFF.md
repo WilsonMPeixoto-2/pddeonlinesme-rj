@@ -1,283 +1,217 @@
 # Handoff Operacional — PDDE Online 2026
 
-**Atualizado em:** 18/09/2026 (America/Sao_Paulo)  
+**Atualizado em:** 28/09/2026 (America/Sao_Paulo)  
 **Repositório:** `WilsonMPeixoto-2/pddeonlinesme-rj`  
 **Entrada obrigatória da documentação:** `docs/README.md`
 
-> Este handoff é uma fotografia operacional. Código, banco, CI e deployment real prevalecem em caso de divergência.
+> Este handoff registra o estado verificado do produto. Código, schema/migrations, banco, CI e deployment real prevalecem em caso de divergência.
 
-## 1. Estado verificado no fechamento do ciclo funcional
-
-Baseline funcional verificado em 18/09/2026:
-
-- `main`: `b2451447766a3366242d9595bb560ae112404c5e`;
-- Production Vercel: `dpl_9UNePVuaekvYQhSg8rjxkUJU9ArD`;
-- estado do deployment: `READY`;
-- domínio público: `https://pddeonlinesme-rj.vercel.app`;
-- CI da PR #173: verde;
-- CI da PR #174: verde;
-- Supabase oficial: `raluxyojqosfzrfozmpz`;
-- RPC `publish_financial_snapshot_with_order_evidence_v1(jsonb)`: instalada;
-- nova verificação HTTP externa do domínio: não registrada nesta reconciliação.
-
-PR documental posterior pode alterar o SHA de `main` sem alterar o baseline funcional acima.
-
-## 2. Ciclos funcionais consolidados até a PR #174
-
-### PR #129 — pipeline de publicação financeira por dimensão
-
-Entregue:
-
-- contrato V1 de maturidade/publicação;
-- cinco dimensões financeiras com cobertura 163/163;
-- publicação transacional no Supabase;
-- proteção contra regressão de cobertura;
-- idempotência por workflow/artifact;
-- replay completo das migrations no CI;
-- testes de contrato SQL;
-- classificação de ações reais de PDDE Qualidade/Equidade;
-- gate operacional para sincronização agendada.
-
-### PR #130 — recorte financeiro principal do Painel
-
-Entregue:
-
-- hero do Painel baseado na 1ª parcela paga do PDDE Básico;
-- data, cobertura e composição no mesmo universo do KPI principal;
-- remoção de visualização que misturava universos com maturidade desigual;
-- ausência de dado preservada sem virar zero.
-
-### PR #131 — busca global operacional
-
-Entregue:
-
-- `Ctrl/Cmd+K` como localizador de áreas reais do produto;
-- pesquisa das 163 unidades por designação, nome, diretor, INEP e CNPJ;
-- remoção de rotas demo, ações fictícias e pseudoatalhos inexistentes.
-
-### PR #132 — contexto da carteira de escolas
-
-Entregue:
-
-- `q` e `status` na URL da carteira;
-- transporte de contexto para a ficha;
-- retorno seguro apenas para `/escolas` ou `/escolas?...`;
-- preservação do recorte da carteira ao voltar;
-- histórico do navegador sem entradas redundantes por digitação/retorno.
-
-### PR #166 — evidência externa da P2
-
-Entregue:
-
-- camada complementar `repasse_evidencias_financeiras`;
-- 52 escolas de `PDDE Básico — Primeira Infância — P2`;
-- total informado de **R$ 132.630,00**;
-- custeio de **R$ 81.034,00**;
-- capital de **R$ 51.596,00**;
-- ordem de pagamento em **14/09/2026**;
-- nenhuma data distinta de crédito bancário confirmada.
-
-### PR #173 — drill-down operacional do 2º ciclo
-
-Entregue:
-
-- resumo do 2º ciclo no Dashboard;
-- `/repasses?ciclo=2` com relação nominal, INEP, situação, ordem, custeio, capital e total;
-- busca, filtro, ordenação e exportação;
-- drill-down para Recursos PDDE e retorno ao mesmo recorte;
-- Portal do Diretor com ordem visível sem alterar `recebido`, saldo ou execução;
-- agregados de `Pagamento identificado` exigindo `data_pagamento`.
-
-### PR #174 — persistência automática de ordens do FNDE
-
-Entregue:
-
-- RPC transacional `publish_financial_snapshot_with_order_evidence_v1(jsonb)`;
-- sincronização de ordens validadas pelo motor em `repasse_evidencias_financeiras`;
-- idempotência e bloqueio de divergências;
-- preservação de `data_pagamento = NULL` quando existe apenas ordem;
-- `repository_dispatch` e fallback diário elegíveis por padrão;
-- `PDDE_FINANCIAL_SYNC_ENABLED=false` como kill-switch explícito.
-
-A PR #174 depende de fonte válida e credenciais de backend para publicar. Na verificação de 18/09, ainda não havia nova linha em `integracoes_financeiras_runs` após a ativação; a primeira publicação automática pós-PR #174 ainda precisava ser comprovada.
-
-## 3. Governança documental instituída na PR #133
-
-A documentação passa a usar uma hierarquia explícita:
-
-1. sistema real verificado;
-2. `docs/DECISIONS.md`;
-3. `.continuity/current-state.json` e `docs/HANDOFF.md`;
-4. documentação técnica do domínio;
-5. histórico.
-
-`docs/README.md` é a porta de entrada obrigatória.
-
-Foram classificados como históricos, sem apagar sua rastreabilidade:
-
-- Plano Global v4.2 como baseline estratégica de maio/2026;
-- `OPPORTUNITIES_BACKLOG.md` como snapshot de maio/2026;
-- `DECISIONS_LOG.md` como histórico de decisões antigas;
-- specs, planos e handoffs datados.
-
-## 4. Estado financeiro atual
-
-Validado no Supabase oficial:
-
-- 163 escolas;
-- 335 contas bancárias;
-- 537 registros de repasse/parcela;
-- 5 dimensões V1 `MATURE/PUBLISHED`;
-- cobertura das dimensões: 163/163;
-- 52 evidências financeiras complementares;
-- P2 Primeira Infância: **R$ 132.630,00**;
-- composição P2: **R$ 81.034,00 custeio + R$ 51.596,00 capital**;
-- 52 ordens em **14/09/2026**;
-- créditos bancários confirmados nesse recorte: **0**;
-- `integracoes_financeiras_runs`: 2;
-- última publicação financeira observada: **09/09/2026**.
-
-Decisões obrigatórias:
-
-- ausência de informação não é zero;
-- uma escola pode ter múltiplas contas no mesmo programa;
-- hierarquia: `programa → ação → parcela → conta`;
-- dimensão coletada só vira informação operacional depois de contrato de maturidade/publicação;
-- saldo atual, movimentos posteriores, crédito localizado completo e conciliação documento × débito continuam fora da superfície operacional enquanto não houver contrato próprio e cobertura adequada.
-
-## 5. Sincronização financeira automática
-
-Workflow: `.github/workflows/sync-financial-snapshot.yml`.
-
-Desde a PR #174, `repository_dispatch` e o fallback diário estão habilitados por padrão no código:
-
-```text
-vars.PDDE_FINANCIAL_SYNC_ENABLED != 'false'
-```
-
-`PDDE_FINANCIAL_SYNC_ENABLED=false` é o kill-switch explícito. A publicação real continua exigindo:
-
-- `PDDE_SUPABASE_URL` no environment `production`;
-- `PDDE_SUPABASE_SERVICE_ROLE_KEY`;
-- destino correto;
-- snapshot/proveniência válidos;
-- gates de maturidade, cobertura e regressão aprovados.
-
-Configuração ativa não equivale a publicação comprovada. Na reconciliação de 18/09/2026, o Supabase ainda mostrava como última publicação financeira **09/09/2026**, portanto a primeira execução automática pós-PR #174 permanecia pendente de comprovação.
-
-## 6. CI atual
-
-`.github/workflows/ci.yml` possui dois jobs principais:
+## 1. Estado corrente verificado
 
 ### Aplicação
 
-- `npm ci`;
-- typecheck;
+- `main`: `a2e2de69aa3e85ae4920e8af70529db39fc0a4ad`;
+- PR #194: Visão anual e dashboard analítico do PDDE Básico — mergeada;
+- PR #195: timeline interativa e filtros cruzados — mergeada;
+- CI final da PR #195: run #506 (`36379480409`) integralmente verde;
+- evidência visual do CI: artifact `visual-evidence` (`10952163028`);
+- domínio público: `https://pddeonlinesme-rj.vercel.app`;
+- último deployment Production confirmado no momento desta reconciliação: `dpl_7n5kHr7xU9upydK4MXX6ByUTsFAn`, commit `7c83d53fb2d6c3bea8741346c9aebb614e3a3147`, estado `READY`;
+- o merge mais recente `a2e2de69...` ainda não havia aparecido na listagem de deployments Vercel durante esta reconciliação; publicação do código mais novo permanece como verificação operacional imediata, não como suposição.
+
+### Supabase
+
+Projeto oficial: `raluxyojqosfzrfozmpz`.
+
+Verificado em 28/09/2026:
+
+- 163 unidades escolares;
+- 169 contas bancárias na projeção corrente;
+- 459 registros de repasse;
+- 6 dimensões financeiras `MATURE/PUBLISHED`;
+- 757 tentativas registradas pelo sincronizador nativo;
+- tentativa mais recente: `ALREADY_CURRENT`;
+- 163 escolas observadas;
+- 459 repasses observados;
+- 459 linhas verificadas semanticamente;
+- 2º ciclo de repasses: 163 escolas / R$ 765.215,00;
+- erro da tentativa mais recente: nenhum;
+- sincronização nativa v8 ativa no Supabase, com cron recorrente.
+
+## 2. Modelo financeiro vigente
+
+### Total anual do PDDE Básico
+
+A visão principal do exercício é:
+
+`1º ciclo de repasses + 2º ciclo de repasses = total anual do PDDE Básico`
+
+Estado verificado de 2026:
+
+- 1º ciclo de repasses: **163 unidades / R$ 765.215,00**;
+- 2º ciclo de repasses: **163 unidades / R$ 765.215,00**;
+- total anual do PDDE Básico: **R$ 1.530.430,00**;
+- cobertura dos dois ciclos: **163/163**.
+
+O cálculo usa somente pagamentos oficiais com `valor_pago` e `data_pagamento`. Ordem sem data de pagamento, valor programado, saldo bancário, rendimento ou inferência não entram nesse total.
+
+### Linha temporal oficial
+
+Marcos do dataset corrente:
+
+- 30/04/2026 — 1º ciclo — 57 unidades — R$ 261.455,00;
+- 22/05/2026 — 1º ciclo — 33 unidades — R$ 85.155,00;
+- 08/07/2026 — 1º ciclo — 1 unidade — R$ 2.015,00;
+- 05/08/2026 — 1º ciclo — 72 unidades — R$ 416.590,00;
+- 15/09/2026 — 2º ciclo — 52 unidades — R$ 132.630,00;
+- 17/09/2026 — 2º ciclo — 111 unidades — R$ 632.585,00.
+
+## 3. Semântica obrigatória
+
+### Repasse oficial
+
+Pagamento informado pelo FNDE/SIGEF com valor e data conhecidos é um fato oficial suficiente para compor o valor de repasses.
+
+### Camada bancária
+
+Saldo, extrato, crédito individual e conciliação são dimensões independentes.
+
+- ausência de extrato atualizado não invalida pagamento oficial;
+- ausência de crédito localizado não é divergência;
+- crédito localizado pode ser exibido como evidência positiva;
+- divergência bancária só pode ser criada quando a fonte cobre temporalmente a data relevante e a correspondência esperada não é localizada;
+- saldo contemporâneo não prova individualmente um crédito.
+
+### Ausência de informação
+
+- `NULL` continua sendo ausência;
+- zero só representa zero informado pela fonte;
+- nenhuma dimensão parcial pode ser apresentada como universo completo.
+
+## 4. Superfícies financeiras entregues
+
+### Painel
+
+O hero prioriza o total anual do PDDE Básico quando os dois ciclos estão completos. KPIs relevantes levam ao detalhe correspondente.
+
+### Repasses
+
+`/repasses` abre a **Visão anual**.
+
+Navegação:
+
+- Visão anual;
+- 1º ciclo de repasses;
+- 2º ciclo de repasses.
+
+A Visão anual oferece:
+
+- total anual e composição entre ciclos;
+- cobertura;
+- média, mediana, menor e maior total por escola;
+- distribuição por faixas;
+- linha do tempo clicável;
+- filtros cruzados por data, faixa e busca;
+- estado de análise ativa;
+- tabela por unidade;
+- exportação do recorte;
+- drill-down preservando os filtros na URL.
+
+### Unidade escolar
+
+`/escolas/:id/recursos` apresenta:
+
+- total anual do PDDE Básico;
+- 1º e 2º ciclos de repasses;
+- datas oficiais;
+- relação proporcional;
+- timeline compacta;
+- programa, ação, parcela e contas vinculadas.
+
+## 5. Validação da PR #195
+
+CI final: run #506, ID `36379480409`.
+
+Passaram:
+
+- política Vercel;
+- contrato de upload Vercel;
+- TypeScript;
 - lint;
-- testes unitários e cobertura;
-- auditoria do template do Demonstrativo;
+- testes unitários;
+- cobertura;
+- auditoria do Demonstrativo;
 - build;
 - bundle budget;
-- Playwright E2E + acessibilidade;
-- Knip de produção;
-- auditoria de vulnerabilidades.
+- Playwright E2E;
+- acessibilidade;
+- evidência visual;
+- Knip;
+- auditoria de vulnerabilidades de produção;
+- Supabase local;
+- rebuild integral das migrations;
+- testes de contrato SQL.
 
-### Contrato Supabase
+### Revisão visual
 
-- sobe Supabase local;
-- reconstrói todo o banco pelas migrations;
-- roda `supabase test db`;
-- encerra a stack local.
+As capturas automatizadas usam dados mockados, nunca dados reais de escolas.
 
-Execuções obsoletas do mesmo PR são canceladas por `concurrency`.
+Foram revisadas:
 
-## 7. Decisões de produto vigentes
+- Visão anual com timeline/filtro ativo;
+- ficha de Recursos PDDE da escola.
 
-Fonte canônica: `docs/DECISIONS.md`.
+A revisão final ajustou a proporção entre distribuição e tabela e simplificou o cabeçalho para `Total anual`.
 
-Resumo do ciclo atual:
+## 6. Sincronização financeira corrente
 
-- **Dados → análise → escola → ação → evidência**;
-- publicar somente dimensões maduras;
-- não completar lacunas por inferência;
-- 1ª parcela paga do PDDE Básico é o recorte financeiro principal enquanto for o universo integralmente validado;
-- preservar múltiplas contas;
-- manter proveniência técnica fora da superfície operacional comum;
-- agregados relevantes devem levar a detalhe/filtro/ação;
-- ordem de pagamento e crédito bancário são estados distintos;
-- `Pagamento identificado` exige `data_pagamento`;
-- automação financeira é elegível por padrão; `false` é o kill-switch;
-- configuração de automação não substitui prova de publicação;
-- busca global só anuncia funcionalidades reais;
-- contexto da carteira deve sobreviver ao drill-down;
-- design deve ser institucional, claro e original, sem excesso decorativo.
+A arquitetura antiga dependente do workflow GitHub + service role não representa mais a operação principal.
 
-## 8. Pendências operacionais reais
+A arquitetura corrente usa sincronização financeira nativa v8 no Supabase:
 
-### 8.1. Confirmar a primeira publicação automática pós-PR #174
+- Edge Function de sincronização;
+- cron nativo recorrente;
+- tentativas registradas em `financial_sync_attempts`;
+- read-after-write;
+- status de maturidade/publicação;
+- frontend consultando maturidade e saúde por RPCs de leitura.
 
-A automação já está habilitada no código. A pendência agora é **provar a execução real ponta a ponta**.
+Em estado saudável, a infraestrutura fica visualmente silenciosa. A interface sinaliza atraso ou falha somente quando existe incidente real.
 
-Na primeira execução válida após a PR #174, confirmar:
+## 7. Governança documental
 
-1. workflow concluído com sucesso;
-2. `workflow_run_id` e `artifact_id` esperados;
-3. nova linha ou retorno idempotente em `integracoes_financeiras_runs`;
-4. 163 escolas e dimensões maduras preservadas;
-5. evidências de ordem sincronizadas sem inventar `data_pagamento`;
-6. ausência de regressão nos 52 fatos P2 já preservados.
+Precedência:
 
-Se houver incidente, `PDDE_FINANCIAL_SYNC_ENABLED=false` deve ser usado como kill-switch.
+1. código, banco, CI e deployment verificados;
+2. `docs/DECISIONS.md`;
+3. `.continuity/current-state.json` e este handoff;
+4. documentação técnica do domínio;
+5. planos, specs e históricos.
 
-### 8.2. Smoke autenticado periódico
+Documentos atualizados nesta fase:
 
-CI/Preview não substituem smoke autenticado de fluxos críticos. Priorizar, quando houver mudança nessas áreas:
+- `docs/DECISIONS.md`;
+- `docs/technical/repasses-operacionais-2026-v1.md`;
+- `docs/ROADMAP_ADAPTIVE.md`;
+- `docs/HANDOFF.md`;
+- `.continuity/current-state.json`.
 
-- login/recuperação;
-- carteira → ficha → retorno;
-- Repasses → detalhe da unidade;
-- edição cadastral;
-- geração documental;
-- permissões/RLS.
+## 8. Próximas prioridades
 
-### 8.3. Auth/RLS/auditoria
+1. confirmar a sincronização do merge funcional mais recente com Vercel Production e registrar deployment/SHA;
+2. manter observabilidade da sincronização nativa v8;
+3. aprofundar análises visuais apenas quando houver ganho operacional, sem multiplicar cards/gráficos decorativos;
+4. estudar saldo bancário como dimensão própria, com competência explícita, antes de qualquer exposição;
+5. só criar conciliação negativa quando houver cobertura bancária temporal suficiente;
+6. manter smoke autenticado proporcional ao risco;
+7. continuar hardening de Auth/RLS/auditoria antes de ampliar fluxos de escrita.
 
-Continuar hardening antes de ampliar o Portal do Diretor ou expor novos fluxos de escrita para perfis escolares.
+## 9. Escopo protegido
 
-## 9. O que não deve ser reaberto por engano
-
-Não tratar como “próxima frente” itens já concluídos:
-
-- Painel Executivo-Operacional básico;
-- geração em lote dos 163 Demonstrativos;
-- integração financeira V1;
-- página operacional de Repasses com 1ª parcela paga e drill-down do 2º ciclo;
-- busca global operacional;
-- preservação de contexto da carteira;
-- stack React/Vite/Vitest atualizada;
-- Supabase Foundation como frente genérica.
-
-Novas evoluções podem ampliar essas áreas, mas devem partir do estado atual, não dos planos de maio.
-
-## 10. Roteiro obrigatório para continuidade
-
-1. `AGENTS.md`;
-2. `docs/README.md`;
-3. `.continuity/current-state.json`;
-4. `docs/HANDOFF.md`;
-5. `docs/DECISIONS.md`;
-6. `docs/RADAR_INTELIGENCIA_INSTITUCIONAL.md`;
-7. documentação técnica da tarefa;
-8. `main`, PRs, CI, Supabase e Production conforme o escopo.
-
-`docs/PLANO_GLOBAL_V4_2.md`, `docs/OPPORTUNITIES_BACKLOG.md` e documentos em `docs/superpowers/` são referências estratégicas/históricas, não fotografia atual.
-
-## 11. Próximos movimentos recomendados
-
-1. manter o roteiro obrigatório de leitura e evitar novas fontes concorrentes de estado/decisões;
-2. manter smoke autenticado proporcional ao risco das próximas mudanças;
-3. confirmar e auditar a primeira publicação automática pós-PR #174;
-4. atualizar a P2 somente quando surgir evidência de crédito bancário confirmado;
-5. continuar hardening de Auth/RLS/auditoria antes de ampliar fluxos de escrita do Portal do Diretor;
-6. publicar novas dimensões financeiras apenas quando tiverem contrato próprio e cobertura madura;
-7. tratar novos documentos oficiais, importador e frente fiscal em PRs isolados, com fonte estruturada e revisão humana.
+- não trocar o Supabase oficial;
+- não misturar este projeto com RADAR PDDE ou outros sistemas;
+- não expor `service_role` no browser;
+- não converter ausência em zero;
+- não rebaixar pagamento oficial por falta de extrato;
+- não publicar dimensão imatura como conclusiva;
+- não alterar Auth/RLS/secrets/templates oficiais sem revisão apropriada.
