@@ -13,9 +13,9 @@ test("login autenticado abre o dashboard canônico e mantém sessão ao navegar"
   await signInAsTestAdmin(page);
 
   await expect(page.getByText("Painel Executivo-Operacional", { exact: false })).toBeVisible();
-  await expect(page.getByText("1ª parcela paga · PDDE Básico · 2026", { exact: true })).toBeVisible();
-  await expect(page.getByText("15.000", { exact: false }).first()).toBeVisible();
-  await expect(page.getByText("Repasse · 1ª parcela", { exact: true })).toBeVisible();
+  await expect(page.getByText("PDDE Básico · total dos ciclos de repasses · 2026", { exact: true })).toBeVisible();
+  await expect(page.getByText("1º ciclo de repasses", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Total PDDE Básico", { exact: true })).toBeVisible();
 
   await page.getByRole("link", { name: "Manual" }).click();
   await expect(page).toHaveURL(/\/manual$/);
@@ -70,13 +70,25 @@ test("edição cadastral percorre RPC e reconciliação sem tocar produção", a
 });
 
 
+test("Repasses abre a visão anual e permite navegar pelos ciclos", async ({ page }) => {
+  await installSupabaseMock(page);
+  await signInAsTestAdmin(page);
+
+  await page.getByRole("link", { name: "Repasses" }).click();
+  await expect(page).toHaveURL(/\/repasses$/);
+  await expect(page.getByRole("heading", { name: "Visão anual dos repasses" })).toBeVisible();
+  await expect(page.getByText("Total oficial identificado", { exact: false })).toBeVisible();
+  await expect(page.getByRole("link", { name: "1º ciclo de repasses" }).first()).toHaveAttribute("href", "/repasses?ciclo=1");
+  await expect(page.getByRole("link", { name: "2º ciclo de repasses" }).first()).toHaveAttribute("href", "/repasses?ciclo=2");
+});
+
 test("segundo ciclo faz drill-down da escola e preserva o retorno", async ({ page }) => {
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
 
-  await page.getByRole("button", { name: /2º ciclo · pagamentos/i }).click();
+  await page.getByRole("button", { name: /2º ciclo de repasses/i }).click();
   await expect(page).toHaveURL(/\/repasses\?ciclo=2/);
-  await expect(page.getByRole("heading", { name: "2º ciclo · PDDE Básico" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "2º ciclo de repasses · PDDE Básico" })).toBeVisible();
   await expect(page.getByText("04.10.002", { exact: true })).toBeVisible();
   await expect(page.getByText(/2\.785,00/).first()).toBeVisible();
   await expect(page.getByText(/1\.671,00/).first()).toBeVisible();

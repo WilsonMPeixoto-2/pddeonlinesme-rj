@@ -85,6 +85,48 @@ export interface SegundaParcelaOverview {
   ultimaDataCreditoBancario: string | null;
 }
 
+
+export interface EscolaPDDEBasicoAnual {
+  unidadeId: string;
+  designacao: string;
+  nome: string;
+  inep: string | null;
+  primeiroCiclo: number;
+  segundoCiclo: number;
+  totalAnual: number;
+  primeiroCicloData: string | null;
+  segundoCicloData: string | null;
+  participacao: number;
+}
+
+export interface FaixaPDDEBasicoAnual {
+  id: "ate-5" | "5-10" | "10-15" | "15-20" | "acima-20";
+  label: string;
+  escolas: number;
+  total: number;
+  minExclusive: number | null;
+  maxInclusive: number | null;
+}
+
+export interface PDDEBasicoAnualOverview {
+  exercicio: number;
+  totalPrimeiroCiclo: number;
+  totalSegundoCiclo: number;
+  totalAnual: number;
+  escolas: EscolaPDDEBasicoAnual[];
+  escolasPrimeiroCiclo: number;
+  escolasSegundoCiclo: number;
+  escolasComDoisCiclos: number;
+  escolasEsperadas: number;
+  coberturaDoisCiclos: number;
+  coberturaCompleta: boolean;
+  media: number;
+  mediana: number;
+  menorTotal: number;
+  maiorTotal: number;
+  faixas: FaixaPDDEBasicoAnual[];
+}
+
 export interface ActionOverview {
   acao: string;
   total: number;
@@ -452,6 +494,130 @@ export function buildSegundaParcelaOverview(
     ultimaDataOrdem: datasOrdem[0] ?? null,
     ultimaDataPagamento: datasPagamento[0] ?? null,
     ultimaDataCreditoBancario: datasCreditoBancario[0] ?? null,
+  };
+}
+
+
+function pddeBasicCycle(repasse: RepasseFinanceiro, exercicio: number): 1 | 2 | null {
+  if (
+    repasse.exercicio !== exercicio
+    || repasse.programa !== "PDDE BÁSICO"
+    || repasse.valor_pago === null
+    || repasse.data_pagamento === null
+  ) {
+    return null;
+  }
+
+  if (
+    (repasse.acao === "PDDE Básico" && repasse.parcela === "1ª Parcela")
+    || (repasse.acao === "PDDE Básico — Primeira Infância" && repasse.parcela === "P1")
+  ) {
+    return 1;
+  }
+
+  if (
+    (repasse.acao === "PDDE Básico" && repasse.parcela === "2ª Parcela")
+    || (repasse.acao === "PDDE Básico — Primeira Infância" && repasse.parcela === "P2")
+  ) {
+    return 2;
+  }
+
+  return null;
+}
+
+export function buildPDDEBasicoAnualOverview(
+  repasses: RepasseFinanceiro[],
+  exercicio: number,
+): PDDEBasicoAnualOverview {
+  const bySchool = new Map<string, EscolaPDDEBasicoAnual>();
+
+  for (const repasse of repasses) {
+    const ciclo = pddeBasicCycle(repasse, exercicio);
+    if (!ciclo) continue;
+
+    const current = bySchool.get(repasse.unidade_id) ?? {
+      unidadeId: repasse.unidade_id,
+      designacao: repasse.designacao ?? repasse.nome ?? "Unidade escolar",
+      nome: repasse.nome ?? repasse.designacao ?? "Unidade escolar",
+      inep: repasse.inep,
+      primeiroCiclo: 0,
+      segundoCiclo: 0,
+      totalAnual: 0,
+      primeiroCicloData: null,
+      segundoCicloData: null,
+      participacao: 0,
+    };
+
+    const value = repasse.valor_pago ?? 0;
+    if (ciclo === 1) {
+      current.primeiroCiclo += value;
+      if (!current.primeiroCicloData || repasse.data_pagamento! > current.primeiroCicloData) {
+        current.primeiroCicloData = repasse.data_pagamento;
+      }
+    } else {
+      current.segundoCiclo += value;
+      if (!current.segundoCicloData || repasse.data_pagamento! > current.segundoCicloData) {
+        current.segundoCicloData = repasse.data_pagamento;
+      }
+    }
+    current.totalAnual = current.primeiroCiclo + current.segundoCiclo;
+    bySchool.set(repasse.unidade_id, current);
+  }
+
+  const totalPrimeiroCiclo = [...bySchool.values()].reduce((sum, row) => sum + row.primeiroCiclo, 0);
+  const totalSegundoCiclo = [...bySchool.values()].reduce((sum, row) => sum + row.segundoCiclo, 0);
+  const totalAnual = totalPrimeiroCiclo + totalSegundoCiclo;
+
+  const escolas = [...bySchool.values()]
+    .map((row) => ({
+      ...row,
+      participacao: totalAnual > 0 ? row.totalAnual / totalAnual : 0,
+    }))
+    .sort((a, b) => b.totalAnual - a.totalAnual || a.designacao.localeCompare(b.designacao, "pt-BR"));
+
+  const bandDefinitions: Array<Omit<FaixaPDDEBasicoAnual, "escolas" | "total">> = [
+    { id: "ate-5", label: "Até R$ 5 mil", minExclusive: null, maxInclusive: 5000 },
+    { id: "5-10", label: "R$ 5–10 mil", minExclusive: 5000, maxInclusive: 10000 },
+    { id: "10-15", label: "R$ 10–15 mil", minExclusive: 10000, maxInclusive: 15000 },
+    { id: "15-20", label: "R$ 15–20 mil", minExclusive: 15000, maxInclusive: 20000 },
+    { id: "acima-20", label: "Acima de R$ 20 mil", minExclusive: 20000, maxInclusive: null },
+  ];
+  const faixas = bandDefinitions.map((band) => {
+    const rows = escolas.filter((row) => (
+      (band.minExclusive === null || row.totalAnual > band.minExclusive)
+      && (band.maxInclusive === null || row.totalAnual <= band.maxInclusive)
+    ));
+    return {
+      ...band,
+      escolas: rows.length,
+      total: rows.reduce((sum, row) => sum + row.totalAnual, 0),
+    };
+  });
+
+  const totals = escolas.map((row) => row.totalAnual);
+  const escolasPrimeiroCiclo = escolas.filter((row) => row.primeiroCiclo > 0).length;
+  const escolasSegundoCiclo = escolas.filter((row) => row.segundoCiclo > 0).length;
+  const escolasComDoisCiclos = escolas.filter((row) => row.primeiroCiclo > 0 && row.segundoCiclo > 0).length;
+  const escolasEsperadas = exercicio === 2026 ? PDDE_BASIC_4CRE_EXPECTED_SCHOOLS_2026 : escolas.length;
+  const coberturaDoisCiclos = escolasEsperadas > 0 ? escolasComDoisCiclos / escolasEsperadas : 0;
+
+  return {
+    exercicio,
+    totalPrimeiroCiclo,
+    totalSegundoCiclo,
+    totalAnual,
+    escolas,
+    escolasPrimeiroCiclo,
+    escolasSegundoCiclo,
+    escolasComDoisCiclos,
+    escolasEsperadas,
+    coberturaDoisCiclos,
+    coberturaCompleta: escolasEsperadas > 0 && escolasComDoisCiclos === escolasEsperadas,
+    media: escolas.length > 0 ? totalAnual / escolas.length : 0,
+    mediana: median(totals),
+    menorTotal: totals.length > 0 ? Math.min(...totals) : 0,
+    maiorTotal: totals.length > 0 ? Math.max(...totals) : 0,
+    faixas,
   };
 }
 
