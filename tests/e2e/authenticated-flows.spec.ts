@@ -89,7 +89,9 @@ test("timeline anual filtra a carteira e preserva o recorte no drill-down", asyn
   await page.getByRole("link", { name: "Repasses" }).click();
   await expect(page.getByRole("heading", { name: "Linha do tempo dos repasses" })).toBeVisible();
 
-  const agosto = page.getByRole("button").filter({ hasText: "05 ago" });
+  const agosto = page.getByRole("button", {
+    name: /Filtrar pagamentos de 05\/08\/2026: 1º ciclo de repasses/i,
+  });
   await agosto.click();
 
   await expect(page).toHaveURL(/dataAnual=2026-08-05/);
