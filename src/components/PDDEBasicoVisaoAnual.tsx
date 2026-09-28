@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowDownWideNarrow,
   BarChart3,
+  CalendarDays,
   Download,
   Search,
   School,
@@ -39,6 +40,16 @@ const compactMoneyFormatter = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 1,
 });
 
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  timeZone: "UTC",
+});
+
+function formatDate(value: string) {
+  return dateFormatter.format(new Date(`${value}T00:00:00Z`)).replace(".", "");
+}
+
 function formatMoney(value: number) {
   return moneyFormatter.format(value);
 }
@@ -61,6 +72,7 @@ export function PDDEBasicoVisaoAnual() {
       ? raw
       : null;
   });
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => searchParams.get("dataAnual"));
   const [sort, setSort] = useState<"valor" | "nome">("valor");
 
   const overview = useMemo(
@@ -69,6 +81,7 @@ export function PDDEBasicoVisaoAnual() {
   );
 
   const selectedBand = overview.faixas.find((band) => band.id === selectedBandId) ?? null;
+  const selectedTimelineEvent = overview.linhaTempo.find((event) => event.data === selectedDate) ?? null;
   const maxBandCount = Math.max(1, ...overview.faixas.map((band) => band.escolas));
   const firstCycleShare = overview.totalAnual > 0 ? overview.totalPrimeiroCiclo / overview.totalAnual : 0;
   const secondCycleShare = overview.totalAnual > 0 ? overview.totalSegundoCiclo / overview.totalAnual : 0;
@@ -81,6 +94,7 @@ export function PDDEBasicoVisaoAnual() {
         const belowMax = selectedBand.maxInclusive === null || school.totalAnual <= selectedBand.maxInclusive;
         if (!aboveMin || !belowMax) return false;
       }
+      if (selectedTimelineEvent && !selectedTimelineEvent.unidadeIds.includes(school.unidadeId)) return false;
       if (!term) return true;
       return [school.designacao, school.nome, school.inep ?? ""]
         .join(" ")
@@ -93,14 +107,19 @@ export function PDDEBasicoVisaoAnual() {
         ? a.designacao.localeCompare(b.designacao, "pt-BR")
         : b.totalAnual - a.totalAnual || a.designacao.localeCompare(b.designacao, "pt-BR"),
     );
-  }, [overview.escolas, search, selectedBand, sort]);
+  }, [overview.escolas, search, selectedBand, selectedTimelineEvent, sort]);
 
-  const syncParams = (nextSearch = search, nextBand = selectedBandId) => {
+  const syncParams = (
+    nextSearch = search,
+    nextBand = selectedBandId,
+    nextDate = selectedDate,
+  ) => {
     const next = new URLSearchParams();
     next.set("visao", "anual");
     const term = nextSearch.trim();
     if (term) next.set("q", term);
     if (nextBand) next.set("faixaAnual", nextBand);
+    if (nextDate) next.set("dataAnual", nextDate);
     setSearchParams(next, { replace: true });
   };
 
@@ -294,6 +313,80 @@ export function PDDEBasicoVisaoAnual() {
           </CardContent>
         </Card>
 
+        <Card className="overflow-hidden shadow-sm">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div className="flex items-start gap-2">
+                <CalendarDays className="mt-0.5 h-4 w-4 text-primary" aria-hidden="true" />
+                <div>
+                  <h2 className="text-sm font-semibold text-foreground">Linha do tempo dos repasses</h2>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Cada marco representa pagamentos oficiais informados pelo FNDE. Clique para filtrar as unidades correspondentes.
+                  </p>
+                </div>
+              </div>
+              {selectedTimelineEvent ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setSelectedDate(null);
+                    syncParams(search, selectedBandId, null);
+                  }}
+                >
+                  <X className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
+                  Limpar data
+                </Button>
+              ) : null}
+            </div>
+
+            <div className="relative mt-6">
+              <div className="absolute left-3 right-3 top-3 hidden h-px bg-border md:block" aria-hidden="true" />
+              <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                {overview.linhaTempo.map((event) => {
+                  const active = selectedDate === event.data;
+                  return (
+                    <button
+                      key={`${event.ciclo}-${event.data}`}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => {
+                        const next = active ? null : event.data;
+                        setSelectedDate(next);
+                        syncParams(search, selectedBandId, next);
+                      }}
+                      className={cn(
+                        "relative z-10 rounded-xl border bg-background px-3 pb-3 pt-5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        active
+                          ? "border-primary/40 bg-primary/[0.055]"
+                          : "border-border/55 hover:border-border hover:bg-muted/15",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "absolute left-3 top-2 h-2.5 w-2.5 rounded-full ring-4 ring-background",
+                          event.ciclo === 1 ? "bg-primary" : "bg-violet-500",
+                        )}
+                        aria-hidden="true"
+                      />
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        {event.ciclo}º ciclo de repasses
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{formatDate(event.data)}</p>
+                      <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
+                        {compactMoneyFormatter.format(event.total)}
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        {event.escolas} {event.escolas === 1 ? "unidade" : "unidades"}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
           <Card className="shadow-sm">
             <CardContent className="p-5">
@@ -314,7 +407,7 @@ export function PDDEBasicoVisaoAnual() {
                       onClick={() => {
                         const next = active ? null : band.id;
                         setSelectedBandId(next);
-                        syncParams(search, next);
+                        syncParams(search, next, selectedDate);
                       }}
                       aria-pressed={active}
                       className={cn(
@@ -359,7 +452,7 @@ export function PDDEBasicoVisaoAnual() {
                       onChange={(event) => {
                         const value = event.target.value;
                         setSearch(value);
-                        syncParams(value, selectedBandId);
+                        syncParams(value, selectedBandId, selectedDate);
                       }}
                       placeholder="Buscar unidade ou INEP"
                       className="h-9 pl-9"
@@ -374,14 +467,15 @@ export function PDDEBasicoVisaoAnual() {
                     <ArrowDownWideNarrow className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
                     {sort === "valor" ? "Maior total" : "Nome"}
                   </Button>
-                  {(search || selectedBandId) ? (
+                  {(search || selectedBandId || selectedDate) ? (
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => {
                         setSearch("");
                         setSelectedBandId(null);
-                        syncParams("", null);
+                        setSelectedDate(null);
+                        syncParams("", null, null);
                       }}
                     >
                       <X className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
@@ -406,7 +500,7 @@ export function PDDEBasicoVisaoAnual() {
                       <tr key={school.unidadeId} className="border-b border-border/40 transition-colors last:border-b-0 hover:bg-muted/15">
                         <td className="px-4 py-3">
                           <Link
-                            to={`/escolas/${school.unidadeId}/recursos?return=${encodeURIComponent(`/repasses?visao=anual`)}`}
+                            to={`/escolas/${school.unidadeId}/recursos?return=${encodeURIComponent(`/repasses?${searchParams.toString()}`)}`}
                             viewTransition
                             className="font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
                           >
