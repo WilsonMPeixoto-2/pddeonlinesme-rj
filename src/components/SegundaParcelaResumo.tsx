@@ -44,9 +44,9 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
             <div className="border-b border-border/60 p-5 lg:border-b-0 lg:border-r sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="ds-eyebrow">2º ciclo · PDDE Básico</p>
+                  <p className="ds-eyebrow">2º ciclo de repasses · PDDE Básico</p>
                   <h2 id="segundo-ciclo-title" className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-                    Pagamentos informados no 2º ciclo
+                    Pagamentos informados no 2º ciclo de repasses
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     Pagamento informado pelo FNDE, ordem de pagamento e crédito localizado no extrato são evidências distintas. A ausência de extrato atualizado não apaga o pagamento oficial.
@@ -126,7 +126,7 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                   <div
                     className="flex h-2.5 overflow-hidden rounded-full bg-muted"
                     role="img"
-                    aria-label={`Composição do segundo ciclo: ${custeioPct.toFixed(1)}% custeio e ${capitalPct.toFixed(1)}% capital`}
+                    aria-label={`Composição do segundo ciclo de repasses: ${custeioPct.toFixed(1)}% custeio e ${capitalPct.toFixed(1)}% capital`}
                   >
                     <div className="h-full bg-fin-custeio" style={{ width: `${custeioPct}%` }} />
                     <div className="h-full bg-fin-capital" style={{ width: `${capitalPct}%` }} />
@@ -152,7 +152,7 @@ export function SegundaParcelaResumo({ overview }: { overview: SegundaParcelaOve
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">Unidades contempladas</h3>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Prévia das unidades com valor informado no 2º ciclo.
+                    Prévia das unidades com valor informado no 2º ciclo de repasses.
                   </p>
                 </div>
                 <Button asChild variant="ghost" size="sm">
