@@ -206,7 +206,7 @@ export function SecondCycleEvidenceChart({
               <Layers3 className="h-4 w-4" aria-hidden="true" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-foreground">Evidências do 2º ciclo</p>
+              <p className="text-sm font-semibold text-foreground">Evidências do 2º ciclo de repasses</p>
               <p className="text-[11px] text-muted-foreground">Situação mais avançada por unidade</p>
             </div>
           </div>
