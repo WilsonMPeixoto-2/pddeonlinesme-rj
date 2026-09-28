@@ -108,12 +108,21 @@ export interface FaixaPDDEBasicoAnual {
   maxInclusive: number | null;
 }
 
+export interface PDDEBasicoTimelineEvent {
+  ciclo: 1 | 2;
+  data: string;
+  escolas: number;
+  total: number;
+  unidadeIds: string[];
+}
+
 export interface PDDEBasicoAnualOverview {
   exercicio: number;
   totalPrimeiroCiclo: number;
   totalSegundoCiclo: number;
   totalAnual: number;
   escolas: EscolaPDDEBasicoAnual[];
+  linhaTempo: PDDEBasicoTimelineEvent[];
   escolasPrimeiroCiclo: number;
   escolasSegundoCiclo: number;
   escolasComDoisCiclos: number;
@@ -564,6 +573,32 @@ export function buildPDDEBasicoAnualOverview(
     bySchool.set(repasse.unidade_id, current);
   }
 
+  const timelineMap = new Map<string, { ciclo: 1 | 2; data: string; total: number; unidades: Set<string> }>();
+  for (const repasse of repasses) {
+    const ciclo = pddeBasicCycle(repasse, exercicio);
+    if (!ciclo || !repasse.data_pagamento) continue;
+    const key = `${ciclo}:${repasse.data_pagamento}`;
+    const current = timelineMap.get(key) ?? {
+      ciclo,
+      data: repasse.data_pagamento,
+      total: 0,
+      unidades: new Set<string>(),
+    };
+    current.total += repasse.valor_pago ?? 0;
+    current.unidades.add(repasse.unidade_id);
+    timelineMap.set(key, current);
+  }
+
+  const linhaTempo: PDDEBasicoTimelineEvent[] = [...timelineMap.values()]
+    .map((event) => ({
+      ciclo: event.ciclo,
+      data: event.data,
+      escolas: event.unidades.size,
+      total: event.total,
+      unidadeIds: [...event.unidades],
+    }))
+    .sort((a, b) => a.data.localeCompare(b.data) || a.ciclo - b.ciclo);
+
   const totalPrimeiroCiclo = [...bySchool.values()].reduce((sum, row) => sum + row.primeiroCiclo, 0);
   const totalSegundoCiclo = [...bySchool.values()].reduce((sum, row) => sum + row.segundoCiclo, 0);
   const totalAnual = totalPrimeiroCiclo + totalSegundoCiclo;
@@ -607,6 +642,7 @@ export function buildPDDEBasicoAnualOverview(
     totalSegundoCiclo,
     totalAnual,
     escolas,
+    linhaTempo,
     escolasPrimeiroCiclo,
     escolasSegundoCiclo,
     escolasComDoisCiclos,

@@ -1,51 +1,111 @@
-# Repasses Operacionais 2026 — V1
+# Repasses Operacionais 2026 — contrato corrente
+
+**Atualizado em:** 28/09/2026
 
 ## Objetivo
 
-Transformar os dados financeiros já confiáveis do PDDE 2026 em uma interface operacional clara para a GAD/4ª CRE, sem expor metadados técnicos de coleta e sem preencher lacunas com valores presumidos.
+Transformar os dados financeiros confiáveis do PDDE 2026 em uma interface operacional clara para a GAD/4ª CRE, preservando a distinção entre **repasse oficial**, **posição bancária** e **conciliação**.
 
-A V1 foi deliberadamente limitada a informações completas ou objetivamente disponíveis no banco. A interface não apresenta saldo atual, localização de crédito posterior ao limite conhecido da fonte ou qualquer valor inferido.
+A superfície de Repasses prioriza fatos oficiais completos para o universo apresentado. Ausência de saldo/extrato contemporâneo não invalida pagamento oficial do FNDE e não é convertida em pendência fictícia.
 
-## Recortes operacionais publicados
+## Visões operacionais publicadas
 
-A página `/repasses` mantém dois recortes explicitamente separados.
+A página `/repasses` possui três visões articuladas.
 
-### 1ª parcela paga
+### Visão anual — entrada padrão
 
-O recorte principal consolida:
+A rota `/repasses` consolida os pagamentos oficiais dos dois ciclos de repasses do PDDE Básico:
 
-- `PDDE Básico` → `1ª Parcela`;
-- `PDDE Básico — Primeira Infância` → `P1`.
+- 1º ciclo: `PDDE Básico → 1ª Parcela` + `Primeira Infância → P1`;
+- 2º ciclo: `PDDE Básico → 2ª Parcela` + `Primeira Infância → P2`.
 
-No snapshot publicado utilizado pela integração, esse recorte cobre as **163 unidades escolares** e totaliza **R$ 765.215,00 pagos**.
+Regra de inclusão: `valor_pago IS NOT NULL` e `data_pagamento IS NOT NULL`.
 
-A tela calcula total pago, quantidade de unidades, média, mediana, distribuição por ação, distribuição por faixa de valor e evolução acumulada pelas datas de pagamento informadas. Os gráficos também funcionam como filtros da relação de escolas.
+No estado verificado em 28/09/2026:
 
-### 2º ciclo / ordens
+- 1º ciclo de repasses: **163 unidades / R$ 765.215,00**;
+- 2º ciclo de repasses: **163 unidades / R$ 765.215,00**;
+- total anual do PDDE Básico: **R$ 1.530.430,00**;
+- 163/163 unidades possuem pagamentos oficiais nos dois ciclos.
 
-O recorte `/repasses?ciclo=2` publica somente unidades para as quais existe valor informado no 2º ciclo do PDDE Básico. A visão apresenta:
+A visão anual apresenta:
 
-- unidade escolar e INEP;
-- ação;
-- situação semântica;
-- data da ordem de pagamento;
-- data de pagamento, quando existir;
-- custeio;
-- capital;
-- total informado;
-- busca, filtro, ordenação e exportação CSV.
+- total anual e composição 1º ciclo + 2º ciclo;
+- cobertura dos dois ciclos;
+- média, mediana, menor e maior total por unidade;
+- distribuição por faixas de valor;
+- linha do tempo dos pagamentos oficiais;
+- filtros cruzados entre faixa, data e tabela;
+- busca, ordenação e exportação do recorte;
+- tabela por escola com 1º ciclo, 2º ciclo e total anual;
+- drill-down para a ficha da unidade preservando filtros na URL.
 
-A presença de `valor_pago` como fallback de evidência externa não autoriza o rótulo **Pagamento identificado**. Esse estado exige `data_pagamento`. Na ausência dessa data, a interface usa **Ordem emitida** quando existe `data_ordem_pagamento`, ou **Pagamento informado** quando há valor sem data de ordem.
+### 1º ciclo de repasses
 
-Cada unidade conduz à visão detalhada de recursos e o retorno preserva o recorte do segundo ciclo.
+A rota `/repasses?ciclo=1` consolida:
+
+- `PDDE Básico → 1ª Parcela`;
+- `PDDE Básico — Primeira Infância → P1`.
+
+Mantém análises por ação, faixa de valor e data, com gráficos/filtros ligados à relação nominal das escolas.
+
+### 2º ciclo de repasses
+
+A rota `/repasses?ciclo=2` consolida:
+
+- `PDDE Básico → 2ª Parcela`;
+- `PDDE Básico — Primeira Infância → P2`.
+
+A visão apresenta unidade, INEP, ação, situação semântica, ordem, pagamento, custeio, capital, total, busca, filtros, ordenação e exportação.
+
+O rótulo de pagamento exige `data_pagamento`. Ordem sem data de pagamento permanece **Ordem emitida** e não entra nos totais anuais recebidos.
+
+## Linha do tempo
+
+A camada `src/lib/financeiroPDDE.ts` agrupa os pagamentos oficiais por:
+
+`ciclo de repasses + data_pagamento`
+
+Cada evento contém:
+
+- ciclo;
+- data;
+- quantidade de unidades;
+- total financeiro;
+- IDs das unidades do evento.
+
+A Visão anual usa esses IDs para filtrar a tabela. O filtro temporal é representado na URL por `dataAnual` e sobrevive ao drill-down/retorno.
+
+No dataset verificado em 28/09/2026, os marcos são:
+
+- 30/04 — 1º ciclo — 57 unidades — R$ 261.455,00;
+- 22/05 — 1º ciclo — 33 unidades — R$ 85.155,00;
+- 08/07 — 1º ciclo — 1 unidade — R$ 2.015,00;
+- 05/08 — 1º ciclo — 72 unidades — R$ 416.590,00;
+- 15/09 — 2º ciclo — 52 unidades — R$ 132.630,00;
+- 17/09 — 2º ciclo — 111 unidades — R$ 632.585,00.
+
+## Ficha financeira da unidade
+
+`/escolas/:id/recursos` mostra no topo do conteúdo financeiro:
+
+- total de repasses do PDDE Básico no exercício;
+- valor do 1º ciclo;
+- valor do 2º ciclo;
+- participação proporcional de cada ciclo;
+- datas dos pagamentos oficiais;
+- linha temporal compacta 1º → 2º ciclo.
+
+Abaixo permanecem programa, ação, parcela e contas vinculadas.
 
 ## Hierarquia operacional
-
-A ficha financeira da escola segue a hierarquia:
 
 ```text
 UNIDADE ESCOLAR
 ├─ PDDE BÁSICO
+│  ├─ visão anual
+│  │  ├─ 1º ciclo de repasses
+│  │  └─ 2º ciclo de repasses
 │  ├─ conta(s)
 │  ├─ PDDE Básico
 │  │  ├─ 1ª parcela
@@ -54,75 +114,66 @@ UNIDADE ESCOLAR
 │     ├─ P1
 │     └─ P2
 ├─ PDDE QUALIDADE
-│  ├─ conta(s)
-│  ├─ Educação Conectada
-│  ├─ Escola e Comunidade
-│  └─ Escola das Adolescências
 └─ PDDE EQUIDADE
-   └─ conta(s)/ações quando aplicável
 ```
 
-Uma escola pode possuir mais de uma conta dentro do mesmo programa. A interface lista todas as contas encontradas e não reduz o programa a uma conta singular.
+Uma escola pode possuir mais de uma conta dentro do mesmo programa.
+
+## Semântica financeira
+
+### Repasse oficial
+
+Um registro compõe totais de repasse quando há:
+
+- `valor_pago`;
+- `data_pagamento`;
+- ação/parcela pertencente ao ciclo do PDDE Básico.
+
+Crédito bancário localizado não é pré-condição.
+
+### Camada bancária
+
+Saldo, extrato e crédito individual são dimensões independentes.
+
+- ausência de extrato contemporâneo não significa divergência;
+- crédito localizado pode ser exibido como evidência positiva;
+- divergência só pode ser criada quando a fonte bancária cobre temporalmente a data esperada e ainda assim a correspondência não é localizada;
+- saldo não deve ser usado por diferença para “provar” um crédito individual.
 
 ## Regra de precisão
 
-A camada `src/lib/financeiroPDDE.ts` preserva a distinção entre ausência de informação e zero conhecido.
+- `null` significa informação não disponível;
+- zero só significa zero quando a fonte o informa;
+- ordem sem pagamento não entra no total recebido;
+- nenhum ciclo parcial pode ser apresentado como total anual completo;
+- filtros e drill-down devem preservar o recorte do usuário.
 
-- `null` significa informação não disponível no recorte atual;
-- `0` só pode representar zero quando a fonte realmente o informar;
-- a interface apresenta ausência como `—`;
-- custeio e capital só são exibidos quando o respectivo componente está disponível;
-- programa com conta válida continua visível mesmo sem repasse associado no recorte.
+## Componentes principais
 
-Essa regra é essencial para impedir que lacunas de fonte sejam convertidas em informação financeira falsa.
-
-## Componentes
-
-### `src/pages/Repasses.tsx`
-
-Entrada única para os recortes de repasses. Preserva a visão madura da 1ª parcela e seleciona o drill-down do segundo ciclo por parâmetro de URL.
-
-### `src/components/SegundaParcelaRepassesView.tsx`
-
-Drill-down operacional do segundo ciclo com KPIs, composição custeio/capital, busca, filtros de situação, ordenação, exportação e tabela nominal das unidades.
-
-### `src/components/SegundaParcelaResumo.tsx`
-
-Resumo do segundo ciclo no Painel, com total, composição, data da ordem e prévia nominal que conduz ao conjunto completo.
-
-### `src/components/RecursosPDDEPanel.tsx`
-
-Componente reutilizável de leitura por programa, contas, ações e parcelas. Mantém os nomes oficiais operacionais em primeiro plano e não exibe workflow IDs, hashes, parser, artefato ou demais informações de proveniência técnica.
-
-### `src/pages/EscolaEditarComRecursos.tsx`
-
-Mantém a ficha cadastral existente e adiciona acesso rápido a `Recursos PDDE` em painel lateral, evitando duplicação do fluxo cadastral legado.
-
-### `src/pages/EscolaRecursos.tsx`
-
-Visão dedicada e expansível de recursos da unidade em `/escolas/:id/recursos`.
+- `src/components/PDDEBasicoVisaoAnual.tsx`: visão anual, distribuição, timeline, filtros cruzados, tabela e exportação;
+- `src/pages/Repasses.tsx`: roteamento entre visão anual, 1º ciclo e 2º ciclo;
+- `src/components/SegundaParcelaRepassesView.tsx`: detalhe operacional do 2º ciclo;
+- `src/components/PDDEBasicoAnualUnidadeResumo.tsx`: total anual e timeline compacta da unidade;
+- `src/pages/EscolaRecursos.tsx`: ficha financeira da unidade;
+- `src/components/RecursosPDDEPanel.tsx`: programa/ação/parcela/conta;
+- `src/lib/financeiroPDDE.ts`: regras de consolidação e semântica.
 
 ## Dados e consultas
 
-A interface lê exclusivamente:
+A interface continua somente leitura e usa as consultas tipadas centralizadas em `src/lib/queryKeys.ts`.
 
-- `contas_bancarias`;
-- `vw_repasses_financeiros_unidade`.
-
-As consultas são tipadas e centralizadas em `src/lib/queryKeys.ts`. Contas e repasses da unidade são buscados em paralelo e agrupados no frontend por programa e ação.
-
-Os dados importados permanecem somente leitura para a interface autenticada. Escritas financeiras devem ocorrer por fluxo controlado de integração, não por edição direta na ficha escolar.
+Escritas financeiras permanecem restritas ao fluxo controlado de integração. Proveniência técnica, workflow IDs, hashes e artefatos continuam fora da superfície operacional cotidiana.
 
 ## Identidade visual
 
-A V1 preserva o design system existente do PDDE Online e usa distinção semântica discreta:
+A evolução analítica segue o design system existente. O princípio não é copiar visualmente o Power BI, mas incorporar:
 
-- PDDE Básico: cor primária;
-- PDDE Qualidade: cor de sucesso;
-- PDDE Equidade: cor de atenção.
+- hierarquia forte;
+- indicadores acionáveis;
+- filtros cruzados;
+- gráficos que levam a registros;
+- drill-down preservando contexto;
+- cores com função semântica;
+- baixa poluição visual.
 
-A cor é apoio visual, não o único meio de identificação: todos os programas e ações permanecem nomeados por texto.
-
-## Evolução prevista
-
-Novos recortes podem ser publicados na interface quando a fonte possuir cobertura completa e semântica validada. O contrato atual não autoriza inferir saldo corrente, data de crédito bancário ausente ou composição custeio/capital desconhecida.
+Nenhum gráfico ou KPI deve existir apenas como decoração.
