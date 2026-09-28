@@ -514,7 +514,7 @@ export default function Dashboard() {
                 Últimas atualizações financeiras
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Eventos mais recentes encontrados nas fontes correntes, sem depender da persistência histórica para aparecer no Painel.
+                Registros oficiais mais recentes dos repasses. Saldo e conciliação bancária permanecem em análises separadas.
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={() => navigate("/atualizacoes", { viewTransition: true })}>
@@ -553,11 +553,9 @@ export default function Dashboard() {
                         </div>
                         <p className="mt-0.5 truncate text-xs text-muted-foreground">
                           {event.programa} · {event.acao} · {event.parcela} · {
-                            event.stage === "credito-confirmado"
-                              ? "crédito bancário confirmado"
-                              : event.stage === "pagamento-informado"
-                                ? "pagamento informado"
-                                : "ordem emitida"
+                            event.stage === "pagamento-informado"
+                              ? "pagamento informado pelo FNDE"
+                              : "ordem de pagamento emitida"
                           }
                         </p>
                       </div>
