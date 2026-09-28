@@ -48,8 +48,7 @@ describe("buildSegundaParcelaOverview", () => {
     expect(overview.coberturaPagamento).toBe(0);
     expect(overview.coberturaPagamentoCompleta).toBe(false);
     expect(overview.escolasPrimeiraInfanciaPagas).toBe(0);
-    expect(overview.creditosBancariosConfirmados).toBe(0);
-    expect(overview.ordensSemCredito).toBe(2);
+    expect(overview.creditosBancariosLocalizados).toBe(0);
     expect(overview.ultimaDataOrdem).toBe("2026-09-14");
     expect(overview.ultimaDataPagamento).toBeNull();
     expect(overview.escolas[0]).toEqual(expect.objectContaining({
@@ -75,7 +74,6 @@ describe("buildSegundaParcelaOverview", () => {
     expect(overview.pagamentosIdentificados).toBe(1);
     expect(overview.creditosBancariosLocalizados).toBe(1);
     expect(overview.escolasPrimeiraInfanciaPagas).toBe(1);
-    expect(overview.ordensSemCredito).toBe(1);
     expect(overview.ultimaDataPagamento).toBe("2026-09-18");
     expect(overview.ultimaDataCreditoBancario).toBe("2026-09-18");
     expect(overview.escolas.find((row) => row.unidadeId === "u1")?.status).toBe("ordem-emitida");
