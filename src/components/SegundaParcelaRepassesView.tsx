@@ -48,20 +48,16 @@ function escapeCsv(value: string | number | null) {
   return `"${text}"`;
 }
 
-function statusLabel(status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado") {
-  if (status === "credito-confirmado") return "Crédito localizado";
+function statusLabel(status: "ordem-emitida" | "pagamento-informado") {
   if (status === "ordem-emitida") return "Ordem de pagamento emitida";
   return "Pagamento informado pelo FNDE";
 }
 
-function statusClasses(status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado") {
-  if (status === "credito-confirmado") {
-    return "border-success/30 bg-success/8 text-success";
-  }
+function statusClasses(status: "ordem-emitida" | "pagamento-informado") {
   if (status === "ordem-emitida") {
     return "border-amber-500/30 bg-amber-500/8 text-amber-700 dark:text-amber-300";
   }
-  return "border-border bg-muted/30 text-muted-foreground";
+  return "border-primary/30 bg-primary/8 text-primary";
 }
 
 export function SegundaParcelaRepassesView() {
@@ -109,7 +105,7 @@ export function SegundaParcelaRepassesView() {
     const term = search.trim().toLocaleLowerCase("pt-BR");
     const rows = overview.escolas.filter((school) => {
       if (status === "ordem" && school.status !== "ordem-emitida") return false;
-      if (status === "pago" && school.status !== "credito-confirmado") return false;
+      if (status === "pago" && school.status !== "pagamento-informado") return false;
       if (!term) return true;
       return [school.designacao, school.nome, school.inep ?? "", school.acao]
         .join(" ")
@@ -143,7 +139,6 @@ export function SegundaParcelaRepassesView() {
       "Situação",
       "Ordem de pagamento",
       "Data informada pelo FNDE",
-      "Crédito localizado",
       "Custeio",
       "Capital",
       "Total informado",
@@ -156,7 +151,6 @@ export function SegundaParcelaRepassesView() {
         statusLabel(school.status),
         school.dataOrdem,
         school.dataPagamento,
-        school.dataCreditoBancario,
         school.custeio === null ? null : school.custeio.toFixed(2).replace(".", ","),
         school.capital === null ? null : school.capital.toFixed(2).replace(".", ","),
         school.valorInformado.toFixed(2).replace(".", ","),
@@ -190,7 +184,7 @@ export function SegundaParcelaRepassesView() {
               2º ciclo de repasses · PDDE Básico
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              Pagamento informado pelo FNDE, ordem de pagamento e crédito localizado na fonte bancária são evidências distintas e permanecem separadas.
+              Esta visão acompanha o repasse oficial informado pelo FNDE. Saldo da conta e conciliação bancária são dimensões independentes e não condicionam o reconhecimento do repasse.
             </p>
           </div>
           <Button
@@ -238,7 +232,7 @@ export function SegundaParcelaRepassesView() {
         ) : (
           <>
             <Card className="overflow-hidden shadow-sm">
-              <CardContent className="grid p-0 md:grid-cols-4">
+              <CardContent className="grid p-0 md:grid-cols-3">
                 <div className="p-5">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2º ciclo de repasses</p>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{formatMoney(overview.totalInformado)}</p>
@@ -273,16 +267,7 @@ export function SegundaParcelaRepassesView() {
                     {overview.ultimaDataOrdem ? `Mais recente em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data de ordem separada"}
                   </p>
                 </div>
-                <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
-                  <div className={overview.creditosBancariosConfirmados > 0 ? "flex items-center gap-2 text-success" : "flex items-center gap-2 text-muted-foreground"}>
-                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito localizado</p>
-                  </div>
-                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.creditosBancariosConfirmados}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Exibido somente quando localizado em fonte bancária disponível"}
-                  </p>
-                </div>
+
               </CardContent>
             </Card>
 
