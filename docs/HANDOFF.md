@@ -29,8 +29,8 @@ Verificado em 28/09/2026:
 - 169 contas bancárias na projeção corrente;
 - 459 registros de repasse;
 - 6 dimensões financeiras `MATURE/PUBLISHED`;
-- 757 tentativas registradas pelo sincronizador nativo;
-- tentativa mais recente: `ALREADY_CURRENT`;
+- 877 tentativas registradas pelo sincronizador nativo;
+- tentativa mais recente: `ALREADY_CURRENT`, concluída em 28/09/2026 às 12:00 (America/Sao_Paulo);
 - 163 escolas observadas;
 - 459 repasses observados;
 - 459 linhas verificadas semanticamente;
