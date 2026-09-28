@@ -1,6 +1,6 @@
 # Roadmap Adaptativo — PDDE Online 2026
 
-**Atualizado em:** 18/09/2026  
+**Atualizado em:** 28/09/2026  
 **Papel:** fila curta e prioridades após o estado atual.  
 **Não substitui:** `docs/DECISIONS.md`, `docs/README.md` ou verificação direta de `main`/Production.
 
@@ -36,6 +36,12 @@ Este roadmap registra apenas a fila operacional adaptativa a partir do estado re
 - evidência P2 de 52 escolas com ordem de pagamento em 14/09/2026;
 - drill-down operacional do 2º ciclo;
 - sincronização automática de ordens do FNDE integrada ao pipeline financeiro.
+- sincronização financeira nativa v8 no Supabase com cron operacional;
+- maturidade pública do 2º ciclo integrada ao frontend;
+- Visão anual do PDDE Básico com 1º + 2º ciclos e total por unidade;
+- linha do tempo de repasses e filtros cruzados entre visualizações e tabela;
+- total anual e timeline compacta na ficha financeira da escola;
+- semântica revisada: pagamento oficial do FNDE não depende de confirmação bancária para compor repasses.
 
 ### Estado financeiro V1
 
@@ -62,21 +68,15 @@ As prioridades abaixo são recomendações adaptativas, não autorização autom
    - registrar novas decisões somente em `docs/DECISIONS.md`;
    - evitar criar novos snapshots concorrentes.
 
-### P1 — comprovar a primeira publicação automática pós-PR #174
+### P1 — manter e observar a sincronização financeira nativa
 
-Status atual: **o workflow está elegível por padrão** para `repository_dispatch` e fallback diário. `PDDE_FINANCIAL_SYNC_ENABLED=false` é o kill-switch.
+A publicação financeira nativa v8 está operacional no Supabase, com cron recorrente e read-after-write. A frente deixa de ser “ativar a primeira sincronização” e passa a ser observabilidade e regressão:
 
-Pendência operacional:
-
-1. observar a primeira execução pós-PR #174;
-2. confirmar sucesso do workflow;
-3. conferir `workflow_run_id + artifact_id`;
-4. confirmar nova linha/idempotência em `integracoes_financeiras_runs`;
-5. preservar 163/163 e as cinco dimensões maduras;
-6. confirmar que ordens entram como evidência sem preencher `data_pagamento`;
-7. usar o kill-switch imediatamente se houver regressão.
-
-Na verificação de 18/09/2026, a última publicação observada no Supabase ainda era de 09/09/2026.
+1. manter cron saudável e tentativas recentes sem erro;
+2. preservar 163/163 nas dimensões maduras;
+3. detectar regressão de cobertura antes de promover nova informação;
+4. manter frontend silencioso em estado saudável e explícito apenas em atraso/falha;
+5. não usar a camada bancária como condição para aceitar pagamento oficial do FNDE.
 
 ### P1 — Auth/RLS/auditoria antes de expansão de perfis
 
