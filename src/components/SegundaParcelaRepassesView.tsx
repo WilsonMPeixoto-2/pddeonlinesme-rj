@@ -49,7 +49,7 @@ function escapeCsv(value: string | number | null) {
 }
 
 function statusLabel(status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado") {
-  if (status === "credito-confirmado") return "Crédito bancário confirmado";
+  if (status === "credito-confirmado") return "Crédito localizado";
   if (status === "ordem-emitida") return "Ordem de pagamento emitida";
   return "Pagamento informado pelo FNDE";
 }
@@ -143,7 +143,7 @@ export function SegundaParcelaRepassesView() {
       "Situação",
       "Ordem de pagamento",
       "Data informada pelo FNDE",
-      "Crédito bancário confirmado",
+      "Crédito localizado",
       "Custeio",
       "Capital",
       "Total informado",
@@ -187,7 +187,7 @@ export function SegundaParcelaRepassesView() {
               Repasses · {exercicio}
             </div>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              2º ciclo · PDDE Básico
+              2º ciclo de repasses · PDDE Básico
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               Pagamento informado pelo FNDE, ordem de pagamento e crédito localizado na fonte bancária são evidências distintas e permanecem separadas.
@@ -209,7 +209,7 @@ export function SegundaParcelaRepassesView() {
             <Link to="/repasses">1ª parcela paga</Link>
           </Button>
           <Button variant="secondary" size="sm" className="h-8" aria-current="page">
-            2º ciclo · pagamentos
+            2º ciclo de repasses
           </Button>
         </div>
 
@@ -237,7 +237,7 @@ export function SegundaParcelaRepassesView() {
             <Card className="overflow-hidden shadow-sm">
               <CardContent className="grid p-0 md:grid-cols-4">
                 <div className="p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2º ciclo informado</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2º ciclo de repasses</p>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{formatMoney(overview.totalInformado)}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {overview.escolasRegularesPagas} 2ª parcela regular · {overview.escolasPrimeiraInfanciaPagas} Primeira Infância/P2
@@ -273,11 +273,11 @@ export function SegundaParcelaRepassesView() {
                 <div className="border-t border-border/60 p-5 md:border-l md:border-t-0">
                   <div className={overview.creditosBancariosConfirmados > 0 ? "flex items-center gap-2 text-success" : "flex items-center gap-2 text-muted-foreground"}>
                     <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito localizado no extrato</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito localizado</p>
                   </div>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{overview.creditosBancariosConfirmados}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "A fonte bancária pública ainda não localizou o crédito"}
+                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Exibido somente quando localizado em fonte bancária disponível"}
                   </p>
                 </div>
               </CardContent>
@@ -362,7 +362,7 @@ export function SegundaParcelaRepassesView() {
                         variant={status === "pago" ? "secondary" : "outline"}
                         onClick={() => setStatus((current) => current === "pago" ? "todos" : "pago")}
                       >
-                        Crédito bancário confirmado
+                        Crédito localizado
                       </Button>
                     ) : null}
                     <Button
