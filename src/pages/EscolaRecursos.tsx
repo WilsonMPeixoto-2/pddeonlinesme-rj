@@ -1,14 +1,17 @@
+import { useMemo } from "react";
 import { ArrowLeft, Landmark, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import AppLayout from "@/components/AppLayout";
 import { EmptyState } from "@/components/EmptyState";
+import { PDDEBasicoAnualUnidadeResumo } from "@/components/PDDEBasicoAnualUnidadeResumo";
 import { RecursosPDDEPanel } from "@/components/RecursosPDDEPanel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useExercicio } from "@/hooks/useExercicio";
 import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
+import { buildPDDEBasicoAnualOverview } from "@/lib/financeiroPDDE";
 import { financeiroUnidadeOptions } from "@/lib/queryKeys";
 
 export default function EscolaRecursos() {
@@ -29,6 +32,14 @@ export default function EscolaRecursos() {
   });
 
   const financeiro = useQuery(financeiroUnidadeOptions(id, exercicioNumero));
+
+  const pddeBasicoAnual = useMemo(
+    () => buildPDDEBasicoAnualOverview(financeiro.data?.repasses ?? [], exercicioNumero),
+    [exercicioNumero, financeiro.data?.repasses],
+  );
+  const resumoAnual = id
+    ? pddeBasicoAnual.escolas.find((escola) => escola.unidadeId === id)
+    : undefined;
 
   const title =
     unidade?.nome ||
@@ -91,6 +102,13 @@ export default function EscolaRecursos() {
             </div>
           </div>
         </header>
+
+        {!financeiro.isLoading && !financeiro.isError ? (
+          <PDDEBasicoAnualUnidadeResumo
+            escola={resumoAnual}
+            exercicio={exercicioNumero}
+          />
+        ) : null}
 
         {financeiro.isError ? (
           <EmptyState
