@@ -62,7 +62,7 @@ export interface EscolaSegundaParcela {
   dataOrdem: string | null;
   dataPagamento: string | null;
   dataCreditoBancario: string | null;
-  status: "credito-confirmado" | "ordem-emitida" | "pagamento-informado";
+  status: "ordem-emitida" | "pagamento-informado";
 }
 
 export interface SegundaParcelaOverview {
@@ -78,8 +78,7 @@ export interface SegundaParcelaOverview {
   escolasPrimeiraInfanciaPagas: number;
   ordensIdentificadas: number;
   pagamentosIdentificados: number;
-  creditosBancariosConfirmados: number;
-  ordensSemCredito: number;
+  creditosBancariosLocalizados: number;
   ultimaDataOrdem: string | null;
   ultimaDataPagamento: string | null;
   ultimaDataCreditoBancario: string | null;
@@ -403,13 +402,9 @@ export function buildSegundaParcelaOverview(
     const trilho: EscolaSegundaParcela["trilho"] = repasse.acao === "PDDE Básico — Primeira Infância"
       ? "primeira-infancia"
       : "regular";
-    const status: EscolaSegundaParcela["status"] = repasse.credito_bancario_confirmado === true
-      ? "credito-confirmado"
-      : repasse.data_pagamento
-        ? "pagamento-informado"
-        : repasse.data_ordem_pagamento
-          ? "ordem-emitida"
-          : "pagamento-informado";
+    const status: EscolaSegundaParcela["status"] = repasse.data_pagamento
+      ? "pagamento-informado"
+      : "ordem-emitida";
 
     if (current) {
       current.valorInformado += repasse.valor_pago ?? 0;
@@ -424,8 +419,7 @@ export function buildSegundaParcelaOverview(
       if (!current.dataPagamento && repasse.data_pagamento) current.dataPagamento = repasse.data_pagamento;
       if (!current.dataCreditoBancario && repasse.data_credito_bancario) current.dataCreditoBancario = repasse.data_credito_bancario;
       if (!current.dataOrdem && repasse.data_ordem_pagamento) current.dataOrdem = repasse.data_ordem_pagamento;
-      if (status === "credito-confirmado") current.status = status;
-      else if (status === "pagamento-informado" && current.status === "ordem-emitida") current.status = status;
+      if (status === "pagamento-informado" && current.status === "ordem-emitida") current.status = status;
       if (current.trilho !== trilho) current.trilho = "misto";
       if (current.acao !== actionLabel(repasse.acao)) current.acao = "Múltiplas ações";
       continue;
@@ -470,9 +464,7 @@ export function buildSegundaParcelaOverview(
     .map((row) => row.dataCreditoBancario)
     .filter((data): data is string => Boolean(data))
     .sort((a, b) => b.localeCompare(a));
-  const pagamentosIdentificados = escolas.filter((row) => (
-    row.dataPagamento !== null || row.status === "credito-confirmado"
-  )).length;
+  const pagamentosIdentificados = escolas.filter((row) => row.dataPagamento !== null).length;
   const escolasEsperadas = exercicio === 2026 ? PDDE_BASIC_4CRE_EXPECTED_SCHOOLS_2026 : escolas.length;
   const coberturaPagamento = escolasEsperadas > 0 ? pagamentosIdentificados / escolasEsperadas : 0;
 
@@ -485,12 +477,11 @@ export function buildSegundaParcelaOverview(
     escolasEsperadas,
     coberturaPagamento,
     coberturaPagamentoCompleta: escolasEsperadas > 0 && pagamentosIdentificados === escolasEsperadas,
-    escolasRegularesPagas: escolas.filter((row) => row.trilho === "regular" && (row.dataPagamento !== null || row.status === "credito-confirmado")).length,
-    escolasPrimeiraInfanciaPagas: escolas.filter((row) => row.trilho === "primeira-infancia" && (row.dataPagamento !== null || row.status === "credito-confirmado")).length,
+    escolasRegularesPagas: escolas.filter((row) => row.trilho === "regular" && row.dataPagamento !== null).length,
+    escolasPrimeiraInfanciaPagas: escolas.filter((row) => row.trilho === "primeira-infancia" && row.dataPagamento !== null).length,
     ordensIdentificadas: escolas.filter((row) => row.dataOrdem !== null).length,
     pagamentosIdentificados,
-    creditosBancariosConfirmados: escolas.filter((row) => row.dataCreditoBancario !== null || row.status === "credito-confirmado").length,
-    ordensSemCredito: escolas.filter((row) => row.dataOrdem !== null && row.dataCreditoBancario === null).length,
+    creditosBancariosLocalizados: escolas.filter((row) => row.dataCreditoBancario !== null).length,
     ultimaDataOrdem: datasOrdem[0] ?? null,
     ultimaDataPagamento: datasPagamento[0] ?? null,
     ultimaDataCreditoBancario: datasCreditoBancario[0] ?? null,
@@ -822,7 +813,6 @@ export function isSchoolInBand(value: number, band: ValueBandOverview) {
 
 
 export type FinancialEventStage =
-  | "credito-confirmado"
   | "pagamento-informado"
   | "ordem-emitida";
 
@@ -847,22 +837,6 @@ export function buildRecentFinancialEvents(
   return repasses
     .filter((repasse) => repasse.exercicio === exercicio)
     .map((repasse): FinancialRecentEvent | null => {
-      if (repasse.credito_bancario_confirmado && repasse.data_credito_bancario) {
-        return {
-          id: `${repasse.id}:credito`,
-          unidadeId: repasse.unidade_id,
-          designacao: repasse.designacao ?? repasse.nome ?? "Unidade escolar",
-          nome: repasse.nome ?? repasse.designacao ?? "Unidade escolar",
-          inep: repasse.inep,
-          programa: repasse.programa,
-          acao: repasse.acao,
-          parcela: repasse.parcela,
-          valor: repasse.valor_pago,
-          dataEvento: repasse.data_credito_bancario,
-          stage: "credito-confirmado",
-        };
-      }
-
       if (repasse.valor_pago !== null && repasse.data_pagamento) {
         return {
           id: `${repasse.id}:pagamento`,
