@@ -59,13 +59,11 @@ function formatDateTime(value: string | null) {
 }
 
 const stageLabel: Record<FinancialEventStage, string> = {
-  "credito-confirmado": "Crédito localizado",
   "pagamento-informado": "Pagamento informado pelo FNDE",
   "ordem-emitida": "Ordem de pagamento emitida",
 };
 
 const stageTone: Record<FinancialEventStage, string> = {
-  "credito-confirmado": "border-success/30 bg-success/8 text-success",
   "pagamento-informado": "border-primary/30 bg-primary/8 text-primary",
   "ordem-emitida": "border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-300",
 };
@@ -116,7 +114,7 @@ export default function AtualizacoesFinanceiras() {
   const latestDate = events[0]?.dataEvento ?? null;
   const schools = new Set(events.map((event) => event.unidadeId)).size;
   const paymentEvents = events.filter((event) => event.stage === "pagamento-informado").length;
-  const bankCredits = events.filter((event) => event.stage === "credito-confirmado").length;
+  const orderEvents = events.filter((event) => event.stage === "ordem-emitida").length;
   const isLoading = repasses.isLoading;
 
   return (
@@ -131,8 +129,8 @@ export default function AtualizacoesFinanceiras() {
             </div>
             <h1 className="mt-3 text-3xl font-bold tracking-tight">Atualizações financeiras</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Acompanhe os movimentos mais recentes do PDDE por escola, programa e etapa do repasse.
-              Pagamentos, ordens e créditos são apresentados de forma clara e separada.
+              Acompanhe os registros oficiais mais recentes do PDDE por escola, programa e etapa do repasse.
+              Saldo e conciliação bancária são tratados em análises próprias, sem reduzir a validade do pagamento informado pelo FNDE.
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -153,9 +151,9 @@ export default function AtualizacoesFinanceiras() {
                   icon: WalletCards,
                 },
                 {
-                  label: "Créditos localizados",
-                  value: isLoading ? "…" : String(bankCredits),
-                  icon: Database,
+                  label: "Ordens emitidas",
+                  value: isLoading ? "…" : String(orderEvents),
+                  icon: Activity,
                 },
               ].map((item) => (
                 <div key={item.label} className="rounded-xl border border-border/60 bg-background/45 p-4">
@@ -202,7 +200,6 @@ export default function AtualizacoesFinanceiras() {
               <SelectItem value="all">Todos os estágios</SelectItem>
               <SelectItem value="pagamento-informado">Pagamento informado pelo FNDE</SelectItem>
               <SelectItem value="ordem-emitida">Ordem de pagamento emitida</SelectItem>
-              <SelectItem value="credito-confirmado">Crédito localizado</SelectItem>
             </SelectContent>
           </Select>
         </section>
