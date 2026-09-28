@@ -72,7 +72,7 @@ describe("superfície do segundo ciclo", () => {
     expect(screen.getAllByText(/Pagamento informado/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Consolidação publicada")).toBeVisible();
     expect(screen.getByText(/referência 17\/09\/2026/i)).toBeVisible();
-    expect(screen.getByText(/Fonte bancária pública ainda sem cobertura suficiente/i)).toBeVisible();
+    expect(screen.getByText(/Crédito individual exibido somente quando localizado/i)).toBeVisible();
     expect(screen.getByRole("link", { name: /Ver todas as 1/i })).toHaveAttribute("href", "/repasses?ciclo=2");
   });
 
@@ -83,7 +83,7 @@ describe("superfície do segundo ciclo", () => {
     expect(screen.getByText(/1\.110,00/)).toBeVisible();
     expect(screen.getByText(/1\.665,00/)).toBeVisible();
     expect(screen.getByText(/17\/09\/2026/)).toBeVisible();
-    expect(screen.getByText(/Crédito bancário independente ainda não confirmado/i)).toBeVisible();
+    expect(screen.getByText(/Conciliação bancária exibida somente quando houver crédito individual localizado/i)).toBeVisible();
     expect(screen.queryByText(/Recebido/i)).not.toBeInTheDocument();
   });
 });
