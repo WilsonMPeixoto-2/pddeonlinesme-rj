@@ -32,6 +32,7 @@ import { saveAs } from "file-saver";
 
 import AppLayout from "@/components/AppLayout";
 import { SegundaParcelaRepassesView } from "@/components/SegundaParcelaRepassesView";
+import { PddeBasicoTotalView } from "@/components/PddeBasicoTotalView";
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -379,12 +380,15 @@ function PrimeiraParcelaRepasses() {
           </Button>
         </header>
 
-        <div className="inline-flex rounded-lg border border-border/60 bg-muted/15 p-1" aria-label="Selecionar ciclo de repasse">
+        <div className="inline-flex rounded-lg border border-border/60 bg-muted/15 p-1" aria-label="Selecionar visão de repasses">
+          <Button asChild variant="ghost" size="sm" className="h-8">
+            <Link to="/repasses?visao=basico">Total PDDE Básico</Link>
+          </Button>
           <Button variant="secondary" size="sm" className="h-8" aria-current="page">
             1ª parcela paga
           </Button>
           <Button asChild variant="ghost" size="sm" className="h-8">
-            <Link to="/repasses?ciclo=2">2º ciclo · pagamentos</Link>
+            <Link to="/repasses?ciclo=2">2º ciclo de repasses</Link>
           </Button>
         </div>
 
@@ -640,6 +644,7 @@ function PrimeiraParcelaRepasses() {
 
 export default function Repasses() {
   const [searchParams] = useSearchParams();
+  if (searchParams.get("visao") === "basico") return <PddeBasicoTotalView />;
   return searchParams.get("ciclo") === "2"
     ? <SegundaParcelaRepassesView />
     : <PrimeiraParcelaRepasses />;
