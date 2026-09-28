@@ -96,10 +96,18 @@ test("timeline anual filtra a carteira e preserva o recorte no drill-down", asyn
   await expect(page.getByText("Análise ativa:", { exact: true })).toBeVisible();
   await expect(page.getByText("04.10.001", { exact: true })).toBeVisible();
   await expect(page.getByText("04.10.002", { exact: true })).toHaveCount(0);
+  await page.screenshot({
+    path: "test-results/visual/repasses-anual-timeline.png",
+    fullPage: true,
+  });
 
   await page.getByRole("link", { name: "04.10.001" }).click();
   await expect(page).toHaveURL(/\/escolas\/00000000-0000-4000-8000-000000000101\/recursos/);
   await expect(page.getByText("Total de repasses do exercício", { exact: true })).toBeVisible();
+  await page.screenshot({
+    path: "test-results/visual/escola-recursos-anual.png",
+    fullPage: true,
+  });
 
   await page.getByRole("link", { name: "Voltar aos repasses" }).click();
   await expect(page).toHaveURL(/dataAnual=2026-08-05/);
