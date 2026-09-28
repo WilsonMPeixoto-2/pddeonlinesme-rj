@@ -36,9 +36,9 @@ export function SegundaParcelaUnidadeResumo({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300">
-              2º ciclo · PDDE Básico
+              2º ciclo de repasses · PDDE Básico
             </p>
-            <CardTitle className="mt-1 text-sm font-semibold">Situação da 2ª parcela</CardTitle>
+            <CardTitle className="mt-1 text-sm font-semibold">Situação do 2º ciclo de repasses</CardTitle>
           </div>
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/20 dark:text-amber-300">
             <ReceiptText className="h-4 w-4" aria-hidden="true" />
@@ -78,8 +78,8 @@ export function SegundaParcelaUnidadeResumo({
               Crédito bancário confirmado em <strong className="font-semibold text-success">{formatDate(escola.dataCreditoBancario)}</strong>
             </span>
           ) : (
-            <span className="font-medium text-amber-700 dark:text-amber-300">
-              Crédito bancário independente ainda não confirmado.
+            <span>
+              Conciliação bancária exibida somente quando houver crédito individual localizado em fonte com cobertura disponível.
             </span>
           )}
         </div>
