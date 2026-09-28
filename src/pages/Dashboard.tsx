@@ -205,18 +205,6 @@ export default function Dashboard() {
   const totalUnidades = overview.totalEscolas > 0
     ? overview.totalEscolas
     : (resumoUnidades?.total ?? null);
-  const composicaoDisponivel = overview.primeiraParcela.custeioPago !== null
-    && overview.primeiraParcela.capitalPago !== null;
-  const totalComposicao = composicaoDisponivel
-    ? (overview.primeiraParcela.custeioPago ?? 0) + (overview.primeiraParcela.capitalPago ?? 0)
-    : null;
-  const custeioPercentual = totalComposicao && totalComposicao > 0
-    ? ((overview.primeiraParcela.custeioPago ?? 0) / totalComposicao) * 100
-    : 0;
-  const capitalPercentual = totalComposicao && totalComposicao > 0
-    ? ((overview.primeiraParcela.capitalPago ?? 0) / totalComposicao) * 100
-    : 0;
-
   const stats: Array<{
     label: string;
     value: number | null;
@@ -446,7 +434,7 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-          </div>/div>
+          </div>
         </motion.section>
 
         <CentralDocumental />
