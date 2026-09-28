@@ -28,6 +28,7 @@ import { useDashboardUnidadesResumo } from "@/hooks/useDashboardUnidadesResumo";
 import { useExercicio } from "@/hooks/useExercicio";
 import {
   buildDashboardFinanceiroOverview,
+  buildPDDEBasicoAnualOverview,
   buildRecentFinancialEvents,
   buildSegundaParcelaOverview,
   type ProgramaFinanceiroOverview,
@@ -173,6 +174,11 @@ export default function Dashboard() {
     [exercicioNumero, repassesQuery.data],
   );
 
+  const pddeBasicoAnual = useMemo(
+    () => buildPDDEBasicoAnualOverview(repassesQuery.data ?? [], exercicioNumero),
+    [exercicioNumero, repassesQuery.data],
+  );
+
   const secondCyclePaymentDimension = dimensionsQuery.data?.find(
     (dimension) => dimension.dimension_key === "pdde_basic_second_installment_payment_informed",
   ) ?? null;
@@ -183,6 +189,9 @@ export default function Dashboard() {
       && secondCyclePaymentDimension.coverage_observed === segundoCiclo.pagamentosIdentificados
       && secondCyclePaymentDimension.coverage_expected === segundoCiclo.escolasEsperadas,
   );
+
+  const annualOverviewReady = pddeBasicoAnual.totalAnual > 0
+    && (exercicioNumero !== 2026 || secondCyclePublished);
 
   const recentFinancialEvents = useMemo(
     () => buildRecentFinancialEvents(repassesQuery.data ?? [], exercicioNumero).slice(0, 5),
@@ -226,44 +235,44 @@ export default function Dashboard() {
       destination: "/escolas",
     },
     {
-      label: "Repasse · 1ª parcela",
-      value: overview.primeiraParcela.totalPago,
-      icon: Receipt,
-      hint: `${overview.primeiraParcela.escolas} escolas com pagamento identificado`,
+      label: "Total PDDE Básico",
+      value: annualOverviewReady ? pddeBasicoAnual.totalAnual : null,
+      icon: Landmark,
+      hint: annualOverviewReady
+        ? "Soma dos dois ciclos de repasses do exercício"
+        : "Aguardando consolidação dos ciclos de repasses",
       tone: "primary",
       format: fmtBRL,
       destination: "/repasses",
     },
     {
-      label: "Custeio · 1ª parcela",
-      value: overview.primeiraParcela.custeioPago,
-      icon: Coins,
-      hint: overview.primeiraParcela.detalhamentoCompleto > 0
-        ? `${overview.primeiraParcela.detalhamentoCompleto}/${overview.primeiraParcela.escolas} repasses com composição completa`
-        : "Detalhamento ainda não informado",
+      label: "1º ciclo de repasses",
+      value: pddeBasicoAnual.totalPrimeiroCiclo > 0 ? pddeBasicoAnual.totalPrimeiroCiclo : null,
+      icon: Receipt,
+      hint: `${pddeBasicoAnual.escolasPrimeiroCiclo} unidades com pagamento oficial`,
       tone: "violet",
       format: fmtBRL,
-      destination: "/repasses",
+      destination: "/repasses?ciclo=1",
     },
     {
-      label: "Capital · 1ª parcela",
-      value: overview.primeiraParcela.capitalPago,
-      icon: Landmark,
-      hint: "Componente de capital do mesmo recorte",
+      label: "2º ciclo de repasses",
+      value: secondCyclePublished ? pddeBasicoAnual.totalSegundoCiclo : null,
+      icon: Receipt,
+      hint: secondCyclePublished
+        ? `${pddeBasicoAnual.escolasSegundoCiclo} unidades · consolidação publicada`
+        : "Aguardando consolidação publicada",
       tone: "teal",
       format: fmtBRL,
-      destination: "/repasses",
+      destination: "/repasses?ciclo=2",
     },
     {
-      label: "2º ciclo · pagamentos",
-      value: segundoCiclo.escolas.length > 0 ? segundoCiclo.totalInformado : null,
-      icon: Receipt,
-      hint: segundoCiclo.escolas.length > 0
-        ? `${segundoCiclo.pagamentosIdentificados} pagamentos informados · ${segundoCiclo.ordensIdentificadas} ordens · ${segundoCiclo.creditosBancariosConfirmados} créditos bancários confirmados`
-        : "Nenhuma evidência financeira do 2º ciclo",
+      label: "Mediana por unidade",
+      value: annualOverviewReady ? pddeBasicoAnual.mediana : null,
+      icon: Coins,
+      hint: "Total anual mediano do PDDE Básico por escola",
       tone: "amber",
       format: fmtBRL,
-      destination: "/repasses?ciclo=2",
+      destination: "/repasses",
     },
   ];
 
@@ -323,22 +332,14 @@ export default function Dashboard() {
 
               <div>
                 <p className="mb-2 text-sm font-medium text-muted-foreground">
-                  {secondCyclePublished
-                    ? `2º ciclo · PDDE Básico · pagamento informado pelo FNDE · ${exercicio}`
-                    : `1ª parcela paga · PDDE Básico · ${exercicio}`}
+                  PDDE Básico · total dos ciclos de repasses · {exercicio}
                 </p>
                 <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
                   {loading ? (
                     <Skeleton className="h-16 w-[80%]" />
-                  ) : secondCyclePublished ? (
+                  ) : annualOverviewReady ? (
                     <NumberTicker
-                      value={segundoCiclo.totalInformado}
-                      format={fmtBRLDecimal}
-                      className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
-                    />
-                  ) : overview.primeiraParcela.totalPago !== null ? (
-                    <NumberTicker
-                      value={overview.primeiraParcela.totalPago}
+                      value={pddeBasicoAnual.totalAnual}
                       format={fmtBRLDecimal}
                       className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent tabular-nums"
                     />
@@ -347,27 +348,22 @@ export default function Dashboard() {
                   )}
                 </h1>
                 <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
-                  {secondCyclePublished ? (
+                  {annualOverviewReady ? (
                     <>
-                      Pagamento oficial consolidado para {segundoCiclo.pagamentosIdentificados} de {segundoCiclo.escolasEsperadas} unidades da 4ª CRE.
+                      Soma dos pagamentos oficiais informados pelo FNDE no 1º e no 2º ciclos de repasses para {pddeBasicoAnual.escolasComDoisCiclos} unidades.
                       {secondCyclePaymentDimension?.reference_date_max
-                        ? ` Referência mais recente: ${formatDate(secondCyclePaymentDimension.reference_date_max)}.`
+                        ? ` 2º ciclo consolidado até ${formatDate(secondCyclePaymentDimension.reference_date_max)}.`
                         : ""}
                     </>
                   ) : (
-                    <>
-                      Pagamento identificado para {overview.primeiraParcela.escolas} de {totalUnidades ?? "—"} unidades escolares no recorte exibido.
-                      {overview.primeiraParcela.ultimaDataPagamento
-                        ? ` Última data de pagamento deste recorte: ${formatDate(overview.primeiraParcela.ultimaDataPagamento)}.`
-                        : ""}
-                    </>
+                    "A visão anual será exibida quando os ciclos de repasses estiverem consolidados no recorte corrente."
                   )}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
-                <Button onClick={() => navigate(secondCyclePublished ? "/repasses?ciclo=2" : "/repasses", { viewTransition: true })}>
-                  Explorar repasses
+                <Button onClick={() => navigate("/repasses", { viewTransition: true })}>
+                  Ver visão anual
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button variant="outline" onClick={() => navigate("/escolas", { viewTransition: true })}>
@@ -377,130 +373,80 @@ export default function Dashboard() {
             </div>
 
             <div className="ds-card-elevated space-y-5 p-5 backdrop-blur-md">
-              {secondCyclePublished ? (
-                <>
-                  <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="ds-eyebrow">Composição anual</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Relação entre os dois ciclos de repasses do PDDE Básico.
+                  </p>
+                </div>
+                {annualOverviewReady ? (
+                  <span className="shrink-0 rounded-full border border-success/25 bg-success/[0.055] px-2 py-1 text-[10px] font-semibold text-success">
+                    {pddeBasicoAnual.escolasComDoisCiclos} unidades
+                  </span>
+                ) : null}
+              </div>
+
+              {annualOverviewReady ? (
+                <div className="space-y-5">
+                  <div
+                    className="flex h-3 overflow-hidden rounded-full bg-muted"
+                    role="img"
+                    aria-label="Participação dos dois ciclos de repasses no total anual do PDDE Básico"
+                  >
+                    <div
+                      className="h-full bg-primary"
+                      style={{ width: `${pddeBasicoAnual.totalAnual > 0 ? (pddeBasicoAnual.totalPrimeiroCiclo / pddeBasicoAnual.totalAnual) * 100 : 0}%` }}
+                    />
+                    <div
+                      className="h-full bg-violet-500"
+                      style={{ width: `${pddeBasicoAnual.totalAnual > 0 ? (pddeBasicoAnual.totalSegundoCiclo / pddeBasicoAnual.totalAnual) * 100 : 0}%` }}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/repasses?ciclo=1", { viewTransition: true })}
+                      className="rounded-xl border border-primary/20 bg-primary/[0.035] p-4 text-left transition-colors hover:bg-primary/[0.07]"
+                    >
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">1º ciclo de repasses</p>
+                      <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{fmtBRLDecimal(pddeBasicoAnual.totalPrimeiroCiclo)}</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">{pddeBasicoAnual.escolasPrimeiroCiclo} unidades</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/repasses?ciclo=2", { viewTransition: true })}
+                      className="rounded-xl border border-violet-500/20 bg-violet-500/[0.035] p-4 text-left transition-colors hover:bg-violet-500/[0.07]"
+                    >
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-700 dark:text-violet-300">2º ciclo de repasses</p>
+                      <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{fmtBRLDecimal(pddeBasicoAnual.totalSegundoCiclo)}</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">{pddeBasicoAnual.escolasSegundoCiclo} unidades</p>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-4">
                     <div>
-                      <p className="ds-eyebrow">Cobertura do 2º ciclo</p>
-                      <p className="mt-1 text-xs text-muted-foreground">Consolidação publicada no Supabase para a carteira da 4ª CRE.</p>
+                      <p className="text-xs font-medium text-foreground">Total oficial do exercício</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        Saldo bancário e conciliação são analisados separadamente.
+                      </p>
                     </div>
-                    <span className="shrink-0 rounded-full border border-success/25 bg-success/[0.055] px-2 py-1 text-[10px] font-semibold text-success">
-                      {segundoCiclo.pagamentosIdentificados}/{segundoCiclo.escolasEsperadas}
+                    <span className="text-sm font-semibold tabular-nums text-foreground">
+                      {fmtBRLDecimal(pddeBasicoAnual.totalAnual)}
                     </span>
                   </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-end justify-between gap-3">
-                        <p className="text-3xl font-semibold tabular-nums text-foreground">
-                          {(segundoCiclo.coberturaPagamento * 100).toFixed(segundoCiclo.coberturaPagamentoCompleta ? 0 : 1)}%
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {secondCyclePaymentDimension?.reference_date_min && secondCyclePaymentDimension?.reference_date_max
-                            ? `${formatDate(secondCyclePaymentDimension.reference_date_min)} a ${formatDate(secondCyclePaymentDimension.reference_date_max)}`
-                            : "cobertura publicada"}
-                        </p>
-                      </div>
-                      <div
-                        className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted"
-                        role="progressbar"
-                        aria-label="Cobertura do pagamento oficial do segundo ciclo"
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={Math.round(segundoCiclo.coberturaPagamento * 100)}
-                      >
-                        <div
-                          className="h-full rounded-full bg-primary transition-all"
-                          style={{ width: `${Math.min(segundoCiclo.coberturaPagamento * 100, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">2ª parcela regular</p>
-                        <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{segundoCiclo.escolasRegularesPagas}</p>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground">unidades escolares</p>
-                      </div>
-                      <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Primeira Infância · P2</p>
-                        <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{segundoCiclo.escolasPrimeiraInfanciaPagas}</p>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground">unidades escolares</p>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-border/50 pt-4 text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">Crédito bancário:</span>{" "}
-                      {segundoCiclo.creditosBancariosConfirmados > 0
-                        ? `${segundoCiclo.creditosBancariosConfirmados} confirmações localizadas`
-                        : "permanece uma evidência independente do pagamento informado pelo FNDE."}
-                    </div>
-                  </div>
-                </>
+                </div>
               ) : (
-                <>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="ds-eyebrow">Composição da 1ª parcela</p>
-                      <p className="mt-1 text-xs text-muted-foreground">Custeio e capital no mesmo recorte do destaque principal.</p>
-                    </div>
-                    <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                      {overview.primeiraParcela.detalhamentoCompleto}/{overview.primeiraParcela.escolas} completos
-                    </span>
-                  </div>
-
-                  {composicaoDisponivel && totalComposicao !== null && totalComposicao > 0 ? (
-                    <div className="space-y-5">
-                      <div
-                        className="flex h-3 overflow-hidden rounded-full bg-muted"
-                        role="img"
-                        aria-label={`Composição da primeira parcela: ${custeioPercentual.toFixed(1)}% custeio e ${capitalPercentual.toFixed(1)}% capital`}
-                      >
-                        <div className="h-full bg-fin-custeio" style={{ width: `${custeioPercentual}%` }} />
-                        <div className="h-full bg-fin-capital" style={{ width: `${capitalPercentual}%` }} />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                          <div className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-full bg-fin-custeio" aria-hidden="true" />
-                            <p className="text-xs font-medium text-muted-foreground">Custeio</p>
-                          </div>
-                          <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
-                            {formatMoneyOrDash(overview.primeiraParcela.custeioPago)}
-                          </p>
-                          <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">{custeioPercentual.toFixed(1)}% do total</p>
-                        </div>
-                        <div className="rounded-xl border border-border/60 bg-card/55 p-4">
-                          <div className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-full bg-fin-capital" aria-hidden="true" />
-                            <p className="text-xs font-medium text-muted-foreground">Capital</p>
-                          </div>
-                          <p className="mt-2 text-lg font-semibold tabular-nums text-foreground">
-                            {formatMoneyOrDash(overview.primeiraParcela.capitalPago)}
-                          </p>
-                          <p className="mt-0.5 text-[10px] tabular-nums text-muted-foreground">{capitalPercentual.toFixed(1)}% do total</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-4">
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">Cobertura do detalhamento</p>
-                          <p className="mt-0.5 text-[10px] text-muted-foreground">Somente valores conhecidos; ausência de dado não é convertida em zero.</p>
-                        </div>
-                        <span className="text-sm font-semibold tabular-nums text-foreground">{formatMoneyOrDash(totalComposicao)}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5">
-                      <p className="text-sm font-medium text-foreground">Composição ainda não disponível para todo o recorte</p>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">O Painel preserva a ausência de informação em vez de inferir custeio ou capital como zero.</p>
-                    </div>
-                  )}
-                </>
+                <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5">
+                  <p className="text-sm font-medium text-foreground">Visão anual ainda não consolidada</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    O Painel não completa valores ausentes por estimativa.
+                  </p>
+                </div>
               )}
             </div>
-          </div>
+          </div>/div>
         </motion.section>
 
         <CentralDocumental />
