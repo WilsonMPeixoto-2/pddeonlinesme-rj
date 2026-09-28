@@ -14,11 +14,25 @@ Decisões históricas que não precisam orientar novas tarefas podem permanecer 
 
 **Decisão:** a interface pode publicar e detalhar essa evidência como **ordem de pagamento emitida** ou **pagamento informado**, com identificação da unidade, valor total, custeio, capital e data da ordem. O rótulo **Pagamento identificado** exige `data_pagamento` conhecida.
 
-**Consequência:** KPIs e cartões gerais de pagamento confirmado não somam evidências que tenham valor informado, mas não tenham data de crédito. O 2º ciclo possui drill-down próprio e pode aparecer no Painel como informação secundária, preservando a 1ª parcela paga como recorte financeiro principal.
+**Consequência:** KPIs de repasse somam apenas registros com valor oficial e `data_pagamento` conhecida. A ausência de crédito bancário localizado não rebaixa nem torna duvidoso um pagamento oficial do FNDE; a camada bancária é uma dimensão independente de saldo/conciliação.
 
 **Restrição:** ordem emitida não altera automaticamente `recebido`, saldo disponível, execução financeira, Demonstrativo Básico ou qualquer cálculo que pressuponha dinheiro creditado em conta.
 
 **Referência:** PR #173 e evidência externa versionada de 14/09/2026.
+
+---
+
+## 2026-09-28 — Repasse oficial e conciliação bancária são dimensões independentes
+
+**Contexto:** dados de pagamento do FNDE/SIGEF ficam disponíveis antes e com maior regularidade do que saldos/extratos bancários públicos. Usar a ausência de extrato atualizado como “falha de validação” do repasse produz incerteza artificial.
+
+**Decisão:** `valor_pago + data_pagamento` em fonte oficial do concedente é suficiente para classificar o fato como **pagamento oficial informado pelo FNDE** e para compor os totais de repasses. Crédito bancário individual, saldo e movimentação da conta são evidências adicionais, não uma segunda aprovação do repasse.
+
+**Consequência:** ausência de evidência bancária não gera alerta negativo por si só. A interface só deve apresentar divergência bancária quando existir fonte com cobertura temporal adequada para a data do pagamento e a correspondência esperada não for localizada.
+
+**Estados bancários futuros:** quando a dimensão possuir contrato próprio, distinguir pelo menos **crédito localizado**, **sem cobertura temporal para conciliação** e **requer análise**. “Não verificado” não pode ser apresentado como “divergente”.
+
+**Restrição:** saldo contemporâneo não prova individualmente um crédito, pois pode refletir despesas, rendimentos, transferências, estornos ou outros movimentos.
 
 ---
 
@@ -98,17 +112,17 @@ Na V1, as cinco dimensões formalizadas são:
 
 ---
 
-## 2026-09-11 — 1ª parcela paga do PDDE Básico como recorte financeiro principal
+## 2026-09-28 — Total anual do PDDE Básico como visão financeira principal
 
-**Contexto:** o total global de pagamentos podia misturar universos com maturidade diferente.
+**Contexto:** os dois ciclos de repasses do PDDE Básico passaram a possuir pagamento oficial informado para as 163 unidades da 4ª CRE. A decisão de 11/09/2026 que mantinha a 1ª parcela como KPI principal cumpriu sua função enquanto o 2º ciclo ainda não tinha cobertura equivalente.
 
-**Decisão:** enquanto for o recorte integralmente validado, o maior KPI financeiro do Painel utiliza a **1ª parcela paga do PDDE Básico em 2026**, incluindo PDDE Básico e Primeira Infância conforme o contrato operacional.
+**Decisão:** a visão financeira principal do PDDE Básico em 2026 passa a ser o **total anual dos pagamentos oficiais informados pelo FNDE**, calculado pela soma do 1º e do 2º ciclos de repasses. Em 28/09/2026, o recorte verificado corresponde a 163/163 unidades em cada ciclo.
 
-**Consequência:** data, cobertura e composição custeio/capital do hero devem pertencer ao mesmo universo do valor principal.
+**Consequência:** o Painel, a Visão anual de Repasses e a ficha financeira da unidade apresentam a relação `1º ciclo de repasses + 2º ciclo de repasses = total PDDE Básico no exercício`. Os ciclos permanecem disponíveis como recortes independentes e navegáveis.
 
-**Restrição:** pagamentos parciais de outros programas não contaminam o KPI principal.
+**Restrição:** o total anual não inclui valor meramente programado, ordem sem `data_pagamento`, saldo bancário, rendimento, execução ou inferência para preencher ausência. Outros programas não contaminam o KPI do PDDE Básico.
 
-**Referência:** PR #130.
+**Referência histórica:** PR #130 definiu a 1ª parcela como recorte principal enquanto era o único universo integralmente maduro; essa parte da decisão foi superada pela cobertura posterior do 2º ciclo.
 
 ---
 
