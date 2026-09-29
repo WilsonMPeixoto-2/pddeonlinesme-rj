@@ -120,7 +120,7 @@ SELECT
   d.parcela_1_capital,
   d.parcela_2_custeio,
   d.parcela_2_capital,
-  (COALESCE(d.reprogramado_custeio, 0) + COALESCE(d.reprogramado_capital, 0))::numeric(14,2)
+  (COALESCE(d.reprogramado_custeio, 0) + COALESCE(d.reprogramado_capital, 0))
     AS total_reprogramado,
   CASE
     WHEN d.exercicio = 2026 AND d.programa = 'basico'
@@ -136,7 +136,7 @@ SELECT
       + COALESCE(d.parcela_1_capital, 0)
       + COALESCE(d.parcela_2_custeio, 0)
       + COALESCE(d.parcela_2_capital, 0)
-    )::numeric(14,2)
+    )
   END AS total_parcelas,
   CASE
     WHEN d.exercicio = 2026 AND d.programa = 'basico'
@@ -154,7 +154,7 @@ SELECT
       + COALESCE(d.parcela_1_capital, 0)
       + COALESCE(d.parcela_2_custeio, 0)
       + COALESCE(d.parcela_2_capital, 0)
-    )::numeric(14,2)
+    )
   END AS total_disponivel_inicial,
   d.updated_at
 FROM detalhe AS d;
