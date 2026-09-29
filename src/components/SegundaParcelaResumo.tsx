@@ -64,7 +64,7 @@ export function SegundaParcelaResumo({
                     Pagamentos informados no 2º ciclo de repasses
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Pagamento informado pelo FNDE, ordem de pagamento e crédito localizado no extrato são evidências distintas. A ausência de extrato atualizado não apaga o pagamento oficial.
+                    O valor exibido representa o repasse oficial informado pelo FNDE. A situação bancária é analisada separadamente e só deve gerar alerta quando houver cobertura temporal suficiente para conciliação.
                   </p>
                 </div>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
@@ -96,7 +96,7 @@ export function SegundaParcelaResumo({
                 </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <div className="rounded-xl border border-primary/25 bg-primary/[0.045] p-3">
                   <div className="flex items-center gap-2 text-primary">
                     <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -118,28 +118,11 @@ export function SegundaParcelaResumo({
                 <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.055] p-3">
                   <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
                     <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Ordem de pagamento</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Ordens de pagamento</p>
                   </div>
                   <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.ordensIdentificadas}</p>
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
                     {overview.ultimaDataOrdem ? `Mais recente em ${formatDate(overview.ultimaDataOrdem)}` : "Sem data separada de ordem"}
-                  </p>
-                </div>
-
-                <div className={overview.creditosBancariosConfirmados > 0
-                  ? "rounded-xl border border-success/25 bg-success/[0.055] p-3"
-                  : "rounded-xl border border-border/60 bg-muted/20 p-3"}
-                >
-                  <div className={overview.creditosBancariosConfirmados > 0
-                    ? "flex items-center gap-2 text-success"
-                    : "flex items-center gap-2 text-muted-foreground"}
-                  >
-                    <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">Crédito no extrato</p>
-                  </div>
-                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{overview.creditosBancariosConfirmados}</p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {overview.ultimaDataCreditoBancario ? `Mais recente em ${formatDate(overview.ultimaDataCreditoBancario)}` : "Crédito individual exibido somente quando localizado na fonte bancária disponível"}
                   </p>
                 </div>
               </div>
@@ -213,17 +196,13 @@ export function SegundaParcelaResumo({
                           </p>
                         </td>
                         <td className="px-3 py-3">
-                          <span className={school.status === "credito-confirmado"
-                            ? "inline-flex rounded-md border border-success/25 bg-success/[0.06] px-2 py-1 text-[10px] font-semibold text-success"
-                            : school.status === "ordem-emitida"
-                              ? "inline-flex rounded-md border border-amber-500/25 bg-amber-500/[0.06] px-2 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300"
-                              : "inline-flex rounded-md border border-primary/25 bg-primary/[0.06] px-2 py-1 text-[10px] font-semibold text-primary"}
+                          <span className={school.status === "ordem-emitida"
+                            ? "inline-flex rounded-md border border-amber-500/25 bg-amber-500/[0.06] px-2 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300"
+                            : "inline-flex rounded-md border border-primary/25 bg-primary/[0.06] px-2 py-1 text-[10px] font-semibold text-primary"}
                           >
-                            {school.status === "credito-confirmado"
-                              ? "Crédito bancário confirmado"
-                              : school.status === "ordem-emitida"
-                                ? "Ordem emitida"
-                                : "Pagamento informado pelo FNDE"}
+                            {school.status === "ordem-emitida"
+                              ? "Ordem emitida"
+                              : "Pagamento informado pelo FNDE"}
                           </span>
                         </td>
                         <td className="px-3 py-3 text-right text-sm tabular-nums text-muted-foreground">{formatMoney(school.custeio)}</td>

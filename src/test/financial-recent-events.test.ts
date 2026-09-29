@@ -55,7 +55,7 @@ describe("buildRecentFinancialEvents", () => {
     expect(event.stage).toBe("pagamento-informado");
   });
 
-  it("prioriza crédito confirmado quando existe evidência bancária", () => {
+  it("mantém o pagamento oficial como evento principal mesmo quando há crédito bancário localizado", () => {
     const [event] = buildRecentFinancialEvents([
       row({
         data_pagamento: "2026-09-17",
@@ -64,8 +64,8 @@ describe("buildRecentFinancialEvents", () => {
       }),
     ], 2026);
 
-    expect(event.stage).toBe("credito-confirmado");
-    expect(event.dataEvento).toBe("2026-09-18");
+    expect(event.stage).toBe("pagamento-informado");
+    expect(event.dataEvento).toBe("2026-09-17");
   });
 
   it("exibe ordem emitida quando há valor informado e apenas data da ordem", () => {
