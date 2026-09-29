@@ -168,19 +168,19 @@ SELECT
   COUNT(DISTINCT d.unidade_id)::bigint AS total_unidades,
   COALESCE(SUM(d.reprogramado_custeio), 0)::numeric(14,2) AS total_reprogramado_custeio,
   COALESCE(SUM(d.reprogramado_capital), 0)::numeric(14,2) AS total_reprogramado_capital,
-  CASE WHEN COUNT(*) FILTER (WHERE d.parcela_1_custeio IS NULL) > 0
-    THEN NULL ELSE SUM(d.parcela_1_custeio)::numeric(14,2) END AS total_parcela_1_custeio,
-  CASE WHEN COUNT(*) FILTER (WHERE d.parcela_1_capital IS NULL) > 0
-    THEN NULL ELSE SUM(d.parcela_1_capital)::numeric(14,2) END AS total_parcela_1_capital,
-  CASE WHEN COUNT(*) FILTER (WHERE d.parcela_2_custeio IS NULL) > 0
-    THEN NULL ELSE SUM(d.parcela_2_custeio)::numeric(14,2) END AS total_parcela_2_custeio,
-  CASE WHEN COUNT(*) FILTER (WHERE d.parcela_2_capital IS NULL) > 0
-    THEN NULL ELSE SUM(d.parcela_2_capital)::numeric(14,2) END AS total_parcela_2_capital,
+  (CASE WHEN COUNT(*) FILTER (WHERE d.parcela_1_custeio IS NULL) > 0
+    THEN NULL ELSE SUM(d.parcela_1_custeio) END)::numeric(14,2) AS total_parcela_1_custeio,
+  (CASE WHEN COUNT(*) FILTER (WHERE d.parcela_1_capital IS NULL) > 0
+    THEN NULL ELSE SUM(d.parcela_1_capital) END)::numeric(14,2) AS total_parcela_1_capital,
+  (CASE WHEN COUNT(*) FILTER (WHERE d.parcela_2_custeio IS NULL) > 0
+    THEN NULL ELSE SUM(d.parcela_2_custeio) END)::numeric(14,2) AS total_parcela_2_custeio,
+  (CASE WHEN COUNT(*) FILTER (WHERE d.parcela_2_capital IS NULL) > 0
+    THEN NULL ELSE SUM(d.parcela_2_capital) END)::numeric(14,2) AS total_parcela_2_capital,
   COALESCE(SUM(d.total_reprogramado), 0)::numeric(14,2) AS total_reprogramado,
-  CASE WHEN COUNT(*) FILTER (WHERE d.total_parcelas IS NULL) > 0
-    THEN NULL ELSE SUM(d.total_parcelas)::numeric(14,2) END AS total_parcelas,
-  CASE WHEN COUNT(*) FILTER (WHERE d.total_disponivel_inicial IS NULL) > 0
-    THEN NULL ELSE SUM(d.total_disponivel_inicial)::numeric(14,2) END AS total_disponivel_inicial,
+  (CASE WHEN COUNT(*) FILTER (WHERE d.total_parcelas IS NULL) > 0
+    THEN NULL ELSE SUM(d.total_parcelas) END)::numeric(14,2) AS total_parcelas,
+  (CASE WHEN COUNT(*) FILTER (WHERE d.total_disponivel_inicial IS NULL) > 0
+    THEN NULL ELSE SUM(d.total_disponivel_inicial) END)::numeric(14,2) AS total_disponivel_inicial,
   MAX(d.updated_at) AS updated_at_max
 FROM public.vw_unidade_detalhe AS d
 WHERE d.exercicio IS NOT NULL
