@@ -17,7 +17,9 @@ test("login autenticado abre o dashboard canônico e mantém sessão ao navegar"
   await expect(page.getByText("1º ciclo de repasses", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Total PDDE Básico", { exact: true })).toBeVisible();
 
-  await page.getByRole("link", { name: "Manual" }).click();
+  await expect(page.getByRole("link", { name: "Frente Fiscal" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Abrir ferramentas administrativas" }).click();
+  await page.getByRole("menuitem", { name: "Manual" }).click();
   await expect(page).toHaveURL(/\/manual$/);
   await expect(page.getByRole("heading", { name: "Manual" })).toBeVisible();
 });
