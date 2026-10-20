@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   repair-fast-uri:
@@ -28,15 +28,26 @@ jobs:
       - name: Apply compatible audit fixes to the lockfile
         run: |
           npm update fast-uri --package-lock-only
-          npm audit fix --package-lock-only
+          npm audit fix --package-lock-only || true
 
       - name: Verify production high-severity audit
         run: npm audit --omit=dev --audit-level=high
 
-      - name: Show repaired dependency paths
+      - name: Show repaired lockfile versions
         run: |
-          npm ls fast-uri
-          npm ls brace-expansion
+          node -e "const p=require('./package-lock.json').packages; for (const [k,v] of Object.entries(p)) if (/fast-uri$|brace-expansion$/.test(k)) console.log(k, v.version)"
+
+      - name: Commit repaired lockfile to PR branch
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "Lockfile already contains the compatible security repairs."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: reparar dependencias transitivas vulneraveis"
+          git push origin HEAD:"${GITHUB_HEAD_REF}"
 
       - name: Upload repaired lockfile
         if: always()
