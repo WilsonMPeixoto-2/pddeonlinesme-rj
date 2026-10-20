@@ -1,5 +1,5 @@
 export interface GlobalNavigationItem {
-  id: "dashboard" | "atualizacoes" | "repasses" | "escolas" | "fiscal" | "base" | "configuracoes" | "manual" | "diretor";
+  id: "dashboard" | "atualizacoes" | "repasses" | "escolas" | "base" | "configuracoes" | "manual" | "diretor";
   label: string;
   path: string;
   keywords: string[];
@@ -38,12 +38,6 @@ export const GLOBAL_NAVIGATION: GlobalNavigationItem[] = [
     label: "Unidades Escolares",
     path: "/escolas",
     keywords: ["escolas", "unidades", "ue", "cadastro"],
-  },
-  {
-    id: "fiscal",
-    label: "Frente Fiscal",
-    path: "/fiscal",
-    keywords: ["fiscal", "nota fiscal", "despesas", "homologacao"],
   },
   {
     id: "base",
