@@ -304,7 +304,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 via-card/60 to-card/40 px-6 py-10 backdrop-blur-sm sm:px-10 sm:py-14"
+          className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-card/80 via-card/60 to-card/40 px-6 py-8 backdrop-blur-sm sm:px-10 sm:py-10"
         >
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-violet-500/8 blur-3xl" />
@@ -322,7 +322,7 @@ export default function Dashboard() {
                 <p className="mb-2 text-sm font-medium text-muted-foreground">
                   PDDE Básico · total dos ciclos de repasses · {exercicio}
                 </p>
-                <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
+                <h1 className="text-balance text-4xl font-bold leading-[0.98] tracking-tight sm:text-5xl lg:text-6xl">
                   {loading ? (
                     <Skeleton className="h-16 w-[80%]" />
                   ) : annualOverviewReady ? (
@@ -348,6 +348,40 @@ export default function Dashboard() {
                   )}
                 </p>
               </div>
+
+              {annualOverviewReady ? (
+                <div className="grid gap-2 sm:grid-cols-3" aria-label="Situação do recorte financeiro">
+                  <div className="rounded-lg border border-border/50 bg-background/35 px-3 py-2.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      Cobertura anual
+                    </p>
+                    <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+                      {pddeBasicoAnual.escolasComDoisCiclos}/{totalUnidades ?? pddeBasicoAnual.escolasComDoisCiclos} unidades
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-border/50 bg-background/35 px-3 py-2.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      2º ciclo
+                    </p>
+                    <p className={cn(
+                      "mt-1 text-sm font-semibold",
+                      secondCyclePublished ? "text-success" : "text-muted-foreground",
+                    )}>
+                      {secondCyclePublished ? "Publicado" : "Em consolidação"}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-border/50 bg-background/35 px-3 py-2.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      Referência mais recente
+                    </p>
+                    <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+                      {secondCyclePaymentDimension?.reference_date_max
+                        ? formatDate(secondCyclePaymentDimension.reference_date_max)
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="flex flex-wrap gap-2 pt-1">
                 <Button onClick={() => navigate("/repasses", { viewTransition: true })}>
