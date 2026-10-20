@@ -25,14 +25,18 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Refresh patched fast-uri within compatible ranges
-        run: npm update fast-uri --package-lock-only
+      - name: Apply compatible audit fixes to the lockfile
+        run: |
+          npm update fast-uri --package-lock-only
+          npm audit fix --package-lock-only
 
       - name: Verify production high-severity audit
         run: npm audit --omit=dev --audit-level=high
 
-      - name: Show resolved fast-uri
-        run: npm ls fast-uri
+      - name: Show repaired dependency paths
+        run: |
+          npm ls fast-uri
+          npm ls brace-expansion
 
       - name: Upload repaired lockfile
         if: always()
