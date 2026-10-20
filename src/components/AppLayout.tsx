@@ -16,7 +16,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, User, UserCircle, CalendarDays } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  ChevronDown,
+  LogOut,
+  Settings,
+  Upload,
+  User,
+  UserCircle,
+  Wrench,
+} from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,15 +37,17 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { CommandPalette } from "@/components/CommandPalette";
 import { FinancialFreshnessBanner } from "@/components/FinancialFreshnessBanner";
 
-const tabs = [
+const primaryTabs = [
   { to: "/dashboard", label: "Painel" },
-  { to: "/atualizacoes", label: "Atualizações" },
   { to: "/repasses", label: "Repasses" },
   { to: "/escolas", label: "Unidades Escolares" },
-  { to: "/fiscal", label: "Frente Fiscal" },
-  { to: "/base", label: "Importar/Exportar" },
-  { to: "/configuracoes", label: "Configurações" },
-  { to: "/manual", label: "Manual" },
+  { to: "/atualizacoes", label: "Atualizações" },
+];
+
+const utilityTabs = [
+  { to: "/base", label: "Importar / Exportar", icon: Upload },
+  { to: "/configuracoes", label: "Configurações", icon: Settings },
+  { to: "/manual", label: "Manual", icon: BookOpen },
 ];
 
 function getInitials(email?: string | null): string {
@@ -145,8 +157,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <nav className="flex gap-1 overflow-x-auto">
-            {tabs.map((t) => (
+          <nav className="flex items-center gap-1 overflow-x-auto" aria-label="Navegação principal">
+            {primaryTabs.map((t) => (
               <NavLink
                 key={t.to}
                 to={t.to}
@@ -162,6 +174,45 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 {t.label}
               </NavLink>
             ))}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={`relative inline-flex items-center gap-1.5 px-3 py-2.5 text-sm whitespace-nowrap transition-colors ${
+                    utilityTabs.some((item) => location.pathname.startsWith(item.to))
+                      ? "text-primary font-medium after:absolute after:inset-x-3 after:-bottom-px after:h-0.5 after:bg-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  aria-label="Abrir ferramentas administrativas"
+                >
+                  <Wrench className="h-3.5 w-3.5" aria-hidden="true" />
+                  Ferramentas
+                  <ChevronDown className="h-3 w-3 opacity-70" aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="w-[220px] bg-popover/95 backdrop-blur-md border-border/60 shadow-xl"
+              >
+                <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+                  Apoio administrativo
+                </DropdownMenuLabel>
+                {utilityTabs.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem
+                      key={item.to}
+                      onClick={() => navigate(item.to, { viewTransition: true })}
+                      className="gap-2.5 cursor-pointer"
+                    >
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                      <span className="text-sm">{item.label}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
         </div>
       </header>
