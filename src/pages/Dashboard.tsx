@@ -471,8 +471,6 @@ export default function Dashboard() {
           </div>
         </motion.section>
 
-        <CentralDocumental />
-
         <motion.div
           variants={container}
           initial="hidden"
@@ -624,7 +622,9 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
+          <CentralDocumental />
+
+        <div className="grid gap-4 lg:grid-cols-3">
             {loading
               ? Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-44 w-full rounded-xl" />)
               : overview.porPrograma.map((program) => <ProgramCard key={program.programa} program={program} />)}
