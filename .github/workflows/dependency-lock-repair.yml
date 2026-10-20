@@ -1,0 +1,43 @@
+name: Dependency lock repair
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  repair-fast-uri:
+    if: github.head_ref == 'chore/dependency-refresh-policy-20261020'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Refresh patched fast-uri within compatible ranges
+        run: npm update fast-uri --package-lock-only
+
+      - name: Verify production high-severity audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Show resolved fast-uri
+        run: npm ls fast-uri
+
+      - name: Upload repaired lockfile
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: repaired-package-lock
+          path: package-lock.json
+          retention-days: 1
