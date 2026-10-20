@@ -66,7 +66,6 @@ const Login = () => {
     startTransition(async () => {
       const { error } = await supabase.auth.signInWithPassword({ email: values.email, password: values.senha });
       if (error) return toast.error(mensagemErroAuth(error.message));
-      toast.success("Bem-vindo(a)!");
       navigate("/dashboard");
     });
   };
