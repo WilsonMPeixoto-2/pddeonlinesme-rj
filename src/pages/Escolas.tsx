@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Download, FileSpreadsheet, Pencil, Search, SchoolIcon, X, SearchX,
-  MoreVertical, FileText, Eye, ArrowUpRight, AlertCircle,
+  MoreVertical, FileText, Eye, ArrowUpRight, AlertCircle, WalletCards,
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -359,7 +359,7 @@ export default function Escolas() {
             <p className="text-sm text-muted-foreground">
               {loading
                 ? "Carregando cadastro…"
-                : `${unidades.length} unidades · gere documentos individuais ou em lote.`}
+                : `${unidades.length} unidades · consulte recursos oficiais, cadastro e documentos por escola.`}
             </p>
           </div>
           {!loading && unidades.length > 0 && (
@@ -500,7 +500,7 @@ export default function Escolas() {
                   <TableHead className="ds-th h-11 border-l border-border/40 bg-primary/5 text-center text-primary/80">
                     <span className="inline-flex items-center gap-1.5">
                       <FileText className="h-3 w-3" />
-                      Documentos
+                      Acesso rápido
                     </span>
                   </TableHead>
                   <TableHead className="ds-th h-11 text-right">
@@ -636,19 +636,25 @@ export default function Escolas() {
                             </span>
                           </TableCell>
                           <TableCell className="border-l border-border/40 bg-primary/[0.025] p-2">
-                            <div className="space-y-1.5">
+                            <div className="grid gap-1.5">
                               <Button
                                 size="sm"
                                 variant="default"
-                                className="h-9 w-full justify-center gap-2 text-xs shadow-[0_0_16px_hsl(var(--primary)/0.18)] transition-shadow hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]"
+                                className="h-9 w-full justify-center gap-2 text-xs"
+                                onClick={() => navigate(`/escolas/${e.id}/recursos`, { viewTransition: true })}
+                              >
+                                <WalletCards className="h-3.5 w-3.5" />
+                                Ver recursos PDDE
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-full justify-center gap-2 text-[11px] text-muted-foreground hover:text-foreground"
                                 onClick={() => openDocs(e)}
                               >
                                 <FileText className="h-3.5 w-3.5" />
-                                Gerar documentos
+                                Documentos
                               </Button>
-                              <p className="text-center text-[10px] text-muted-foreground">
-                                Demonstrativo Básico disponível
-                              </p>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
