@@ -462,6 +462,7 @@ export default function Escolas() {
               <Download className="mr-2 h-4 w-4" /> Exportar seleção
             </Button>
             <Button
+              variant="outline"
               size="sm"
               className="h-10"
               onClick={() => setConfirmLote(true)}
