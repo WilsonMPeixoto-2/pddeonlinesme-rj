@@ -29,6 +29,27 @@ test("login autenticado abre o dashboard canônico e mantém sessão ao navegar"
   await expect(page.getByRole("heading", { name: "Manual" })).toBeVisible();
 });
 
+test("navegação operacional permanece utilizável em viewport móvel", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await installSupabaseMock(page);
+  await signInAsTestAdmin(page);
+
+  const nav = page.getByRole("navigation", { name: "Navegação principal" });
+  await expect(nav).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Painel" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Frente Fiscal" })).toHaveCount(0);
+
+  const tools = nav.getByRole("button", { name: "Abrir ferramentas administrativas" });
+  await tools.scrollIntoViewIfNeeded();
+  await tools.click();
+  await expect(page.getByRole("menuitem", { name: "Manual" })).toBeVisible();
+
+  await page.screenshot({
+    path: "test-results/visual/mobile-navegacao.png",
+    fullPage: true,
+  });
+});
+
 test("listagem de unidades usa dados Supabase e aplica busca no cliente", async ({ page }) => {
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
