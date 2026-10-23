@@ -74,6 +74,30 @@ test("listagem de unidades usa dados Supabase e aplica busca no cliente", async 
   await expect(page.getByRole("button", { name: "Abrir cadastro de 04.10.002" })).toHaveCount(0);
 });
 
+test("carteira de unidades usa cartões acionáveis no mobile sem overflow horizontal", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await installSupabaseMock(page);
+  await signInAsTestAdmin(page);
+
+  await page.goto("/escolas");
+  await expect(page.getByRole("heading", { name: "Unidades Escolares" })).toBeVisible();
+  const portfolio = page.getByLabel("Carteira de unidades escolares");
+  await expect(portfolio).toBeVisible();
+  await expect(portfolio.getByRole("button", { name: "Abrir cadastro de 04.10.001" })).toBeVisible();
+  await expect(portfolio.getByRole("button", { name: "Ver recursos PDDE" }).first()).toBeVisible();
+
+  const hasHorizontalOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+  );
+  expect(hasHorizontalOverflow).toBe(false);
+
+  await page.waitForTimeout(300);
+  await page.screenshot({
+    path: "test-results/visual/mobile-escolas-carteira.png",
+    fullPage: true,
+  });
+});
+
 test("edição cadastral percorre RPC e reconciliação sem tocar produção", async ({ page }) => {
   await installSupabaseMock(page);
   await signInAsTestAdmin(page);
