@@ -7,7 +7,7 @@ import {
   Terminal, Activity, KeyRound, Server, Info
 } from "lucide-react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 
 interface RlsTableStatus {
