@@ -2,6 +2,22 @@
 
 Registro de decisões e entregas visuais/transversais já presentes no app.
 
+## 2026-10-20 — Foco operacional, navegação e hierarquia de produto
+
+A revisão de produto de outubro/2026 reposicionou a interface para distinguir domínios cotidianos de trabalho, utilidades administrativas e superfícies ainda experimentais.
+
+- A navegação principal passa a priorizar **Painel, Repasses, Unidades Escolares e Atualizações**.
+- **Importar/Exportar, Configurações e Manual** passam ao agrupamento **Ferramentas**.
+- A POC **Frente Fiscal** deixa de aparecer na navegação e na busca global enquanto não cumprir os gates institucionais da frente fiscal.
+- O Painel reduz a dominância do valor financeiro principal e explicita cobertura, estado do 2º ciclo e referência temporal quando a visão anual está consolidada.
+- A geração documental em lote deixa de ocupar a primeira camada do Painel; permanece disponível como utilidade posterior ao contexto financeiro.
+- A carteira de escolas prioriza **Ver recursos PDDE**; geração documental passa a ação secundária.
+- Mensagens de frescor financeiro usam linguagem operacional, evitando expor termos de infraestrutura como persistência e snapshot.
+- O toast de sucesso após login foi removido por redundância.
+- O E2E passa a produzir evidências visuais específicas de Dashboard, carteira de escolas, Repasses, detalhe financeiro e navegação móvel.
+
+A decisão de produto correspondente está registrada em `docs/DECISIONS.md`.
+
 ## 2026-05-26 — Modernização Tecnológica, Performance & Governança (Frente 1)
 
 O PR `docs/state-reconcile-after-pr43` entregou otimizações cruciais de performance e arquitetura robusta de validação:

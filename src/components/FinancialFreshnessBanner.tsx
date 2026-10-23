@@ -31,7 +31,7 @@ export function FinancialFreshnessBanner() {
       <div className="border-b border-destructive/30 bg-destructive/8">
         <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2 text-xs text-destructive">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          Não foi possível comprovar o frescor da base financeira. Ausência de atualização não é tratada como zero.
+          Não foi possível confirmar a atualização das informações financeiras. Valores ausentes não são tratados como zero.
         </div>
       </div>
     );
@@ -54,13 +54,13 @@ export function FinancialFreshnessBanner() {
 
   let message: string;
   if (syncFailed) {
-    message = `A sincronização financeira mais recente falhou. Último snapshot de origem: ${formatDate(syncHealth?.source_published_at ?? freshness.enginePublishedAt)}.`;
+    message = `A atualização automática mais recente não foi concluída. Os dados permanecem na última referência confirmada em ${formatDate(syncHealth?.source_published_at ?? freshness.enginePublishedAt)}.`;
   } else if (freshness.status === "STORAGE_LAG") {
-    message = `A persistência financeira está atrasada em relação ao snapshot validado em ${formatDate(freshness.enginePublishedAt)}.`;
+    message = `Algumas informações financeiras ainda estão sendo atualizadas. Última referência confirmada: ${formatDate(freshness.enginePublishedAt)}.`;
   } else if (freshness.status === "SOURCE_STALE") {
-    message = `A atualização da fonte financeira está atrasada. Último snapshot validado: ${formatDate(freshness.enginePublishedAt)}.`;
+    message = `A fonte oficial está com atualização atrasada. Última referência confirmada: ${formatDate(freshness.enginePublishedAt)}.`;
   } else {
-    message = "A fonte financeira corrente está temporariamente indisponível. Valores ausentes não são tratados como zero.";
+    message = "As informações financeiras mais recentes estão temporariamente indisponíveis. O sistema mantém apenas os dados já confirmados.";
   }
 
   return (

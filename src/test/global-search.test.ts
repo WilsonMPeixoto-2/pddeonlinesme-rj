@@ -39,9 +39,10 @@ describe("GLOBAL_NAVIGATION", () => {
     const paths = GLOBAL_NAVIGATION.map((item) => item.path);
 
     expect(labels).toContain("Repasses");
-    expect(labels).toContain("Frente Fiscal");
+    expect(labels).not.toContain("Frente Fiscal");
     expect(labels).not.toContain("Style Guide");
     expect(labels).not.toContain("Acesso Negado (demo)");
+    expect(paths).not.toContain("/fiscal");
     expect(paths).not.toContain("/style-guide");
     expect(paths).not.toContain("/acesso-negado");
   });

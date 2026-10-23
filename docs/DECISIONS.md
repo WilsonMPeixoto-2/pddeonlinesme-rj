@@ -8,6 +8,18 @@ Decisões históricas que não precisam orientar novas tarefas podem permanecer 
 
 ---
 
+## 2026-10-20 — Navegação operacional deve expor somente fluxos institucionais reais
+
+**Contexto:** a revisão de produto de outubro/2026 confirmou que a superfície `/fiscal` continua sendo uma POC de aquisição fiscal e não possui contrato institucional concluído nem persistência correspondente em Production. Ao mesmo tempo, a navegação principal acumulou áreas de trabalho e ferramentas administrativas com o mesmo peso visual.
+
+**Decisão:** a navegação principal passa a priorizar os domínios operacionais correntes: **Painel, Repasses, Unidades Escolares e Atualizações**. **Importar/Exportar, Configurações e Manual** ficam agrupados em **Ferramentas**. A POC fiscal deixa de ser descoberta pela navegação principal e pela busca global até cumprir os gates institucionais definidos no protocolo fiscal.
+
+**Consequência:** o código experimental pode permanecer acessível por rota direta para desenvolvimento controlado, mas não pode se apresentar ao usuário comum como funcionalidade operacional concluída. Novas áreas só entram na navegação primária quando corresponderem a uma tarefa recorrente real e possuírem dados, persistência e regras de uso verificadas.
+
+**Restrição:** esta decisão não autoriza apagar a POC fiscal nem implementar automaticamente o fluxo definitivo de prestação de contas. A integração futura depende de definição do papel do PDDE Online em relação ao RADAR PDDE, ao SIGPC Ágil e aos processos institucionais vigentes.
+
+---
+
 ## 2026-09-18 — Ordem de pagamento não equivale a crédito bancário
 
 **Contexto:** foi recebida evidência externa de 52 unidades do PDDE Básico — Primeira Infância — P2 com valor informado e ordem de pagamento em 14/09/2026, sem data distinta de crédito bancário.

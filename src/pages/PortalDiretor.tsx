@@ -46,8 +46,8 @@ const FAQ_ITEMS = [
     answer: "Custeio refere-se a despesas operacionais, de consumo diário ou serviços de terceiros (ex: materiais de limpeza, pequenos reparos, cartuchos, serviços de chaveiro). Capital refere-se à aquisição de bens permanentes que se incorporam ao patrimônio da escola (ex: computadores, aparelhos de ar-condicionado, armários de aço, projetores). O saldo de Custeio não pode ser usado para comprar itens de Capital, e vice-versa. Os limites de cada categoria são exibidos no resumo financeiro."
   },
   {
-    question: "Minha nota fiscal foi rejeitada pelo GAD. O que devo fazer?",
-    answer: "Caso uma nota fiscal apresente pendência ou seja rejeitada no fluxo de homologação, você deve: 1. Identificar o motivo no portal (ex: ausência de carimbo, erro no CNPJ da UEx, valor divergente); 2. Solicitar carta de correção ao fornecedor se for erro formal permitido; ou 3. Solicitar cancelamento e reemissão caso contenha erros estruturais de valores ou CNPJ. Após a correção, reenvie a nota fiscal digitalizada na Frente Fiscal."
+    question: "Minha nota fiscal apresentou pendência. O que devo fazer?",
+    answer: "Confira o motivo informado pela 4ª CRE e providencie a correção aplicável. Erros formais que admitam correção podem exigir documento do fornecedor; erros estruturais de valor ou CNPJ podem exigir cancelamento e reemissão. Enquanto o envio documental pelo portal não estiver institucionalmente habilitado, apresente a correção pelo canal oficial informado pela equipe responsável."
   },
   {
     question: "Como regularizar pendências de dados cadastrais (CNPJ/INEP/Diretor)?",

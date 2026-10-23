@@ -16,10 +16,38 @@ test("login autenticado abre o dashboard canônico e mantém sessão ao navegar"
   await expect(page.getByText("PDDE Básico · total dos ciclos de repasses · 2026", { exact: true })).toBeVisible();
   await expect(page.getByText("1º ciclo de repasses", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Total PDDE Básico", { exact: true })).toBeVisible();
+  await page.waitForTimeout(300);
+  await page.screenshot({
+    path: "test-results/visual/dashboard-operacional.png",
+    fullPage: true,
+  });
 
-  await page.getByRole("link", { name: "Manual" }).click();
+  await expect(page.getByRole("link", { name: "Frente Fiscal" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Abrir ferramentas administrativas" }).click();
+  await page.getByRole("menuitem", { name: "Manual" }).click();
   await expect(page).toHaveURL(/\/manual$/);
   await expect(page.getByRole("heading", { name: "Manual" })).toBeVisible();
+});
+
+test("navegação operacional permanece utilizável em viewport móvel", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await installSupabaseMock(page);
+  await signInAsTestAdmin(page);
+
+  const nav = page.getByRole("navigation", { name: "Navegação principal" });
+  await expect(nav).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Painel" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Frente Fiscal" })).toHaveCount(0);
+
+  const tools = nav.getByRole("button", { name: "Abrir ferramentas administrativas" });
+  await tools.scrollIntoViewIfNeeded();
+  await tools.click();
+  await expect(page.getByRole("menuitem", { name: "Manual" })).toBeVisible();
+
+  await page.screenshot({
+    path: "test-results/visual/mobile-navegacao.png",
+    fullPage: true,
+  });
 });
 
 test("listagem de unidades usa dados Supabase e aplica busca no cliente", async ({ page }) => {
@@ -31,6 +59,11 @@ test("listagem de unidades usa dados Supabase e aplica busca no cliente", async 
   await expect(page.getByRole("heading", { name: "Unidades Escolares" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Abrir cadastro de 04.10.001" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Abrir cadastro de 04.10.002" })).toBeVisible();
+  await page.waitForTimeout(300);
+  await page.screenshot({
+    path: "test-results/visual/escolas-carteira.png",
+    fullPage: true,
+  });
 
   const search = page.getByRole("textbox", { name: "Buscar unidades escolares" });
   await search.fill("Alpha");
@@ -106,6 +139,7 @@ test("timeline anual filtra a carteira e preserva o recorte no drill-down", asyn
   await page.getByRole("link", { name: "04.10.001" }).click();
   await expect(page).toHaveURL(/\/escolas\/00000000-0000-4000-8000-000000000101\/recursos/);
   await expect(page.getByText("Total de repasses do exercício", { exact: true })).toBeVisible();
+  await page.waitForTimeout(300);
   await page.screenshot({
     path: "test-results/visual/escola-recursos-anual.png",
     fullPage: true,
