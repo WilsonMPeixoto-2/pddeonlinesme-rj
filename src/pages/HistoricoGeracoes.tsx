@@ -34,7 +34,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { useDocumentGenerationRuns, type DocumentGenerationRun, type DocumentGenerationRunStatus } from "@/hooks/useDocumentGenerationRuns";
 import { cn } from "@/lib/utils";
 
