@@ -19,8 +19,10 @@ import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
   CalendarDays,
+  Check,
   ChevronDown,
   LogOut,
+  Menu,
   Settings,
   Upload,
   User,
@@ -157,7 +159,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <nav className="flex items-center gap-1 overflow-x-auto" aria-label="Navegação principal">
+          <nav className="hidden items-center gap-1 overflow-x-auto md:flex" aria-label="Navegação principal">
             {primaryTabs.map((t) => (
               <NavLink
                 key={t.to}
@@ -208,6 +210,70 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     >
                       <Icon className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                       <span className="text-sm">{item.label}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
+
+          <nav className="py-2 md:hidden" aria-label="Navegação principal">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Abrir navegação principal"
+                  className="flex h-10 w-full items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/20 px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Menu className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                    <span className="truncate">
+                      {[...primaryTabs, ...utilityTabs].find((item) =>
+                        location.pathname.startsWith(item.to),
+                      )?.label ?? "Navegação"}
+                    </span>
+                  </span>
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="w-[min(320px,calc(100vw-2rem))] border-border/60 bg-popover/95 shadow-xl backdrop-blur-md"
+              >
+                <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+                  Áreas de trabalho
+                </DropdownMenuLabel>
+                {primaryTabs.map((item) => {
+                  const active = location.pathname.startsWith(item.to);
+                  return (
+                    <DropdownMenuItem
+                      key={item.to}
+                      onClick={() => navigate(item.to, { viewTransition: true })}
+                      className="cursor-pointer justify-between gap-3"
+                    >
+                      <span className="text-sm">{item.label}</span>
+                      {active ? <Check className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> : null}
+                    </DropdownMenuItem>
+                  );
+                })}
+                <DropdownMenuSeparator className="bg-border/50" />
+                <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+                  Ferramentas
+                </DropdownMenuLabel>
+                {utilityTabs.map((item) => {
+                  const Icon = item.icon;
+                  const active = location.pathname.startsWith(item.to);
+                  return (
+                    <DropdownMenuItem
+                      key={item.to}
+                      onClick={() => navigate(item.to, { viewTransition: true })}
+                      className="cursor-pointer justify-between gap-3"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <Icon className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                        <span className="text-sm">{item.label}</span>
+                      </span>
+                      {active ? <Check className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> : null}
                     </DropdownMenuItem>
                   );
                 })}
