@@ -21,7 +21,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { saveAs } from "file-saver";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useExercicio } from "@/hooks/useExercicio";

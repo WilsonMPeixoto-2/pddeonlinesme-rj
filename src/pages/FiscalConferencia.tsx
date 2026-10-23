@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import {
   FileCode, QrCode, FileSearch, Building2, Hash, Calendar,
   DollarSign, CheckCircle2, AlertCircle, Loader2, Sparkles,

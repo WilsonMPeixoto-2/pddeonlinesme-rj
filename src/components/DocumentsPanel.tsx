@@ -22,7 +22,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { saveAs } from "file-saver";
 import { useUnidadeDetalhe } from "@/hooks/useUnidadeDetalhe";
 import { generateDemonstrativoBasico } from "@/lib/demonstrativo/generateDemonstrativoBasico";
