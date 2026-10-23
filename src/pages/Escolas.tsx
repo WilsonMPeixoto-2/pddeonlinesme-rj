@@ -440,7 +440,7 @@ export default function Escolas() {
             </div>
 
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-              <SelectTrigger className="h-10 w-[140px] shrink-0">
+              <SelectTrigger className="h-10 w-full shrink-0 sm:w-[140px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -452,11 +452,11 @@ export default function Escolas() {
 
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid w-full gap-2 sm:flex sm:w-auto sm:flex-wrap">
             <Button
               variant="outline"
               size="sm"
-              className="h-10"
+              className="h-10 w-full sm:w-auto"
               onClick={handleExportSelection}
             >
               <Download className="mr-2 h-4 w-4" /> Exportar seleção
@@ -464,7 +464,7 @@ export default function Escolas() {
             <Button
               variant="outline"
               size="sm"
-              className="h-10"
+              className="h-10 w-full sm:w-auto"
               onClick={() => setConfirmLote(true)}
               disabled={unidades.length === 0 || loadingDetalheLista || lote.phase === "running"}
             >
@@ -476,8 +476,148 @@ export default function Escolas() {
           </div>
         </div>
 
-        {/* Table */}
-        <Card className="ds-card overflow-hidden">
+        {/* Mobile portfolio — cards avoid forcing an 800px table into narrow viewports. */}
+        <div className="space-y-2 md:hidden" aria-label="Carteira de unidades escolares">
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="ds-card p-4">
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-3 w-40 opacity-60" />
+                    </div>
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
+                  <Skeleton className="h-12 w-full rounded-lg" />
+                  <Skeleton className="h-10 w-full rounded-md" />
+                </div>
+              </Card>
+            ))
+          ) : error ? (
+            <Card className="ds-card">
+              <EmptyState
+                variant="inline"
+                icon={AlertCircle}
+                title="Erro ao carregar unidades escolares"
+                description="Não foi possível carregar as unidades escolares neste momento."
+                action={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refetch()}
+                    disabled={isFetching}
+                  >
+                    {isFetching ? "Tentando..." : "Tentar novamente"}
+                  </Button>
+                }
+              />
+            </Card>
+          ) : lista.length === 0 ? (
+            <Card className="ds-card">
+              <EmptyState
+                variant="inline"
+                icon={isSearching ? SearchX : SchoolIcon}
+                title={
+                  isSearching
+                    ? "Nenhum resultado para os filtros aplicados"
+                    : "Nenhuma unidade cadastrada ainda"
+                }
+                description={
+                  isSearching
+                    ? "Verifique o termo digitado ou altere os filtros."
+                    : "Nenhuma unidade está disponível para o exercício selecionado."
+                }
+                action={
+                  isSearching ? (
+                    <Button variant="outline" size="sm" onClick={clearFilters}>
+                      Limpar filtros
+                    </Button>
+                  ) : null
+                }
+              />
+            </Card>
+          ) : (
+            lista.map((e) => {
+              const st = getStatus(e, detalheByUnidadeId.get(e.id));
+              const cfg = statusConfig[st];
+
+              return (
+                <Card
+                  key={e.id}
+                  className="ds-card overflow-hidden"
+                  onPointerEnter={() => prefetchUnidade(e.id)}
+                >
+                  <div className="space-y-3 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 space-y-1">
+                        <button
+                          type="button"
+                          onClick={() => navigate(schoolDetailPath(e.id), { viewTransition: true })}
+                          className="inline-flex items-center gap-1.5 rounded-sm text-left font-semibold text-primary underline decoration-primary/30 decoration-dotted underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          aria-label={`Abrir cadastro de ${e.designacao}`}
+                        >
+                          <span>{e.designacao}</span>
+                          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                        {e.nome ? (
+                          <p className="truncate text-sm font-medium text-foreground">{e.nome}</p>
+                        ) : null}
+                      </div>
+                      <SecondaryActions
+                        onEdit={() => navigate(schoolDetailPath(e.id), { viewTransition: true })}
+                        onView={() => navigate(schoolDetailPath(e.id), { viewTransition: true })}
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                      <span className="ds-num-mono">INEP {e.inep ?? "—"}</span>
+                      {e.cnpj ? <span className="ds-num-mono">CNPJ {e.cnpj}</span> : null}
+                    </div>
+
+                    <div className="grid gap-2 rounded-lg border border-border/50 bg-muted/15 p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                            Diretor(a)
+                          </p>
+                          <p className="mt-1 truncate text-sm font-medium">{e.diretor ?? "—"}</p>
+                        </div>
+                        <span className={cn("ds-badge-pill shrink-0", cfg.badgeClass)}>
+                          <span className={cn("ds-dot", cfg.dotClass)} />
+                          {cfg.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Button
+                        size="sm"
+                        className="h-10 w-full justify-center gap-2"
+                        onClick={() => navigate(`/escolas/${e.id}/recursos`, { viewTransition: true })}
+                      >
+                        <WalletCards className="h-4 w-4" />
+                        Ver recursos PDDE
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-9 w-full justify-center gap-2 text-xs"
+                        onClick={() => openDocs(e)}
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        Documentos
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <Card className="ds-card hidden overflow-hidden md:block">
           <div className="overflow-x-auto">
             <Table className="table-fixed min-w-[800px]">
               <colgroup>
