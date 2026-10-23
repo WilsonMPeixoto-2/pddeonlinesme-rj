@@ -18,6 +18,10 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
     labels:
       - "dependencies"
 
