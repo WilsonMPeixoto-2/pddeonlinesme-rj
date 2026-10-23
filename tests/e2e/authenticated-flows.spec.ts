@@ -36,13 +36,15 @@ test("navegação operacional permanece utilizável em viewport móvel", async (
 
   const nav = page.getByRole("navigation", { name: "Navegação principal" });
   await expect(nav).toBeVisible();
-  await expect(nav.getByRole("link", { name: "Painel" })).toBeVisible();
-  await expect(nav.getByRole("link", { name: "Frente Fiscal" })).toHaveCount(0);
+  const navigationButton = nav.getByRole("button", { name: "Abrir navegação principal" });
+  await expect(navigationButton).toBeVisible();
+  await expect(navigationButton).toContainText("Painel");
+  await navigationButton.click();
 
-  const tools = nav.getByRole("button", { name: "Abrir ferramentas administrativas" });
-  await tools.scrollIntoViewIfNeeded();
-  await tools.click();
+  await expect(page.getByRole("menuitem", { name: "Painel" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Unidades Escolares" })).toBeVisible();
   await expect(page.getByRole("menuitem", { name: "Manual" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Frente Fiscal" })).toHaveCount(0);
 
   await page.screenshot({
     path: "test-results/visual/mobile-navegacao.png",
