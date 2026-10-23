@@ -124,7 +124,7 @@
     "knip": "^6.41.0",
     "supabase": "^2.121.0",
     "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.71.2",
     "vite": "^8.2.2",
     "vite-plugin-pwa": "^1.3.0",
