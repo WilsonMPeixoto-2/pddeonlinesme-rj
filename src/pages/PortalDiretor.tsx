@@ -12,7 +12,7 @@ import {
   Building, User, Mail, Info, FileDown, AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import BrandMark from "@/components/BrandMark";
 import { SegundaParcelaUnidadeResumo } from "@/components/SegundaParcelaUnidadeResumo";
 import { useAuth } from "@/hooks/useAuth";
