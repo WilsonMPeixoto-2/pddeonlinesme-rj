@@ -1,5 +1,7 @@
 # AGENTS.md — PDDE Online 2026
 
+> **Referência de depuração e entrega comprovada (04/11/2026):** para falhas de build/deploy, integrações Vercel, problemas de browser, persistência remota, dependências ou downloads, consultar [skill portátil](.agents/skills/diagnostico-entrega-verificada/SKILL.md) e [registro de evidências](docs/technical/LIÇÕES_INTERPROJETOS_E_VERIFICACAO_2026_11.md). Estes textos são **suplementares** e não alteram a precedência, a governança, os gates, as decisões e os critérios de autorização definidos neste AGENTS.md.
+
 **Atualizado em:** 11/09/2026  
 **Repositório oficial:** `WilsonMPeixoto-2/pddeonlinesme-rj`  
 **Produto:** PDDE Online 2026 · GAD · 4ª CRE · SME-RJ
